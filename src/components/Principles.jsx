@@ -5,6 +5,13 @@ import { principles } from '../data/content';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* GSAP pinning re-parents this section's DOM, which Vite's hot-reload cannot
+   reconcile — every hot swap of this module leaves a ghost copy of the section
+   in the page. Force a full reload instead. Dev-only; stripped from builds. */
+if (import.meta.hot) {
+  import.meta.hot.accept(() => import.meta.hot.invalidate());
+}
+
 /* Desktop: the section pins and the four cards scroll horizontally, scrubbed
    to the wheel. Below 900px or under prefers-reduced-motion, none of this
    runs and the cards render as the static grid from sections.css. */

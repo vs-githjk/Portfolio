@@ -6,6 +6,12 @@ import * as THREE from 'three';
    grid with the traveling scan band and mouse-follow skew. Colors come in as
    props; Contact.jsx reads them from the design tokens at mount. */
 
+/* Hot-swapping a live WebGL component leaks canvases/contexts in dev — take a
+   full reload instead. Dev-only; stripped from builds. */
+if (import.meta.hot) {
+  import.meta.hot.accept(() => import.meta.hot.invalidate());
+}
+
 const vert = `
 varying vec2 vUv;
 void main(){
