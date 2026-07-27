@@ -479,7 +479,7 @@
 .kit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .kit-cell {
   padding: clamp(18px, 2.4vw, 26px);
-  border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--hair));
+  border: 1px solid color-mix(in srgb, var(--accent-3-light) 60%, var(--hair));
   border-radius: var(--radius-sm);
   background: var(--ink-2);
 }

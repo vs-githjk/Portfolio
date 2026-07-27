@@ -13,6 +13,16 @@ export default function Principles() {
   const trackRef = useRef(null);
 
   useEffect(() => {
+    /* StrictMode double-mounts and Vite HMR can leave orphaned pins behind —
+       each one renders as a ghost copy of this section. Kill any trigger that
+       still points at this section (or a detached node) before creating ours. */
+    ScrollTrigger.getAll().forEach((t) => {
+      const trig = t.vars?.trigger;
+      if (trig === secRef.current || (trig instanceof Element && !trig.isConnected)) {
+        t.kill(true);
+      }
+    });
+
     const mm = gsap.matchMedia();
 
     mm.add('(min-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
