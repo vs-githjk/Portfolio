@@ -78,18 +78,17 @@ export const proof = [
 /* --------------------------------------------------------------- WHERE ---- */
 export const experience = {
   heading: "Where I've worked",
-  intro: 'Internships where the work had to survive contact with real users.',
+  intro:
+    'Engineering where the work meets real users — and teaching that keeps me honest about explaining it.',
   roles: [
     {
-      // TODO: exact title, team, dates, and what you built at Sherlock AI —
-      // fill these in and delete the placeholder note.
       org: 'Sherlock AI',
-      role: 'Engineering',
+      role: 'Software Engineer Intern',
       team: '',
-      note: 'Most recent role — full details landing here shortly. The résumé has them today.',
+      note: "Built Sherlock's public demo interview flow in Next.js — the one screen a candidate actually meets: adaptive interview behavior, recording and submission, and the branded polish that makes it feel like a product. Also a Google Meet add-on proof of concept that renders audit logs and validates the interview from a live sidebar inside the call.",
       wins: [],
-      when: 'Recent',
-      where: '',
+      when: 'Jun 2026 — Present',
+      where: 'Remote',
     },
     {
       org: 'Comcast',
@@ -99,6 +98,26 @@ export const experience = {
       wins: ['40% less manual coding effort', '18% workflow efficiency gain'],
       when: 'May — Aug 2025',
       where: 'Chennai, TN',
+    },
+    /* The teaching rows stay condensed but they stay — they're the page's only
+       evidence for the customer-facing half of forward-deployed work. */
+    {
+      org: 'Penn State',
+      role: 'Learning Assistant',
+      team: 'Calculus',
+      note: 'Weekly review sessions with faculty — explaining hard things to people who don’t share my context.',
+      wins: [],
+      when: 'Aug 2025 — Present',
+      where: 'University Park, PA',
+    },
+    {
+      org: 'Penn State',
+      role: 'Math Peer Tutor',
+      team: '0–100 level courses',
+      note: 'Diagnosing where someone’s mental model broke — which turns out to be the same job as debugging.',
+      wins: [],
+      when: 'Jan 2026 — Present',
+      where: 'University Park, PA',
     },
   ],
 };
