@@ -5,6 +5,9 @@ export default function Hero() {
   return (
     <header className="hero" id="top">
       <div className="wrap">
+        {hero.figure?.src && (
+          <img className="hero-figure" src={hero.figure.src} alt={hero.figure.alt || ''} />
+        )}
         <div className="eyebrow hero-eyebrow">{hero.eyebrow}</div>
 
         <h1>

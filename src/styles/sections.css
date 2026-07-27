@@ -54,7 +54,23 @@
   padding-top: clamp(120px, 17vh, 190px);
   padding-bottom: clamp(56px, 8vh, 96px);
 }
-.hero-eyebrow { margin-bottom: clamp(20px, 2.6vw, 34px); }
+.hero .wrap { position: relative; }
+.hero-eyebrow { margin-bottom: clamp(20px, 2.6vw, 34px); color: var(--accent-1); }
+
+/* the sporty silhouette beside the name — renders once hero.figure.src is set */
+.hero-figure {
+  position: absolute;
+  right: var(--pad);
+  top: clamp(70px, 10vh, 130px);
+  height: clamp(240px, 38vh, 420px);
+  width: auto;
+  pointer-events: none;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 48px color-mix(in srgb, var(--accent-3) 35%, transparent));
+}
+@media (max-width: 960px) {
+  .hero-figure { display: none; }
+}
 .hero h1 {
   max-width: 19ch;
   font-size: var(--fs-hero);
@@ -312,8 +328,8 @@
   font-size: 10.5px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--text-3);
-  border: var(--rule);
+  color: var(--accent-3);
+  border: 1px solid color-mix(in srgb, var(--accent-3) 35%, var(--hair));
   border-radius: 4px;
   padding: 5px 9px;
   display: inline-block;

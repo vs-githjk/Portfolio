@@ -34,6 +34,9 @@ export const hero = {
   blurbEmphasis: "Right now that's PrismAI —",
   blurbTail:
     'a meeting intelligence platform running eight agents over hybrid search, streaming insight back in about two seconds.',
+  // Sporty silhouette next to the name. Drop your cut-out at
+  // public/hero-silhouette.png (transparent PNG or SVG), then set src below.
+  figure: { src: '', alt: 'Vidyut mid-play, silhouetted' }, // TODO
   availability: 'Available June 2027 · new grad & internship', // TODO: match what you're actually recruiting for
   locationNote: 'State College, PA — open to relocate',
 };
