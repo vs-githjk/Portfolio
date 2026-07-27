@@ -12,9 +12,9 @@
 
 export const meta = {
   name: 'Vidyut Sriram',
-  title: 'Vidyut Sriram — I build AI systems',
+  title: 'Vidyut Sriram — safe, reliable AI systems',
   description:
-    "Penn State CS '27. I build the infrastructure around AI models — retrieval, orchestration, and the plumbing that turns a demo into a product.",
+    "Penn State CS '27. I build safe, reliable AI systems and modernize the workflows around them — forward-deployed engineer and entrepreneur in the making.",
   location: 'State College, PA',
 };
 
@@ -26,11 +26,11 @@ export const nav = [
 ];
 
 export const hero = {
-  eyebrow: "Vidyut Sriram — Penn State CS '27",
-  headline: 'The model is',
-  assertion: 'the easy part',
+  eyebrow: "AI systems engineer · forward-deployed by instinct — Penn State CS '27",
+  headline: 'Vidyut Sriram',
+  assertion: 'builds safe, reliable systems',
   blurb:
-    "Swapping a model is a one-line change. Retrieval that actually retrieves, agent graphs that don't deadlock, and pipelines that fail loudly are not. I build that layer.",
+    "I modernize how teams work by building AI they can actually trust — retrieval that retrieves, agent graphs that don't deadlock, and pipelines that fail loudly instead of lying.",
   blurbEmphasis: "Right now that's PrismAI —",
   blurbTail:
     'a meeting intelligence platform running eight agents over hybrid search, streaming insight back in about two seconds.',
@@ -78,9 +78,19 @@ export const proof = [
 /* --------------------------------------------------------------- WHERE ---- */
 export const experience = {
   heading: "Where I've worked",
-  intro:
-    'One production internship, and two teaching roles that keep me honest about explaining hard things simply.',
+  intro: 'Internships where the work had to survive contact with real users.',
   roles: [
+    {
+      // TODO: exact title, team, dates, and what you built at Sherlock AI —
+      // fill these in and delete the placeholder note.
+      org: 'Sherlock AI',
+      role: 'Engineering',
+      team: '',
+      note: 'Most recent role — full details landing here shortly. The résumé has them today.',
+      wins: [],
+      when: 'Recent',
+      where: '',
+    },
     {
       org: 'Comcast',
       role: 'Software Development Engineer Intern',
@@ -89,24 +99,6 @@ export const experience = {
       wins: ['40% less manual coding effort', '18% workflow efficiency gain'],
       when: 'May — Aug 2025',
       where: 'Chennai, TN',
-    },
-    {
-      org: 'Penn State',
-      role: 'Learning Assistant',
-      team: 'Calculus',
-      note: 'Run weekly review sessions with faculty using active-learning methods — limits, derivatives, integrals. Measurable gains in grades, participation, and comprehension.',
-      wins: [],
-      when: 'Aug 2025 — Present',
-      where: 'University Park, PA',
-    },
-    {
-      org: 'Penn State',
-      role: 'Math Peer Tutor',
-      team: '0–100 level courses',
-      note: "One-on-one and small-group tutoring. Mostly a job in diagnosing where someone's mental model broke, which turns out to be the same job as debugging.",
-      wins: [],
-      when: 'Jan 2026 — Present',
-      where: 'University Park, PA',
     },
   ],
 };
@@ -139,6 +131,7 @@ export const builds = {
       ],
       stack:
         'React · FastAPI · LangGraph · Groq Llama 3.3-70B · OpenAI · Supabase/pgvector · Recall.ai · Tavily',
+      media: { video: '', poster: '' }, // TODO: PrismAI demo video URL (renders once filled)
       links: [
         { label: 'Live demo', href: '' }, // TODO
         { label: 'Source', href: '' }, // TODO
@@ -168,6 +161,7 @@ export const builds = {
       ],
       stack:
         'React · Three.js · Leaflet · Recharts · FastAPI · XGBoost · Featherless AI / Qwen 2.5-7B · Twilio · WebSockets',
+      media: { video: '', poster: '' }, // TODO: Terrametric demo video URL (renders once filled)
       links: [
         { label: 'Live demo', href: '' }, // TODO
         { label: 'Source', href: '' }, // TODO
@@ -199,6 +193,50 @@ export const builds = {
       ],
     },
 
+    /* ---- READY TO FILL: TransitGuard / CinemaChat / AlgoQuest -------------
+       Uncomment each once you give me (or write) a one-liner, a body paragraph,
+       and a metric or two. They stay hidden until then — no guessed claims.
+    {
+      id: 'transitguard',
+      kind: 'Build', // TODO
+      title: 'TransitGuard',
+      titleMuted: '', // TODO: one-phrase descriptor
+      when: '', // TODO
+      oneLiner: '', // TODO
+      laurels: [],
+      body: [''], // TODO
+      metrics: [],
+      stack: '', // TODO
+      links: [{ label: 'Source', href: '' }],
+    },
+    {
+      id: 'cinemachat',
+      kind: 'Build', // TODO
+      title: 'CinemaChat',
+      titleMuted: '', // TODO
+      when: '', // TODO
+      oneLiner: '', // TODO
+      laurels: [],
+      body: [''], // TODO
+      metrics: [],
+      stack: '', // TODO
+      links: [{ label: 'Source', href: '' }],
+    },
+    {
+      id: 'algoquest',
+      kind: 'Build', // TODO
+      title: 'AlgoQuest',
+      titleMuted: '', // TODO
+      when: '', // TODO
+      oneLiner: '', // TODO
+      laurels: [],
+      body: [''], // TODO
+      metrics: [],
+      stack: '', // TODO
+      links: [{ label: 'Source', href: '' }],
+    },
+    ----------------------------------------------------------------------- */
+
     /* ---- TEMPLATE: copy this block to add a build -------------------------
     {
       id: 'slug',
@@ -220,70 +258,67 @@ export const builds = {
 /* ---------------------------------------------------------- HOW I BUILD --- */
 export const principles = {
   heading: 'How I build',
-  intro: 'Four opinions I hold strongly enough that they show up in every repo above.',
+  intro: 'Habits I keep coming back to. Opinions loosely held — but tested in every repo above.',
   items: [
     {
       title: 'Ship the boring layer first.',
-      body: 'Retrieval quality, error handling, and the eval harness decide whether a demo becomes a product. The model is a config value. The plumbing is the work.',
+      body: 'Retrieval quality, error handling, and the eval harness decide whether a demo becomes a product. I try to start where the risk actually lives, not where the demo shines.',
     },
     {
       title: 'Distrust the first output.',
       body: 'Every system I build has something checking it — a compiler, a static analyzer, a reranker, a second agent. If nothing can say no, the output is a guess with good formatting.',
     },
     {
-      title: 'A number, or it did not happen.',
-      body: 'I benchmark before I claim. 40% at Comcast, 3,242 programs in the paper, ~2s end to end in PrismAI. "Feels faster" is not a result.',
+      title: 'Measure, then claim.',
+      body: 'I benchmark before I talk \u2014 40% at Comcast, 3,242 programs in the paper, ~2s end to end in PrismAI. "Feels faster" is a hunch, not a result.',
     },
     {
       title: 'End to end, then optimize.',
-      body: 'Terrametric went from satellite data to an SMS in a farmer\u2019s hand in 36 hours because I built the whole path before making any part of it good. You cannot tune what does not run.',
+      body: 'Terrametric went from satellite data to an SMS in a farmer\u2019s hand in 36 hours because the whole path existed before any part of it was good. You cannot tune what does not run.',
     },
   ],
 };
 
 /* ------------------------------------------------------------ THE SELL ---- */
 export const value = {
-  heading: 'What I bring\nto the table',
-  intro:
-    'Four claims. Each one has a receipt underneath it, because a claim without evidence is just a personality trait.',
+  heading: 'Who I am\nat work',
+  intro: "Less a list of what I've shipped — more how I operate when you drop me into a problem.",
   claims: [
     {
-      tag: 'Systems',
-      claim:
-        'I build the infrastructure around the model, which is where the actual difficulty is.',
+      tag: 'Reliability',
+      claim: 'I care most about the gap between "works in the demo" and "works."',
       receipts: [
-        'PrismAI: **hybrid retrieval, an 8-agent graph, and SSE streaming behind a real multi-user product** — not a notebook.',
-        'At Comcast, built agentic pipelines that removed **40% of manual coding effort** from a real team\u2019s workflow.',
+        'I build the **checks, evals, and guardrails** around a system before I let myself trust it — and I genuinely like that part.',
+        'Safe and reliable beats clever and fragile, every time I have had to choose.',
       ],
     },
     {
-      tag: 'Velocity',
-      claim: "I can take something from raw data to a person's phone without handing it off.",
+      tag: 'Forward-deployed',
+      claim: 'I want to sit where the system meets the user, not two teams away.',
       receipts: [
-        'Terrametric: **ML pipeline, FastAPI backend, Three.js frontend, SMS delivery, deployed — in 36 hours.** Won three tracks.',
-        'Across the stack — **Python, C, React, Postgres, Docker** — so I am not waiting on someone for the other half.',
+        'Happiest **embedded with the people using the thing**, turning their reality into working software.',
+        'I would rather demo early and be wrong in front of a user than polish in private.',
       ],
     },
     {
-      tag: 'Rigor',
-      claim: "I don't trust a model's first answer, and I build the tooling that doesn't either.",
+      tag: 'Owner',
+      claim: 'I treat every build like it’s mine to run, not mine to hand off.',
       receipts: [
-        'Wired GCC, CodeQL, and KLEE into a repair loop; **critical defects fell 58.55% → 22.19%** on a model that resisted repair.',
-        'This is what AI teams are short on right now: **evaluation and guardrails, not prompt-writing**.',
+        '**Entrepreneur by default** — I ship the whole path: data, backend, frontend, delivery.',
+        'If it breaks at 2am, I want to be the person who already knows why.',
       ],
     },
     {
-      tag: 'Clarity',
-      claim:
-        "I've spent two years explaining hard things to people who didn't get them the first time.",
+      tag: 'Modernizer',
+      claim: 'I see a manual workflow and can’t leave it alone.',
       receipts: [
-        'Learning Assistant and peer tutor at Penn State — **weekly sessions, measurable gains** in comprehension.',
-        'Took the research to judges and placed **2nd in Engineering**. Design docs and code review are the same muscle.',
+        'The pattern under everything I build: **find the slow, human-hostile loop and automate it safely**.',
+        'AI is the current tool for that. It won’t be the last one I learn.',
       ],
     },
   ],
   footer:
-    "What that adds up to: someone you can drop onto an AI feature that has to actually work — where the interesting problem isn't getting a model to respond, it's making the response fast, grounded, and safe to ship.",
+    'What that adds up to: a forward-deployed engineer in the making — someone who wants to own an AI system end to end, keep it safe and reliable, and sit close enough to the users to know whether it’s actually helping.',
 };
 
 export const toolkit = {
