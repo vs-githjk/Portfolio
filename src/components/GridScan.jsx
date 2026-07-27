@@ -31,6 +31,7 @@ uniform float uScanSoftness;
 uniform float uPhaseTaper;
 uniform float uScanDuration;
 uniform float uScanDelay;
+uniform float uFadeStrength;
 varying vec2 vUv;
 
 float smoother01(float a, float b, float x){
@@ -89,7 +90,7 @@ void main()
     float lineY = 1.0 - smoothstep(halfPx * wy, halfPx * wy + wy, ay);
     float lineMask = max(lineX, lineY);
 
-    float fade = exp(-dist * 2.0);
+    float fade = exp(-dist * uFadeStrength);
 
     float dur = max(0.05, uScanDuration);
     float del = max(0.0, uScanDelay);
@@ -134,6 +135,7 @@ export default function GridScan({
   scanPhaseTaper = 0.9,
   scanDuration = 2.0,
   scanDelay = 2.0,
+  fadeStrength = 2.0,
   className = '',
   style,
 }) {
@@ -171,6 +173,7 @@ export default function GridScan({
       uPhaseTaper: { value: scanPhaseTaper },
       uScanDuration: { value: scanDuration },
       uScanDelay: { value: scanDelay },
+      uFadeStrength: { value: fadeStrength },
     };
 
     const material = new THREE.ShaderMaterial({
@@ -229,7 +232,7 @@ export default function GridScan({
   }, [
     sensitivity, lineThickness, linesColor, scanColor, scanOpacity, gridScale,
     lineJitter, noiseIntensity, scanGlow, scanSoftness, scanPhaseTaper,
-    scanDuration, scanDelay,
+    scanDuration, scanDelay, fadeStrength,
   ]);
 
   return <div ref={containerRef} className={`gridscan${className ? ` ${className}` : ''}`} style={style} />;

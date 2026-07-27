@@ -18,7 +18,8 @@ export default function Principles() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     setGridGreen(
-      getComputedStyle(document.documentElement).getPropertyValue('--verified').trim() || '#39d07e'
+      getComputedStyle(document.documentElement).getPropertyValue('--accent-green').trim() ||
+        '#2bff5e'
     );
     const io = new IntersectionObserver(
       ([e]) => {
@@ -91,12 +92,13 @@ export default function Principles() {
         <div className="prin-fx" aria-hidden="true">
           <Grid
             sensitivity={0.4}
-            lineThickness={1}
+            lineThickness={1.6}
             linesColor={gridGreen}
             scanOpacity={0}
-            gridScale={0.12}
+            gridScale={0.14}
             lineJitter={0}
             noiseIntensity={0.01}
+            fadeStrength={1.0}
           />
         </div>
       )}

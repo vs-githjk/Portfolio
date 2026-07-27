@@ -881,7 +881,7 @@
    Opaque background + z-index: while pinned the section is a fixed layer, and
    without them the neighbouring sections show through it. */
 .principles { background: var(--ink); position: relative; }
-.prin-fx { position: absolute; inset: 0; opacity: 0.45; pointer-events: none; }
+.prin-fx { position: absolute; inset: 0; opacity: 0.9; pointer-events: none; }
 .principles .wrap { position: relative; }
 .principles.pin-h { overflow: hidden; position: relative; z-index: 2; }
 .principles.pin-h .prin-grid {

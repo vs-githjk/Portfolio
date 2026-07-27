@@ -39,6 +39,7 @@
   --accent-2: #ff2e4d; /* neon red */
   --accent-3: #2e7bff; /* neon blue */
   --accent-3-light: #7df3ff; /* cyan — the Contact surface */
+  --accent-green: #2bff5e; /* neon green — the How-I-build grid backdrop */
   --on-accent-dark: #0c0e13; /* text on neon surfaces */
 
   /* ---- TYPE ---------------------------------------------------------------
