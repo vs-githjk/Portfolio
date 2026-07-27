@@ -150,7 +150,7 @@ export const builds = {
       ],
       stack:
         'React · FastAPI · LangGraph · Groq Llama 3.3-70B · OpenAI · Supabase/pgvector · Recall.ai · Tavily',
-      media: { video: '', poster: '' }, // TODO: PrismAI demo video URL (renders once filled)
+      media: { image: '', alt: 'PrismAI product screenshot' }, // TODO: drop image, set src (renders once filled)
       links: [
         { label: 'Live demo', href: '' }, // TODO
         { label: 'Source', href: '' }, // TODO
@@ -180,7 +180,7 @@ export const builds = {
       ],
       stack:
         'React · Three.js · Leaflet · Recharts · FastAPI · XGBoost · Featherless AI / Qwen 2.5-7B · Twilio · WebSockets',
-      media: { video: '', poster: '' }, // TODO: Terrametric demo video URL (renders once filled)
+      media: { image: '', alt: 'Terrametric globe and field dashboard' }, // TODO: drop image, set src
       links: [
         { label: 'Live demo', href: '' }, // TODO
         { label: 'Source', href: '' }, // TODO
@@ -206,55 +206,12 @@ export const builds = {
         { value: '3,242', label: 'programs\nevaluated' },
       ],
       stack: 'Python · GCC · CodeQL · KLEE · sentence embeddings · DeepSeek-Coder · CodeLlama',
+      media: { image: '', alt: 'Repair-loop results figure' }, // TODO: drop image, set src
       links: [
         { label: 'Read the paper', href: 'https://arxiv.org/abs/2601.00509' },
         { label: 'Source', href: '' }, // TODO
       ],
     },
-
-    /* ---- READY TO FILL: TransitGuard / CinemaChat / AlgoQuest -------------
-       Uncomment each once you give me (or write) a one-liner, a body paragraph,
-       and a metric or two. They stay hidden until then — no guessed claims.
-    {
-      id: 'transitguard',
-      kind: 'Build', // TODO
-      title: 'TransitGuard',
-      titleMuted: '', // TODO: one-phrase descriptor
-      when: '', // TODO
-      oneLiner: '', // TODO
-      laurels: [],
-      body: [''], // TODO
-      metrics: [],
-      stack: '', // TODO
-      links: [{ label: 'Source', href: '' }],
-    },
-    {
-      id: 'cinemachat',
-      kind: 'Build', // TODO
-      title: 'CinemaChat',
-      titleMuted: '', // TODO
-      when: '', // TODO
-      oneLiner: '', // TODO
-      laurels: [],
-      body: [''], // TODO
-      metrics: [],
-      stack: '', // TODO
-      links: [{ label: 'Source', href: '' }],
-    },
-    {
-      id: 'algoquest',
-      kind: 'Build', // TODO
-      title: 'AlgoQuest',
-      titleMuted: '', // TODO
-      when: '', // TODO
-      oneLiner: '', // TODO
-      laurels: [],
-      body: [''], // TODO
-      metrics: [],
-      stack: '', // TODO
-      links: [{ label: 'Source', href: '' }],
-    },
-    ----------------------------------------------------------------------- */
 
     /* ---- TEMPLATE: copy this block to add a build -------------------------
     {
@@ -272,6 +229,51 @@ export const builds = {
     },
     ----------------------------------------------------------------------- */
   ],
+
+  /* Compact tier — smaller builds get a card, not a chapter. Rendered by the
+     mini grid in Builds.jsx. No metrics, no body paragraphs: title, one line,
+     stack if known, links (hidden while href is empty). */
+  compact: {
+    heading: 'More builds',
+    items: [
+      {
+        id: 'transitguard',
+        title: 'TransitGuard',
+        oneLiner:
+          'Scores every transfer bag by its odds of missing the connection — layover time, delays, routing disruptions — and tells airport ops what to do about it before the bag is gone. A dashboard for operations, alerts for the passenger.',
+        stack: '',
+        media: { image: '', alt: 'TransitGuard dashboard' }, // TODO: drop image, set src
+        links: [{ label: 'Source', href: '' }], // TODO
+      },
+      {
+        id: 'papertrail',
+        title: 'PaperTrail',
+        oneLiner:
+          'Give it a topic, a paper title, a DOI, or a link. It finds the seed paper, builds the ancestor tree, and lays out a reading path with videos and companion resources — so you learn a field from its foundations up, not from whatever ranked first.',
+        stack: '',
+        media: { image: '', alt: 'PaperTrail reading path' }, // TODO: drop image, set src
+        links: [{ label: 'Source', href: '' }], // TODO
+      },
+      {
+        id: 'cinemachat',
+        title: 'CinemaChat',
+        oneLiner:
+          'Movie and TV recommendations in plain language, with a social layer. Claude decides for itself which retrieval tools to call — filmographies, semantic search — and synthesizes a recommendation instead of keyword-matching one.',
+        stack: '',
+        media: { image: '', alt: 'CinemaChat conversation' }, // TODO: drop image, set src
+        links: [{ label: 'Source', href: '' }], // TODO
+      },
+      {
+        id: 'algoquest',
+        title: 'AlgoQuest',
+        oneLiner:
+          'Data structures and algorithms taught as a game instead of a problem set. Built in React.',
+        stack: 'React',
+        media: { image: '', alt: 'AlgoQuest interface' }, // TODO: drop image, set src
+        links: [{ label: 'Source', href: '' }], // TODO
+      },
+    ],
+  },
 };
 
 /* ---------------------------------------------------------- HOW I BUILD --- */

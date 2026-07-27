@@ -374,14 +374,58 @@
 }
 .plink:hover { color: var(--ink); background: var(--accent-1); border-color: var(--accent-1); }
 
-/* demo video — renders only when content.js provides a media.video URL */
-.proj-video {
+/* product shot — renders only when content.js provides a media.image URL */
+.proj-shot {
   display: block;
   width: 100%;
   margin-top: 22px;
   border: var(--rule);
   border-radius: var(--radius);
   background: var(--ink);
+}
+
+/* ---- compact build cards -------------------------------------------------
+   Third shape on the page: contained cards with mono titles, unlike the
+   open featured rows above and the big display-type Principles cells below. */
+.mini-head {
+  margin: clamp(40px, 6vw, 64px) 0 16px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.mini {
+  border: var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--ink-2);
+  padding: 20px;
+  transition: border-color 0.3s ease, transform 0.3s var(--ease-out);
+}
+.mini:hover {
+  border-color: color-mix(in srgb, var(--accent-3) 45%, var(--hair));
+  transform: translateY(-2px);
+}
+.mini-shot {
+  display: block;
+  width: 100%;
+  margin-bottom: 14px;
+  border: var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+}
+.mini-title { font-family: var(--font-mono); font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.mini-line { margin-top: 8px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
+.mini-stack { margin-top: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+.mini-stack b { color: var(--text-2); font-weight: 500; }
+.mini .proj-links { margin-top: 14px; }
+@media (max-width: 760px) {
+  .mini-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 860px) { .proj-grid { grid-template-columns: 1fr; } }
 

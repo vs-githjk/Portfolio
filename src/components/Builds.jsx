@@ -44,16 +44,8 @@ export default function Builds() {
                   </p>
                 ))}
 
-                {p.media?.video && (
-                  <video
-                    className="proj-video"
-                    src={p.media.video}
-                    poster={p.media.poster || undefined}
-                    controls
-                    muted
-                    playsInline
-                    preload="metadata"
-                  />
+                {p.media?.image && (
+                  <img className="proj-shot" src={p.media.image} alt={p.media.alt || ''} loading="lazy" />
                 )}
 
                 <div className="metrics">
@@ -88,6 +80,43 @@ export default function Builds() {
             </div>
           </article>
         ))}
+
+        {builds.compact && (
+          <div className="reveal">
+            <div className="mini-head">{builds.compact.heading}</div>
+            <div className="mini-grid">
+              {builds.compact.items.map((m) => (
+                <article className="mini" key={m.id}>
+                  {m.media?.image && (
+                    <img className="mini-shot" src={m.media.image} alt={m.media.alt || ''} loading="lazy" />
+                  )}
+                  <h3 className="mini-title">{m.title}</h3>
+                  <p className="mini-line">{m.oneLiner}</p>
+                  {m.stack && (
+                    <div className="mini-stack">
+                      <b>Stack</b> — {m.stack}
+                    </div>
+                  )}
+                  <div className="proj-links">
+                    {m.links
+                      .filter((l) => l.href)
+                      .map((l) => (
+                        <a
+                          className="plink"
+                          href={l.href}
+                          key={l.label}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {l.label} ↗
+                        </a>
+                      ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
