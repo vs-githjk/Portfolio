@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { principles } from '../data/content';
@@ -11,6 +11,27 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Principles() {
   const secRef = useRef(null);
   const trackRef = useRef(null);
+
+  /* Neon-green grid backdrop — static (no scan), lazy-loaded like Contact's. */
+  const [Grid, setGrid] = useState(null);
+  const [gridGreen, setGridGreen] = useState('#39d07e');
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    setGridGreen(
+      getComputedStyle(document.documentElement).getPropertyValue('--verified').trim() || '#39d07e'
+    );
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          import('./GridScan').then((m) => setGrid(() => m.default));
+          io.disconnect();
+        }
+      },
+      { rootMargin: '1200px' }
+    );
+    io.observe(secRef.current);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
     /* StrictMode double-mounts and Vite HMR can leave orphaned pins behind —
@@ -66,6 +87,19 @@ export default function Principles() {
 
   return (
     <section className="principles" id="principles" ref={secRef}>
+      {Grid && (
+        <div className="prin-fx" aria-hidden="true">
+          <Grid
+            sensitivity={0.4}
+            lineThickness={1}
+            linesColor={gridGreen}
+            scanOpacity={0}
+            gridScale={0.12}
+            lineJitter={0}
+            noiseIntensity={0.01}
+          />
+        </div>
+      )}
       <div className="wrap sec">
         <div className="sec-head reveal">
           <h2>{principles.heading}</h2>

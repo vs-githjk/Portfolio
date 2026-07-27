@@ -479,7 +479,7 @@
 .kit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .kit-cell {
   padding: clamp(18px, 2.4vw, 26px);
-  border: 1px solid color-mix(in srgb, var(--accent-3-light) 60%, var(--hair));
+  border: 1px solid color-mix(in srgb, var(--accent-1) 55%, var(--hair));
   border-radius: var(--radius-sm);
   background: var(--ink-2);
 }
@@ -880,7 +880,9 @@
    The grid becomes a flex track wider than the viewport; GSAP scrubs its x.
    Opaque background + z-index: while pinned the section is a fixed layer, and
    without them the neighbouring sections show through it. */
-.principles { background: var(--ink); }
+.principles { background: var(--ink); position: relative; }
+.prin-fx { position: absolute; inset: 0; opacity: 0.45; pointer-events: none; }
+.principles .wrap { position: relative; }
 .principles.pin-h { overflow: hidden; position: relative; z-index: 2; }
 .principles.pin-h .prin-grid {
   display: flex;

@@ -61,19 +61,17 @@ export default function Contact() {
       <section className="contact" id="contact" ref={secRef}>
         {motionOk && tokenColors && Grid && (
           <div className="contact-fx" aria-hidden="true">
+            {/* Static: scan pulses off (scanOpacity 0), no line jitter — the
+                grid only tilts gently with the mouse. */}
             <Grid
-              sensitivity={0.55}
+              sensitivity={0.4}
               lineThickness={1}
               linesColor={tokenColors.lines}
               scanColor={tokenColors.scan}
-              scanOpacity={0.5}
+              scanOpacity={0}
               gridScale={0.1}
-              lineJitter={0.08}
-              noiseIntensity={0.015}
-              scanGlow={0.6}
-              scanSoftness={2}
-              scanDuration={2.4}
-              scanDelay={2.6}
+              lineJitter={0}
+              noiseIntensity={0.01}
             />
           </div>
         )}
