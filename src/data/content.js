@@ -33,7 +33,7 @@ export const hero = {
     "I modernize how teams work by building AI they can actually trust — retrieval that retrieves, agent graphs that don't deadlock, and pipelines that fail loudly instead of lying.",
   blurbEmphasis: "Right now that's PrismAI —",
   blurbTail:
-    'a meeting intelligence platform where the bot participates live in the call, and ten agents turn the transcript into structured, actionable output in about two seconds.',
+    'a meeting intelligence platform where the bot participates live in the call, and twelve agents turn the transcript into structured, actionable output in about two seconds.',
   // Sporty silhouette next to the name. Drop your cut-out at
   // public/hero-silhouette.png (transparent PNG or SVG), then set src below.
   figure: { src: '', alt: 'Vidyut mid-play, silhouetted' }, // TODO
@@ -53,12 +53,18 @@ export const pipeline = {
     name: 'orchestrator',
     desc: 'deterministic routing, no LLM — gates sentiment to 2+ speakers',
   },
-  tier1: ['summarizer', 'decisions', 'action items', 'sentiment', 'speaker coach'],
+  tier1: ['summarizer', 'decisions', 'action items', 'sentiment', 'speaker coach', 'classifier'],
   barrier: {
     name: 'tier-1 barrier',
     desc: 'merge → decision linker (tier 1.5) → context for tier 2',
   },
-  tier2: ['email drafter', 'health score', 'calendar suggester', 'action executor'],
+  tier2: [
+    'follow-up email',
+    'health score',
+    'calendar suggester',
+    'action executor',
+    'content analyst',
+  ],
   output: { name: 'sse stream', desc: 'incremental, to client' },
   timerLabel: 'elapsed',
   target: 2.0, // seconds the animation counts toward
@@ -136,11 +142,11 @@ export const builds = {
         'Turns a meeting into structured, searchable, citable output before you leave the call.',
       laurels: [],
       body: [
-        'A bot joins your Zoom, Meet, or Teams call — and actually participates, answering questions and running tools in real time via a **two-channel voice pipeline (Deepgram Flux + Cartesia)**. After the call, **ten specialized agents on a two-tier LangGraph pipeline** turn the transcript into summaries, action items, decisions (linked to the work that resolves them), sentiment, speaker coaching, and follow-up drafts — streamed over SSE in roughly two seconds, so the output lands while the meeting is still in your head.',
+        'A bot joins your Zoom, Meet, or Teams call — and actually participates, answering questions and running tools in real time via a **two-channel voice pipeline (Deepgram Flux + Cartesia)**. After the call, **twelve specialized agents on a two-tier LangGraph pipeline** turn the transcript into summaries, action items, decisions (linked to the work that resolves them), sentiment, speaker coaching, and follow-up drafts — streamed over SSE in roughly two seconds, so the output lands while the meeting is still in your head.',
         'The hardest engineering is the **live two-channel loop — hearing, deciding, and speaking without stepping on the humans**. Underneath it, every workspace shares a RAG layer with PDF, Notion, and Drive ingestion plus automatic transcript indexing; search fuses **pgvector, BM25, and reciprocal rank fusion before an LLM rerank**, and every answer links back to the exact moment in synced playback — if the system claims something was decided, you can watch it get decided.',
       ],
       metrics: [
-        { value: '10', label: 'specialized\nagents' },
+        { value: '12', label: 'specialized\nagents' },
         { value: '~2s', label: 'to first\ninsight (SSE)' },
         { value: '3', label: 'retrieval signals\nfused per query' },
       ],
