@@ -1,5 +1,9 @@
-import { hero } from '../data/content';
+import { hero, contact } from '../data/content';
 import Pipeline from './Pipeline';
+
+/* Recruiters shouldn't have to scroll to reach you: the essential links sit
+   beside the availability pill, above the fold. Data comes from contact. */
+const QUICK_KINDS = ['LinkedIn', 'Résumé', 'GitHub'];
 
 export default function Hero() {
   return (
@@ -29,6 +33,21 @@ export default function Hero() {
               {hero.availability}
             </span>
             <span className="hero-loc">{hero.locationNote}</span>
+            <div className="hero-links">
+              <a href={`mailto:${contact.email}`}>email</a>
+              {contact.links
+                .filter((l) => l.href && QUICK_KINDS.includes(l.kind))
+                .map((l) => (
+                  <a
+                    href={l.href}
+                    key={l.kind}
+                    target={l.href.startsWith('http') ? '_blank' : undefined}
+                    rel="noopener noreferrer"
+                  >
+                    {l.kind}
+                  </a>
+                ))}
+            </div>
           </div>
         </div>
 
