@@ -102,24 +102,15 @@ export const experience = {
       when: 'May — Aug 2025',
       where: 'Chennai, TN',
     },
-    /* The teaching rows stay condensed but they stay — they're the page's only
-       evidence for the customer-facing half of forward-deployed work. */
+    /* One condensed teaching row — the page's evidence for the customer-facing
+       half of forward-deployed work. Don't cut it. */
     {
       org: 'Penn State',
-      role: 'Learning Assistant',
-      team: 'Calculus',
-      note: 'Weekly review sessions with faculty — explaining hard things to people who don’t share my context.',
+      role: 'Learning Assistant · Math Peer Tutor',
+      team: 'Calculus & 0–100 level courses',
+      note: 'Weekly review sessions and one-on-one tutoring — explaining hard things to people who don’t share my context, and finding where a mental model broke. Same job as debugging.',
       wins: [],
       when: 'Aug 2025 — Present',
-      where: 'University Park, PA',
-    },
-    {
-      org: 'Penn State',
-      role: 'Math Peer Tutor',
-      team: '0–100 level courses',
-      note: 'Diagnosing where someone’s mental model broke — which turns out to be the same job as debugging.',
-      wins: [],
-      when: 'Jan 2026 — Present',
       where: 'University Park, PA',
     },
   ],
