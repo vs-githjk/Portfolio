@@ -44,7 +44,14 @@ export default function Principles() {
       };
     });
 
-    return () => mm.revert();
+    /* Image loads shift layout after mount; re-measure the pin distances. */
+    const onLoad = () => ScrollTrigger.refresh();
+    window.addEventListener('load', onLoad);
+
+    return () => {
+      window.removeEventListener('load', onLoad);
+      mm.revert();
+    };
   }, []);
 
   return (

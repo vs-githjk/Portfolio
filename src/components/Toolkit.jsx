@@ -3,7 +3,7 @@ import RainbowText from './RainbowText';
 
 export default function Toolkit() {
   return (
-    <section className="sec" style={{ paddingTop: 0 }}>
+    <section className="sec">
       <div className="wrap">
         <div className="sec-head reveal">
           <h2>{toolkit.heading}</h2>

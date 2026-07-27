@@ -4,7 +4,7 @@ import Check from './Check';
 
 export default function Builds() {
   return (
-    <section className="sec" id="builds" style={{ paddingTop: 0 }}>
+    <section className="sec" id="builds">
       <div className="wrap">
         <div className="sec-head reveal">
           <h2>{builds.heading}</h2>
