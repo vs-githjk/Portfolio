@@ -7,9 +7,21 @@ Vidyut asked for, in priority order. Commit each separately; run
 (360px width, `prefers-reduced-motion`, visible focus) before calling any item
 done.
 
-Already shipped, do not redo: neon accent tokens (`--accent-1/2/3`), scroll
-progress bar in the nav, Prism-logo cursor, org logos, product images,
-butterfly favicon.
+## Status — most of this spec is now IMPLEMENTED (2026-07-27 evening)
+
+Shipped, do not redo: neon accent tokens; scroll progress bar; Prism cursor;
+org logos; product images; favicon; **Proof on neon yellow** (item 1, partial);
+**Contact light-blue wipe reveal** (Vidyut changed Contact from red to light
+blue — `--accent-3-light`); **GSAP pinned horizontal scroll on Principles**
+(item 2); **rainbow letter ripple on Toolkit hover** (item 3).
+
+Still open for a next session:
+- Neon red (`--accent-2`) has no section surface yet — candidate: the Value
+  section, or keep red as accent-only. Ask Vidyut.
+- Optional ambient (non-hover) rainbow pass on Toolkit.
+- Hero silhouette image (slot is live, waiting on the asset).
+- Background art assets Vidyut said he'd supply; reactbits/aceternity-style
+  extras once they land.
 
 ---
 
