@@ -16,7 +16,7 @@
   transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 .nav.stuck {
-  background: rgb(12 14 19 / 82%);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
   backdrop-filter: blur(14px);
   border-bottom-color: var(--hair);
 }
@@ -118,9 +118,9 @@
   animation: pulse 2.4s ease-out infinite;
 }
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgb(57 208 126 / 50%); }
-  70% { box-shadow: 0 0 0 8px rgb(57 208 126 / 0%); }
-  100% { box-shadow: 0 0 0 0 rgb(57 208 126 / 0%); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--verified) 50%, transparent); }
+  70% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--verified) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--verified) 0%, transparent); }
 }
 .hero-loc {
   font-family: var(--font-mono);
