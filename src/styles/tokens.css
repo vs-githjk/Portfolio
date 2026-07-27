@@ -1,0 +1,126 @@
+/* ============================================================================
+   DESIGN TOKENS — the control panel
+   ----------------------------------------------------------------------------
+   Almost every visual decision on the site routes through a variable here.
+   Change a value, save, watch the whole page shift. This is the file to
+   experiment in first.
+
+   The organizing idea of the current design: THE PAGE IS GRAYSCALE.
+   Color only appears where a system reports a state (defect / running /
+   verified). Color carries information; it isn't decoration. If you break
+   that rule, break it on purpose.
+   ========================================================================== */
+
+:root {
+  /* ---- NEUTRALS -----------------------------------------------------------
+     --ink is the page. --surface is anything raised off it. --hair is every
+     1px line (there are a lot; hairlines are doing the structural work here). */
+  --ink: #0c0e13;
+  --ink-2: #11141c;
+  --surface: #161a23;
+  --hair: #242936;
+  --hair-2: #333a4b;
+
+  --text: #edeef2;
+  --text-2: #a8aebe;
+  --text-3: #6e7689;
+
+  /* ---- DIAGNOSTIC COLORS --------------------------------------------------
+     Reserved for state. Used in the repair loop, the verified checkmarks, and
+     the availability dot. Resist using these as brand accents. */
+  --defect: #ff5d55;
+  --running: #ffb020;
+  --verified: #39d07e;
+
+  /* ---- TYPE ---------------------------------------------------------------
+     Three roles, three faces:
+       display — headlines, big numbers. Carries the personality.
+       body    — paragraphs. Should disappear.
+       mono    — labels, data, the terminal. Signals "this is machine output."
+     Swapping --font-display alone changes the site's whole character.
+     Try: "Instrument Serif", "Archivo", "Anton", "Syne", "Fraunces". */
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale — clamp() means these are already responsive.
+     Format: clamp(min, preferred, max) */
+  --fs-hero: clamp(42px, 8.4vw, 116px);
+  --fs-assert: clamp(19px, 3.6vw, 50px);
+  --fs-h2: clamp(30px, 4.4vw, 58px);
+  --fs-h3: clamp(20px, 2vw, 26px);
+  --fs-body: clamp(15px, 1.05vw, 17px);
+  --fs-label: 11px;
+
+  /* Tracking. Big display type needs negative tracking; small caps labels
+     need a lot of positive tracking. */
+  --tr-display: -0.045em;
+  --tr-label: 0.14em;
+
+  /* ---- LAYOUT -------------------------------------------------------------
+     --pad is the gutter. --maxw is the content column. Widening --maxw makes
+     the site feel more editorial; narrowing it feels more like a document. */
+  --pad: clamp(20px, 5vw, 80px);
+  --maxw: 1240px;
+
+  /* Vertical rhythm between major sections. */
+  --sec-y: clamp(64px, 9vw, 130px);
+
+  --radius: 10px;
+  --radius-sm: 5px;
+  --rule: 1px solid var(--hair);
+
+  /* ---- MOTION -------------------------------------------------------------
+     One easing curve for everything keeps motion feeling coherent. */
+  --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 0.75s;
+}
+
+/* ============================================================================
+   ALTERNATE PALETTES — uncomment one block to try it
+   ----------------------------------------------------------------------------
+   Each keeps the "color = state" rule but shifts the neutral base.
+   ========================================================================== */
+
+/* --- WARM GRAPHITE: less blue, more paper-under-lamplight ---
+:root {
+  --ink:      #100F0E;
+  --ink-2:    #161513;
+  --surface:  #1D1B19;
+  --hair:     #2C2926;
+  --hair-2:   #3D3934;
+  --text:     #F2EFEA;
+  --text-2:   #B0A99F;
+  --text-3:   #7A736A;
+}
+*/
+
+/* --- LIGHT / LAB NOTEBOOK: inverts the whole thing ---
+:root {
+  --ink:      #F6F6F4;
+  --ink-2:    #FFFFFF;
+  --surface:  #EDEDEA;
+  --hair:     #DDDDD8;
+  --hair-2:   #C2C2BB;
+  --text:     #14161A;
+  --text-2:   #4B5058;
+  --text-3:   #858B95;
+  --defect:   #D93A30;
+  --running:  #B87400;
+  --verified: #1A8F52;
+}
+*/
+
+/* --- HIGH CONTRAST / TRUE BLACK: harsher, more terminal ---
+:root {
+  --ink:      #000000;
+  --ink-2:    #0A0A0A;
+  --surface:  #121212;
+  --hair:     #262626;
+  --hair-2:   #3A3A3A;
+  --text:     #FFFFFF;
+  --text-2:   #A0A0A0;
+  --text-3:   #6A6A6A;
+}
+*/
