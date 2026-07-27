@@ -544,27 +544,35 @@
 }
 
 /* ------------------------------------------------------------ CONTACT ----- */
-/* Neon surface #2: light blue, revealed by a bottom-up wipe as the section
-   scrolls in (the ::before is the surface; .reveal.in triggers the wipe). */
-.contact { position: relative; overflow: hidden; padding-block: clamp(70px, 10vw, 140px); }
+/* Neon surface #2: cyan, revealed by a circle that grows from behind the email
+   until it covers the whole viewport. Contact.jsx toggles .lit every time the
+   section enters or leaves view, so the reveal replays on every visit. */
+.contact {
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding-block: clamp(70px, 10vw, 140px);
+}
 .contact::before {
   content: '';
   position: absolute;
   inset: 0;
   background: var(--accent-3-light);
-  clip-path: inset(100% 0 0 0);
-  transition: clip-path 1s var(--ease);
+  clip-path: circle(0% at 50% 62%);
+  transition: clip-path 1.1s var(--ease);
 }
-.contact .wrap { position: relative; }
-.contact:has(.reveal.in)::before { clip-path: inset(0 0 0 0); }
-.contact:has(.reveal.in) { color: var(--on-accent-dark); }
-.contact:has(.reveal.in) .contact-blurb,
-.contact:has(.reveal.in) .l-v { color: color-mix(in srgb, var(--on-accent-dark) 80%, transparent); }
-.contact:has(.reveal.in) .eyebrow,
-.contact:has(.reveal.in) .l-k { color: color-mix(in srgb, var(--on-accent-dark) 62%, transparent); }
-.contact:has(.reveal.in) .links a:hover .l-v { color: var(--on-accent-dark); }
-.contact:has(.reveal.in) .links,
-.contact:has(.reveal.in) .links a { border-color: color-mix(in srgb, var(--on-accent-dark) 35%, transparent); }
+.contact .wrap { position: relative; width: 100%; }
+.contact.lit::before { clip-path: circle(142% at 50% 62%); }
+.contact.lit { color: var(--on-accent-dark); }
+.contact.lit .contact-blurb,
+.contact.lit .l-v { color: color-mix(in srgb, var(--on-accent-dark) 80%, transparent); }
+.contact.lit .eyebrow,
+.contact.lit .l-k { color: color-mix(in srgb, var(--on-accent-dark) 62%, transparent); }
+.contact.lit .links a:hover .l-v { color: var(--on-accent-dark); }
+.contact.lit .links,
+.contact.lit .links a { border-color: color-mix(in srgb, var(--on-accent-dark) 35%, transparent); }
 @media (prefers-reduced-motion: reduce) {
   .contact::before { transition: none; }
 }

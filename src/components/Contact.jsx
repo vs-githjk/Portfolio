@@ -1,9 +1,27 @@
+import { useEffect, useRef } from 'react';
 import { contact } from '../data/content';
 
 export default function Contact() {
+  const secRef = useRef(null);
+
+  /* Re-arm the cyan reveal on every visit: .lit toggles with visibility. */
+  useEffect(() => {
+    const el = secRef.current;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) {
+      el.classList.add('lit');
+      return;
+    }
+    const io = new IntersectionObserver(([e]) => el.classList.toggle('lit', e.isIntersecting), {
+      threshold: 0.25,
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <>
-      <section className="contact" id="contact">
+      <section className="contact" id="contact" ref={secRef}>
         <div className="wrap reveal">
           <div className="eyebrow">{contact.eyebrow}</div>
           <h2>{contact.heading}</h2>
