@@ -15,22 +15,29 @@ there's a real reason not to.
 
 ## The thesis — don't undermine it by accident
 
-**"The model is the easy part."**
+**"Vidyut Sriram builds safe, reliable AI systems."**
 
-He is read as a builder first. The flagship is PrismAI. Research (arXiv:2601.00509)
-is evidence of an instinct, not the headline — if you find yourself moving the
-paper toward the top of the page, that's a regression, ask first.
+The name is the headline — literally, it's the hero h1. The positioning is
+forward-deployed engineer and entrepreneur in the making: someone who owns a
+system end to end, modernizes workflows with AI, and sits close to the user.
+The page sells who he is, not just a list of what he shipped. The flagship
+build is still PrismAI; research (arXiv:2601.00509) is evidence of an
+instinct, not the headline.
 
 Two rules encode the thesis visually:
 
-1. **The page is grayscale.** Color appears *only* where a system reports state:
-   `--running` (amber, working) and `--verified` (green, done); `--defect` (red)
-   is available for failure states. Color is information, not decoration.
-   If you're about to add a brand hue, gradient, or colored accent — stop. That
-   breaks the one idea holding the design together. Ask first.
+1. **Color is scarce, so it means something.** The base is dark grayscale.
+   State colors (`--running` neon yellow, `--verified` green, `--defect` neon
+   red) report what a system is doing. The neon accent trio (`--accent-1`
+   yellow, `--accent-2` red, `--accent-3` blue) marks interactive and emphasis
+   moments — hovers, the assert border, the caret. If you're about to flood a
+   section with color or add a gradient wash, stop and ask first: scarcity is
+   what keeps the neon loud.
 
-2. **Claims come with receipts.** The Value section pairs every assertion with
-   concrete evidence. Never add a claim without a number or verifiable fact.
+2. **Never fabricate.** Numbers and claims about work must come from the user.
+   The Value section is deliberately identity-first (how he operates), and the
+   Builds/Experience sections carry the hard evidence. New roles or projects
+   with unknown details get TODO stubs, not invented copy.
 
 The signature element is the animated PrismAI pipeline in the hero
 (`components/Pipeline.jsx`). It's what the page is remembered by. Boldness is
@@ -115,8 +122,15 @@ npm run lint     # oxlint
 
 Search the repo for `TODO`:
 
+- Sherlock AI role details (`content.js` → `experience.roles[0]`): exact title,
+  team, dates, and what he built there
+- TransitGuard / CinemaChat / AlgoQuest build entries — commented stubs in
+  `builds.items`; need one-liner, body, metrics from the user before they render
+- Demo videos for PrismAI and Terrametric (`builds.items[].media.video`)
+- Custom background art — the user said he'll supply assets; motion references
+  are reactbits, aceternity ui, magic ui
 - GitHub URL and handle (`content.js` → `contact.links`)
-- Repo and live-demo URLs for all three builds
+- Repo and live-demo URLs for the builds
 - The two unnamed PrismAI agents (`content.js` → `pipeline.agents`)
 - `public/resume.pdf`
 - Optional OG image at `public/og.png`, then uncomment the meta tag in `index.html`
