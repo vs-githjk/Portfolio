@@ -2,23 +2,24 @@ import { useEffect, useRef, useState } from 'react';
 import { pipeline } from '../data/content';
 
 /* ============================================================================
-   THE SIGNATURE ELEMENT — PrismAI's pipeline, running.
+   THE SIGNATURE ELEMENT — PrismAI's analysis pipeline, running.
    ----------------------------------------------------------------------------
-   Ingest fires, tier-1 agents run in parallel and land at slightly different
-   times, tier-2 synthesis merges them, and the result streams out. An elapsed
-   timer counts toward `pipeline.target` seconds.
+   Mirrors the real two-tier LangGraph: ingest → orchestrator (deterministic,
+   no LLM) → five Tier-1 agents in parallel → tier-1 barrier (merge + decision
+   linker) → four Tier-2 agents enriched with that context → SSE stream out.
 
    Same color rule as the rest of the site: amber = working, green = done.
    Timing knobs are right below and are the main thing worth playing with.
    ========================================================================== */
 
 const TIMING = {
-  ingest: 420, // ms for the ingest stage
-  agentStagger: 90, // ms between agents starting
-  agentMin: 520, // fastest an agent finishes
-  agentJitter: 520, // random extra time per agent (feels like real parallelism)
-  synthesis: 640, // ms for tier-2 merge
-  output: 380, // ms for the stream to open
+  ingest: 380, // ms for ingest
+  orchestrator: 240, // ms for the routing pass
+  agentStagger: 80, // ms between agents starting
+  agentMin: 460, // fastest an agent finishes
+  agentJitter: 480, // random extra time per agent (feels like real parallelism)
+  barrier: 360, // ms for the tier-1 merge + decision linker
+  output: 360, // ms for the stream to open
   hold: 2400, // ms to sit on the finished state before restarting
   tick: 40, // ms between elapsed-timer updates
 };
@@ -29,8 +30,10 @@ const DONE = 'done';
 
 export default function Pipeline() {
   const [ingest, setIngest] = useState(IDLE);
-  const [agents, setAgents] = useState(() => pipeline.agents.map(() => IDLE));
-  const [synthesis, setSynthesis] = useState(IDLE);
+  const [orch, setOrch] = useState(IDLE);
+  const [tier1, setTier1] = useState(() => pipeline.tier1.map(() => IDLE));
+  const [barrier, setBarrier] = useState(IDLE);
+  const [tier2, setTier2] = useState(() => pipeline.tier2.map(() => IDLE));
   const [output, setOutput] = useState(IDLE);
   const [elapsed, setElapsed] = useState(0);
 
@@ -39,8 +42,8 @@ export default function Pipeline() {
   const intervals = useRef([]);
   const running = useRef(false);
 
-  const doneCount = agents.filter((s) => s === DONE).length;
-  const total = pipeline.agents.length;
+  const done1 = tier1.filter((s) => s === DONE).length;
+  const done2 = tier2.filter((s) => s === DONE).length;
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -48,8 +51,10 @@ export default function Pipeline() {
     // Reduced motion: show the completed pipeline, don't animate.
     if (reduce) {
       setIngest(DONE);
-      setAgents(pipeline.agents.map(() => DONE));
-      setSynthesis(DONE);
+      setOrch(DONE);
+      setTier1(pipeline.tier1.map(() => DONE));
+      setBarrier(DONE);
+      setTier2(pipeline.tier2.map(() => DONE));
       setOutput(DONE);
       setElapsed(pipeline.target);
       return;
@@ -63,46 +68,64 @@ export default function Pipeline() {
       intervals.current = [];
     };
 
-    const setAgent = (i, state) =>
-      setAgents((prev) => {
+    const setAt = (setter) => (i, state) =>
+      setter((prev) => {
         const next = [...prev];
         next[i] = state;
         return next;
       });
+    const setT1 = setAt(setTier1);
+    const setT2 = setAt(setTier2);
 
     const cycle = () => {
-      // reset
       setIngest(IDLE);
-      setAgents(pipeline.agents.map(() => IDLE));
-      setSynthesis(IDLE);
+      setOrch(IDLE);
+      setTier1(pipeline.tier1.map(() => IDLE));
+      setBarrier(IDLE);
+      setTier2(pipeline.tier2.map(() => IDLE));
       setOutput(IDLE);
       setElapsed(0);
 
       let t = 0;
 
-      // ---- stage 1: ingest
+      // ---- ingest
       setIngest(RUN);
       t += TIMING.ingest;
       after(t, () => setIngest(DONE));
 
-      // ---- stage 2: tier-1 agents, genuinely parallel with jitter
-      let lastAgentEnd = t;
-      pipeline.agents.forEach((_, i) => {
+      // ---- orchestrator: deterministic routing
+      after(t, () => setOrch(RUN));
+      t += TIMING.orchestrator;
+      after(t, () => setOrch(DONE));
+
+      // ---- tier 1, genuinely parallel with jitter
+      let lastT1 = t;
+      pipeline.tier1.forEach((_, i) => {
         const start = t + i * TIMING.agentStagger;
         const end = start + TIMING.agentMin + Math.random() * TIMING.agentJitter;
-        lastAgentEnd = Math.max(lastAgentEnd, end);
-        after(start, () => setAgent(i, RUN));
-        after(end, () => setAgent(i, DONE));
+        lastT1 = Math.max(lastT1, end);
+        after(start, () => setT1(i, RUN));
+        after(end, () => setT1(i, DONE));
       });
 
-      // ---- stage 3: tier-2 synthesis
-      after(lastAgentEnd, () => setSynthesis(RUN));
-      const synthEnd = lastAgentEnd + TIMING.synthesis;
-      after(synthEnd, () => setSynthesis(DONE));
+      // ---- tier-1 barrier: merge + decision linker
+      after(lastT1, () => setBarrier(RUN));
+      const barrierEnd = lastT1 + TIMING.barrier;
+      after(barrierEnd, () => setBarrier(DONE));
 
-      // ---- stage 4: stream out
-      after(synthEnd, () => setOutput(RUN));
-      const finish = synthEnd + TIMING.output;
+      // ---- tier 2, parallel, enriched with tier-1 context
+      let lastT2 = barrierEnd;
+      pipeline.tier2.forEach((_, i) => {
+        const start = barrierEnd + i * TIMING.agentStagger;
+        const end = start + TIMING.agentMin + Math.random() * TIMING.agentJitter;
+        lastT2 = Math.max(lastT2, end);
+        after(start, () => setT2(i, RUN));
+        after(end, () => setT2(i, DONE));
+      });
+
+      // ---- stream out
+      after(lastT2, () => setOutput(RUN));
+      const finish = lastT2 + TIMING.output;
       after(finish, () => setOutput(DONE));
 
       // ---- elapsed timer, scaled so it lands on `target` exactly at finish
@@ -150,7 +173,7 @@ export default function Pipeline() {
   }, []);
 
   return (
-    <div className="pipe reveal" ref={rootRef} aria-label="Animated illustration of the PrismAI pipeline">
+    <div className="pipe reveal" ref={rootRef} aria-label="Animated illustration of the PrismAI analysis pipeline">
       <div className="pipe-bar">
         <div className="pipe-bar-l">
           <span className="lights">
@@ -165,45 +188,63 @@ export default function Pipeline() {
 
       <div className="pipe-body">
         <div className="pipe-flow">
-          {/* ---- ingest ---- */}
+          {/* ---- ingest + orchestrator ---- */}
           <div className="pipe-col">
-            <div className="pipe-col-h">ingest</div>
+            <div className="pipe-col-h">in — routed</div>
             <div className="node" data-state={ingest}>
               <i />
               <b>{pipeline.ingest.name}</b>
               <span>{pipeline.ingest.desc}</span>
             </div>
+            <div className="node" data-state={orch}>
+              <i />
+              <b>{pipeline.orchestrator.name}</b>
+              <span>{pipeline.orchestrator.desc}</span>
+            </div>
           </div>
 
           <div className="pipe-arrow" aria-hidden="true" />
 
-          {/* ---- tier 1: parallel agents ---- */}
+          {/* ---- tier 1 + barrier ---- */}
           <div className="pipe-col pipe-col-wide">
             <div className="pipe-col-h">
               tier 1 — parallel
               <em>
-                {doneCount}/{total}
+                {done1}/{pipeline.tier1.length}
               </em>
             </div>
             <div className="agents">
-              {pipeline.agents.map((name, i) => (
-                <div className="chip" key={name} data-state={agents[i]}>
+              {pipeline.tier1.map((name, i) => (
+                <div className="chip" key={name} data-state={tier1[i]}>
                   <i />
                   {name}
                 </div>
               ))}
             </div>
+            <div className="node" data-state={barrier}>
+              <i />
+              <b>{pipeline.barrier.name}</b>
+              <span>{pipeline.barrier.desc}</span>
+            </div>
           </div>
 
           <div className="pipe-arrow" aria-hidden="true" />
 
-          {/* ---- tier 2 + output ---- */}
+          {/* ---- tier 2 + out ---- */}
           <div className="pipe-col">
-            <div className="pipe-col-h">tier 2 — out</div>
-            <div className="node" data-state={synthesis}>
-              <i />
-              <b>{pipeline.synthesis.name}</b>
-              <span>{pipeline.synthesis.desc}</span>
+            <div className="pipe-col-h">
+              tier 2 — enriched
+              <em>
+                {done2}/{pipeline.tier2.length}
+              </em>
+            </div>
+            <div className="agents agents-t2">
+              {pipeline.tier2.map((name, i) => (
+                <div className="chip" key={name} data-state={tier2[i]}>
+                  <i />
+                  {name}
+                </div>
+              ))}
             </div>
             <div className="node" data-state={output}>
               <i />

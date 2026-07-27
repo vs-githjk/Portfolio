@@ -46,27 +46,26 @@ export const hero = {
    Rendered by src/components/Pipeline.jsx
    ------------------------------------------------------------------------ */
 export const pipeline = {
-  label: 'prismai · live pipeline',
+  label: 'prismai · analysis pipeline',
   project: 'two-tier LangGraph',
-  ingest: { name: 'recall.ai', desc: 'bot joins the call, streams transcript' },
-  // TODO: your resume says 8 agents; only 6 are named there. Add the other two
-  // and the on-screen counter updates itself.
-  agents: [
-    'summary',
-    'action items',
-    'decisions',
-    'sentiment',
-    'speaker coaching',
-    'follow-up email',
-  ],
-  synthesis: { name: 'synthesis', desc: 'tier 2 merge · hybrid retrieval · rerank' },
+  ingest: { name: 'ingest', desc: 'recall.ai bot · paste · upload' },
+  orchestrator: {
+    name: 'orchestrator',
+    desc: 'deterministic routing, no LLM — gates sentiment to 2+ speakers',
+  },
+  tier1: ['summarizer', 'decisions', 'action items', 'sentiment', 'speaker coach'],
+  barrier: {
+    name: 'tier-1 barrier',
+    desc: 'merge → decision linker (tier 1.5) → context for tier 2',
+  },
+  tier2: ['email drafter', 'health score', 'calendar suggester', 'action executor'],
   output: { name: 'sse stream', desc: 'incremental, to client' },
   timerLabel: 'elapsed',
   target: 2.0, // seconds the animation counts toward
   foot: [
-    { text: 'Retrieval fuses ' },
-    { text: 'pgvector + BM25 + reciprocal rank fusion', strong: true },
-    { text: ', then reranks. Answers link back to the exact moment in synced playback.' },
+    { text: 'The control plane is ' },
+    { text: 'deterministic — no LLM decides the route', strong: true },
+    { text: '. Tier 2 runs enriched with everything Tier 1 found.' },
   ],
 };
 
