@@ -46,7 +46,8 @@
   transition: color 0.2s;
 }
 .nav-links a:hover { color: var(--text); }
-@media (max-width: 720px) { .nav-links { display: none; } }
+/* Mobile keeps the last link — Contact, the page's one job. */
+@media (max-width: 720px) { .nav-links a:not(:last-child) { display: none; } }
 
 /* --------------------------------------------------------------- HERO ----- */
 .hero {
