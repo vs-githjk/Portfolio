@@ -812,3 +812,19 @@
 @media (max-width: 760px) {
   .prin-grid { grid-template-columns: 1fr; }
 }
+
+/* GSAP horizontal mode — Principles.jsx adds .pin-h on desktop only.
+   The grid becomes a flex track wider than the viewport; GSAP scrubs its x. */
+.principles.pin-h { overflow: hidden; }
+.principles.pin-h .prin-grid {
+  display: flex;
+  width: max-content;
+  border: 0;
+  border-left: var(--rule);
+  will-change: transform;
+}
+.principles.pin-h .prin {
+  flex: 0 0 min(520px, 60vw);
+  border-top: var(--rule);
+  border-bottom: var(--rule);
+}
