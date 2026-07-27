@@ -590,6 +590,18 @@
   clip-path: circle(0% at 50% 62%);
   transition: clip-path 1.1s var(--ease);
 }
+/* the GridScan canvas — fills the section between the cyan surface and the copy */
+.contact-fx {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.5s;
+  pointer-events: none;
+}
+.contact.lit .contact-fx { opacity: 0.5; }
+.gridscan { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.gridscan canvas { display: block; width: 100%; height: 100%; }
+
 .contact .wrap { position: relative; width: 100%; }
 .contact.lit::before { clip-path: circle(142% at 50% 62%); }
 .contact.lit { color: var(--on-accent-dark); }
