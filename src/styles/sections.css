@@ -269,6 +269,10 @@
 }
 
 /* --------------------------------------------------------- EXPERIENCE ----- */
+/* Raised surface so the page alternates ground color mid-scroll. The top rule
+   comes from .proof's border-bottom when Proof directly precedes it. */
+#work { background: var(--ink-2); border-bottom: var(--rule); }
+:not(.proof) + #work { border-top: var(--rule); }
 .xp-row {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.5fr) auto;
