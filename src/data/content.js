@@ -386,9 +386,9 @@ export const contact = {
       value: '/in/vidyut-sriram',
       href: 'https://www.linkedin.com/in/vidyut-sriram-4b5a012aa',
     },
-    { kind: 'GitHub', value: '@yourhandle', href: '' }, // TODO
+    { kind: 'GitHub', value: '@vs-githjk', href: 'https://github.com/vs-githjk' },
     { kind: 'arXiv', value: '2601.00509', href: 'https://arxiv.org/abs/2601.00509' },
-    { kind: 'Résumé', value: 'PDF', href: '/resume.pdf' }, // drop resume.pdf in /public
+    { kind: 'Résumé', value: 'Download', href: '/resume.pdf' },
   ],
   footerLeft: 'Vidyut Sriram — State College, PA',
   footerRight: 'Built from scratch · 2026',
