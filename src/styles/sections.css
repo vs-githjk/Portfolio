@@ -507,13 +507,18 @@
 .pipe-bar-r { white-space: nowrap; }
 .pipe-body { padding: clamp(18px, 2.6vw, 30px); font-family: var(--font-mono); }
 
+/* Rows are shared across columns via subgrid: row 1 is every column's header
+   (however many lines it wraps to), row 2 is the first node row. The arrows
+   center on row 2 structurally — no magic offset to drift. */
 .pipe-flow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1.5fr) 24px minmax(0, 1fr);
-  gap: clamp(10px, 1.4vw, 18px);
-  align-items: start;
+  grid-template-rows: auto auto auto;
+  column-gap: clamp(10px, 1.4vw, 18px);
+  row-gap: 8px;
 }
-.pipe-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pipe-col { display: grid; grid-template-rows: subgrid; grid-row: 1 / -1; align-content: start; min-width: 0; }
+.pipe-col .agents { grid-row: 2 / -1; }
 .pipe-col-h {
   display: flex;
   align-items: baseline;
@@ -529,8 +534,8 @@
 }
 .pipe-col-h em { font-style: normal; color: var(--text-2); }
 
-/* the connector between stages */
-.pipe-arrow { position: relative; align-self: center; height: 1px; background: var(--hair-2); margin-top: 42px; }
+/* the connector between stages — lives in the first node row */
+.pipe-arrow { position: relative; grid-row: 2; align-self: center; height: 1px; background: var(--hair-2); }
 .pipe-arrow::after {
   content: '';
   position: absolute;
@@ -613,9 +618,10 @@
 .pipe-meter-top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
 
 @media (max-width: 900px) {
-  .pipe-flow { grid-template-columns: 1fr; }
+  .pipe-flow { grid-template-columns: 1fr; grid-template-rows: none; }
   .pipe-arrow { display: none; }
-  .pipe-col { margin-bottom: 6px; }
+  .pipe-col { display: flex; flex-direction: column; gap: 8px; grid-row: auto; margin-bottom: 6px; }
+  .pipe-col .agents { grid-row: auto; }
 }
 @media (max-width: 460px) {
   .agents { grid-template-columns: 1fr; }
