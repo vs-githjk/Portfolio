@@ -33,7 +33,7 @@ export const hero = {
     "I modernize how teams work by building AI they can actually trust — retrieval that retrieves, agent graphs that don't deadlock, and pipelines that fail loudly instead of lying.",
   blurbEmphasis: "Right now that's PrismAI —",
   blurbTail:
-    'a meeting intelligence platform running eight agents over hybrid search, streaming insight back in about two seconds.',
+    'a meeting intelligence platform where the bot participates live in the call, and ten agents turn the transcript into structured, actionable output in about two seconds.',
   // Sporty silhouette next to the name. Drop your cut-out at
   // public/hero-silhouette.png (transparent PNG or SVG), then set src below.
   figure: { src: '', alt: 'Vidyut mid-play, silhouetted' }, // TODO
@@ -136,16 +136,16 @@ export const builds = {
         'Turns a meeting into structured, searchable, citable output before you leave the call.',
       laurels: [],
       body: [
-        'A bot joins your Zoom, Meet, or Teams call. **Eight specialized agents on a two-tier LangGraph pipeline** turn the transcript into summaries, action items, decisions, sentiment, speaker coaching, and follow-up drafts — streamed over SSE in roughly two seconds, so the output lands while the meeting is still in your head.',
-        'The interesting engineering is the retrieval, not the agents. Every workspace shares a RAG layer with PDF, Notion, and Drive ingestion plus automatic transcript indexing, and search fuses **pgvector, BM25, and reciprocal rank fusion before an LLM rerank**. Every answer links back to the exact moment in synced playback — if the system claims something was decided, you can watch it get decided.',
+        'A bot joins your Zoom, Meet, or Teams call — and actually participates, answering questions and running tools in real time via a **two-channel voice pipeline (Deepgram Flux + Cartesia)**. After the call, **ten specialized agents on a two-tier LangGraph pipeline** turn the transcript into summaries, action items, decisions (linked to the work that resolves them), sentiment, speaker coaching, and follow-up drafts — streamed over SSE in roughly two seconds, so the output lands while the meeting is still in your head.',
+        'The hardest engineering is the **live two-channel loop — hearing, deciding, and speaking without stepping on the humans**. Underneath it, every workspace shares a RAG layer with PDF, Notion, and Drive ingestion plus automatic transcript indexing; search fuses **pgvector, BM25, and reciprocal rank fusion before an LLM rerank**, and every answer links back to the exact moment in synced playback — if the system claims something was decided, you can watch it get decided.',
       ],
       metrics: [
-        { value: '8', label: 'specialized\nagents' },
+        { value: '10', label: 'specialized\nagents' },
         { value: '~2s', label: 'to first\ninsight (SSE)' },
         { value: '3', label: 'retrieval signals\nfused per query' },
       ],
       stack:
-        'React · FastAPI · LangGraph · Groq Llama 3.3-70B · OpenAI · Supabase/pgvector · Recall.ai · Tavily',
+        'React · FastAPI · LangGraph · Claude Sonnet · GPT-5.6 · Supabase/pgvector · Deepgram · Cartesia · Recall.ai · Tavily',
       media: { image: '/builds/prismai.png', alt: 'PrismAI landing page' },
       links: [
         { label: 'Live demo', href: 'https://www.meetprismai.com/' },
