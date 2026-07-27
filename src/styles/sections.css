@@ -20,6 +20,17 @@
   backdrop-filter: blur(14px);
   border-bottom-color: var(--hair);
 }
+/* scroll progress — the nav's bottom rule fills with neon as you read */
+.nav-progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 2px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+  pointer-events: none;
+}
 .nav-in {
   max-width: var(--maxw);
   margin-inline: auto;

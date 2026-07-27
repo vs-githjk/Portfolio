@@ -9,6 +9,7 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
+  cursor: url('/cursor.png') 4 4, auto;
   background: var(--ink);
   color: var(--text);
   font-family: var(--font-body);
