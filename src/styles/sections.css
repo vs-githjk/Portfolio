@@ -28,7 +28,7 @@
   width: 100%;
   height: 2px;
   transform-origin: 0 50%;
-  background: var(--accent-3-light);
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
   pointer-events: none;
 }
 .nav-in {
@@ -335,7 +335,11 @@
 /* --------------------------------------------------------- EXPERIENCE ----- */
 /* Raised surface so the page alternates ground color mid-scroll. The top rule
    comes from .proof's border-bottom when Proof directly precedes it. */
-#work { background: var(--ink-2); border-bottom: var(--rule); }
+#work { background: var(--ink-2); border-bottom: var(--rule); position: relative; overflow: hidden; }
+#work .wrap { position: relative; }
+/* Lightfall canvas layer — decorative, never intercepts the pointer */
+.xp-fx { position: absolute; inset: 0; opacity: 0.3; pointer-events: none; }
+.lightfall-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
 :not(.proof) + #work { border-top: var(--rule); }
 .xp-row {
   display: grid;
