@@ -512,24 +512,22 @@
 
 /* rainbow ripple — neon cycles letter-by-letter while a tool name is hovered */
 .rl { display: inline-block; }
-@keyframes rainbow-cycle {
+/* ambient: a single cyan pulse drifts through every word; hover accelerates it */
+@keyframes kit-pulse {
   0%, 100% { color: var(--text-2); }
-  25% { color: var(--accent-1); }
-  50% { color: var(--accent-2); }
-  75% { color: var(--accent-3); }
+  50% { color: var(--accent-3-light); }
 }
-/* ambient: color drifts through every word continuously; hover accelerates it */
 .kit-cell .rl {
-  animation: rainbow-cycle 6s linear infinite;
+  animation: kit-pulse 6s ease-in-out infinite;
   animation-delay: calc(var(--i) * -0.4s);
 }
 .kit-cell li:hover .rl {
-  animation-duration: 1.1s;
-  animation-delay: calc(var(--i) * -80ms);
+  animation-duration: 1.4s;
+  animation-delay: calc(var(--i) * -100ms);
 }
 @media (prefers-reduced-motion: reduce) {
   .kit-cell .rl { animation: none; }
-  .kit-cell li:hover .rl { color: var(--accent-1); }
+  .kit-cell li:hover .rl { color: var(--accent-3-light); }
 }
 
 /* -------------------------------------------------------------- VALUE ----- */
