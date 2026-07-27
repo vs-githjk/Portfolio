@@ -44,6 +44,18 @@ export default function Builds() {
                   </p>
                 ))}
 
+                {p.media?.video && (
+                  <video
+                    className="proj-video"
+                    src={p.media.video}
+                    poster={p.media.poster || undefined}
+                    controls
+                    muted
+                    playsInline
+                    preload="metadata"
+                  />
+                )}
+
                 <div className="metrics">
                   {p.metrics.map((m) => (
                     <div className="metric" key={m.value + m.label}>
