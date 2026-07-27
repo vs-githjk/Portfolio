@@ -339,6 +339,19 @@
 #work .wrap { position: relative; }
 /* Lightfall canvas layer — decorative, never intercepts the pointer */
 .xp-fx { position: absolute; inset: 0; opacity: 0.3; pointer-events: none; }
+/* Text over the streak field: full-strength color, a touch more weight, and a
+   soft ink shadow to lift it off the lights. */
+#work .sec-head p,
+#work .xp-role,
+#work .xp-note,
+#work .xp-win { color: var(--text); font-weight: 400; }
+#work .xp-when { color: var(--text); }
+#work .xp-team { color: var(--text-2); }
+#work .xp-when span { color: var(--text-2); }
+#work .sec-head p,
+#work .xp-note {
+  text-shadow: 0 1px 14px color-mix(in srgb, var(--ink) 85%, transparent);
+}
 .lightfall-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
 :not(.proof) + #work { border-top: var(--rule); }
 .xp-row {
