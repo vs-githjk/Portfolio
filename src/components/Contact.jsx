@@ -95,7 +95,7 @@ export default function Contact() {
                   rel="noopener noreferrer"
                 >
                   <span className="l-k">{l.kind}</span>
-                  <span className="l-v">{l.value} →</span>
+                  <span className="l-v">{l.value} ↗</span>
                 </a>
               ))}
           </div>
