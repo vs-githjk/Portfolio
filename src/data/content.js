@@ -144,9 +144,9 @@ export const builds = {
       ],
       stack:
         'React · FastAPI · LangGraph · Groq Llama 3.3-70B · OpenAI · Supabase/pgvector · Recall.ai · Tavily',
-      media: { image: '', alt: 'PrismAI product screenshot' }, // TODO: drop image, set src (renders once filled)
+      media: { image: '/builds/prismai.png', alt: 'PrismAI landing page' },
       links: [
-        { label: 'Live demo', href: '' }, // TODO
+        { label: 'Live demo', href: 'https://www.meetprismai.com/' },
         { label: 'Source', href: '' }, // TODO
       ],
     },
@@ -174,9 +174,9 @@ export const builds = {
       ],
       stack:
         'React · Three.js · Leaflet · Recharts · FastAPI · XGBoost · Featherless AI / Qwen 2.5-7B · Twilio · WebSockets',
-      media: { image: '', alt: 'Terrametric globe and field dashboard' }, // TODO: drop image, set src
+      media: { image: '/builds/terrametric.jpg', alt: 'Terrametric landing page' },
       links: [
-        { label: 'Live demo', href: '' }, // TODO
+        { label: 'Live demo', href: 'https://terrametric-delta.vercel.app/' },
         { label: 'Source', href: '' }, // TODO
       ],
     },
@@ -236,8 +236,8 @@ export const builds = {
         oneLiner:
           'Scores every transfer bag by its odds of missing the connection — layover time, delays, routing disruptions — and tells airport ops what to do about it before the bag is gone. A dashboard for operations, alerts for the passenger.',
         stack: '',
-        media: { image: '', alt: 'TransitGuard dashboard' }, // TODO: drop image, set src
-        links: [{ label: 'Source', href: '' }], // TODO
+        media: { image: '/builds/transitguard.png', alt: 'TransitGuard dashboard' },
+        links: [{ label: 'Source', href: '' }], // no valid link right now — stays hidden
       },
       {
         id: 'papertrail',
@@ -245,8 +245,8 @@ export const builds = {
         oneLiner:
           'Give it a topic, a paper title, a DOI, or a link. It finds the seed paper, builds the ancestor tree, and lays out a reading path with videos and companion resources — so you learn a field from its foundations up, not from whatever ranked first.',
         stack: '',
-        media: { image: '', alt: 'PaperTrail reading path' }, // TODO: drop image, set src
-        links: [{ label: 'Source', href: '' }], // TODO
+        media: { image: '/builds/papertrail.png', alt: 'PaperTrail reading path' },
+        links: [{ label: 'Source', href: '' }], // no valid link right now — stays hidden
       },
       {
         id: 'cinemachat',
@@ -254,8 +254,11 @@ export const builds = {
         oneLiner:
           'Movie and TV recommendations in plain language, with a social layer. Claude decides for itself which retrieval tools to call — filmographies, semantic search — and synthesizes a recommendation instead of keyword-matching one.',
         stack: '',
-        media: { image: '', alt: 'CinemaChat conversation' }, // TODO: drop image, set src
-        links: [{ label: 'Source', href: '' }], // TODO
+        media: { image: '/builds/cinemachat.jpg', alt: 'CinemaChat conversation' },
+        links: [
+          { label: 'Live demo', href: 'https://cinema-chat-nine.vercel.app/' },
+          { label: 'Source', href: '' }, // TODO
+        ],
       },
       {
         id: 'algoquest',
@@ -263,8 +266,8 @@ export const builds = {
         oneLiner:
           'Data structures and algorithms taught as a game instead of a problem set. Built in React.',
         stack: 'React',
-        media: { image: '', alt: 'AlgoQuest interface' }, // TODO: drop image, set src
-        links: [{ label: 'Source', href: '' }], // TODO
+        media: { image: '/builds/algoquest.jpg', alt: 'AlgoQuest interface' },
+        links: [{ label: 'Source', href: '' }], // no valid link right now — stays hidden
       },
     ],
   },
