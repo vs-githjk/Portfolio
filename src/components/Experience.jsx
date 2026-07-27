@@ -14,7 +14,10 @@ export default function Experience() {
           {experience.roles.map((role, i) => (
             <div className="xp-row" key={`${role.org}-${i}`}>
               <div>
-                <div className="xp-org">{role.org}</div>
+                <div className="xp-org">
+                  {role.logo && <img className="xp-logo" src={role.logo} alt="" />}
+                  {role.org}
+                </div>
                 <span className="xp-role">{role.role}</span>
                 {role.team && <span className="xp-team">{role.team}</span>}
               </div>

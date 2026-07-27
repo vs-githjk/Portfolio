@@ -86,6 +86,7 @@ export const experience = {
   roles: [
     {
       org: 'Sherlock AI',
+      logo: '/logos/sherlock.png',
       role: 'Software Engineer Intern',
       team: '',
       note: "Built Sherlock's public demo interview flow in Next.js — the one screen a candidate actually meets: adaptive interview behavior, recording and submission, and the branded polish that makes it feel like a product. Also a Google Meet add-on proof of concept that renders audit logs and validates the interview from a live sidebar inside the call.",
@@ -95,6 +96,7 @@ export const experience = {
     },
     {
       org: 'Comcast',
+      logo: '/logos/comcast.png',
       role: 'Software Development Engineer Intern',
       team: 'India Engineering Centre',
       note: 'Built an agentic system — RAG, modular pipelines, multi-step reasoning — that automated code evaluation and generation for internal teams. Wired in external APIs and data sources, then shipped a document-Q&A chatbot on top of it.',
@@ -106,6 +108,7 @@ export const experience = {
        half of forward-deployed work. Don't cut it. */
     {
       org: 'Penn State',
+      logo: '/logos/psu.png',
       role: 'Learning Assistant · Math Peer Tutor',
       team: 'Calculus & 0–100 level courses',
       note: 'Weekly review sessions and one-on-one tutoring — explaining hard things to people who don’t share my context, and finding where a mental model broke. Same job as debugging.',

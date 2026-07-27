@@ -300,7 +300,16 @@
 }
 .xp-row:last-child { border-bottom: var(--rule); }
 .xp-row:hover { padding-left: 14px; }
-.xp-org { font-family: var(--font-display); font-weight: 700; font-size: clamp(19px, 2.1vw, 27px); letter-spacing: -0.025em; }
+.xp-org {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(19px, 2.1vw, 27px);
+  letter-spacing: -0.025em;
+}
+.xp-logo { height: 1.15em; width: auto; border-radius: 4px; }
 .xp-role { display: block; margin-top: 6px; font-size: 14.5px; color: var(--text-2); }
 .xp-note { color: var(--text-2); font-size: 14.5px; max-width: 52ch; }
 .xp-when {
