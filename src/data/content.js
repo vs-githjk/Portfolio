@@ -309,23 +309,23 @@ export const value = {
       tag: 'Reliability',
       claim: 'I care most about the gap between "works in the demo" and "works."',
       receipts: [
-        'I build the **checks, evals, and guardrails** around a system before I let myself trust it — and I genuinely like that part.',
-        'Safe and reliable beats clever and fragile, every time I have had to choose.',
+        'The repair loop in my paper cut **critical defects 58.55% → 22.19%** on a model that resisted repair — I build the checks before I extend the trust.',
+        'Every PrismAI answer **links back to the exact meeting moment** behind it. If it claims a decision, you can watch the decision.',
       ],
     },
     {
       tag: 'Forward-deployed',
       claim: 'I want to sit where the system meets the user, not two teams away.',
       receipts: [
-        'Happiest **embedded with the people using the thing**, turning their reality into working software.',
-        'I would rather demo early and be wrong in front of a user than polish in private.',
+        'At Sherlock AI I build the **candidate-facing demo interview flow** — the first screen a real user meets.',
+        'Teaching calculus **weekly at Penn State since Aug 2025** — explaining hard things to people who don’t share my context is the customer half of this job.',
       ],
     },
     {
       tag: 'Owner',
       claim: 'I treat every build like it’s mine to run, not mine to hand off.',
       receipts: [
-        '**Entrepreneur by default** — I ship the whole path: data, backend, frontend, delivery.',
+        'Terrametric: **satellite data → ML → backend → globe UI → SMS, deployed in 36 hours** — one owner, the whole path.',
         'If it breaks at 2am, I want to be the person who already knows why.',
       ],
     },
@@ -333,8 +333,8 @@ export const value = {
       tag: 'Modernizer',
       claim: 'I see a manual workflow and can’t leave it alone.',
       receipts: [
+        'At Comcast, the loop I automated handed a real team back **40% of its manual coding effort**.',
         'The pattern under everything I build: **find the slow, human-hostile loop and automate it safely**.',
-        'AI is the current tool for that. It won’t be the last one I learn.',
       ],
     },
   ],

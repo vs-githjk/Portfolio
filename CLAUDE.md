@@ -34,9 +34,10 @@ Two rules encode the thesis visually:
    section with color or add a gradient wash, stop and ask first: scarcity is
    what keeps the neon loud.
 
-2. **Never fabricate.** Numbers and claims about work must come from the user.
-   The Value section is deliberately identity-first (how he operates), and the
-   Builds/Experience sections carry the hard evidence. New roles or projects
+2. **Claims come with receipts — and are never fabricated.** The Value section
+   is identity-first (how he operates), but every claim still carries a number
+   or verifiable fact underneath it; a claim without a receipt is just a
+   personality trait. Numbers must come from the user — new roles or projects
    with unknown details get TODO stubs, not invented copy.
 
 The signature element is the animated PrismAI pipeline in the hero
