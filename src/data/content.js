@@ -182,7 +182,7 @@ export const builds = {
     },
     {
       id: 'secure-codegen',
-      kind: 'Research system · published',
+      kind: 'Research system · arXiv preprint',
       title: 'Self-repairing code generation',
       titleMuted: 'GCC · CodeQL · KLEE',
       when: 'Sep 2025 — Mar 2026',

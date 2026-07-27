@@ -8,7 +8,7 @@ export default function Nav() {
     <nav className={`nav${scrolled ? ' stuck' : ''}`}>
       <div className="nav-in">
         <a href="#top" className="brand">
-          {meta.name} <span>/ swe</span>
+          {meta.name} <span>/ fde</span>
         </a>
         <div className="nav-links">
           {nav.map((item) => (
