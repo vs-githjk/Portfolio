@@ -5,10 +5,10 @@
    Change a value, save, watch the whole page shift. This is the file to
    experiment in first.
 
-   The organizing idea of the current design: THE PAGE IS GRAYSCALE.
-   Color only appears where a system reports a state (defect / running /
-   verified). Color carries information; it isn't decoration. If you break
-   that rule, break it on purpose.
+   The organizing idea: a dark grayscale base where color stays scarce enough
+   to mean something. State colors (defect / running / verified) report what a
+   system is doing; the neon accent trio marks interactive and emphasis
+   moments. Scarcity is the rule — if color is everywhere, it says nothing.
    ========================================================================== */
 
 :root {
@@ -28,9 +28,16 @@
   /* ---- DIAGNOSTIC COLORS --------------------------------------------------
      Reserved for state. Used in the repair loop, the verified checkmarks, and
      the availability dot. Resist using these as brand accents. */
-  --defect: #ff5d55;
-  --running: #ffb020;
+  --defect: #ff2e4d;
+  --running: #eaff00;
   --verified: #39d07e;
+
+  /* ---- BRAND ACCENTS ------------------------------------------------------
+     Neon trio, used sparingly on interactive/emphasis moments: the assert
+     border, the caret, link hovers. State colors above still own meaning. */
+  --accent-1: #eaff00; /* neon yellow — primary accent */
+  --accent-2: #ff2e4d; /* neon red */
+  --accent-3: #2e7bff; /* neon blue */
 
   /* ---- TYPE ---------------------------------------------------------------
      Three roles, three faces:
@@ -45,7 +52,7 @@
 
   /* Type scale — clamp() means these are already responsive.
      Format: clamp(min, preferred, max) */
-  --fs-hero: clamp(42px, 8.4vw, 116px);
+  --fs-hero: clamp(48px, 9.4vw, 132px);
   --fs-assert: clamp(19px, 3.6vw, 50px);
   --fs-h2: clamp(30px, 4.4vw, 58px);
   --fs-h3: clamp(20px, 2vw, 26px);

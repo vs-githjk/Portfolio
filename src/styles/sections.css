@@ -45,7 +45,7 @@
   color: var(--text-3);
   transition: color 0.2s;
 }
-.nav-links a:hover { color: var(--text); }
+.nav-links a:hover { color: var(--accent-1); }
 /* Mobile keeps the last link — Contact, the page's one job. */
 @media (max-width: 720px) { .nav-links a:not(:last-child) { display: none; } }
 
@@ -70,7 +70,7 @@
   font-weight: 500;
   font-size: var(--fs-assert);
   letter-spacing: -0.02em;
-  border: 1px solid var(--hair-2);
+  border: 1px solid color-mix(in srgb, var(--accent-3) 55%, var(--hair-2));
   border-radius: 6px;
   padding: 0.12em 0.42em 0.18em;
   background: linear-gradient(180deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 0%));
@@ -80,7 +80,7 @@
   width: 0.5em;
   height: 1em;
   margin-left: 0.12em;
-  background: var(--verified);
+  background: var(--accent-1);
   vertical-align: -0.12em;
   animation: blink 1.15s steps(1) infinite;
 }
@@ -372,7 +372,17 @@
   color: var(--text-2);
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-.plink:hover { color: var(--ink); background: var(--text); border-color: var(--text); }
+.plink:hover { color: var(--ink); background: var(--accent-1); border-color: var(--accent-1); }
+
+/* demo video — renders only when content.js provides a media.video URL */
+.proj-video {
+  display: block;
+  width: 100%;
+  margin-top: 22px;
+  border: var(--rule);
+  border-radius: var(--radius);
+  background: var(--ink);
+}
 @media (max-width: 860px) { .proj-grid { grid-template-columns: 1fr; } }
 
 /* ------------------------------------------------------------ TOOLKIT ----- */
@@ -446,7 +456,7 @@
   line-height: 1;
   margin: clamp(24px, 3vw, 40px) 0;
   word-break: break-word;
-  background-image: linear-gradient(var(--text), var(--text));
+  background-image: linear-gradient(var(--accent-1), var(--accent-1));
   background-size: 0% 1px;
   background-position: 0 100%;
   background-repeat: no-repeat;
