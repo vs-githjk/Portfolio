@@ -485,6 +485,22 @@
 .kit-cell li { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
 .kit-cell li:not(:last-child)::after { content: '·'; color: var(--hair-2); margin: 0 8px; }
 
+/* rainbow ripple — neon cycles letter-by-letter while a tool name is hovered */
+.rl { display: inline-block; }
+@keyframes rainbow-cycle {
+  0%, 100% { color: var(--text-2); }
+  25% { color: var(--accent-1); }
+  50% { color: var(--accent-2); }
+  75% { color: var(--accent-3); }
+}
+.kit-cell li:hover .rl {
+  animation: rainbow-cycle 1.1s linear infinite;
+  animation-delay: calc(var(--i) * 70ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-cell li:hover .rl { animation: none; color: var(--accent-1); }
+}
+
 /* -------------------------------------------------------------- VALUE ----- */
 .bring { background: var(--ink-2); border-top: var(--rule); border-bottom: var(--rule); }
 .claim {

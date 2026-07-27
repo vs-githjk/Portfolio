@@ -1,4 +1,5 @@
 import { toolkit } from '../data/content';
+import RainbowText from './RainbowText';
 
 export default function Toolkit() {
   return (
@@ -15,7 +16,9 @@ export default function Toolkit() {
               <h4>{group.name}</h4>
               <ul>
                 {group.items.map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item}>
+                    <RainbowText text={item} />
+                  </li>
                 ))}
               </ul>
             </div>
