@@ -423,6 +423,8 @@
 .proj-shot {
   display: block;
   width: 100%;
+  aspect-ratio: 1600 / 890; /* reserve space before lazy load — no layout shift */
+  object-fit: cover;
   margin-top: 22px;
   border: var(--rule);
   border-radius: var(--radius);
@@ -459,6 +461,8 @@
 .mini-shot {
   display: block;
   width: 100%;
+  aspect-ratio: 1600 / 890; /* reserve space before lazy load — no layout shift */
+  object-fit: cover;
   margin-bottom: 14px;
   border: var(--rule);
   border-radius: var(--radius-sm);

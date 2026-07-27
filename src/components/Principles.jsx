@@ -91,12 +91,23 @@ export default function Principles() {
       };
     });
 
-    /* Image loads shift layout after mount; re-measure the pin distances. */
-    const onLoad = () => ScrollTrigger.refresh();
-    window.addEventListener('load', onLoad);
+    /* The build screenshots are lazy-loaded: each one that lands makes the
+       page taller AFTER ScrollTrigger measured it, so the pin fires early and
+       the section shows up in the middle of the compact cards. Re-measure
+       (debounced) every time an image finishes loading. */
+    let refreshTimer = 0;
+    const queueRefresh = () => {
+      clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+    };
+    const pending = Array.from(document.images).filter((img) => !img.complete);
+    pending.forEach((img) => img.addEventListener('load', queueRefresh, { once: true }));
+    window.addEventListener('load', queueRefresh);
 
     return () => {
-      window.removeEventListener('load', onLoad);
+      clearTimeout(refreshTimer);
+      pending.forEach((img) => img.removeEventListener('load', queueRefresh));
+      window.removeEventListener('load', queueRefresh);
       mm.revert();
     };
   }, []);
