@@ -35,14 +35,22 @@ export default function Principles() {
   }, []);
 
   useEffect(() => {
-    /* StrictMode double-mounts and Vite HMR can leave orphaned pins behind —
-       each one renders as a ghost copy of this section. Kill any trigger that
-       still points at this section (or a detached node) before creating ours. */
+    /* StrictMode double-mounts and Vite HMR can leave ghosts behind — GSAP
+       re-parents the pinned section into a pin-spacer, so on hot reload React
+       fails to remove the old node and the section renders twice. Kill stale
+       triggers AND remove any leaked copy of this section before creating
+       ours. No-ops in production (no HMR there). */
     ScrollTrigger.getAll().forEach((t) => {
       const trig = t.vars?.trigger;
       if (trig === secRef.current || (trig instanceof Element && !trig.isConnected)) {
         t.kill(true);
       }
+    });
+    document.querySelectorAll('.principles').forEach((el) => {
+      if (el !== secRef.current) el.remove();
+    });
+    document.querySelectorAll('.pin-spacer').forEach((sp) => {
+      if (!sp.contains(secRef.current) && !sp.children.length) sp.remove();
     });
 
     const mm = gsap.matchMedia();
