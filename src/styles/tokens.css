@@ -38,6 +38,8 @@
   --accent-1: #eaff00; /* neon yellow — primary accent */
   --accent-2: #ff2e4d; /* neon red */
   --accent-3: #2e7bff; /* neon blue */
+  --accent-3-light: #9fd4ff; /* light blue — the Contact surface */
+  --on-accent-dark: #0c0e13; /* text on neon surfaces */
 
   /* ---- TYPE ---------------------------------------------------------------
      Three roles, three faces:

@@ -266,7 +266,11 @@
 }
 
 /* -------------------------------------------------------------- PROOF ----- */
-.proof { border-top: var(--rule); border-bottom: var(--rule); }
+/* Neon surface #1: the four numbers land on full neon yellow, dark text.
+   The dark hairlines read as brutalist rules on the bright ground. */
+.proof { border-top: var(--rule); border-bottom: var(--rule); background: var(--accent-1); }
+.proof .proof-num { color: var(--on-accent-dark); }
+.proof .proof-lab { color: color-mix(in srgb, var(--on-accent-dark) 72%, transparent); }
 .proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); max-width: var(--maxw); margin-inline: auto; }
 .proof-cell { padding: clamp(24px, 3.4vw, 40px) clamp(14px, 2vw, 28px); border-right: var(--rule); }
 .proof-cell:first-child { padding-left: var(--pad); }
@@ -524,7 +528,30 @@
 }
 
 /* ------------------------------------------------------------ CONTACT ----- */
-.contact { padding-block: clamp(70px, 10vw, 140px); }
+/* Neon surface #2: light blue, revealed by a bottom-up wipe as the section
+   scrolls in (the ::before is the surface; .reveal.in triggers the wipe). */
+.contact { position: relative; overflow: hidden; padding-block: clamp(70px, 10vw, 140px); }
+.contact::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-3-light);
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1s var(--ease);
+}
+.contact .wrap { position: relative; }
+.contact:has(.reveal.in)::before { clip-path: inset(0 0 0 0); }
+.contact:has(.reveal.in) { color: var(--on-accent-dark); }
+.contact:has(.reveal.in) .contact-blurb,
+.contact:has(.reveal.in) .l-v { color: color-mix(in srgb, var(--on-accent-dark) 80%, transparent); }
+.contact:has(.reveal.in) .eyebrow,
+.contact:has(.reveal.in) .l-k { color: color-mix(in srgb, var(--on-accent-dark) 62%, transparent); }
+.contact:has(.reveal.in) .links a:hover .l-v { color: var(--on-accent-dark); }
+.contact:has(.reveal.in) .links,
+.contact:has(.reveal.in) .links a { border-color: color-mix(in srgb, var(--on-accent-dark) 35%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .contact::before { transition: none; }
+}
 .contact h2 { margin-top: 18px; max-width: 16ch; }
 .contact-blurb { margin-top: 20px; max-width: 52ch; color: var(--text-2); font-size: 16px; }
 .big-mail {
