@@ -8,22 +8,22 @@ import Check from './Check';
    themselves are built on. */
 export default function Value() {
   const secRef = useRef(null);
-  const [Grid, setGrid] = useState(null);
-  const [gridBlue, setGridBlue] = useState('#2e7bff');
+  const [Rays, setRays] = useState(null);
+  const [rayRed, setRayRed] = useState('#ff2e4d');
 
-  /* GridScan backdrop in blue — the motif's third escalation (green in
-     Principles, cyan in Contact). Lazy, token-colored, skipped under
-     reduced motion. */
+  /* SideRays backdrop — red rays cascading in from all four corners.
+     Lazy, token-colored, skipped under reduced motion. Each instance
+     manages its own visibility observer and WebGL teardown. */
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    setGridBlue(
-      getComputedStyle(document.documentElement).getPropertyValue('--accent-3').trim() ||
-        '#2e7bff'
+    setRayRed(
+      getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() ||
+        '#ff2e4d'
     );
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
-          import('./GridScan').then((m) => setGrid(() => m.default));
+          import('./SideRays').then((m) => setRays(() => m.default));
           io.disconnect();
         }
       },
@@ -35,18 +35,24 @@ export default function Value() {
 
   return (
     <section className="bring" id="value" ref={secRef}>
-      {Grid && (
+      {Rays && (
         <div className="bring-fx" aria-hidden="true">
-          <Grid
-            sensitivity={0.4}
-            lineThickness={1.6}
-            linesColor={gridBlue}
-            scanOpacity={0}
-            gridScale={0.14}
-            lineJitter={0}
-            noiseIntensity={0.01}
-            fadeStrength={1.0}
-          />
+          {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => (
+            <Rays
+              key={corner}
+              origin={corner}
+              speed={1.6}
+              rayColor1={rayRed}
+              rayColor2={rayRed}
+              intensity={1.4}
+              spread={2}
+              tilt={0}
+              saturation={1.5}
+              blend={0.75}
+              falloff={1.6}
+              opacity={0.8}
+            />
+          ))}
         </div>
       )}
       <div className="wrap sec">

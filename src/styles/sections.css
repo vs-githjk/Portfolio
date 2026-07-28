@@ -710,7 +710,8 @@
 
 /* -------------------------------------------------------------- VALUE ----- */
 .bring { position: relative; overflow: hidden; background: var(--ink-2); border-top: var(--rule); border-bottom: var(--rule); }
-.bring-fx { position: absolute; inset: 0; opacity: 0.5; pointer-events: none; }
+.bring-fx { position: absolute; inset: 0; opacity: 0.55; pointer-events: none; }
+.side-rays { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .bring .wrap { position: relative; }
 .claim {
   display: grid;
