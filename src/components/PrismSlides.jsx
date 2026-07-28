@@ -21,6 +21,8 @@ import './PrismSlides.css'
 
 const PHASES = 4
 const SLIDE_MS = 6000
+// Phase 4's beat timeline runs to ~9.3s (BEATS4) — give it room to finish.
+const LAST_SLIDE_MS = 10500
 // Transition band width as a fraction of one phase (ported from HowItWorks) —
 // the crossfade between two phases spans the last τ of the outgoing phase.
 const TAU = 0.5
@@ -1195,11 +1197,12 @@ function AutoSlides() {
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     if (reduce) return // respect reduced motion — show slides, skip auto-advance
-    const id = setInterval(() => {
+    const dur = activePhase === PHASES - 1 ? LAST_SLIDE_MS : SLIDE_MS
+    const id = setTimeout(() => {
       setActivePhase((p) => (p + 1) % PHASES)
-    }, SLIDE_MS)
-    return () => clearInterval(id)
-  }, [])
+    }, dur)
+    return () => clearTimeout(id)
+  }, [activePhase])
 
   return (
     <div className="prism-slides">
