@@ -45,18 +45,25 @@ export const hero = {
    SIGNATURE ELEMENT: the PrismAI pipeline, animated in the hero.
    Rendered by src/components/Pipeline.jsx
    ------------------------------------------------------------------------ */
+/* Written for a recruiter skimming, not an engineer reviewing — every label
+   should make sense with zero LangGraph context. Facts unchanged. */
 export const pipeline = {
-  label: 'prismai · analysis pipeline',
-  project: 'two-tier LangGraph',
-  ingest: { name: 'ingest', desc: 'recall.ai bot · paste · upload' },
+  label: 'prismai · what happens when a meeting ends',
+  project: 'live demo',
+  cols: {
+    ingest: 'the meeting comes in',
+    tier1: 'six agents read it at once',
+    tier2: 'five more act on what they found',
+  },
+  ingest: { name: 'capture', desc: 'a bot sits in the call — or paste / upload a transcript' },
   orchestrator: {
-    name: 'orchestrator',
-    desc: 'deterministic routing, no LLM — gates sentiment to 2+ speakers',
+    name: 'router',
+    desc: 'plain, testable code decides what runs — not an AI guessing',
   },
   tier1: ['summarizer', 'decisions', 'action items', 'sentiment', 'speaker coach', 'classifier'],
   barrier: {
-    name: 'tier-1 barrier',
-    desc: 'merge → decision linker (tier 1.5) → context for tier 2',
+    name: 'link it together',
+    desc: 'findings merge; each decision gets tied to the work that resolves it',
   },
   tier2: [
     'follow-up email',
@@ -65,13 +72,13 @@ export const pipeline = {
     'action executor',
     'content analyst',
   ],
-  output: { name: 'sse stream', desc: 'incremental, to client' },
+  output: { name: 'on your screen', desc: 'results stream in as each agent finishes' },
   timerLabel: 'elapsed',
   target: 2.0, // seconds the animation counts toward
   foot: [
-    { text: 'The control plane is ' },
-    { text: 'deterministic — no LLM decides the route', strong: true },
-    { text: '. Tier 2 runs enriched with everything Tier 1 found.' },
+    { text: 'No AI decides the route — ' },
+    { text: 'plain, testable code does', strong: true },
+    { text: '. The second wave of agents starts with everything the first wave learned.' },
   ],
 };
 

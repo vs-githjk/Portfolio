@@ -190,7 +190,7 @@ export default function Pipeline() {
         <div className="pipe-flow">
           {/* ---- ingest + orchestrator ---- */}
           <div className="pipe-col">
-            <div className="pipe-col-h">in — routed</div>
+            <div className="pipe-col-h">{pipeline.cols.ingest}</div>
             <div className="node" data-state={ingest}>
               <i />
               <b>{pipeline.ingest.name}</b>
@@ -208,7 +208,7 @@ export default function Pipeline() {
           {/* ---- tier 1 + barrier ---- */}
           <div className="pipe-col pipe-col-wide">
             <div className="pipe-col-h">
-              tier 1 — parallel
+              {pipeline.cols.tier1}
               <em>
                 {done1}/{pipeline.tier1.length}
               </em>
@@ -233,7 +233,7 @@ export default function Pipeline() {
           {/* ---- tier 2 + out ---- */}
           <div className="pipe-col">
             <div className="pipe-col-h">
-              tier 2 — enriched
+              {pipeline.cols.tier2}
               <em>
                 {done2}/{pipeline.tier2.length}
               </em>
