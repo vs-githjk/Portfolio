@@ -399,6 +399,8 @@
 .builds-sec .wrap { position: relative; }
 .builds-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.9; mix-blend-mode: screen; }
 .lines-canvas { width: 100%; height: 100%; overflow: hidden; }
+/* text over the lines: brighten the text, don't dim the effect */
+.builds-sec .sec-head p { color: var(--text); text-shadow: 0 1px 14px var(--ink); }
 
 /* ---- glass deck ----------------------------------------------------------
    The three flagship builds share one stage. The active card sits centred;
@@ -468,13 +470,13 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 4;
-  width: 46px;
-  height: 46px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 17px;
+  font-size: 14px;
   line-height: 1;
   color: var(--text);
   background: color-mix(in srgb, var(--ink-2) 55%, transparent);
@@ -485,8 +487,9 @@
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-.deck-arrow[data-dir='prev'] { left: clamp(6px, 1.6vw, 22px); }
-.deck-arrow[data-dir='next'] { right: clamp(6px, 1.6vw, 22px); }
+/* nudged into the gutter so they hug the card edge instead of covering it */
+.deck-arrow[data-dir='prev'] { left: clamp(-52px, -3vw, -12px); }
+.deck-arrow[data-dir='next'] { right: clamp(-52px, -3vw, -12px); }
 .deck-arrow:hover { color: var(--ink); background: var(--accent-3-light); border-color: var(--accent-3-light); }
 .deck-dots { margin-top: 22px; display: flex; justify-content: center; gap: 10px; }
 .deck-dots button {
