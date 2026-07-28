@@ -593,6 +593,9 @@
 
 /* live PrismSlides walkthrough inside the PrismAI card */
 .proj-demo { margin-top: 22px; }
+/* the component sizes its stage to 92vw — inside the card that overflows on
+   small screens, so pin it to the card's width instead */
+.proj-demo .prism-slides-stage { width: 100%; max-width: 660px; }
 
 /* product shot — renders only when content.js provides a media.image URL */
 .proj-shot {
@@ -710,7 +713,7 @@
 
 /* -------------------------------------------------------------- VALUE ----- */
 .bring { position: relative; overflow: hidden; background: var(--ink-2); border-top: var(--rule); border-bottom: var(--rule); }
-.bring-fx { position: absolute; inset: 0; opacity: 0.55; pointer-events: none; }
+.bring-fx { position: absolute; inset: 0; opacity: 0.85; pointer-events: none; }
 .side-rays { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .bring .wrap { position: relative; }
 .claim {

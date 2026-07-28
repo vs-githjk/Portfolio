@@ -9,17 +9,19 @@ import Check from './Check';
 export default function Value() {
   const secRef = useRef(null);
   const [Rays, setRays] = useState(null);
-  const [rayRed, setRayRed] = useState('#ff2e4d');
+  const [rayColors, setRayColors] = useState({ red: '#ff2e4d', orange: '#ff7a1a' });
 
-  /* SideRays backdrop — red rays cascading in from all four corners.
-     Lazy, token-colored, skipped under reduced motion. Each instance
-     manages its own visibility observer and WebGL teardown. */
+  /* SideRays backdrop — bright red and orange rays cascading in from the
+     four corners, colors alternating per corner. Lazy, token-colored,
+     skipped under reduced motion. Each instance manages its own visibility
+     observer and WebGL teardown. */
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    setRayRed(
-      getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() ||
-        '#ff2e4d'
-    );
+    const css = getComputedStyle(document.documentElement);
+    setRayColors({
+      red: css.getPropertyValue('--accent-2').trim() || '#ff2e4d',
+      orange: css.getPropertyValue('--accent-orange').trim() || '#ff7a1a',
+    });
     const io = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
@@ -37,20 +39,26 @@ export default function Value() {
     <section className="bring" id="value" ref={secRef}>
       {Rays && (
         <div className="bring-fx" aria-hidden="true">
-          {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => (
+          {/* diagonal pairs: red from top-left/bottom-right, orange from the others */}
+          {[
+            ['top-left', rayColors.red],
+            ['top-right', rayColors.orange],
+            ['bottom-left', rayColors.orange],
+            ['bottom-right', rayColors.red],
+          ].map(([corner, color]) => (
             <Rays
               key={corner}
               origin={corner}
               speed={1.6}
-              rayColor1={rayRed}
-              rayColor2={rayRed}
-              intensity={1.4}
+              rayColor1={color}
+              rayColor2={color}
+              intensity={2.2}
               spread={2}
               tilt={0}
               saturation={1.5}
               blend={0.75}
               falloff={1.6}
-              opacity={0.8}
+              opacity={1}
             />
           ))}
         </div>

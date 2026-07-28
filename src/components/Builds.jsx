@@ -163,8 +163,9 @@ export default function Builds() {
                       </p>
                     ))}
 
-                    {/* PrismAI shows the live walkthrough; others keep their shot */}
-                    {p.id === 'prismai' && Slides ? (
+                    {/* PrismAI shows the live walkthrough on desktop; the demo is
+                        too cramped under ~320px, so mobile keeps the static shot */}
+                    {p.id === 'prismai' && Slides && !flat ? (
                       <div className="proj-demo">
                         <Slides />
                       </div>
