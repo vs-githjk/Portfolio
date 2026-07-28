@@ -2,7 +2,7 @@ import { proof } from '../data/content';
 
 export default function Proof() {
   return (
-    <section className="proof">
+    <section className="proof reveal">
       <div className="proof-grid">
         {proof.map((item) => (
           <div className="proof-cell" key={item.label}>

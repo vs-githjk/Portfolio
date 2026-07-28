@@ -12,9 +12,9 @@ export default function Hero() {
         {hero.figure?.src && (
           <img className="hero-figure" src={hero.figure.src} alt={hero.figure.alt || ''} />
         )}
-        <div className="eyebrow hero-eyebrow">{hero.eyebrow}</div>
+        <div className="eyebrow hero-eyebrow reveal">{hero.eyebrow}</div>
 
-        <h1>
+        <h1 className="reveal">
           {hero.headline}
           <br />
           <span className="assert">
@@ -23,7 +23,7 @@ export default function Hero() {
           </span>
         </h1>
 
-        <div className="hero-sub">
+        <div className="hero-sub reveal">
           <p>
             {hero.blurb} <span className="em">{hero.blurbEmphasis}</span> {hero.blurbTail}
           </p>

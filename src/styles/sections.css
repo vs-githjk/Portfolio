@@ -529,7 +529,14 @@
 @media (max-width: 860px) { .proj-grid { grid-template-columns: 1fr; } }
 
 /* ------------------------------------------------------------ TOOLKIT ----- */
-/* Bento grid: uneven spans, neon-red outlines. AI/ML and Infra get the wide cells. */
+/* Radar backdrop layer for the toolkit */
+.kit-sec { position: relative; overflow: hidden; }
+.kit-sec .wrap { position: relative; }
+.kit-fx { position: absolute; inset: 0; opacity: 0.4; pointer-events: none; }
+.radar-container { width: 100%; height: 100%; }
+.radar-container canvas { display: block; width: 100%; height: 100%; }
+
+/* Bento grid: uneven spans. AI/ML and Infra get the wide cells. */
 .kit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .kit-cell {
   padding: clamp(18px, 2.4vw, 26px);
@@ -559,14 +566,14 @@
   color: var(--text-3);
 }
 .kit-cell ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; }
-.kit-cell li { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+.kit-cell li { font-family: var(--font-mono); font-size: 12.5px; color: var(--text); line-height: 1.6; }
 .kit-cell li:not(:last-child)::after { content: '·'; color: var(--hair-2); margin: 0 8px; }
 
 /* rainbow ripple — neon cycles letter-by-letter while a tool name is hovered */
 .rl { display: inline-block; }
 /* hover-only: a cyan pulse ripples through the word you're pointing at */
 @keyframes kit-pulse {
-  0%, 100% { color: var(--text-2); }
+  0%, 100% { color: var(--text); }
   50% { color: var(--accent-3-light); }
 }
 .kit-cell li:hover .rl {
