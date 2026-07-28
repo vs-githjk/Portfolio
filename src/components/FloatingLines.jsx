@@ -90,7 +90,7 @@ vec3 getLineColor(float t) {
     gradientColor = mix(c1, c2, f);
   }
 
-  return gradientColor * 0.5;
+  return gradientColor * 0.9;
 }
 
 float wave(vec2 uv, float offset, vec2 screenUv, vec2 mouseUv, bool shouldBend) {

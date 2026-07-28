@@ -188,26 +188,37 @@ export default function Builds() {
             ))}
           </div>
 
-          <div className="deck-nav">
-            <button type="button" onClick={() => step(-1)} aria-label="Previous project">
-              ←
-            </button>
-            <div className="deck-dots" role="tablist" aria-label="Project selector">
-              {builds.items.map((p, i) => (
-                <button
-                  type="button"
-                  key={p.id}
-                  role="tab"
-                  aria-selected={i === active}
-                  aria-label={p.title}
-                  data-state={i === active ? 'active' : 'idle'}
-                  onClick={() => setActive(i)}
-                />
-              ))}
-            </div>
-            <button type="button" onClick={() => step(1)} aria-label="Next project">
-              →
-            </button>
+          <button
+            type="button"
+            className="deck-arrow"
+            data-dir="prev"
+            onClick={() => step(-1)}
+            aria-label="Previous project"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            className="deck-arrow"
+            data-dir="next"
+            onClick={() => step(1)}
+            aria-label="Next project"
+          >
+            →
+          </button>
+
+          <div className="deck-dots" role="tablist" aria-label="Project selector">
+            {builds.items.map((p, i) => (
+              <button
+                type="button"
+                key={p.id}
+                role="tab"
+                aria-selected={i === active}
+                aria-label={p.title}
+                data-state={i === active ? 'active' : 'idle'}
+                onClick={() => setActive(i)}
+              />
+            ))}
           </div>
         </div>
 

@@ -397,7 +397,7 @@
 /* FloatingLines backdrop layer — sits behind the glass deck */
 .builds-sec { position: relative; overflow: hidden; }
 .builds-sec .wrap { position: relative; }
-.builds-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.6; mix-blend-mode: screen; }
+.builds-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.9; mix-blend-mode: screen; }
 .lines-canvas { width: 100%; height: 100%; overflow: hidden; }
 
 /* ---- glass deck ----------------------------------------------------------
@@ -461,28 +461,34 @@
 .glass .proj-body { margin-top: 18px; }
 .glass .proj-body p + p { margin-top: 14px; }
 
-/* deck controls — mono arrows + dots, cyan like every other interactive */
-.deck-nav {
-  margin-top: 22px;
+/* deck controls — glass arrows floating on the card edges, cyan like every
+   other interactive; dots underneath for direct selection */
+.deck-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-}
-.deck-nav > button {
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1;
-  color: var(--text-2);
-  background: none;
-  border: 1px solid var(--hair-2);
-  border-radius: var(--radius-sm);
-  padding: 9px 16px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--ink-2) 55%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 50%;
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-.deck-nav > button:hover { color: var(--ink); background: var(--accent-3-light); border-color: var(--accent-3-light); }
-.deck-dots { display: flex; gap: 10px; }
+.deck-arrow[data-dir='prev'] { left: clamp(6px, 1.6vw, 22px); }
+.deck-arrow[data-dir='next'] { right: clamp(6px, 1.6vw, 22px); }
+.deck-arrow:hover { color: var(--ink); background: var(--accent-3-light); border-color: var(--accent-3-light); }
+.deck-dots { margin-top: 22px; display: flex; justify-content: center; gap: 10px; }
 .deck-dots button {
   width: 8px;
   height: 8px;
@@ -500,7 +506,8 @@
   .deck-stage { display: block; }
   .deck-card { transform: none !important; opacity: 1 !important; filter: none !important; pointer-events: auto; }
   .deck-card + .deck-card { margin-top: 20px; }
-  .deck-nav { display: none; }
+  .deck-arrow,
+  .deck-dots { display: none; }
   .glass { animation: none; }
   .builds-fx { display: none; }
 }
