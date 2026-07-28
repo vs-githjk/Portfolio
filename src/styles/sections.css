@@ -74,16 +74,18 @@
 .hero .wrap { position: relative; }
 .hero-eyebrow { margin-bottom: clamp(20px, 2.6vw, 34px); }
 
-/* the sporty silhouette beside the name — renders once hero.figure.src is set */
+/* the circle photo beside the name */
 .hero-figure {
   position: absolute;
-  right: var(--pad);
-  top: clamp(70px, 10vh, 130px);
-  height: clamp(240px, 38vh, 420px);
-  width: auto;
+  right: clamp(24px, 4vw, 90px);
+  top: clamp(70px, 10vh, 110px); /* owns the top-right corner, above the assert line */
+  width: clamp(180px, 19vw, 280px);
+  height: clamp(180px, 19vw, 280px);
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent-3-light) 40%, var(--hair-2));
+  box-shadow: 0 0 70px color-mix(in srgb, var(--accent-3) 28%, transparent);
   pointer-events: none;
-  opacity: 0.92;
-  filter: drop-shadow(0 0 48px color-mix(in srgb, var(--accent-3) 35%, transparent));
 }
 @media (max-width: 960px) {
   .hero-figure { display: none; }
@@ -588,6 +590,9 @@
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 .plink:hover { color: var(--ink); background: var(--accent-3-light); border-color: var(--accent-3-light); }
+
+/* live PrismSlides walkthrough inside the PrismAI card */
+.proj-demo { margin-top: 22px; }
 
 /* product shot — renders only when content.js provides a media.image URL */
 .proj-shot {

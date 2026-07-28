@@ -21,6 +21,7 @@ export default function Builds() {
   const swipeX = useRef(null);
   const [active, setActive] = useState(0);
   const [Fx, setFx] = useState(null);
+  const [Slides, setSlides] = useState(null);
   const [gradient, setGradient] = useState(null);
   const [flat, setFlat] = useState(false);
 
@@ -47,6 +48,23 @@ export default function Builds() {
       ([e]) => {
         if (e.isIntersecting) {
           import('./FloatingLines').then((m) => setFx(() => m.default));
+          io.disconnect();
+        }
+      },
+      { rootMargin: '1200px' }
+    );
+    io.observe(secRef.current);
+    return () => io.disconnect();
+  }, []);
+
+  /* PrismSlides — the live product walkthrough inside the PrismAI card.
+     Lazy like the fx, but loads regardless of reduced motion (it's content;
+     the component itself stops auto-advancing under reduced motion). */
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          import('./PrismSlides').then((m) => setSlides(() => m.default));
           io.disconnect();
         }
       },
@@ -145,13 +163,20 @@ export default function Builds() {
                       </p>
                     ))}
 
-                    {p.media?.image && (
-                      <img
-                        className="proj-shot"
-                        src={p.media.image}
-                        alt={p.media.alt || ''}
-                        loading="lazy"
-                      />
+                    {/* PrismAI shows the live walkthrough; others keep their shot */}
+                    {p.id === 'prismai' && Slides ? (
+                      <div className="proj-demo">
+                        <Slides />
+                      </div>
+                    ) : (
+                      p.media?.image && (
+                        <img
+                          className="proj-shot"
+                          src={p.media.image}
+                          alt={p.media.alt || ''}
+                          loading="lazy"
+                        />
+                      )
                     )}
 
                     <div className="metrics">
