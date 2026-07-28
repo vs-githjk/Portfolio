@@ -36,7 +36,7 @@ export const hero = {
     'a meeting intelligence platform where the bot participates live in the call, and twelve agents turn the transcript into structured, actionable output in about two seconds.',
   // Sporty silhouette next to the name. Drop your cut-out at
   // public/hero-silhouette.png (transparent PNG or SVG), then set src below.
-  figure: { src: '', alt: 'Vidyut mid-play, silhouetted' }, // TODO
+  figure: { src: '/portrait.jpg', alt: 'Vidyut Sriram' },
   availability: 'Available June 2027 · new grad & internship', // TODO: match what you're actually recruiting for
   locationNote: 'State College, PA — open to relocate',
 };

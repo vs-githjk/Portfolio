@@ -35,10 +35,11 @@ export default function Hero() {
           />
         </div>
       )}
+      {/* outside .wrap so it anchors to the page's top-right corner */}
+      {hero.figure?.src && (
+        <img className="hero-figure" src={hero.figure.src} alt={hero.figure.alt || ''} />
+      )}
       <div className="wrap">
-        {hero.figure?.src && (
-          <img className="hero-figure" src={hero.figure.src} alt={hero.figure.alt || ''} />
-        )}
         <div className="eyebrow hero-eyebrow reveal">{hero.eyebrow}</div>
 
         <h1 className="reveal">
