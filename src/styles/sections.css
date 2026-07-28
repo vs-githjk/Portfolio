@@ -66,20 +66,11 @@
   padding-top: clamp(120px, 17vh, 190px);
   padding-bottom: clamp(56px, 8vh, 96px);
 }
-/* the site's one motif, introduced immediately: a whisper of the scan grid.
-   Principles (green) and Contact (cyan) are escalations of this same idea. */
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--accent-3) 30%, var(--hair)) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--accent-3) 30%, var(--hair)) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(110% 85% at 30% 15%, rgb(0 0 0 / 50%), transparent 72%);
-  opacity: 0.5;
-}
+/* The grid motif used to live here too; the galaxy replaced it — the motif
+   still escalates in Principles (green) and Contact (cyan). */
+/* galaxy starfield layer — sits between the grid motif and the content */
+.hero-fx { position: absolute; inset: 0; pointer-events: none; opacity: 0.85; }
+.galaxy-canvas { width: 100%; height: 100%; overflow: hidden; }
 .hero .wrap { position: relative; }
 .hero-eyebrow { margin-bottom: clamp(20px, 2.6vw, 34px); }
 
@@ -103,6 +94,23 @@
   font-weight: 800;
   letter-spacing: var(--tr-display);
   line-height: 0.96;
+}
+/* Three separate waves sweep the name, one color per pass: blue, then
+   yellow, then neon red, with a rest between each. The stagger per letter
+   is what turns each spike into a travelling wave. */
+.name-l {
+  display: inline-block;
+  animation: name-pulse 9s linear infinite;
+  animation-delay: calc(var(--i) * 0.14s);
+}
+@keyframes name-pulse {
+  0%, 8%, 25%, 41%, 58%, 74%, 100% { color: var(--text); text-shadow: none; }
+  4% { color: var(--accent-3); text-shadow: 0 0 26px color-mix(in srgb, var(--accent-3) 55%, transparent); }
+  33% { color: var(--accent-1); text-shadow: 0 0 26px color-mix(in srgb, var(--accent-1) 55%, transparent); }
+  66% { color: var(--accent-2); text-shadow: 0 0 26px color-mix(in srgb, var(--accent-2) 55%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .name-l { animation: none; }
 }
 /* The mono assertion inside the headline — the one typographic risk. */
 .assert {

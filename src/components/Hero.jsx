@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { hero, contact } from '../data/content';
 import Pipeline from './Pipeline';
 
@@ -6,8 +7,34 @@ import Pipeline from './Pipeline';
 const QUICK_KINDS = ['LinkedIn', 'Résumé', 'GitHub'];
 
 export default function Hero() {
+  const [Fx, setFx] = useState(null);
+
+  /* Galaxy backdrop — lazy so ogl stays out of the main bundle, skipped
+     under reduced motion. The hero is above the fold, so load immediately. */
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    import('./Galaxy').then((m) => setFx(() => m.default));
+  }, []);
+
   return (
     <header className="hero" id="top">
+      {Fx && (
+        <div className="hero-fx" aria-hidden="true">
+          <Fx
+            density={1}
+            glowIntensity={0.25}
+            saturation={0}
+            twinkleIntensity={0.35}
+            rotationSpeed={0.03}
+            starSpeed={0.2}
+            speed={0.45}
+            mouseInteraction={false}
+            mouseRepulsion={false}
+            repulsionStrength={0}
+            transparent
+          />
+        </div>
+      )}
       <div className="wrap">
         {hero.figure?.src && (
           <img className="hero-figure" src={hero.figure.src} alt={hero.figure.alt || ''} />
@@ -15,7 +42,18 @@ export default function Hero() {
         <div className="eyebrow hero-eyebrow reveal">{hero.eyebrow}</div>
 
         <h1 className="reveal">
-          {hero.headline}
+          {/* each letter pulses through the neon trio on a stagger */}
+          <span className="name-wave" aria-label={hero.headline} role="text">
+            {hero.headline.split('').map((ch, i) =>
+              ch === ' ' ? (
+                ' '
+              ) : (
+                <span className="name-l" style={{ '--i': i }} aria-hidden="true" key={i}>
+                  {ch}
+                </span>
+              )
+            )}
+          </span>
           <br />
           <span className="assert">
             {hero.assertion}
