@@ -125,7 +125,7 @@ export const experience = {
       team: 'Calculus & 0–100 level courses',
       note: 'Weekly review sessions and one-on-one tutoring — explaining hard things to people who don’t share my context, and finding where a mental model broke. Same job as debugging.',
       wins: [],
-      when: 'Aug 2025 — Present',
+      when: 'LA · Aug 2025 — May 2026\nTutor · Jan 2026 — Present',
       where: 'University Park, PA',
     },
   ],

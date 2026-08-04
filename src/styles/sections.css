@@ -394,7 +394,8 @@
   text-transform: uppercase;
   color: var(--text-3);
   text-align: right;
-  white-space: nowrap;
+  white-space: pre-line; /* \n in content.js stacks multiple date ranges */
+  line-height: 1.7;
 }
 .xp-when span { display: block; margin-top: 5px; color: var(--hair-2); }
 @media (max-width: 860px) {
