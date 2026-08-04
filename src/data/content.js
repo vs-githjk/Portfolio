@@ -103,7 +103,7 @@ export const experience = {
       team: '',
       note: "Built Sherlock's public demo interview flow in Next.js — the one screen a candidate actually meets: adaptive interview behavior, recording and submission, and the branded polish that makes it feel like a product. Also a Google Meet add-on proof of concept that renders audit logs and validates the interview from a live sidebar inside the call.",
       wins: [],
-      when: 'Jun 2026 — Present',
+      when: 'Jun — Aug 2026',
       where: 'Remote',
     },
     {
