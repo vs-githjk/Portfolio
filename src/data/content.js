@@ -37,7 +37,7 @@ export const hero = {
   // Sporty silhouette next to the name. Drop your cut-out at
   // public/hero-silhouette.png (transparent PNG or SVG), then set src below.
   figure: { src: '/portrait.jpg', alt: 'Vidyut Sriram' },
-  availability: 'Available June 2027 · new grad & internship', // TODO: match what you're actually recruiting for
+  availability: 'Graduating Dec 2026 · available Jan 2027',
   locationNote: 'State College, PA — open to relocate',
 };
 
