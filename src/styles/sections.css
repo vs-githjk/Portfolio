@@ -449,11 +449,11 @@
   border-radius: var(--radius);
   background: linear-gradient(
     165deg,
-    color-mix(in srgb, var(--surface) 62%, transparent),
-    color-mix(in srgb, var(--ink-2) 66%, transparent)
+    color-mix(in srgb, var(--surface) 84%, transparent),
+    color-mix(in srgb, var(--ink-2) 88%, transparent)
   );
-  backdrop-filter: blur(16px) saturate(1.15);
-  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
   box-shadow: 0 40px 90px -50px rgb(0 0 0 / 90%);
   animation: glass-swirl 16s ease-in-out infinite;
 }
@@ -473,6 +473,8 @@
 .glass-top .proj-when { margin-top: 0; }
 .glass .proj-body { margin-top: 18px; }
 .glass .proj-body p + p { margin-top: 14px; }
+/* text over the lines backdrop: full white for legibility */
+.glass .proj-body p { color: var(--text); }
 
 /* deck controls — glass arrows floating on the card edges, cyan like every
    other interactive; dots underneath for direct selection */

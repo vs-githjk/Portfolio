@@ -14,7 +14,7 @@ export const meta = {
   name: 'Vidyut Sriram',
   title: 'Vidyut Sriram — safe, reliable AI systems',
   description:
-    "Penn State CS '27. I build safe, reliable AI systems and modernize the workflows around them — forward-deployed engineer and entrepreneur in the making.",
+    "Penn State CS '26. I build safe, reliable AI systems and modernize the workflows around them — forward-deployed engineer and entrepreneur in the making.",
   location: 'State College, PA',
 };
 
@@ -26,7 +26,7 @@ export const nav = [
 ];
 
 export const hero = {
-  eyebrow: "AI systems engineer · forward-deployed by instinct — Penn State CS '27",
+  eyebrow: "AI systems engineer · forward-deployed by instinct — Penn State CS '26",
   headline: 'Vidyut Sriram',
   assertion: 'builds safe, reliable systems',
   blurb:
