@@ -248,8 +248,9 @@
 
 .status {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+  text-wrap: balance;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   font-weight: 500;
@@ -259,8 +260,10 @@
 }
 
 .status i {
+  flex: none;
   width: 8px;
   height: 8px;
+  margin-top: calc((1lh - 8px) / 2); /* rides the first line when the label wraps */
   border-radius: 50%;
   background: var(--ok);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent);
@@ -373,8 +376,8 @@
 }
 
 /* A card is two panels, the thumbnail and its caption. The caption panel carries
-   the glass, the border and the text, so when the ring fades it (--cap, written per
-   frame) a card on the back half is just a thumbnail, not an empty box; the
+   the glass, the border and the text; when the ring takes it away (--cap, written per
+   frame) a card on the back half is just a thumbnail, not an empty box, and the
    thumbnail's lower corners round off as the caption goes. */
 .card-link {
   display: block;
@@ -456,6 +459,16 @@
   border-top: 0;
   border-radius: 0 0 var(--r-lg) var(--r-lg);
   overflow: hidden;
+  /* --cap is written per frame by the ring: 1 on the front half, 0 on the back. The
+     panel is wiped away from its foot and keeps full opacity, like the thumbnail, so
+     a card in motion is a shorter card; the text stays until the last quarter. */
+  clip-path: inset(0 0 calc((1 - var(--cap, 1)) * 100%) 0 round 0 0 var(--r-lg) var(--r-lg));
+}
+
+.card-title,
+.card-status,
+.card-one {
+  opacity: clamp(0, calc(var(--cap, 1) * 4), 1);
 }
 
 .card-title {
@@ -810,7 +823,12 @@
     width: min(100%, 560px);
     padding: 0 16px;
     margin: 0;
-  }}
+    /* The label and the controls sit together on the ring's centre line, under the
+       front card, instead of at the two ends of a wide bar. */
+    justify-content: center;
+    gap: 32px;
+  }
+}
 
 /* Narrow laptop windows: the credential line wraps instead of running under the
    side cards of the ring. */
@@ -1245,7 +1263,7 @@
 
 .now {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
@@ -1255,21 +1273,23 @@
 }
 
 .now i {
+  flex: none;
   width: 6px;
   height: 6px;
+  margin-top: calc((1lh - 6px) / 2);
   border-radius: 50%;
   background: var(--acc);
   box-shadow: 0 0 0 3px var(--acc-glow);
 }
 
 /* ---- Featured cards -------------------------------------------------------- */
-/* Cards in a row share one height, so every row ends on one line; the spare height
-   lands above the stack and the links, which are pinned to the card's foot. */
+/* Each card is as tall as its own content, so a short card never carries a hole and
+   opening one card's "Read more" grows only that card. */
 .build-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .build {
@@ -1293,13 +1313,9 @@
   margin-top: 4px;
 }
 
-.build-body > .stack,
-.build-body > .links {
-  margin-top: auto;
-}
-
-.build-body > .stack ~ .links {
-  margin-top: 4px;
+.build-body .mini-more .text {
+  font-size: 15px;
+  max-width: 62ch;
 }
 
 /* ---- The paper ------------------------------------------------------------- */
@@ -1374,15 +1390,15 @@
 
 /* Seven cards of one size: 4 + 3 at full width, 3 + 3 + 1 below 1100, 2 + 2 + 2 + 1
    below 760, a single column below 560. A short last row is centred, so it keeps the
-   same card width as the rows above it. Cards in a row share one height and the "Read
-   more" line and the links sit on the card's foot. */
+   same card width as the rows above it. Each card is as tall as its own content, so
+   opening one "Read more" grows only that card. */
 .mini-grid {
   --mini-per: 4;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 18px;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 .mini {
@@ -1500,11 +1516,6 @@
 .mini-body .links {
   margin-top: 0;
   gap: 0 14px;
-}
-
-/* "Read more" and the links form the card's foot: spare height sits above them. */
-.mini-body .mini-more {
-  margin-top: auto;
 }
 
 .mini-body .links a {
@@ -1630,6 +1641,7 @@
   gap: 6px;
   min-height: 44px;
   margin: -10px 0;
+  white-space: nowrap; /* the handle never breaks; the eyebrow beside it wraps instead */
 }
 
 .pow-top a:hover {
@@ -2157,6 +2169,15 @@
   color: var(--text);
   font-weight: 500;
   margin-left: 8px;
+}
+
+/* On a phone the four links go one per line, so they never wrap 1 / 2 / 1. */
+@media (max-width: 460px) {
+  .c-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
 }
 
 .c-links a:hover {
