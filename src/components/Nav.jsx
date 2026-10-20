@@ -1,44 +1,50 @@
-import { useEffect, useState } from 'react';
-import { nav, meta } from '../data/content';
-import { useScrolled } from '../hooks/useScrolled';
+import { useEffect, useRef } from 'react';
+import { nav } from '../data/content';
 
+/* Sticky, 60px. Section links collapse away at phone width; the brand and the
+   Email pill remain (the page is one scroll, no hamburger). The 1px brass line
+   under the bar is the scroll progress; it is set straight on the node so a
+   scroll never re-renders React. */
 export default function Nav() {
-  const scrolled = useScrolled();
-  const [prog, setProg] = useState(0);
+  const bar = useRef(null);
 
   useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const h = document.documentElement;
-        const max = h.scrollHeight - h.clientHeight;
-        setProg(max > 0 ? window.scrollY / max : 0);
-      });
+    const node = bar.current;
+    const update = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      node.style.width = `${max > 0 ? (100 * h.scrollTop) / max : 0}%`;
     };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
     };
   }, []);
 
   return (
-    <nav className={`nav${scrolled ? ' stuck' : ''}`}>
-      <i className="nav-progress" style={{ transform: `scaleX(${prog})` }} aria-hidden="true" />
-      <div className="nav-in">
-        <a href="#top" className="brand">
-          {meta.name} <span>/ fde</span>
+    <nav className="nav" aria-label="Primary">
+      <div className="wrap nav-in">
+        <a href="#top" className="nav-brand">
+          <i aria-hidden="true" />
+          {nav.brand}
         </a>
-        <div className="nav-links">
-          {nav.map((item) => (
-            <a href={item.href} key={item.href}>
-              {item.label}
-            </a>
+        <ul>
+          {nav.links.map((l) => (
+            <li className="nav-sec" key={l.href}>
+              <a href={l.href}>{l.label}</a>
+            </li>
           ))}
-        </div>
+          <li>
+            <a className="nav-cta" href={nav.cta.href}>
+              {nav.cta.label}
+            </a>
+          </li>
+        </ul>
       </div>
+      <div className="nav-prog" ref={bar} aria-hidden="true" />
     </nav>
   );
 }

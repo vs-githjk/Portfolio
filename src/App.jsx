@@ -1,8 +1,10 @@
+import Background from './components/Background';
 import Nav from './components/Nav';
 import Hero from './components/Hero';
 import Proof from './components/Proof';
 import Experience from './components/Experience';
 import Builds from './components/Builds';
+import ProofOfWork from './components/ProofOfWork';
 import Principles from './components/Principles';
 import Value from './components/Value';
 import Toolkit from './components/Toolkit';
@@ -10,32 +12,39 @@ import Contact from './components/Contact';
 import { useReveal } from './hooks/useReveal';
 
 /* Page order. Reordering these lines reorders the site.
-   Sections are independent — comment one out and nothing breaks.
 
    The argument the page makes, in order:
-     Hero       — the claim, plus a live system as proof it isn't talk
-     Proof      — four numbers
-     Experience — where I've worked
-     Builds     — what I've built
-     Principles — how I think about building
-     Value      — what that's worth to you
-     Toolkit    — the boring inventory
-     Contact    — the ask
-*/
+     Hero          - his name, and a deck of what he has built
+     Proof         - six numbers, the one loud band
+     Experience    - where he has worked
+     Builds        - PrismAI, six featured builds, the paper, four smaller ones
+     ProofOfWork   - the commit graph, the wins, and where to check them
+     Principles    - how he thinks about building (2x2 grid)
+     Value         - what that is worth to you (hairline rows)
+     Toolkit       - the inventory
+     Contact       - the ask
+
+   <Background /> is the one WebGL layer, fixed behind everything. */
 export default function App() {
   useReveal();
 
   return (
     <>
-      <Nav />
-      <Hero />
-      <Proof />
-      <Experience />
-      <Builds />
-      <Principles />
-      <Value />
-      <Toolkit />
-      <Contact />
+      <Background />
+      <div className="page">
+        <Nav />
+        <main>
+          <Hero />
+          <Proof />
+          <Experience />
+          <Builds />
+          <ProofOfWork />
+          <Principles />
+          <Value />
+          <Toolkit />
+        </main>
+        <Contact />
+      </div>
     </>
   );
 }
