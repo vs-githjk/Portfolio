@@ -16,7 +16,6 @@ export default function ResearchRow({ item }) {
           image={item.media.image}
           alt={item.media.alt}
           tile={item.tile}
-          tilt={3}
           sizes="(min-width: 960px) 440px, 92vw"
         />
         <Metrics items={item.metrics} />

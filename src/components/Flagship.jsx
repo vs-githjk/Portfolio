@@ -25,7 +25,6 @@ export default function Flagship({ item }) {
         <Media
           image={lead.image}
           alt={lead.alt}
-          tilt={2.5}
           badges={lead.badge ? <Badge dot>{lead.badge}</Badge> : null}
           width={1200}
           height={750}
