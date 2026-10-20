@@ -1,11 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Butterfly-stroke swimmer, head-on: arms swept wide like wings over water. -->
-  <rect width="64" height="64" rx="14" fill="#100f0e"/>
-  <g stroke="#d6b46c" stroke-width="6" stroke-linecap="round" fill="none">
-    <path d="M30 36 C20 26 12 20 6 26"/>
-    <path d="M34 36 C44 26 52 20 58 26"/>
+  <!-- Three vertical beams of light on an indigo tile. -->
+  <rect width="64" height="64" rx="14" fill="#06081c"/>
+  <g fill="none" stroke-linecap="round" stroke-width="6">
+    <path d="M20 10v38" stroke="#6366f1"/>
+    <path d="M32 6v46" stroke="#9fb5ff"/>
+    <path d="M44 10v38" stroke="#8b5cf6"/>
   </g>
-  <circle cx="32" cy="24" r="5" fill="#d6b46c"/>
-  <path fill="none" stroke="#8fbf9f" stroke-width="3.5" stroke-linecap="round"
-    d="M6 49 Q11 45 16 49 T26 49 T36 49 T46 49 T58 49"/>
+  <path d="M10 54h44" stroke="#4c76ff" stroke-width="3.5" stroke-linecap="round"/>
 </svg>

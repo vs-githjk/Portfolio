@@ -4,34 +4,38 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#100f0e" />
+    <meta name="theme-color" content="#06081c" />
+    <meta name="color-scheme" content="dark" />
 
     <title>Vidyut Sriram | safe, reliable AI systems</title>
     <meta
       name="description"
-      content="Vidyut Sriram builds safe, reliable AI systems. Penn State CS, graduating Dec 2026, available Jan 2027. Builder of PrismAI, six awards, first author on arXiv:2607.21641."
+      content="Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 1st place in four hackathon tracks, arXiv first author. Forward-deployed and AI engineer, available from Jan 2027."
     />
     <meta property="og:title" content="Vidyut Sriram | safe, reliable AI systems" />
     <meta
       property="og:description"
-      content="Vidyut Sriram builds safe, reliable AI systems. Penn State CS, graduating Dec 2026, available Jan 2027. Builder of PrismAI, six awards, first author on arXiv:2607.21641."
+      content="Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 1st place in four hackathon tracks, arXiv first author. Forward-deployed and AI engineer, available from Jan 2027."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://vidyutsriramportfolio.vercel.app/" />
-    <meta property="og:image" content="https://vidyutsriramportfolio.vercel.app/og-card-v3.jpg" />
+    <meta property="og:image" content="https://vidyutsriramportfolio.vercel.app/og-card-v4.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Vidyut Sriram. Builds safe, reliable AI systems. Six awards, 14 PrismAI beta users, Comcast and Sherlock AI, first-author arXiv preprint." />
+    <meta property="og:image:alt" content="Vidyut Sriram, smiling in a light blue polo, beside his name and the line Builds safe, reliable AI systems. Chips: PrismAI live beta, 1st place in four hackathon tracks, arXiv first author, Comcast and Sherlock AI. Available Jan 2027." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://vidyutsriramportfolio.vercel.app/og-card-v3.jpg" />
+    <meta name="twitter:image" content="https://vidyutsriramportfolio.vercel.app/og-card-v4.jpg" />
 
-    <!-- Fonts. Swapping a family here means also swapping it in tokens.css. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts are self-hosted (public/fonts, declared in tokens.css). The two that
+         paint the first screen are preloaded; the rest load when first used. -->
+    <link rel="preload" href="/fonts/instrument-serif-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <noscript>
+      <style>
+        .reveal { opacity: 1; transform: none; }
+        .orbit { display: none; }
+      </style>
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
