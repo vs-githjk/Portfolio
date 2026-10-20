@@ -252,7 +252,7 @@ export const experience = {
       role: 'Software Engineering Intern',
       team: '',
       note: 'Owned the public demo interview flow end to end in Next.js: adaptive interview behavior, in-browser recording and submission. It is the surface prospective customers evaluate before they ever talk to the team. I also prototyped a Google Meet add-on that shows audit logs and checks interview integrity from a sidebar inside the live call, so review happens where the interview already takes place.',
-      wins: ['Owned the public demo interview flow prospects evaluate, end to end in Next.js', 'Prototyped a Google Meet add-on that checks interview integrity inside the live call'],
+      wins: ['Owned the public demo prospects evaluate, in Next.js', 'Prototyped a Google Meet add-on for interview integrity'],
       when: 'Jun to Aug 2026',
       where: 'Remote',
     },
