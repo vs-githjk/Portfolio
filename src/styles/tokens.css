@@ -1,137 +1,90 @@
 /* ============================================================================
-   DESIGN TOKENS — the control panel
+   DESIGN TOKENS: the control panel
    ----------------------------------------------------------------------------
-   Almost every visual decision on the site routes through a variable here.
-   Change a value, save, watch the whole page shift. This is the file to
-   experiment in first.
+   Everything downstream consumes these. Prefer changing a token over adding
+   a rule. The WebGL starfield reads --ink, --surface-2, --acc and --text at
+   mount, so a palette change here recolors the sky too.
 
-   The organizing idea: a dark grayscale base where color stays scarce enough
-   to mean something. State colors (defect / running / verified) report what a
-   system is doing; the neon accent trio marks interactive and emphasis
-   moments. Scarcity is the rule — if color is everywhere, it says nothing.
+   The organizing idea: warm graphite and one brass accent. Brass means four
+   things: the italic half of the name and of three headings, the primary
+   action, an award, and the proof band plus the commit-graph ramp. Mint means
+   available or live. Coral is reserved for a defect state (unused today).
+   Scarcity is what keeps the brass loud.
    ========================================================================== */
 
 :root {
-  /* ---- NEUTRALS -----------------------------------------------------------
-     --ink is the page. --surface is anything raised off it. --hair is every
-     1px line (there are a lot; hairlines are doing the structural work here). */
-  --ink: #0c0e13;
-  --ink-2: #11141c;
-  --surface: #161a23;
-  --hair: #242936;
-  --hair-2: #333a4b;
+  /* ---- NEUTRALS: warm graphite ------------------------------------------- */
+  --ink: #100f0e; /* page */
+  --ink-2: #151412; /* footer */
+  --surface: #1a1917; /* cards, raised */
+  --surface-2: #221f1b; /* media backdrops, typographic tiles, hover */
+  --hair: #2a2825; /* every 1px rule */
+  --hair-2: #3b3833; /* borders that need to be seen (frames, buttons); never text */
 
-  --text: #edeef2;
-  --text-2: #a8aebe;
-  --text-3: #6e7689;
+  /* ---- TEXT -------------------------------------------------------------- */
+  --text: #f2efea;
+  --text-2: #b3ac9f;
+  --text-3: #9a9183; /* mono labels, stack lines; AA on every surface */
 
-  /* ---- DIAGNOSTIC COLORS --------------------------------------------------
-     Reserved for state. Used in the repair loop, the verified checkmarks, and
-     the availability dot. Resist using these as brand accents. */
-  --defect: #ff2e4d;
-  --running: #eaff00;
-  --verified: #39d07e;
+  /* ---- ACCENT: brass ------------------------------------------------------ */
+  --acc: #d6b46c;
+  --acc-2: #f0d59a; /* sheen highlight, hover on brass, heatmap level 4 */
+  --acc-ink: #100f0e; /* text on brass */
+  --acc-ink-2: #3a3222; /* muted text on the brass band */
+  --acc-tint: color-mix(in srgb, var(--acc) 12%, transparent);
+  --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
 
-  /* ---- BRAND ACCENTS ------------------------------------------------------
-     Neon trio, used sparingly on interactive/emphasis moments: the assert
-     border, the caret, link hovers. State colors above still own meaning. */
-  --accent-1: #eaff00; /* neon yellow — primary accent */
-  --accent-2: #ff2e4d; /* neon red */
-  --accent-3: #2e7bff; /* neon blue */
-  --accent-3-light: #7df3ff; /* cyan — the Contact surface */
-  --accent-green: #2bff5e; /* neon green — the How-I-build grid backdrop */
-  --accent-orange: #ff7a1a; /* bright orange — the Value corner rays */
-  --on-accent-dark: #0c0e13; /* text on neon surfaces */
+  /* ---- STATE ------------------------------------------------------------- */
+  --ok: #8fbf9f; /* available, live, copied */
+  --bad: #e07a5f; /* reserved: nothing uses it today */
 
-  /* ---- TYPE ---------------------------------------------------------------
-     Three roles, three faces:
-       display — headlines, big numbers. Carries the personality.
-       body    — paragraphs. Should disappear.
-       mono    — labels, data, the terminal. Signals "this is machine output."
-     Swapping --font-display alone changes the site's whole character.
-     Try: "Instrument Serif", "Archivo", "Anton", "Syne", "Fraunces". */
-  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* ---- GLASS: hero deck only --------------------------------------------- */
+  --glass: color-mix(in srgb, var(--surface) 58%, transparent);
+  --glass-line: color-mix(in srgb, white 9%, transparent);
+  --glass-shadow: 0 40px 80px -40px color-mix(in srgb, black 70%, transparent);
 
-  /* Type scale — clamp() means these are already responsive.
-     Format: clamp(min, preferred, max) */
-  --fs-hero: clamp(48px, 9.4vw, 132px);
-  --fs-assert: clamp(19px, 3.6vw, 50px);
-  --fs-h2: clamp(30px, 4.4vw, 58px);
-  --fs-h3: clamp(20px, 2vw, 26px);
-  --fs-body: clamp(16px, 1.1vw, 18px);
-  --fs-label: 12px;
+  /* ---- TYPE -------------------------------------------------------------- */
+  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Tracking. Big display type needs negative tracking; small caps labels
-     need a lot of positive tracking. */
-  --tr-display: -0.045em;
-  --tr-label: 0.14em;
+  --fs-hero: clamp(64px, 8.6vw, 124px); /* h1, serif, line-height .92 */
+  --fs-h2: clamp(38px, 4.6vw, 64px); /* section headings */
+  --fs-lead: clamp(22px, 2vw, 28px); /* hero identity line */
+  --fs-body: clamp(15px, 1.05vw, 17px);
+  --fs-num: clamp(44px, 4.6vw, 68px); /* proof band numbers, nothing else */
+  --fs-metric: clamp(28px, 2.4vw, 34px); /* card metrics, GitHub stats */
+  --fs-card: clamp(28px, 2.4vw, 34px); /* card titles */
+  --fs-flag: clamp(36px, 3.4vw, 48px); /* flagship title */
+  --fs-label: 12px; /* eyebrows, nav, buttons: mono 500, uppercase */
+  --fs-micro: 11px; /* badges, index chips, metric labels */
+  --tr-display: -0.015em; /* the serif needs almost no crushing */
+  --tr-label: 0.12em;
 
-  /* ---- LAYOUT -------------------------------------------------------------
-     --pad is the gutter. --maxw is the content column. Widening --maxw makes
-     the site feel more editorial; narrowing it feels more like a document. */
-  --pad: clamp(20px, 5vw, 80px);
-  --maxw: 1240px;
-
-  /* Vertical rhythm between major sections. */
-  --sec-y: clamp(64px, 9vw, 130px);
-
-  --radius: 10px;
-  --radius-sm: 5px;
+  /* ---- LAYOUT ------------------------------------------------------------ */
+  --pad: clamp(16px, 5vw, 72px); /* gutter: exactly 16px at 390 */
+  --maxw: 1200px;
+  --sec-y: clamp(72px, 10vw, 140px);
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --r-lg: 16px;
+  --r-md: 10px;
+  --r-sm: 6px;
+  --r-pill: 999px;
   --rule: 1px solid var(--hair);
 
-  /* ---- MOTION -------------------------------------------------------------
-     One easing curve for everything keeps motion feeling coherent. */
+  /* ---- MOTION ------------------------------------------------------------ */
   --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
-  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur: 0.75s;
-}
+  --dur: 0.45s;
+  --dur-slow: 0.75s;
+  --dur-deck: 0.6s;
+  --slide-ms: 5200; /* deck dwell, unitless so JS can read it */
 
-/* ============================================================================
-   ALTERNATE PALETTES — uncomment one block to try it
-   ----------------------------------------------------------------------------
-   Each keeps the "color = state" rule but shifts the neutral base.
-   ========================================================================== */
-
-/* --- WARM GRAPHITE: less blue, more paper-under-lamplight ---
-:root {
-  --ink:      #100F0E;
-  --ink-2:    #161513;
-  --surface:  #1D1B19;
-  --hair:     #2C2926;
-  --hair-2:   #3D3934;
-  --text:     #F2EFEA;
-  --text-2:   #B0A99F;
-  --text-3:   #7A736A;
+  color-scheme: dark;
 }
-*/
-
-/* --- LIGHT / LAB NOTEBOOK: inverts the whole thing ---
-:root {
-  --ink:      #F6F6F4;
-  --ink-2:    #FFFFFF;
-  --surface:  #EDEDEA;
-  --hair:     #DDDDD8;
-  --hair-2:   #C2C2BB;
-  --text:     #14161A;
-  --text-2:   #4B5058;
-  --text-3:   #858B95;
-  --defect:   #D93A30;
-  --running:  #B87400;
-  --verified: #1A8F52;
-}
-*/
-
-/* --- HIGH CONTRAST / TRUE BLACK: harsher, more terminal ---
-:root {
-  --ink:      #000000;
-  --ink-2:    #0A0A0A;
-  --surface:  #121212;
-  --hair:     #262626;
-  --hair-2:   #3A3A3A;
-  --text:     #FFFFFF;
-  --text-2:   #A0A0A0;
-  --text-3:   #6A6A6A;
-}
-*/
