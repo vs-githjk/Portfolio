@@ -1331,25 +1331,24 @@
 }
 
 /* Seven cards of one size: 4 + 3 at full width, 3 + 3 + 1 below 1100, 2 + 2 + 2 + 1
-   below 760, a single column below 560. A short last row is centred on a 24-column
-   grid, so it keeps the same card width as the rows above it. Cards in a row share
-   one height and their links sit on the card's foot. */
+   below 760, a single column below 560. A short last row is centred, so it keeps the
+   same card width as the rows above it. Cards in a row share one height and their
+   links sit on the card's foot. */
 .mini-grid {
-  display: grid;
-  grid-template-columns: repeat(24, minmax(0, 1fr));
+  --mini-per: 4;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 18px;
   align-items: stretch;
 }
 
 .mini {
-  grid-column: span 6;
+  flex: 0 0 calc((100% - (var(--mini-per) - 1) * 18px) / var(--mini-per));
+  min-width: 0;
   display: grid;
   grid-template-rows: auto 1fr;
   box-shadow: var(--elev-1);
-}
-
-.mini:nth-child(5) {
-  grid-column: 4 / span 6;
 }
 
 .mini-media {
@@ -2089,7 +2088,20 @@
   padding: 22px 0 28px;
 }
 
+.foot-top {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-block: -12px;
+  color: var(--link);
+}
+
+.foot-top:hover {
+  color: var(--text);
+}
+
 .foot .wrap {
+  align-items: center;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -2103,21 +2115,47 @@
 
 /* =============================== RESPONSIVE =============================== */
 @media (max-width: 1100px) {
-  .mini,
-  .mini:nth-child(5) {
-    grid-column: span 8;
+  .mini-grid {
+    --mini-per: 3;
+  }
+}
+
+@media (max-width: 959.98px) {
+  /* No hamburger: the four section links become a second row of the sticky bar,
+     so a reader on a phone can jump to Builds or Verify from anywhere. */
+  :root {
+    --nav-h: 104px;
   }
 
-  .mini:last-child {
-    grid-column: 9 / span 8;
+  .nav .wrap {
+    height: 60px;
+  }
+
+  .nav-links {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 60px;
+    height: 44px;
+    padding: 0 max(var(--pad), 8px);
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-top: 1px solid color-mix(in srgb, var(--hair) 70%, transparent);
+    background: color-mix(in srgb, var(--ink) 98%, transparent);
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-links a {
+    padding: 0 10px;
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 960px) {
-  .nav-links {
-    display: none;
-  }
-
   .flag,
   .paper {
     grid-template-columns: 1fr;
@@ -2228,13 +2266,8 @@
     border-top: 1px solid var(--hair);
   }
 
-  .mini,
-  .mini:nth-child(5) {
-    grid-column: span 12;
-  }
-
-  .mini:last-child {
-    grid-column: 7 / span 12;
+  .mini-grid {
+    --mini-per: 2;
   }
 }
 
@@ -2267,10 +2300,8 @@
 }
 
 @media (max-width: 560px) {
-  .mini,
-  .mini:nth-child(5),
-  .mini:last-child {
-    grid-column: span 24;
+  .mini-grid {
+    --mini-per: 1;
   }
 
   .flag-stack {

@@ -1035,4 +1035,5 @@ export const contact = {
   ],
   footerLeft: 'Vidyut Sriram · State College, PA',
   footerRight: 'Built from scratch · 2026',
+  footerTop: 'Back to top',
 };

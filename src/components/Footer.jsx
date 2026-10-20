@@ -6,6 +6,9 @@ export default function Footer() {
       <div className="wrap">
         <span>{contact.footerLeft}</span>
         <span>{contact.footerRight}</span>
+        <a className="foot-top" href="#top">
+          {contact.footerTop} <span aria-hidden="true">↑</span>
+        </a>
       </div>
     </footer>
   );
