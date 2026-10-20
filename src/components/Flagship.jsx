@@ -26,7 +26,7 @@ export default function Flagship({ item }) {
           image={lead.image}
           alt={lead.alt}
           tilt={2.5}
-          badges={<Badge dot>{lead.badge}</Badge>}
+          badges={lead.badge ? <Badge dot>{lead.badge}</Badge> : null}
           width={1200}
           height={750}
           sizes="(min-width: 960px) 540px, 92vw"

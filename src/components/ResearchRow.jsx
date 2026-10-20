@@ -6,7 +6,8 @@ import Stack from './Stack';
 
 /* The paper: its own shape, so it does not read as a seventh product. A
    preprint, never "published". The two headline results sit under the image so
-   the media column ends close to the text column. */
+   the media column ends close to the text column; the stack and the links sit
+   on its foot so the two columns end on the same line. */
 export default function ResearchRow({ item }) {
   return (
     <article className="paper reveal" id={`build-${item.id}`}>
@@ -35,6 +36,8 @@ export default function ResearchRow({ item }) {
           </p>
         ))}
         <p className="role">{item.role}</p>
+      </div>
+      <div className="paper-foot">
         <Stack text={item.stack} />
         <LinkRow links={item.links} />
       </div>

@@ -593,6 +593,10 @@
   text-wrap: pretty;
 }
 
+.hero-stage .cred {
+  text-wrap: balance;
+}
+
 .hero-stage .cred-short {
   display: none;
 }
@@ -1015,10 +1019,11 @@
   position: absolute;
   left: 14px;
   right: 14px;
-  top: 14px;
+  bottom: 14px;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: flex-end;
   transform: translateZ(var(--z-2));
   pointer-events: none;
 }
@@ -1131,7 +1136,7 @@
 .flag {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: 1fr auto auto auto;
   grid-template-areas:
     'media body'
     'now body'
@@ -1144,10 +1149,29 @@
   grid-area: media;
   padding: 22px 0 0 22px;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* When the story beside it runs longer (narrow laptops), the spare height goes to
+   the lead still, which grows and crops, so the column never opens a hole above the
+   "Now building" box and both columns end on the same line. */
+.flag-media .media {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.flag-media .media-frame {
+  flex: 1 1 auto;
+}
+
+.flag-media .media-frame img {
+  object-position: left top;
 }
 
 /* The "Now building" box sits on the bottom of the left column, so the column
-   ends on the same line as the story beside it; any spare height opens above it. */
+   ends on the same line as the story beside it. */
 .flag-now {
   grid-area: now;
   align-self: end;
@@ -1241,13 +1265,13 @@
 }
 
 /* ---- Featured cards -------------------------------------------------------- */
-/* Cards in a row share one height; the spare height lands above the links, which
-   are pinned to the card's foot, so borders and link rows line up across a row. */
+/* Each card is as tall as its own content: a card that says less is shorter, not
+   padded, so no card carries an empty band above its links. */
 .build-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .build {
@@ -1267,8 +1291,7 @@
   min-width: 0;
 }
 
-.build-body .links,
-.paper-body .links {
+.build-body .links {
   margin-top: 4px;
 }
 
@@ -1285,16 +1308,35 @@
 .paper {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    'media body'
+    'foot body';
   margin-top: 24px;
 }
 
+/* The image and its two results sit on top of the left column; the stack and the
+   links sit on its foot, so the column fills the height of the story beside it. */
 .paper-media {
-  padding: 22px 0 28px 22px;
+  grid-area: media;
+  padding: 22px 0 18px 22px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 18px;
   min-width: 0;
+}
+
+.paper-foot {
+  grid-area: foot;
+  padding: 0 0 26px 22px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+
+.paper-foot .links {
+  margin-top: 4px;
 }
 
 /* The headline results sit directly under the image, under a hairline; the pair
@@ -1305,6 +1347,7 @@
 }
 
 .paper-body {
+  grid-area: body;
   padding: 32px 32px 24px 28px;
   display: flex;
   flex-direction: column;
@@ -1333,15 +1376,15 @@
 
 /* Seven cards of one size: 4 + 3 at full width, 3 + 3 + 1 below 1100, 2 + 2 + 2 + 1
    below 760, a single column below 560. A short last row is centred, so it keeps the
-   same card width as the rows above it. Cards in a row share one height and their
-   links sit on the card's foot. */
+   same card width as the rows above it. Each card is as tall as its own content, so
+   opening "Read more" on one never stretches its neighbours. */
 .mini-grid {
   --mini-per: 4;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 18px;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 .mini {
@@ -1468,6 +1511,35 @@
 
 .mini-body .links a {
   font-size: var(--fs-micro);
+}
+
+/* When the cards wrap 3 per row (761 to 1100px) or 2 per row (561 to 760px) the
+   seventh card would sit alone on the last row. It takes the whole row instead, as
+   a horizontal card: the thumbnail on the left, the story beside it. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .mini:last-child:nth-child(3n + 1) {
+    flex-basis: 100%;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: none;
+    align-items: center;
+  }
+
+  .mini:last-child:nth-child(3n + 1) .mini-media {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 760px) {
+  .mini:last-child:nth-child(2n + 1) {
+    flex-basis: 100%;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: none;
+    align-items: center;
+  }
+
+  .mini:last-child:nth-child(2n + 1) .mini-media {
+    padding: 14px;
+  }
 }
 
 /* ============================== HIGHLIGHTS ================================ */
@@ -2102,6 +2174,7 @@
 .foot-top {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   min-height: 44px;
   margin-block: -12px;
   color: var(--link);
@@ -2128,6 +2201,14 @@
 @media (max-width: 1100px) {
   .mini-grid {
     --mini-per: 3;
+  }
+}
+
+/* On a narrow laptop the two PrismAI columns are equal, so the story runs shorter and
+   the lead still is cropped as little as possible. */
+@media (min-width: 961px) and (max-width: 1199px) {
+  .flag {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -2170,6 +2251,18 @@
   .flag,
   .paper {
     grid-template-columns: 1fr;
+  }
+
+  .paper {
+    grid-template-rows: none;
+    grid-template-areas:
+      'media'
+      'body'
+      'foot';
+  }
+
+  .paper-foot {
+    padding: 0 20px 22px;
   }
 
   /* On a phone the story comes before the in-development box: a reader learns
