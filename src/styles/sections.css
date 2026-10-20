@@ -1292,15 +1292,14 @@
   padding: 22px 0 28px 22px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 18px;
   min-width: 0;
 }
 
-/* The headline results sit on the foot of the media column, under a hairline, so
-   both columns end on the same line. */
+/* The headline results sit directly under the image, under a hairline; the pair
+   is centred in the column, so the text beside it does not leave a hole at one end. */
 .paper-media .metrics {
-  margin-top: auto;
   padding-top: 18px;
   border-top: 1px solid var(--hair);
 }
