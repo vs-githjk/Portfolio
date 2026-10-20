@@ -122,14 +122,14 @@ export const hero = {
         badgeKind: 'live',
         image: {
           src: '/builds/ring/prismai.webp',
-          alt: 'PrismAI logo and the line "Get paid for the extra work clients ask for on calls. You approve every word." beside its live-meeting view',
+          alt: 'PrismAI logo and the line "Joins your calls. Does the follow-up. You approve every word." beside its live-meeting view with the meeting health score, decisions and action items',
         },
       },
       {
         id: 'betterbill',
         title: 'BetterBill',
         oneLiner: 'Finds charges on hospital bills you may not owe.',
-        badge: '1st place, 2 tracks · LA Hacks AI',
+        badge: '2× 1st place · LA Hacks AI',
         badgeKind: 'win',
         image: {
           src: '/builds/ring/betterbill.webp',
@@ -184,7 +184,7 @@ export const hero = {
         id: 'terrametric',
         title: 'Terrametric',
         oneLiner: 'Drought risk and irrigation plans, field by field.',
-        badge: '1st place, 2 tracks · Bitcamp',
+        badge: '2× 1st place · Bitcamp',
         badgeKind: 'win',
         image: {
           src: '/builds/ring/terrametric.webp',
@@ -228,7 +228,7 @@ export const hero = {
         id: 'nextround',
         title: 'NextRound',
         oneLiner: 'Plans your interview prep and diagnoses every miss.',
-        badge: 'Working build · live prototype',
+        badge: 'Live prototype',
         badgeKind: '',
         image: {
           src: '/builds/ring/nextround.webp',
@@ -306,7 +306,7 @@ export const builds = {
   /* ---- Flagship panel ---------------------------------------------------- */
   flagship: {
     id: 'prismai',
-    kind: 'Product · live beta · agency release launching Dec 2026',
+    kind: 'Product · live beta',
     title: 'PrismAI',
     descriptor: 'approval-first meeting agent',
     when: 'Mar 2026 to Present',
@@ -557,6 +557,7 @@ export const builds = {
     metrics: [
       { value: '83.7%', label: 'fewer CodeQL errors in\nCodeLlama 7B’s C, 5,000 tasks' },
       { value: '42% → 22%', label: 'compile failures for\nDeepSeek Coder 1.3B' },
+      { value: '49% → 19%', label: 'security defect rate,\nCodeLlama 7B' },
     ],
     /* Logo-led thumbnail (finder's typeset card with the repair-loop
        diagram). Same file as the ring card. */
@@ -580,6 +581,8 @@ export const builds = {
 
   /* ---- More builds: same card shape as `items`, smaller in the layout ----- */
   more: {
+    readMore: 'Read more',
+    readMoreSr: ' about {title}',
     heading: 'More builds',
     intro: 'A hackathon meeting agent, an interview-prep product, public tools and side projects. Every one has a public repo you can open.',
     items: [
@@ -642,7 +645,7 @@ export const builds = {
         role: 'I wrote 75 of the 78 commits across its two repos, including the architecture and the cost model. A teammate set up the staging deploy.',
         body: [
           'I built the working version for my own prep first. It plans each day to a minute budget, picks problems just above my level in each topic, schedules spaced re-solves and runs a mock interview with a voiced interviewer. When a problem goes badly, Claude diagnoses why, but **every rating and the green, amber or red verdict a mentor sees are computed in code**, with the reasons attached.',
-          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**.',
+          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**. The public prototype is a concept demo of that platform, not the working build.',
         ],
         metrics: [
           { value: '73%', label: 'lower input cost per 12-turn\nmock interview, with prompt caching' },
@@ -653,7 +656,7 @@ export const builds = {
           alt: 'NextRound logo and the line "Readiness, measured." beside its interactive prototype',
         },
         links: [
-          { label: 'Prototype', href: 'https://vs-githjk.github.io/NextRound-demo/' },
+          { label: 'Concept prototype', href: 'https://vs-githjk.github.io/NextRound-demo/' },
           { label: 'Source', href: 'https://github.com/vs-githjk/NextRound' },
           // The working build (prep-console) is a private repo and a personal
           // deployment that spends API credit: never linked.
@@ -1004,7 +1007,7 @@ export const proofOfWork = {
     },
     {
       kind: 'LinkedIn',
-      value: '/in/vidyut-sriram',
+      value: 'Vidyut Sriram',
       detail: 'Roles and dates',
       href: 'https://www.linkedin.com/in/vidyut-sriram-4b5a012aa',
     },
@@ -1014,7 +1017,7 @@ export const proofOfWork = {
 /* --------------------------------------------------------------- CONTACT --- */
 export const contact = {
   eyebrow: 'Contact',
-  heading: "Tell me what's",
+  heading: 'Tell me what’s',
   headingEm: 'broken.',
   blurb:
     'Hiring a forward-deployed engineer or an AI engineer, or building agents that have to hold up with real users? Write to me. I am available from January 2027 and open to relocating. If you think I got something on this page wrong, tell me that too.',
@@ -1024,7 +1027,7 @@ export const contact = {
   links: [
     {
       kind: 'LinkedIn',
-      value: '/in/vidyut-sriram',
+      value: 'Vidyut Sriram',
       href: 'https://www.linkedin.com/in/vidyut-sriram-4b5a012aa',
     },
     { kind: 'GitHub', value: '@vs-githjk', href: 'https://github.com/vs-githjk' },

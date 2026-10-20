@@ -36,7 +36,8 @@ export default function CompactRows({ more }) {
               <p className="mini-one">{c.oneLiner}</p>
               <details className="mini-more">
                 <summary>
-                  Read more<span className="sr"> about {c.title}</span>
+                  {more.readMore}
+                  <span className="sr">{more.readMoreSr.replace('{title}', c.title)}</span>
                 </summary>
                 {c.role && <p className="mini-role">{c.role}</p>}
                 {c.body.map((p) => (
