@@ -538,8 +538,9 @@
   border-color: var(--hair-2);
 }
 
-.orbit[data-state='static'] .ctl-pause,
-.orbit[data-mode='row'] .ctl-pause {
+/* Pause is for the turning ring only: hidden by default, so a phone's bar never shifts
+   when the script switches to row mode. */
+.ctl-pause {
   display: none;
 }
 
@@ -778,6 +779,10 @@
 
   .orbit .counter {
     display: block;
+  }
+
+  .orbit:not([data-state='static']):not([data-mode='row']) .ctl-pause {
+    display: inline-grid;
   }
 
   /* The ring's footprint on the ground: a faint ellipse, fading out behind. */
