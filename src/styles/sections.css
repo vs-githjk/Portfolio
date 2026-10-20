@@ -1304,6 +1304,7 @@
 .build-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: var(--tracks, auto);
   column-gap: 24px;
 }
 
@@ -1454,21 +1455,26 @@
   color: var(--text-2);
 }
 
-/* Seven cards on a 12-column grid: 4 x span-3, then 3 x span-4, so both rows fill the
-   width. Every card is a subgrid on the same seven rows (media, kind, title,
-   one-liner, role, links, read more), so a row of cards has one height and each field
-   starts on one line, with "Read more" on the foot; a field a card lacks leaves its
-   row empty. Below 1100 it is 3 + 2 + 2 (spans 4, 6, 6), below 760 it is 2 + 2 + 2 + a
-   full-width horizontal card, and below 560 one column. Opening one "Read more" grows
-   that row across its lane of cards. */
+/* Seven cards, one size. Every card spans two columns of an 8-column grid, and the
+   fifth starts on the second column, so the row of three sits centred under the row
+   of four at the same width. Every card is a subgrid on seven rows (media, kind,
+   title, one-liner, role, links, read more), so each field starts on one line, with
+   "Read more" on the foot; a field a card lacks leaves its row empty. useEqualRows
+   writes --tracks, the tallest size of each of the first six rows across every row
+   of cards, so the two rows of cards are one height too; the Read more row stays
+   auto, so opening one grows only its own row. Below 1100 it is 3 + 3 + 1 on six
+   columns, below 760 2 + 2 + 2 + 1 on four, the odd card centred at the same width,
+   and below 560 one column. */
 .mini-grid {
+  --mini-cols: 8;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--mini-cols), minmax(0, 1fr));
+  grid-auto-rows: var(--tracks, auto);
   column-gap: 18px;
 }
 
 .mini {
-  grid-column: span 3;
+  grid-column: span 2;
   grid-row: span 7;
   min-width: 0;
   margin-bottom: 18px;
@@ -1478,8 +1484,8 @@
   box-shadow: var(--elev-1);
 }
 
-.mini:nth-child(n + 5) {
-  grid-column: span 4;
+.mini:nth-child(5) {
+  grid-column: 2 / span 2;
 }
 
 .mini-media {
@@ -1617,58 +1623,37 @@
   padding-top: 8px;
 }
 
-/* Below 1100 the lane of seven is 3 + 2 + 2. Below 760 it is 2 + 2 + 2, and the seventh
-   card takes the whole row as a horizontal card: the thumbnail on the left, the story
-   beside it. Below 560 every card has its own full-width row. */
+/* Below 1100 the lane of seven is 3 + 3 + 1 on six columns, below 760 it is
+   2 + 2 + 2 + 1 on four; the odd seventh card is centred at the same width. Below 560
+   every card has its own full-width row. */
 @media (max-width: 1100px) {
-  .mini,
-  .mini:nth-child(n + 5) {
-    grid-column: span 4;
+  .mini-grid {
+    --mini-cols: 6;
   }
 
-  .mini:nth-child(n + 4) {
-    grid-column: span 6;
+  .mini:nth-child(5) {
+    grid-column: span 2;
+  }
+
+  .mini:nth-child(7) {
+    grid-column: 3 / span 2;
   }
 }
 
 @media (max-width: 760px) {
-  .mini,
-  .mini:nth-child(n + 4),
-  .mini:nth-child(n + 5) {
-    grid-column: span 6;
-  }
-}
-
-@media (min-width: 561px) and (max-width: 760px) {
-  .mini:last-child {
-    grid-column: 1 / -1;
-    grid-row: span 1;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    grid-template-rows: none;
-    align-items: center;
+  .mini-grid {
+    --mini-cols: 4;
   }
 
-  .mini:last-child .mini-media {
-    padding: 14px;
-  }
-
-  .mini:last-child .mini-body {
-    grid-row: auto;
-    grid-template-rows: none;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 12px;
-  }
-
-  .mini:last-child .mini-body > * {
-    align-self: flex-start;
+  .mini:nth-child(7) {
+    grid-column: 2 / span 2;
   }
 }
 
 @media (max-width: 560px) {
   .mini,
-  .mini:nth-child(n + 4),
-  .mini:nth-child(n + 5) {
+  .mini:nth-child(5),
+  .mini:nth-child(7) {
     grid-column: 1 / -1;
   }
 }

@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { useEqualRows } from '../hooks/useEqualRows';
 import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
@@ -8,15 +10,17 @@ import Stack from './Stack';
    one-liner, the role line and the links are always visible; the full story, any
    metric and the stack open under "Read more" at the card foot (a native <details>,
    so it needs no script). The role line is one sentence and stays visible: it is the
-   ownership fact a skimmer wants. All seven cards share one size, see .mini-grid. */
+   ownership fact a skimmer wants. All seven cards share one size and one height, see .mini-grid. */
 export default function CompactRows({ more }) {
+  const grid = useRef(null);
+  useEqualRows(grid, 7);
   return (
     <div className="more">
       <div className="more-head reveal">
         <h3>{more.heading}</h3>
         <p>{more.intro}</p>
       </div>
-      <div className="mini-grid">
+      <div className="mini-grid" ref={grid}>
         {more.items.map((c, n) => (
           <article className="mini reveal" id={`build-${c.id}`} data-delay={n % 4 || undefined} key={c.id}>
             <div className="mini-media">
@@ -24,7 +28,7 @@ export default function CompactRows({ more }) {
                 image={c.media?.image}
                 alt={c.media?.alt}
                 tile={c.tile}
-                sizes="(min-width: 1100px) 310px, (min-width: 560px) 46vw, 92vw"
+                sizes="(min-width: 1100px) 270px, (min-width: 760px) 30vw, (min-width: 560px) 46vw, 92vw"
               />
             </div>
             <div className="mini-body">

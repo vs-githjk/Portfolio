@@ -248,9 +248,16 @@ Don't add these back without asking:
   never a hole between its fields. Do not move it back above the stack. Do not restore
   `align-items: start`. Section padding is `--sec-y` (56 to 100px); the page is about
   12,600px at 1440.
-- More builds is a 12-column grid: 4 cards of span 3, then 3 of span 4 (3 + 2 + 2 below
-  1100, 2 + 2 + 2 + a horizontal card below 760, one column below 560). Each card is a
-  subgrid on seven rows (media, kind, title, one-liner, role, links, read more).
+- Every card in a lane is one width and one height, across rows too (Vidyut's rule, Oct
+  2026). More builds is an 8-column grid, each card span 2, the fifth starting on column 2
+  so the row of three is centred under the row of four (3 + 3 + 1 on six columns below
+  1100, 2 + 2 + 2 + 1 on four below 760, the odd card centred at the same width, one column
+  below 560). Each card is a subgrid on seven rows (media, kind, title, one-liner, role,
+  links, read more). `useEqualRows` reads the natural track sizes and writes the tallest of
+  each (all but Read more) to `--tracks`, which both grids use as `grid-auto-rows`, so the
+  three featured rows and the two More builds rows match. Read more stays auto: opening a
+  story grows only its own row. A row without a field (Vytal and Match Day have no metrics)
+  keeps that row's space, so its stack and links sit on the same line as the other rows'.
 - Images are flat and straight: build thumbnails and stills never carry a 3D angle, and
   `Media` has no pointer tilt. Only the orbit ring is 3D.
 - The PrismAI lead still contributes no height of its own on desktop (`contain: size`, a
