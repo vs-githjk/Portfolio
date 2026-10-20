@@ -33,6 +33,8 @@ const easeOut = (p) => 1 - Math.pow(1 - p, 3);
 
 /* Two widths per ring card: 320 for the desktop ring (cards are about 220px wide),
    640 for a phone's row (cards up to 320px wide at 2x or more). */
+/* alt is empty on purpose: the card is one link whose visible text (title, badge,
+   one-liner) already names it, and the descriptive alt lives on the Builds image. */
 function Shot({ slide, k }) {
   const src = slide.image.src;
   return (
@@ -40,7 +42,7 @@ function Shot({ slide, k }) {
       src={src}
       srcSet={`${src.replace('.webp', '-320.webp')} 320w, ${src} 640w`}
       sizes="(min-width: 960px) 240px, min(78vw, 320px)"
-      alt={slide.image.alt}
+      alt=""
       width="640"
       height="400"
       {...(k === 0 ? { fetchPriority: 'high' } : { loading: 'lazy', decoding: 'async' })}
@@ -197,7 +199,11 @@ export default function Orbit({ stageRef, centreRef }) {
         cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg) scale(${(1 - CFG.side * s * s).toFixed(3)})`;
         // Dim with depth. A back card that sits behind the hero copy goes almost
         // fully dark, so nothing on it competes with the text in front.
+        const cap = Math.max(0, Math.min(1, (c - 0.3) / 0.4));
         let shade = CFG.shade * Math.pow((1 - c) / 2, 1.2);
+        // A pale thumbnail (tone: 'light') would stay the brightest thing at the back of
+        // the ring, so it dims further as it leaves the front.
+        if (slides[k].tone === 'light') shade += (1 - shade) * 0.4 * (1 - cap);
         let hidden = 0;
         if (c < 0) {
           // How far the card's near edge is from the copy on its side (negative while
@@ -224,7 +230,6 @@ export default function Orbit({ stageRef, centreRef }) {
         // The card's body (its glass panel and border) fades with the text, so the
         // back half reads as thumbnails, not as empty panels (--cap also squares the
         // thumbnail's lower corners back into rounded ones).
-        const cap = Math.max(0, Math.min(1, (c - 0.3) / 0.4));
         if (Math.abs(cap - lastCap[k]) > 0.004) {
           lastCap[k] = cap;
           parts[k].cap.style.opacity = cap.toFixed(3);
