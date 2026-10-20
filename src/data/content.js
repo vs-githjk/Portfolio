@@ -546,7 +546,7 @@ export const builds = {
     descriptor: 'GCC · CodeQL · KLEE',
     when: 'Sep 2025 to Jul 2026 · 2nd Place, Engineering, Penn State Undergraduate Exhibition 2026',
     oneLiner:
-      'A repair loop that does not accept a model’s C code until the compiler and a static analyzer stop objecting.',
+      'A repair loop that sends compiler and static-analyzer findings back to the model, so LLM-written C comes out compiling and safer.',
     awards: ['2nd · Penn State Exhibition 2026'],
     role: 'First author, with Saatvik Pradhan and Suman Saha.',
     body: [
