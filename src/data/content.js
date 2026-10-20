@@ -551,7 +551,7 @@ export const builds = {
     role: 'First author, with Saatvik Pradhan and Suman Saha.',
     body: [
       'Without help, the models we tested failed to compile up to 46% of their C programs and left security defects in up to 49%. My loop feeds GCC and CodeQL findings back to the model for up to three repair rounds, guided by a growing library of past fixes ranked by how far each got through GCC, CodeQL and KLEE symbolic execution.',
-      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463 **, and nearly halved DeepSeek Coder 1.3B’s compile failures while its security defects fell from 35% to 15%.',
+      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463**, and nearly halved DeepSeek Coder 1.3B’s compile failures while its security defects fell from 35% to 15%.',
     ],
     metrics: [
       { value: '83.7%', label: 'fewer CodeQL errors in\nCodeLlama 7B’s C, 5,000 tasks' },

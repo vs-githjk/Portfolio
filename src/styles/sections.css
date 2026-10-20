@@ -1297,8 +1297,10 @@
   min-width: 0;
 }
 
-/* The headline results sit directly under the image, under a hairline. */
+/* The headline results sit on the foot of the media column, under a hairline, so
+   both columns end on the same line. */
 .paper-media .metrics {
+  margin-top: auto;
   padding-top: 18px;
   border-top: 1px solid var(--hair);
 }
