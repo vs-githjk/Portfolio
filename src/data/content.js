@@ -81,9 +81,9 @@ export const hero = {
   /* Short form clears the side cards at 1440. Long form for row mode and
      anywhere with room. "1st place in four tracks" = Visa + Photon (LA Hacks
      AI Hackathon) + Real World + Data Science (Bitcamp). */
-  credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
+  credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
   credentialLong:
-    'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
+    'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
   locationNote: 'State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
