@@ -82,7 +82,7 @@ export const hero = {
      on a phone). "1st place in four tracks" = Visa + Photon (LA Hacks AI
      Hackathon) + Real World + Data Science (Bitcamp). */
   credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
-  locationNote: 'Penn State CS, Dec 2026 · State College, PA · open to relocate',
+  locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
     { label: 'Email me', href: 'mailto:vidyut0712@gmail.com', primary: true },
@@ -252,7 +252,7 @@ export const experience = {
       role: 'Software Engineering Intern',
       team: '',
       note: 'Owned the public demo interview flow end to end in Next.js: adaptive interview behavior, in-browser recording and submission. It is the surface prospective customers evaluate before they ever talk to the team. I also prototyped a Google Meet add-on that shows audit logs and checks interview integrity from a sidebar inside the live call, so review happens where the interview already takes place.',
-      wins: ['Adaptive interviews and in-browser recording, in Next.js', 'Google Meet add-on: audit logs inside the live call'],
+      wins: ['Owned the public demo interview flow prospects evaluate, end to end in Next.js', 'Prototyped a Google Meet add-on that checks interview integrity inside the live call'],
       when: 'Jun to Aug 2026',
       where: 'Remote',
     },
@@ -416,10 +416,10 @@ export const builds = {
       awards: [],
       role: 'Solo build: every commit in the repo is mine.',
       body: [
-        'MVR captures a codebase as an immutable, content-addressed snapshot, and seven deterministic analyzers turn it into a system model where every claim points to the exact evidence behind it. Anything they cannot prove is recorded as unknown, never guessed. On its own evaluation over synthetic codebases it **never claimed certainty it could not prove**, with tenant isolation enforced by forced Postgres row-level security.',
+        'MVR captures a codebase as an immutable, content-addressed snapshot, and seven deterministic analyzers turn it into a system model where every claim points to the exact evidence behind it. Anything they cannot prove is recorded as unknown, never guessed. In its own evaluation, on held-out synthetic fixtures, it **never claimed certainty it could not prove**, with tenant isolation enforced by forced Postgres row-level security.',
       ],
       metrics: [
-        { value: '0', label: 'false-certainty claims\non its own evaluation' },
+        { value: '0', label: 'false-certainty claims on\nheld-out synthetic fixtures' },
         { value: '2,320', label: 'unit tests passing,\nplus 312 tenant-isolation tests' },
       ],
       stack:
@@ -790,7 +790,7 @@ export const principles = {
   items: [
     {
       title: 'The model explains. Code decides.',
-      body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s change orders are priced the same way. When a number matters, it should never come from a guess.',
+      body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s agency release (in development, Dec 2026) prices change orders the same way. When a number matters, it should never come from a guess.',
     },
     {
       title: 'Something has to be able to say no.',
