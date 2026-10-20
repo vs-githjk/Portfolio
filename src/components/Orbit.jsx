@@ -142,7 +142,7 @@ export default function Orbit({ stageRef, centreRef }) {
       // The widest the ring may be: the outermost card keeps 16px to spare on each side.
       const room = scene.clientWidth / 2 - 16;
       const wide = scene.clientWidth;
-      let rx = wide >= 1800 ? CFG.rx + 130 : wide >= 1400 ? CFG.rx + 40 : CFG.rx;
+      let rx = wide >= 1800 ? CFG.rx + 130 : wide >= 1500 ? CFG.rx + 80 : wide >= 1400 ? CFG.rx + 40 : CFG.rx;
       for (let i = 0; i < 8; i++) {
         let e = 0;
         for (let w = 0.5; w <= Math.PI / 2 + 0.01; w += 0.04) e = Math.max(e, edgeAt(rx, w));
