@@ -53,7 +53,7 @@ export const nav = {
   links: [
     { label: 'Work', href: '#work' },
     { label: 'Builds', href: '#builds' },
-    { label: 'Verify', href: '#verify' },
+    { label: 'Proof', href: '#verify' },
     { label: 'How I build', href: '#principles' },
   ],
   cta: { label: 'Email', href: 'mailto:vidyut0712@gmail.com' },
@@ -83,7 +83,7 @@ export const hero = {
      AI Hackathon) + Real World + Data Science (Bitcamp). */
   credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
   credentialLong:
-    'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
+    'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
   locationNote: 'State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
@@ -131,6 +131,7 @@ export const hero = {
         oneLiner: 'Finds hospital charges you may not owe.',
         badge: '2× 1st · LA Hacks',
         badgeKind: 'win',
+        tone: 'light', // pale thumbnail: the ring dims it further at the back
         image: {
           src: '/builds/ring/betterbill.webp',
           alt: 'BetterBill: "Know the price before you go. Fix the bill after. We make the call." beside its price, bill-check and billing-call screens (sample bill, synthetic)',
@@ -219,6 +220,7 @@ export const hero = {
         oneLiner: 'Reports what was filed, never what it means.',
         badge: 'Solo build',
         badgeKind: '',
+        tone: 'light', // pale thumbnail: the ring dims it further at the back
         image: {
           src: '/builds/ring/filingwatch.webp',
           alt: 'FilingWatch "8K" mark, "Reports what was filed, never what it means", beside its feed of recent SEC 8-K filings',
@@ -228,7 +230,7 @@ export const hero = {
         id: 'nextround',
         title: 'NextRound',
         oneLiner: 'Plans your prep and diagnoses every miss.',
-        badge: 'Concept prototype',
+        badge: 'Working build',
         badgeKind: '',
         image: {
           src: '/builds/ring/nextround.webp',
@@ -252,7 +254,7 @@ export const experience = {
       role: 'Software Engineering Intern',
       team: '',
       note: 'Owned the public demo interview flow end to end in Next.js: adaptive interview behavior, in-browser recording and submission. It is the surface prospective customers evaluate before they ever talk to the team. I also prototyped a Google Meet add-on that shows audit logs and checks interview integrity from a sidebar inside the live call, so review happens where the interview already takes place.',
-      wins: ['Owned the customer-facing demo end to end', 'Prototyped a Google Meet add-on'],
+      wins: ['Adaptive interviews and in-browser recording, in Next.js', 'Google Meet add-on: audit logs inside the live call'],
       when: 'Jun to Aug 2026',
       where: 'Remote',
     },
@@ -279,7 +281,7 @@ export const experience = {
       team: 'B.S. Computer Science, Math minor',
       note: 'As a Learning Assistant I ran calculus review sessions, and as a peer tutor I work one on one across introductory math. The work is explaining hard ideas to people who do not share my context, and finding the exact spot where a mental model broke. It is the same skill a forward-deployed engineer uses with a customer.',
       wins: ['GPA 3.84 of 4.00', "Dean's List, 6 of 6 semesters"],
-      when: 'LA · Aug 2025 to May 2026\nTutor · Jan 2026 to Present',
+      when: 'Learning Assistant · Aug 2025 to May 2026\nTutor · Jan 2026 to Present',
       where: 'University Park, PA',
     },
   ],
@@ -339,7 +341,7 @@ export const builds = {
       lead: {
         image: '/builds/prismai-agency.webp',
         alt: 'PrismAI agency release: a client asks for an iPhone app on a weekly call, PrismAI checks it against clause 3.2 of the agreement and drafts change order #3 for approval',
-        badge: 'Now building · Dec 2026',
+        badge: '', // the caption and the box below carry the label
         caption: 'Agency release, in development: a client’s extra ask, checked against the agreement and drafted as a change order you approve.',
       },
       stack: [
@@ -551,10 +553,10 @@ export const builds = {
     role: 'First author, with Saatvik Pradhan and Suman Saha.',
     body: [
       'Without help, the models we tested failed to compile up to 46% of their C programs and left security defects in up to 49%. My loop feeds GCC and CodeQL findings back to the model for up to three repair rounds, guided by a growing library of past fixes ranked by how far each got through GCC, CodeQL and KLEE symbolic execution.',
-      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463**, and nearly halved DeepSeek Coder 1.3B’s compile failures while its security defects fell from 35% to 15%.',
+      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors by 83.7%**, and nearly halved DeepSeek Coder 1.3B’s compile failures while its security defects fell from 35% to 15%.',
     ],
     metrics: [
-      { value: '83.7%', label: 'fewer CodeQL errors in\nCodeLlama 7B’s C, 5,000 tasks' },
+      { value: '15,088 → 2,463', label: 'CodeQL errors in CodeLlama 7B’s\nC code, across 5,000 tasks' },
       { value: '42% → 22%', label: 'compile failures for\nDeepSeek Coder 1.3B' },
     ],
     /* Logo-led thumbnail (finder's typeset card with the repair-loop
@@ -633,17 +635,17 @@ export const builds = {
          (the working build, private). One project per Vidyut, Oct 20. */
       {
         id: 'nextround',
-        kind: 'Product · private working build · public prototype',
+        kind: 'Product · private build · public prototype',
         title: 'NextRound',
         descriptor: 'interview readiness, measured',
         when: 'Jul to Sep 2026',
         oneLiner:
           'Interview prep for software engineers: it plans each day, diagnoses what went wrong, and computes every score in code instead of asking a model.',
         awards: [],
-        role: 'I wrote 75 of the 78 commits across its two repos, including the architecture and the cost model. A teammate set up the staging deploy.',
+        role: 'I wrote 75 of the 78 commits across its two repos, including the architecture.',
         body: [
           'I built the working version for my own prep first. It plans each day to a minute budget, picks problems just above my level in each topic, schedules spaced re-solves and runs a mock interview with a voiced interviewer. When a problem goes badly, Claude diagnoses why, but **every rating and the green, amber or red verdict a mentor sees are computed in code**, with the reasons attached.',
-          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**. The public prototype is a concept demo of that platform, not the working build.',
+          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**. A teammate set up the staging deploy. The public prototype is a concept demo of that platform, not the working build.',
         ],
         metrics: [
           { value: '73%', label: 'lower input cost per 12-turn\nmock interview, with prompt caching' },
@@ -685,7 +687,7 @@ export const builds = {
       },
       {
         id: 'transitguard',
-        kind: 'Course project · solo',
+        kind: 'Project · solo',
         title: 'TransitGuard',
         descriptor: 'baggage risk dashboard for airport ops',
         when: 'Mar to Apr 2026',
@@ -786,7 +788,7 @@ export const principles = {
   items: [
     {
       title: 'The model explains. Code decides.',
-      body: 'In BetterBill, Yinzone, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag and dollar, and the model reads, drafts and explains. PrismAI’s change orders are priced the same way. When a number matters, it should never come from a guess.',
+      body: 'In BetterBill, Yinzone, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s change orders are priced the same way. When a number matters, it should never come from a guess.',
     },
     {
       title: 'Something has to be able to say no.',
@@ -930,7 +932,7 @@ export const proofOfWork = {
   heading: 'Verify me in',
   headingEm: 'one click.',
   intro:
-    'Everything above leaves a public trail. The graph counts my private-repo work too, and every hackathon win links to its Devpost page.',
+    'Most of what is above leaves a public trail: the graph counts my private-repo work too, and every hackathon win links to its Devpost page. On a few repos (Quorum, PaperTrail, Terrametric) GitHub’s contributor list skips me because my commits carry a laptop email; the commit log shows them under Vidyut Sriram.',
   github: {
     eyebrow: 'GitHub · last 12 months',
     handle: '@vs-githjk',
@@ -1001,7 +1003,7 @@ export const proofOfWork = {
     {
       kind: 'Chrome Web Store',
       value: 'PrismAI Notetaker',
-      detail: 'Public listing · updated Aug 2026',
+      detail: 'Sends the PrismAI notetaker into a meeting in one click',
       href: 'https://chromewebstore.google.com/detail/prismai-notetaker/bmnjdhgofbbjlngcahneegalddlpjkbh',
     },
     {
