@@ -1061,11 +1061,10 @@
 }
 
 /* Shared card text. */
+/* Kind on the first line, date and event on the second, on every card. */
 .kind {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 6px;
 }
 
 .flag-title,
@@ -1242,13 +1241,13 @@
 }
 
 /* ---- Featured cards -------------------------------------------------------- */
-/* Cards hug their own content: a card with a short story is not stretched to
-   its neighbour's height with a hole in the middle. */
+/* Cards in a row share one height; the spare height lands above the links, which
+   are pinned to the card's foot, so borders and link rows line up across a row. */
 .build-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .build {
@@ -1270,6 +1269,15 @@
 
 .build-body .links,
 .paper-body .links {
+  margin-top: 4px;
+}
+
+.build-body > .stack,
+.build-body > .links {
+  margin-top: auto;
+}
+
+.build-body > .stack ~ .links {
   margin-top: 4px;
 }
 
@@ -1322,24 +1330,26 @@
   color: var(--text-2);
 }
 
-/* Seven cards: 4 + 3 at full width, 3 + 2 + 2 below 1100, 2 + 2 + 2 + 1 below
-   760, a single column below 560. Every row spans the full width. */
+/* Seven cards of one size: 4 + 3 at full width, 3 + 3 + 1 below 1100, 2 + 2 + 2 + 1
+   below 760, a single column below 560. A short last row is centred on a 24-column
+   grid, so it keeps the same card width as the rows above it. Cards in a row share
+   one height and their links sit on the card's foot. */
 .mini-grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(24, minmax(0, 1fr));
   gap: 18px;
-  align-items: start; /* an opened card grows alone, its neighbours stay put */
+  align-items: stretch;
 }
 
 .mini {
-  grid-column: span 3;
+  grid-column: span 6;
   display: grid;
   grid-template-rows: auto 1fr;
   box-shadow: var(--elev-1);
 }
 
-.mini:nth-child(n + 5) {
-  grid-column: span 4;
+.mini:nth-child(5) {
+  grid-column: 4 / span 6;
 }
 
 .mini-media {
@@ -1347,7 +1357,7 @@
 }
 
 .mini-media .media-frame {
-  border-radius: 8px;
+  border-radius: var(--r-md);
   box-shadow: var(--elev-1);
 }
 
@@ -1446,8 +1456,14 @@
 }
 
 .mini-body .links {
-  margin-top: 2px;
+  margin-top: 0;
   gap: 0 14px;
+}
+
+/* "Read more" and the links form the card's foot: spare height sits above them. */
+.mini-body .mini-more {
+  margin-top: auto;
+  margin-bottom: -8px;
 }
 
 .mini-body .links a {
@@ -1839,7 +1855,7 @@
   width: 28px;
   height: 2px;
   background: var(--acc);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
 }
 
 .p-tile h3 {
@@ -2087,12 +2103,13 @@
 
 /* =============================== RESPONSIVE =============================== */
 @media (max-width: 1100px) {
-  .mini {
-    grid-column: span 4;
+  .mini,
+  .mini:nth-child(5) {
+    grid-column: span 8;
   }
 
-  .mini:nth-child(n + 4) {
-    grid-column: span 6;
+  .mini:last-child {
+    grid-column: 9 / span 8;
   }
 }
 
@@ -2212,12 +2229,12 @@
   }
 
   .mini,
-  .mini:nth-child(n + 4) {
-    grid-column: span 6;
+  .mini:nth-child(5) {
+    grid-column: span 12;
   }
 
-  .mini:last-child:nth-child(odd) {
-    grid-column: span 12;
+  .mini:last-child {
+    grid-column: 7 / span 12;
   }
 }
 
@@ -2247,17 +2264,13 @@
     height: 96px;
   }
 
-  .kind {
-    flex-direction: column;
-    gap: 4px;
-  }
 }
 
 @media (max-width: 560px) {
   .mini,
-  .mini:nth-child(n + 4),
-  .mini:last-child:nth-child(odd) {
-    grid-column: span 12;
+  .mini:nth-child(5),
+  .mini:last-child {
+    grid-column: span 24;
   }
 
   .flag-stack {

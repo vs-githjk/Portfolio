@@ -228,7 +228,7 @@ export const hero = {
         id: 'nextround',
         title: 'NextRound',
         oneLiner: 'Plans your prep and diagnoses every miss.',
-        badge: 'Live prototype',
+        badge: 'Concept prototype',
         badgeKind: '',
         image: {
           src: '/builds/ring/nextround.webp',
@@ -656,7 +656,7 @@ export const builds = {
           alt: 'NextRound logo and the line "Readiness, measured." beside its interactive prototype',
         },
         links: [
-          { label: 'Concept prototype', href: 'https://vs-githjk.github.io/NextRound-demo/' },
+          { label: 'Concept demo', href: 'https://vs-githjk.github.io/NextRound-demo/' },
           { label: 'Source', href: 'https://github.com/vs-githjk/NextRound' },
           // The working build (prep-console) is a private repo and a personal
           // deployment that spends API credit: never linked.
