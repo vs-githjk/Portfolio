@@ -161,9 +161,9 @@ only. When a change genuinely needs both, say so before starting.
 token. If one does not exist, add it to `tokens.css` rather than inlining a hex.
 
 **One camera for the whole page.** Every raised surface shares `--persp`, one top highlight
-and the `--elev-1/2/3` scale; `.reveal` rises out of the same perspective; media frames tilt
-toward a fine pointer (transform only) and are flat on touch and under reduced motion. Keep
-it elegant: depth is a few degrees and a few shadows, never a spin.
+and the `--elev-1/2/3` scale; `.reveal` rises out of the same perspective; media frames stay
+flat (the ring is the only 3D object). Keep it elegant: depth is a few degrees and a few
+shadows, never a spin.
 
 ## Type
 
@@ -196,7 +196,7 @@ nav, buttons, badges and stack lines.
 - Works down to 360px wide with no horizontal scroll (`scrollWidth == clientWidth`).
 - Keyboard focus visible everywhere (`:focus-visible` styled in `base.css`); targets at
   least 44px.
-- `prefers-reduced-motion` respected: static beams, static ring pose, no tilt, no reveal, no
+- `prefers-reduced-motion` respected: static beams, static ring pose, no reveal, no
   rAF loop. Any new animation must do the same.
 - WCAG AA contrast on every text and surface pair (Lighthouse accessibility 100).
 - `npm run build` and `npm run lint` both pass; Lighthouse performance 95+ on mobile,
@@ -239,18 +239,25 @@ Don't add these back without asking:
 
 ## Later rounds: layout rules worth keeping
 
-- Cards are as tall as their own content (`align-items: start`): equal heights left 100 to
-  170px holes inside the shorter card, and opening one "Read more" stretched its row mates
-  into empty shells. The six featured cards keep the one-liner, role, results and stack on
-  show and put the story behind the same "Read more" the More-builds cards use (a native
-  `<details>`, so the text stays in the HTML). Section padding is `--sec-y` (56 to 100px);
-  the page is about 12,600px at 1440.
-- More builds is a centred flex grid of one card size (4, 3, 2
-  or 1 per row via `--mini-per`); when the seventh card would sit alone on a row (3 or 2 per
-  row) it takes the whole row as a horizontal card.
-- The PrismAI lead still grows (cover crop, left-aligned) when the story beside it is longer,
-  so the left column ends on the same line; the paper's stack and links sit on the foot of
-  its left column for the same reason.
+- Cards in a row have one height and aligned fields (Vidyut's rule, Oct 2026). The six
+  featured cards are pairs; each card is a `subgrid` on the same nine rows (media, kind,
+  title, one-liner, role, results, stack, links, read more), so every field starts on one
+  line across the pair and a field one card lacks leaves its row empty. "Read more" (a
+  native `<details>`, so the text stays in the HTML) is the LAST row, at the card foot:
+  opening one story grows that row in both cards, and the row mate gets padding at its foot,
+  never a hole between its fields. Do not move it back above the stack. Do not restore
+  `align-items: start`. Section padding is `--sec-y` (56 to 100px); the page is about
+  12,600px at 1440.
+- More builds is a 12-column grid: 4 cards of span 3, then 3 of span 4 (3 + 2 + 2 below
+  1100, 2 + 2 + 2 + a horizontal card below 760, one column below 560). Each card is a
+  subgrid on seven rows (media, kind, title, one-liner, role, links, read more).
+- Images are flat and straight: build thumbnails and stills never carry a 3D angle, and
+  `Media` has no pointer tilt. Only the orbit ring is 3D.
+- The PrismAI lead still contributes no height of its own on desktop (`contain: size`, a
+  268px floor): the story sets the row height, the still crops (cover, top left) to fit,
+  and the role line shares its bottom edge with the "Now building" box. Do not give the
+  still its natural height back: it opens a 140 to 150px hole in the story column. The
+  paper's stack and links sit on the foot of its left column.
 - Below 960px the four section links become a second row of the sticky nav (`--nav-h` is 104px
   there, which `scroll-margin-top` reads), and the footer has a back-to-top link. On a phone
   that bar slides away while the reader scrolls down and returns on the first scroll up

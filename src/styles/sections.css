@@ -1186,7 +1186,7 @@
 @media (min-width: 961px) {
   .flag-media {
     contain: size;
-    min-height: 300px;
+    min-height: 268px;
   }
 
   .flag-media .media {
