@@ -61,6 +61,15 @@ export default function Orbit({ stageRef, centreRef }) {
     const cards = [...scene.querySelectorAll('.card')];
     const links = cards.map((c) => c.querySelector('.card-link'));
     const shades = cards.map((c) => c.querySelector('.card-shade'));
+    const parts = cards.map((c) => ({
+      cap: c.querySelector('.card-cap'),
+      cta: c.querySelector('.card-cta'),
+      prog: c.querySelector('.card-prog'),
+      bar: c.querySelector('.card-prog i'),
+    }));
+    // Last written opacities: a style is only touched when its value really moves.
+    const lastCap = cards.map(() => -1);
+    const lastNear = cards.map(() => -1);
     const css = getComputedStyle(document.documentElement);
     const num = (name, fb) => parseFloat(css.getPropertyValue(name)) || fb;
     const reducedMq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -153,9 +162,17 @@ export default function Orbit({ stageRef, centreRef }) {
         // Text on the back half is faded out completely: the cards there sit
         // behind the hero copy, and their captions must never show through it.
         const cap = Math.max(0, Math.min(1, (c + 0.1) / 0.5));
-        cards[k].style.setProperty('--cap', cap.toFixed(3));
+        if (Math.abs(cap - lastCap[k]) > 0.004) {
+          lastCap[k] = cap;
+          parts[k].cap.style.opacity = cap.toFixed(3);
+        }
+        // Only the front card shows its call to action and its progress line.
         const near = Math.max(0, Math.min(1, ((1 + c) / 2 - 0.9) / 0.1));
-        cards[k].style.setProperty('--near', near.toFixed(3));
+        if (Math.abs(near - lastNear[k]) > 0.004) {
+          lastNear[k] = near;
+          parts[k].cta.style.opacity = near.toFixed(3);
+          parts[k].prog.style.opacity = near.toFixed(3);
+        }
         ranks.push([c, k]);
       }
       ranks.sort((a, b) => b[0] - a[0]);
@@ -177,7 +194,7 @@ export default function Orbit({ stageRef, centreRef }) {
       }
       // Thin electric-blue progress line on the front card: time until the ring moves on.
       const p = vt / CFG.stepMs - Math.floor(vt / CFG.stepMs);
-      cards[f].style.setProperty('--prog', (paused() && !anim ? 0 : p).toFixed(3));
+      parts[f].bar.style.transform = `scaleX(${(paused() && !anim ? 0 : p).toFixed(3)})`;
     }
 
     function needsFrames() {
@@ -330,10 +347,15 @@ export default function Orbit({ stageRef, centreRef }) {
         cards.forEach((c) => {
           c.style.transform = '';
           c.style.zIndex = '';
-          c.style.removeProperty('--near');
-          c.style.removeProperty('--prog');
-          c.style.removeProperty('--cap');
         });
+        parts.forEach((p) => {
+          p.cap.style.opacity = '';
+          p.cta.style.opacity = '';
+          p.prog.style.opacity = '';
+          p.bar.style.transform = '';
+        });
+        lastCap.fill(-1);
+        lastNear.fill(-1);
         shades.forEach((s) => {
           s.style.opacity = '';
         });

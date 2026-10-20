@@ -121,7 +121,7 @@
   --orbit-front: 150; /* px the front card is pushed toward the camera */
   --orbit-step-ms: 5200;
   --orbit-linger: 0.85;
-  --orbit-card-w: clamp(184px, min(15vw, 28svh), 224px); /* shrinks on short windows */
+  --orbit-card-w: clamp(176px, min(15vw, 27svh), 224px); /* shrinks on short windows */
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
