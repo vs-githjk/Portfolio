@@ -82,8 +82,11 @@ FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`
   Tuned for 11 cards; adding or removing one means re-checking the sides at 1440 and 1280.
 - The front card is pushed toward the camera (`--orbit-front`) and carries the blue border and
   a progress line. Cards behind the hero copy go almost fully dark (`--orbit-behind`) and fade
-  out whole (`--orbit-ghost`, written as `--vis`), and the captions of the whole back half fade
-  to zero (`--cap`), so nothing shows through the text. `measure()` keeps every card at least
+  out whole (`--orbit-ghost`, written as `--vis`). "Behind the copy" is measured, not assumed:
+  `measure()` reads the portrait's left edge and the name block's right end, and a card whose
+  projected edge overlaps that span fades. A card is a thumbnail panel plus a caption panel; the
+  caption panel (glass, border, text) fades with `--cap`, so the back half reads as thumbnails
+  and never as empty boxes. `measure()` keeps every card at least
   16px inside the window at any width (it samples the ring's outer edge, yaw included) and, on a
   short window, eases the front lift until the control bar is on screen.
 - Hover on a card pauses the ring (and lifts that card); focus inside stops it for good; only
@@ -227,3 +230,15 @@ Don't add these back without asking:
 - A proof band of bare numbers under the hero (see rule 3), and any halo or nebula.
 - Alltr (not his project) and TransitGuard's dead demo link.
 - A WebGL layer, and any effect that reads as an effects reel.
+
+## Later rounds: layout rules worth keeping
+
+- Cards in a row share one height (`align-items: stretch`); the links (and "Read more" on a
+  More builds card) are pinned to the card's foot with `margin-top: auto`. More builds is a
+  centred flex grid of one card size (4, 3, 2 or 1 per row via `--mini-per`).
+- Below 960px the four section links become a second row of the sticky nav (`--nav-h` is 104px
+  there, which `scroll-margin-top` reads), and the footer has a back-to-top link.
+- `.reveal` hides only under `html.js`; `index.html` sets `js` and removes it after 4s if
+  `useReveal` has not marked `<html data-reveal>`, so prerendered content is never stranded.
+- Mobile LCP sits at 2.4 to 2.6s in Lighthouse's simulation (FCP 1.2s). Tried and measured with
+  no effect: `font-display: optional`, deferring the bundle until `load`, dropping the preloads.
