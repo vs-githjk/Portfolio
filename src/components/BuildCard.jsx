@@ -3,6 +3,7 @@ import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
+import Stack from './Stack';
 
 /* One featured build. The anchor id matches the ring card id. */
 export default function BuildCard({ item, delay }) {
@@ -34,7 +35,7 @@ export default function BuildCard({ item, delay }) {
         ))}
         {item.role && <p className="role">{item.role}</p>}
         <Metrics items={item.metrics} />
-        {item.stack && <p className="stack">{item.stack}</p>}
+        <Stack text={item.stack} />
         <LinkRow links={item.links} />
       </div>
     </article>

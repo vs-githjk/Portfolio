@@ -3,6 +3,7 @@ import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
+import Stack from './Stack';
 
 /* The paper: its own shape, so it does not read as a seventh product. A
    preprint, never "published". The two headline results sit under the image so
@@ -36,7 +37,7 @@ export default function ResearchRow({ item }) {
           </p>
         ))}
         <p className="role">{item.role}</p>
-        <p className="stack">{item.stack}</p>
+        <Stack text={item.stack} />
         <LinkRow links={item.links} />
       </div>
     </article>

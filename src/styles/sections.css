@@ -1073,6 +1073,10 @@
   line-height: 1.7;
 }
 
+.stack span {
+  white-space: nowrap;
+}
+
 /* ---- Flagship (PrismAI): one grid, every edge shared ----------------------- */
 .flag {
   display: grid;
@@ -1305,6 +1309,8 @@
 }
 
 .mini-body .eyebrow {
+  display: grid;
+  gap: 2px;
   font-size: 10px;
 }
 

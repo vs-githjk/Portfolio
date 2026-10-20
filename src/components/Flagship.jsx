@@ -3,6 +3,7 @@ import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
+import Stack from './Stack';
 
 /* The PrismAI panel, laid out on one grid so every edge is shared:
 
@@ -71,7 +72,7 @@ export default function Flagship({ item }) {
         <Metrics items={item.metrics} />
       </div>
       <div className="flag-facts">
-        <p className="stack">{item.stack}</p>
+        <Stack text={item.stack} />
         <LinkRow links={item.links} />
       </div>
     </article>

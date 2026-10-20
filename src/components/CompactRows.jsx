@@ -2,6 +2,7 @@ import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
+import Stack from './Stack';
 
 /* "More builds": compact cards with the same fields as the featured ones. The
    one-liner and the links are always visible; the role line, the full story, any
@@ -28,7 +29,8 @@ export default function CompactRows({ more }) {
             </div>
             <div className="mini-body">
               <span className="eyebrow">
-                {c.kind} · {c.when}
+                <span>{c.kind}</span>
+                <span>{c.when}</span>
               </span>
               <h4 className="mini-title">
                 {c.title} <span>{c.descriptor}</span>
@@ -46,7 +48,7 @@ export default function CompactRows({ more }) {
                   </p>
                 ))}
                 <Metrics items={c.metrics} />
-                {c.stack && <p className="stack">{c.stack}</p>}
+                <Stack text={c.stack} />
               </details>
               <LinkRow links={c.links} />
             </div>
