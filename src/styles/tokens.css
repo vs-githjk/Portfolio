@@ -124,6 +124,13 @@
   --orbit-step-ms: 5200;
   --orbit-linger: 0.85;
   --orbit-card-w: clamp(176px, min(15vw, 25svh), 248px); /* shrinks on short windows */
+  /* The phone's drift wall, which stands in for the ring below its breakpoint. */
+  --drift-card-w: clamp(132px, 34vw, 184px);
+  --drift-tilt: 24deg; /* plane tipped back into the beams */
+  --drift-turn: -7deg; /* and turned off the horizontal */
+  --drift-dim: 0.5; /* thumbnails read as atmosphere, not content */
+  --drift-light: 0.45; /* pale thumbnails dimmed to sit with the dark ones */
+  --drift-loop: 70s; /* one third of a row per loop */
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */

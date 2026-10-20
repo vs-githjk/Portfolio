@@ -94,8 +94,12 @@ FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`
   short window, eases the front lift until the control bar is on screen.
 - Hover on a card pauses the ring (and lifts that card); focus inside stops it for good; only
   the front card is tabbable; ArrowLeft/Right step, Home/End jump; Pause, Prev, Next buttons.
-- Below 960px wide or 640px tall it becomes a swipeable snap row. Under
-  `prefers-reduced-motion` it renders one static pose with no rAF and no Pause button.
+- Below 960px wide or 640px tall the ring is hidden and `Drift.jsx` stands in: the same
+  thumbnails as two rows drifting in opposite directions on a plane tilted back into the
+  beams, dimmed (`--drift-*` tokens), faded at the edges, `aria-hidden`, no captions, links
+  or controls, static under reduced motion. It is atmosphere, not a list: on a phone a
+  captioned card row read as the Builds section twice (Vidyut, Oct 2026). Under
+  `prefers-reduced-motion` the ring renders one static pose with no rAF and no Pause button.
 - The ring stays `opacity: 0` until the script has posed it (`data-ready`), so the
   prerendered HTML never shows eleven stacked cards.
 

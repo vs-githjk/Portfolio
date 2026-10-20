@@ -347,6 +347,86 @@
   position: relative;
 }
 
+/* Below the ring's breakpoint the orbit is not shown: the drift stands in for it.
+   Two rows of the ring's thumbnails on a plane tipped back into the beams, dimmed,
+   fading out at both sides and at the foot, moving in opposite directions. */
+@media not all and (min-width: 960px) and (min-height: 640px) {
+  .hero-stage .orbit {
+    display: none;
+  }
+}
+
+.drift {
+  position: relative;
+  height: calc(var(--drift-card-w) * 1.45);
+  margin: 8px calc(var(--pad) * -1) 0;
+  overflow: hidden;
+  perspective: var(--persp);
+  pointer-events: none;
+  user-select: none;
+  mask-image: linear-gradient(90deg, transparent, var(--ink) 18%, var(--ink) 82%, transparent),
+    linear-gradient(180deg, transparent, var(--ink) 14%, var(--ink) 62%, transparent);
+  mask-composite: intersect;
+}
+
+.drift-plane {
+  position: absolute;
+  inset: 0 -40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  transform: rotateX(var(--drift-tilt)) rotateZ(var(--drift-turn));
+  transform-origin: 50% 60%;
+  opacity: var(--drift-dim);
+}
+
+.drift-row {
+  display: flex;
+  gap: 14px;
+  width: max-content;
+  animation: drift-left var(--drift-loop) linear infinite;
+}
+
+.drift-row[data-dir='right'] {
+  margin-left: calc(var(--drift-card-w) * -0.5);
+  animation-name: drift-right;
+}
+
+.drift-row img {
+  width: var(--drift-card-w);
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-md);
+  border: 1px solid var(--glass-line);
+  background: var(--surface-2);
+}
+
+/* A pale thumbnail would be the brightest thing in the wall: bring it down to the
+   others. */
+.drift-row img[data-tone='light'] {
+  filter: brightness(var(--drift-light));
+}
+
+@keyframes drift-left {
+  to {
+    transform: translateX(-33.3333%);
+  }
+}
+
+@keyframes drift-right {
+  from {
+    transform: translateX(-33.3333%);
+  }
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .drift {
+    display: none;
+  }
+}
+
+
 .orbit-scene {
   position: relative;
 }
@@ -1196,6 +1276,17 @@
   .flag-media .media-frame {
     flex: 1 1 0;
     min-height: 0;
+    container-type: inline-size;
+  }
+
+}
+
+/* Above 1100 the frame is wide and short, so a top-anchored crop would end in the
+   middle of the still's footer line. Skip the small top line instead (7.5% of the
+   width is 90 of the source's 1200px), never past the image's own foot. */
+@media (min-width: 1101px) {
+  .flag-media .media-frame img {
+    object-position: left max(-7.5cqw, 100%);
   }
 }
 
@@ -2577,6 +2668,12 @@
 
 /* ============================ REDUCED MOTION ============================== */
 /* Everything is already in place: static beams, a static ring pose. */
+@media (prefers-reduced-motion: reduce) {
+  .drift-row {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .media {
     transition: none;

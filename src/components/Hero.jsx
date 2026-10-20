@@ -1,13 +1,15 @@
 import { useRef } from 'react';
 import { hero } from '../data/content';
 import Orbit from './Orbit';
+import Drift from './Drift';
 import Rich from './Rich';
 import { GitHubIcon, LinkedInIcon } from './Icons';
 
 /* The first screen. The name is the monument at the centre, lit from above by
    the beam field; the orbit ring of what he has built turns around it. Name,
    one identity line, one plain sentence, credentials, actions: no figures. On a
-   phone the same centre block sits on top and the ring becomes a swipe row.
+   phone the same centre block sits on top and the ring gives way to a drift of
+   thumbnails behind the fold: atmosphere, since Builds is the list.
 
    Email and Resume are text buttons; LinkedIn and GitHub are icon buttons
    (their label is the accessible name). */
@@ -73,6 +75,7 @@ export default function Hero() {
           </div>
         </div>
         <Orbit stageRef={stage} centreRef={centre} />
+        <Drift />
       </div>
     </header>
   );
