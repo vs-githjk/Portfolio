@@ -5,3 +5,6 @@ import App from './App.jsx';
 export function render() {
   return renderToString(<App />);
 }
+
+// The prerender step writes the page title and description from this, so they live in one place.
+export { meta } from './data/content';

@@ -796,7 +796,7 @@ export const principles = {
     },
     {
       title: 'Measure, then claim.',
-      body: 'I quote BetterBill’s 22 of 22 together with the fact that we planted those errors, and the paper’s 83.7% together with the 5,000 tasks behind it. "Feels better" stays a hunch until a number backs it.',
+      body: 'Every number I publish travels with its denominator: BetterBill’s catch rate comes with the fact that we planted the errors, and the paper’s error reduction comes with the set of tasks it was measured on. "Feels better" stays a hunch until a number backs it.',
     },
     {
       title: 'End to end first, then polish.',
@@ -815,7 +815,7 @@ export const value = {
       tag: 'Reliability',
       claim: 'I care most about the gap between a good demo and a system people can depend on.',
       receipts: [
-        'My repair loop cut CodeLlama 7B’s CodeQL errors **83.7%** across 5,000 C tasks.',
+        'BetterBill’s rules engine does all of its arithmetic in **integer cents**, so a model’s rounding can never reach a dollar figure.',
         'In PrismAI, a **cross-tenant attack suite blocks CI**, so a data leak between customers fails the build before it can ship.',
       ],
     },
@@ -824,14 +824,14 @@ export const value = {
       claim: 'I want to work where the system meets the people using it.',
       receipts: [
         'At Sherlock AI I owned the **demo prospective customers evaluate** before they talk to the team.',
-        'At Comcast I **drove adoption across a 40-person team**, then improved it based on how they actually used it.',
+        'At Comcast I **scoped the question, picked the tool and shipped the pilot**, then improved it based on how the team actually used it.',
       ],
     },
     {
       tag: 'Owner',
       claim: 'I run what I build, from the first commit to the first users.',
       receipts: [
-        'PrismAI: **1,120 of its 1,352 commits are mine**, from an empty repo to 14 beta users.',
+        'PrismAI: **1,120 of its 1,352 commits are mine**, from an empty repo to a live beta.',
         'Vytal and MVR are **solo builds**: Vytal is live in a controlled beta, MVR is a working proof of concept.',
       ],
     },
@@ -839,7 +839,7 @@ export const value = {
       tag: 'Modernizer',
       claim: 'When I see a manual workflow, I want to rebuild it.',
       receipts: [
-        'At Comcast the pilot I shipped removed **~40% of a 40-person team’s recurring planning and coordination work**.',
+        'At Comcast the pilot I shipped **replaced separate planning, budget and communication tools with one interface**.',
         'MVR exists to modernize legacy software safely: **every claim about the old system links to evidence**.',
       ],
     },
@@ -946,6 +946,7 @@ export const proofOfWork = {
       month: 'in {month} so far',
     },
     note: '',
+    phoneNote: 'The graph shows the latest six months on a phone; the totals cover the whole year.',
     updated: 'Updated',
     keyLess: 'Less',
     keyMore: 'More',

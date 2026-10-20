@@ -15,7 +15,7 @@ import { pathToFileURL } from 'node:url';
 const dist = new URL('../dist/', import.meta.url);
 const ssr = new URL('../dist-ssr/entry-server.js', import.meta.url);
 
-const { render } = await import(pathToFileURL(ssr.pathname).href);
+const { render, meta } = await import(pathToFileURL(ssr.pathname).href);
 const html = await readFile(new URL('index.html', dist), 'utf8');
 
 const body = render();
@@ -26,6 +26,16 @@ if (!link) throw new Error('prerender: stylesheet link not found in dist/index.h
 const css = await readFile(new URL(`.${link[1]}`, dist), 'utf8');
 
 let out = html.replace(link[0], () => `<style>${css}</style>`);
+// Title and description come from content.js (meta), the one place for copy.
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const setMeta = (re, tag) => {
+  if (!re.test(out)) throw new Error(`prerender: ${tag} not found in dist/index.html`);
+  out = out.replace(re, () => tag);
+};
+setMeta(/<title>[\s\S]*?<\/title>/, `<title>${esc(meta.title)}</title>`);
+setMeta(/<meta\s+name="description"[\s\S]*?\/>/, `<meta name="description" content="${esc(meta.description)}" />`);
+setMeta(/<meta property="og:title"[\s\S]*?\/>/, `<meta property="og:title" content="${esc(meta.title)}" />`);
+setMeta(/<meta\s+property="og:description"[\s\S]*?\/>/, `<meta property="og:description" content="${esc(meta.description)}" />`);
 // The page is already painted from HTML, so hydration can wait: let the first
 // image and the fonts have the bandwidth first.
 out = out.replace(/<script type="module"/, '<script type="module" fetchpriority="low"');

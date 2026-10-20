@@ -1533,6 +1533,21 @@
   position: relative;
 }
 
+/* On a phone the graph is cropped to the latest half year; say so. */
+.pow-phone-note {
+  display: none;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+@media (max-width: 640px) {
+  .pow-phone-note {
+    display: block;
+  }
+}
+
 .heat {
   width: 100%;
   height: auto;
