@@ -457,19 +457,23 @@ export const builds = {
     },
     {
       id: 'matchday',
-      kind: 'Product · live',
+      /* Copy from Vidyut's own Match Day write-up (Oct 20). Team build; his
+         exact lane and the build dates are not stated, so neither is claimed. */
+      kind: 'Product · live · team build',
       title: 'Match Day',
       descriptor: 'racket tournament platform',
-      when: '', // TODO: build dates (domain registered Sep 10 2026; launch video Sep 2026)
+      when: '2026 · live at joinmatchday.com',
       oneLiner:
-        'Run a racket tournament from one screen: the draw, the courts, the schedule and live scores on every phone.',
+        'Tournament day, coordinated: registration, draws, courts and live scoring for racket sports in one system.',
       awards: [],
-      role: '', // TODO: solo or team? If team, "Team of N. I built ..."
+      role: 'Built with a team, badminton-first, for organizers, players, scorers, officials and spectators.',
       body: [
-        'Live at joinmatchday.com. Organizers seed the draw (knockout, round robin, or groups into knockout), schedule courts and score matches live, while the scheduler flags double-booked players, double-booked courts and short rest. Entry caps are enforced in the database, so two players can never grab the last slot at once, and a command center shows which matches are running late before the day slips.',
+        'Replaces the spreadsheets, WhatsApp threads, paper check-in sheets and separate scoring tools most tournaments still run on. Players register for singles or doubles, check in, and follow their courts, live scores, rankings and history. Organizers configure categories, manage waitlists, seed players, generate draws, schedule matches, assign staff and handle disputes.',
+        'Live scoring runs inside the tournament workflow, with game-state management, score corrections and an **offline scoring queue for unreliable venue internet**. Spectators follow draws, courts and live matches without an account. Scoring, draws, scheduling, rankings and the tournament lifecycle sit in **isolated, testable business logic** behind one repository layer.',
       ],
       metrics: [],
-      stack: '', // TODO: confirm stack (public bundle suggests React, Vite, Supabase, Vercel)
+      stack:
+        'React 19 · Vite · React Router · Tailwind CSS · Motion · Supabase (Postgres, Auth, row-level security, Realtime, Storage, Edge Functions)',
       media: {
         image: '/builds/matchday.webp',
         alt: 'Match Day wordmark, "Play. Compete. Belong.", beside its command center flagging matches that are running late',
