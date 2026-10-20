@@ -65,7 +65,7 @@ export default function Orbit({ stageRef, centreRef }) {
     const counter = counterRef.current;
     const cards = [...scene.querySelectorAll('.card')];
     const links = cards.map((c) => c.querySelector('.card-link'));
-    const shades = cards.map((c) => c.querySelector('.card-shade'));
+    const shades = cards.map((c) => [...c.querySelectorAll('.card-shade')]);
     const parts = cards.map((c) => ({
       cap: c.querySelector('.card-cap'),
       cta: c.querySelector('.card-cta'),
@@ -97,7 +97,7 @@ export default function Orbit({ stageRef, centreRef }) {
       stepMs: num('--orbit-step-ms', 5200),
       linger: num('--orbit-linger', 0.85),
     };
-    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, copyHalf: 340, front: CFG.front };
+    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, copyL: -340, copyR: 340, front: CFG.front };
     const reasons = { user: false, hover: false, hidden: document.hidden, offscreen: false };
     const hov = cards.map(() => 0);
     const hovT = cards.map(() => 0);
@@ -137,6 +137,16 @@ export default function Orbit({ stageRef, centreRef }) {
     function measure() {
       // Layout size, never getBoundingClientRect: that one includes the ring's own transforms.
       geo.cardW = cards[0].offsetWidth || 248;
+      // Where the hero copy really stands, relative to the ring centre: the portrait's
+      // left edge and the right end of the name block (the credential line). The block
+      // is centred on the stage, and its portrait side is wider than its text side.
+      const half = centre.offsetWidth / 2;
+      const who = centre.querySelector('.who-main');
+      const face = centre.querySelector('.portrait');
+      if (who && face) {
+        geo.copyL = face.offsetLeft - half;
+        geo.copyR = who.offsetLeft + who.offsetWidth - half;
+      }
       const stageH = stage.clientHeight;
       geo.rz = Math.min(CFG.rz, Math.round(stageH * 0.46));
       // The widest the ring may be: the outermost card keeps 16px to spare on each side.
@@ -190,7 +200,12 @@ export default function Orbit({ stageRef, centreRef }) {
         let shade = CFG.shade * Math.pow((1 - c) / 2, 1.2);
         let hidden = 0;
         if (c < 0) {
-          const cover = Math.max(0, Math.min(1, (geo.copyHalf + 90 - Math.abs(x)) / 90));
+          // How far the card's near edge is from the copy on its side (negative while
+          // it overlaps the copy), on screen: position and half-width both shrink with depth.
+          const ps = CFG.persp / (CFG.persp - z);
+          const hw = (geo.cardW / 2) * ps * 0.92;
+          const gap = x >= 0 ? x * ps - hw - geo.copyR : geo.copyL - (x * ps + hw);
+          const cover = Math.max(0, Math.min(1, 1 - gap / 80));
           hidden = cover * Math.min(1, -c * 2);
           shade += (CFG.behind - shade) * hidden;
         }
@@ -201,13 +216,19 @@ export default function Orbit({ stageRef, centreRef }) {
           lastVis[k] = vis;
           cards[k].style.setProperty('--vis', vis.toFixed(3));
         }
-        shades[k].style.opacity = (shade * (1 - hov[k])).toFixed(3);
+        const sh = (shade * (1 - hov[k])).toFixed(3);
+        shades[k][0].style.opacity = sh;
+        shades[k][1].style.opacity = sh;
         // Text on the back half is faded out completely: the cards there sit
         // behind the hero copy, and their captions must never show through it.
-        const cap = Math.max(0, Math.min(1, (c + 0.1) / 0.5));
+        // The card's body (its glass panel and border) fades with the text, so the
+        // back half reads as thumbnails, not as empty panels (--cap also squares the
+        // thumbnail's lower corners back into rounded ones).
+        const cap = Math.max(0, Math.min(1, (c - 0.3) / 0.4));
         if (Math.abs(cap - lastCap[k]) > 0.004) {
           lastCap[k] = cap;
           parts[k].cap.style.opacity = cap.toFixed(3);
+          cards[k].style.setProperty('--cap', cap.toFixed(3));
         }
         // Only the front card shows its call to action and its progress line.
         const near = Math.max(0, Math.min(1, ((1 + c) / 2 - 0.9) / 0.1));
@@ -368,6 +389,15 @@ export default function Orbit({ stageRef, centreRef }) {
       reasons.hidden = document.hidden;
       kick();
     };
+    // A ring card jumps to its build; focus follows, so a screen reader announces
+    // where the reader landed (the browser scrolls, preventScroll avoids a second jump).
+    const onHash = () => {
+      const target = location.hash.startsWith('#build-') && document.getElementById(location.hash.slice(1));
+      if (!target) return;
+      if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    };
+    window.addEventListener('hashchange', onHash);
     let io = null;
     if ('IntersectionObserver' in window) {
       io = new IntersectionObserver(
@@ -400,9 +430,14 @@ export default function Orbit({ stageRef, centreRef }) {
         lastCap.fill(-1);
         lastNear.fill(-1);
         lastVis.fill(-1);
-        cards.forEach((c) => c.style.removeProperty('--vis'));
-        shades.forEach((s) => {
-          s.style.opacity = '';
+        cards.forEach((c) => {
+          c.style.removeProperty('--vis');
+          c.style.removeProperty('--cap');
+        });
+        shades.forEach((pair) => {
+          pair.forEach((s) => {
+            s.style.opacity = '';
+          });
         });
         links.forEach((l) => {
           l.tabIndex = 0;
@@ -465,6 +500,7 @@ export default function Orbit({ stageRef, centreRef }) {
       region.removeEventListener('mouseleave', onLeave);
       region.removeEventListener('focusin', onFocusIn);
       document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('hashchange', onHash);
       ringMq.removeEventListener('change', applyMode);
       reducedMq.removeEventListener('change', applyMode);
       cards.forEach((c, k) => {
@@ -499,6 +535,7 @@ export default function Orbit({ stageRef, centreRef }) {
                   <span className="card-prog" aria-hidden="true">
                     <i />
                   </span>
+                  <span className="card-shade" aria-hidden="true" />
                 </span>
                 <span className="card-cap">
                   <b className="card-title">{s.title}</b>
@@ -516,9 +553,9 @@ export default function Orbit({ stageRef, centreRef }) {
                       {pad2(k + 1)} / {pad2(N)}
                     </span>
                   </span>
+                  <span className="card-shade" aria-hidden="true" />
                 </span>
               </a>
-              <span className="card-shade" aria-hidden="true" />
             </div>
           ))}
         </div>

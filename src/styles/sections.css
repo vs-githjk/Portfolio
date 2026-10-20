@@ -376,18 +376,25 @@
   }
 }
 
+/* A card is two panels, the thumbnail and its caption. The caption panel carries
+   the glass, the border and the text, so when the ring fades it (--cap, written per
+   frame) a card on the back half is just a thumbnail, not an empty box; the
+   thumbnail's lower corners round off as the caption goes. */
 .card-link {
   display: block;
   border-radius: var(--r-lg);
-  overflow: hidden;
-  background: var(--glass);
+  color: var(--text);
+}
+
+.card-media,
+.card-cap {
   border: 1px solid var(--hair-2);
   box-shadow: var(--elev-2);
-  color: var(--text);
   transition: border-color 0.3s var(--ease);
 }
 
-.card.is-front .card-link {
+.card.is-front .card-media,
+.card.is-front .card-cap {
   border-color: var(--acc);
 }
 
@@ -397,6 +404,7 @@
   aspect-ratio: 16 / 10;
   background: var(--surface-2);
   overflow: hidden;
+  border-radius: var(--r-lg) var(--r-lg) calc(var(--r-lg) * (1 - var(--cap, 1))) calc(var(--r-lg) * (1 - var(--cap, 1)));
 }
 
 .card-media img {
@@ -447,6 +455,11 @@
   gap: 6px;
   padding: 11px 12px 12px;
   align-content: start;
+  position: relative;
+  background: var(--glass);
+  border-top: 0;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  overflow: hidden;
 }
 
 .card-title {
@@ -488,7 +501,7 @@
 .card-shade {
   position: absolute;
   inset: 0;
-  border-radius: var(--r-lg);
+  border-radius: inherit;
   background: var(--ink);
   opacity: 0;
   pointer-events: none;
