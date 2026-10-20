@@ -2,65 +2,143 @@
    DESIGN TOKENS: the control panel
    ----------------------------------------------------------------------------
    Everything downstream consumes these. Prefer changing a token over adding
-   a rule. The WebGL starfield reads --ink, --surface-2, --acc and --text at
-   mount, so a palette change here recolors the sky too.
+   a rule. The light-beam canvas reads --beam-a/b/c and --star-a/b at mount, so
+   a palette change here recolors the sky too.
 
-   The organizing idea: warm graphite and one brass accent. Brass means four
-   things: the italic half of the name and of three headings, the primary
-   action, an award, and the proof band plus the commit-graph ramp. Mint means
-   available or live. Coral is reserved for a defect state (unused today).
-   Scarcity is what keeps the brass loud.
+   The idea ("Indigo"): deep indigo-black ground lit from above by vertical
+   beams of blue-violet light, a white serif headline, lavender-grey body.
+   Electric blue (--acc) is the one accent: the front card, the progress line,
+   rules, the primary action. Gold (--win) is for awards and nothing else.
+   Mint (--ok) means live or available. Scarcity is what keeps them loud.
    ========================================================================== */
 
+/* ---- FONTS: self-hosted, latin subset, one request each ---------------------
+   Geist and Geist Mono are variable fonts (one file covers every weight used).
+   font-display: swap keeps text visible while they load; index.html preloads the
+   two that paint the first screen. Files live in public/fonts. */
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/geist-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/geist-mono-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
-  /* ---- NEUTRALS: warm graphite ------------------------------------------- */
-  --ink: #100f0e; /* page */
-  --ink-2: #151412; /* footer */
-  --surface: #1a1917; /* cards, raised */
-  --surface-2: #221f1b; /* media backdrops, typographic tiles, hover */
-  --hair: #2a2825; /* every 1px rule */
-  --hair-2: #3b3833; /* borders that need to be seen (frames, buttons); never text */
+  /* ---- NEUTRALS: indigo ink ----------------------------------------------- */
+  --ink: #06081c; /* page */
+  --ink-2: #04060f; /* deepest ground, footer */
+  --surface: #0d1130; /* cards, raised */
+  --surface-2: #141a42; /* media backdrops, tiles, pills */
+  --hair: #1d2352; /* every 1px divider */
+  --hair-2: #333b7e; /* borders that need to be seen: frames, buttons, card outline */
 
   /* ---- TEXT -------------------------------------------------------------- */
-  --text: #f2efea;
-  --text-2: #b3ac9f;
-  --text-3: #9a9183; /* mono labels, stack lines; AA on every surface */
+  --text: #f5f3ff; /* white: headlines and names */
+  --text-2: #bab7dd; /* lavender-grey body */
+  --text-3: #8f8dba; /* mono labels, stack lines; AA on every surface */
 
-  /* ---- ACCENT: brass ------------------------------------------------------ */
-  --acc: #d6b46c;
-  --acc-2: #f0d59a; /* sheen highlight, hover on brass, heatmap level 4 */
-  --acc-ink: #100f0e; /* text on brass */
-  --acc-ink-2: #3a3222; /* muted text on the brass band */
-  --acc-tint: color-mix(in srgb, var(--acc) 12%, transparent);
-  --acc-tint-2: color-mix(in srgb, var(--acc) 20%, transparent); /* typographic tiles */
-  --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
+  /* ---- ACCENT: electric blue ---------------------------------------------- */
+  --acc: #5b7dff; /* active card border, progress line, rules, graph ramp */
+  --acc-2: #9fb5ff; /* brightest graph level, hover */
+  --acc-fill: #2f52e6; /* primary button fill */
+  --acc-ink: #ffffff; /* text on the primary button (6.05:1) */
+  --acc-text: #9fb5ff; /* accent used as text on ink */
+  --acc-glow: rgba(91, 125, 255, 0.28);
+  --link: #9fb5ff;
+  --focus: #8fe9ff; /* focus ring: a cool cyan that no surface uses */
 
   /* ---- STATE ------------------------------------------------------------- */
-  --ok: #8fbf9f; /* available, live, copied */
-  --bad: #e07a5f; /* reserved: nothing uses it today */
+  --ok: #6fe3bb; /* available, live, copied */
+  --bad: #ff7a90; /* reserved: nothing uses it today */
+  --win: #ffd36b; /* award badges only */
+  --win-bg: color-mix(in srgb, var(--win) 14%, var(--surface));
+  --win-line: color-mix(in srgb, var(--win) 42%, transparent);
+  --badge-bg: color-mix(in srgb, var(--acc) 20%, var(--surface));
+  --badge-fg: #c4d2ff;
+  --badge-line: color-mix(in srgb, var(--acc-text) 42%, transparent);
 
-  /* ---- GLASS: hero deck only --------------------------------------------- */
-  --glass: color-mix(in srgb, var(--surface) 58%, transparent);
-  --glass-line: color-mix(in srgb, white 9%, transparent);
-  --glass-hi: color-mix(in srgb, white 6%, transparent); /* top-edge highlight */
-  --glass-shadow: 0 40px 80px -40px color-mix(in srgb, black 70%, transparent);
+  /* ---- BEAMS: the light field (r, g, b triples, read by the canvas) -------- */
+  --beam-a: 99, 102, 241; /* indigo */
+  --beam-b: 76, 118, 255; /* blue */
+  --beam-c: 139, 92, 246; /* violet */
+  --star-a: 225, 228, 255;
+  --star-b: 170, 190, 255;
+  --sky: linear-gradient(180deg, #0a0c2a 0%, var(--ink) 46%, var(--ink-2) 100%);
+  --glow-core: rgba(228, 232, 255, 0.9);
+  --glow-mid: rgba(150, 160, 255, 0.5);
+
+  /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
+  --glass: color-mix(in srgb, var(--surface) 88%, transparent);
+  --glass-line: rgba(170, 180, 255, 0.16);
+  --glass-hi: rgba(190, 200, 255, 0.1);
+  --shadow-ink: rgb(0, 0, 20);
+  --persp: 1200px;
+  --z-1: 8px;
+  --z-2: 20px;
+  --z-3: 40px;
+  --elev-1: 0 1px 0 var(--glass-hi) inset, 0 10px 24px -14px color-mix(in srgb, var(--shadow-ink) 80%, transparent);
+  --elev-2: 0 1px 0 var(--glass-hi) inset, 0 24px 48px -24px color-mix(in srgb, var(--shadow-ink) 85%, transparent);
+  --elev-3: 0 1px 0 var(--glass-hi) inset, 0 48px 80px -36px color-mix(in srgb, var(--shadow-ink) 90%, transparent);
+
+  /* ---- ORBIT RING (unitless where JS reads them) --------------------------- */
+  --orbit-persp: 1500;
+  --orbit-rx: 700;
+  --orbit-rz: 420;
+  --orbit-tilt: 27;
+  --orbit-yaw: 14;
+  --orbit-lean: 4;
+  --orbit-shade: 0.72; /* darkness of a card at the back, away from the copy */
+  --orbit-behind: 0.95; /* darkness of a back card sitting behind the hero copy */
+  --orbit-front: 150; /* px the front card is pushed toward the camera */
+  --orbit-step-ms: 5200;
+  --orbit-linger: 0.85;
+  --orbit-card-w: clamp(184px, min(15vw, 28svh), 224px); /* shrinks on short windows */
+  --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
   --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --font-ui: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-ui: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --fs-hero: clamp(64px, 8.6vw, 124px); /* h1, serif, line-height .92 */
-  --fs-h2: clamp(38px, 4.6vw, 64px); /* section headings */
-  --fs-lead: clamp(22px, 2vw, 28px); /* hero identity line */
+  --fs-hero: clamp(60px, 16vw, 72px); /* row mode; ring mode overrides in sections.css */
+  --fs-h2: clamp(38px, 4.6vw, 64px);
+  --fs-lead: clamp(22px, 2vw, 28px);
   --fs-body: clamp(15px, 1.05vw, 17px);
-  --fs-num: clamp(44px, 4.6vw, 68px); /* proof band numbers, nothing else */
-  --fs-metric: clamp(28px, 2.4vw, 34px); /* card metrics, GitHub stats */
-  --fs-card: clamp(28px, 2.4vw, 34px); /* card titles */
-  --fs-flag: clamp(36px, 3.4vw, 48px); /* flagship title */
-  --fs-label: 12px; /* eyebrows, nav, buttons: mono 500, uppercase */
-  --fs-micro: 11px; /* badges, index chips, metric labels */
-  --tr-display: -0.015em; /* the serif needs almost no crushing */
+  --fs-metric: clamp(28px, 2.4vw, 34px);
+  --fs-card: clamp(28px, 2.4vw, 34px);
+  --fs-flag: clamp(36px, 3.4vw, 48px);
+  --fs-label: 12px;
+  --fs-micro: 11px;
+  --tr-display: -0.015em;
   --tr-label: 0.12em;
 
   /* ---- LAYOUT ------------------------------------------------------------ */
@@ -86,8 +164,6 @@
   --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
   --dur: 0.45s;
   --dur-slow: 0.75s;
-  --dur-deck: 0.6s;
-  --slide-ms: 5200; /* deck dwell, unitless so JS can read it */
 
   color-scheme: dark;
 }

@@ -1,8 +1,10 @@
 /* ============================================================================
    SECTIONS: per-region layout, ordered top to bottom to mirror the page
-   Nav, background, hero + deck, proof band, experience, builds (flagship,
-   cards, research, compact), proof of work, principles, value, toolkit,
-   contact, footer. Responsive rules close the file.
+   Background, nav, hero + orbit ring, experience, builds (flagship, cards,
+   paper, more), highlights, proof of work, principles, value, toolkit, contact,
+   footer. Responsive rules sit at the end of each region, then a final block.
+   One camera (--persp), one light (the top highlight in --elev-*) and one
+   elevation scale are shared by every raised surface.
    ========================================================================== */
 
 /* ============================== BACKGROUND ================================ */
@@ -11,62 +13,83 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--ink);
+  overflow: hidden;
+  background: var(--sky);
 }
 
-.bg-canvas {
+.bg > * {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+}
+
+/* A bright core above the name, a wide indigo wash, a blue band on the top edge. */
+.bg-glow {
+  background:
+    radial-gradient(ellipse 26% 22% at 50% -4%, var(--glow-core), var(--glow-mid) 40%, transparent 72%),
+    radial-gradient(ellipse 64% 44% at 50% -6%, rgba(var(--beam-a), 0.55), rgba(var(--beam-b), 0.18) 55%, transparent 76%),
+    linear-gradient(180deg, rgba(var(--beam-b), 0.22) 0%, transparent 34%);
+  opacity: var(--bg-fade, 1);
+  transform: translate3d(0, calc(var(--bg-y, 0) * -0.16px), 0);
+  will-change: transform, opacity;
+}
+
+/* The CSS fallback for the beams: always rendered under the canvas, it is the
+   whole field without canvas support and the first paint before the chunk loads. */
+.bg-static {
+  background: linear-gradient(
+    90deg,
+    transparent 0 8%,
+    rgba(var(--beam-b), 0.16) 8% 13%,
+    transparent 13% 24%,
+    rgba(var(--beam-a), 0.22) 24% 31%,
+    transparent 31% 40%,
+    rgba(var(--beam-c), 0.14) 40% 45%,
+    transparent 45% 54%,
+    rgba(var(--beam-b), 0.22) 54% 62%,
+    transparent 62% 71%,
+    rgba(var(--beam-a), 0.14) 71% 75%,
+    transparent 75% 86%,
+    rgba(var(--beam-c), 0.18) 86% 92%,
+    transparent 92%
+  );
+  mask-image: linear-gradient(to bottom, var(--ink), transparent 80%);
+  -webkit-mask-image: linear-gradient(to bottom, var(--ink), transparent 80%);
+  opacity: calc(var(--bg-fade, 1) * 0.9);
+  transform: translate3d(0, calc(var(--bg-y, 0) * -0.28px), 0);
+}
+
+/* Once the canvas has drawn its first frame it takes over: the CSS beams fade
+   out, the canvas beams fade in. Both transitions are one-off; scrolling moves
+   the layers with no easing of its own. */
+.bg[data-ready] .bg-static {
   opacity: 0;
   transition: opacity 1.2s var(--ease);
 }
 
-.bg[data-ready] .bg-canvas {
-  opacity: 1;
+.bg-beams {
+  opacity: 0;
+  transform: translate3d(0, calc(var(--bg-y, 0) * -0.28px), 0);
+  will-change: transform, opacity;
 }
 
-/* The static sky: always rendered under the canvas. It is the whole background
-   under reduced motion and without WebGL2. Tokens only, no image. */
-.bg-static {
-  position: absolute;
-  inset: 0;
-  opacity: 0.9;
-  background:
-    radial-gradient(1.5px 1.5px at 12% 18%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 28% 62%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1.5px 1.5px at 41% 31%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 57% 74%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(2px 2px at 66% 22%, var(--acc) 50%, transparent 60%),
-    radial-gradient(1px 1px at 73% 48%, var(--text) 50%, transparent 60%),
-    radial-gradient(1.5px 1.5px at 84% 12%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 91% 66%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1px 1px at 8% 84%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1.5px 1.5px at 49% 9%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 35% 88%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(2px 2px at 78% 36%, var(--acc-2) 50%, transparent 60%),
-    radial-gradient(1px 1px at 4% 46%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1px 1px at 19% 33%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 23% 7%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1.5px 1.5px at 38% 52%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 52% 41%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1px 1px at 61% 93%, var(--text) 50%, transparent 60%),
-    radial-gradient(1.5px 1.5px at 70% 81%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1px 1px at 88% 29%, var(--text) 50%, transparent 60%),
-    radial-gradient(1px 1px at 95% 88%, var(--text-2) 50%, transparent 60%),
-    radial-gradient(1px 1px at 15% 71%, var(--text) 50%, transparent 60%),
-    radial-gradient(75% 60% at 72% 18%, var(--acc-tint-2), transparent 70%),
-    radial-gradient(60% 50% at 28% 72%, var(--surface-2), transparent 75%);
+.bg[data-ready] .bg-beams {
+  opacity: var(--bg-fade, 1);
+  animation: beams-in 1.2s var(--ease);
 }
 
-/* Darkens the lower half of the viewport so dense text never sits on bright stars. */
-.bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 0 50%, color-mix(in srgb, var(--ink) 80%, transparent) 100%);
+@keyframes beams-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.bg-stars {
+  opacity: 0.55;
+  transform: translate3d(0, calc(var(--bg-y, 0) * -0.1px), 0);
+  will-change: transform;
 }
 
 .page {
@@ -79,166 +102,134 @@
   position: absolute;
   left: 16px;
   top: -64px;
-  z-index: 10;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 12px 16px;
-  border-radius: var(--r-sm);
-  background: var(--acc);
+  border-radius: var(--r-md);
+  background: var(--acc-fill);
   color: var(--acc-ink);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tr-label);
   text-transform: uppercase;
-  font-weight: 500;
-  text-decoration: none;
 }
 
 .skip:focus-visible {
-  top: 8px;
+  top: calc(16px + env(safe-area-inset-top, 0px));
 }
 
 .nav {
   position: sticky;
-  top: 0;
-  z-index: 5;
-  backdrop-filter: blur(12px);
-  background: color-mix(in srgb, var(--ink) 82%, transparent);
-  border-bottom: var(--rule);
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  height: var(--nav-h);
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--hair) 70%, transparent);
 }
 
-.nav-in {
+.nav .wrap {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  gap: 16px;
 }
 
-.nav-brand {
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   min-height: 44px;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-weight: 500;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
 }
 
-.nav-brand i {
-  width: 7px;
-  height: 7px;
+.brand i {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--ok);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent);
 }
 
-.nav ul {
+.nav-links {
   display: flex;
-  gap: 2px;
   align-items: center;
+  gap: 4px;
 }
 
-.nav li a {
+.nav-links a {
   display: inline-flex;
   align-items: center;
-  height: 44px;
+  min-height: 44px;
   padding: 0 12px;
-  border-radius: var(--r-sm);
-  color: var(--text-2);
-  text-decoration: none;
+  border-radius: var(--r-pill);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition:
-    color var(--dur) var(--ease),
-    background var(--dur) var(--ease);
-}
-
-.nav li a:hover {
-  color: var(--text);
-  background: var(--surface);
-}
-
-.nav li a.nav-cta {
-  position: relative; /* the ::after below grows the hit area to 44px */
-  color: var(--acc-ink);
-  background: var(--acc);
   font-weight: 500;
-  height: 36px;
-  margin-left: 8px;
-  padding: 0 14px;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--text-2);
+  transition: color var(--dur) var(--ease);
 }
 
-.nav li a.nav-cta::after {
-  content: '';
-  position: absolute;
-  inset: -4px 0;
+.nav-links a:hover {
+  color: var(--text);
 }
 
-.nav li a.nav-cta:hover {
-  background: var(--acc-2);
-}
-
-/* The only moving line on the page: scroll progress. */
-.nav-prog {
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  height: 1px;
-  width: 0;
-  background: var(--acc);
-  transition: width 0.1s linear;
+.nav-cta {
+  min-height: 40px;
+  padding: 0 18px;
 }
 
 /* ================================== HERO ================================== */
 .hero {
-  padding: clamp(28px, 3vw, 44px) 0 clamp(36px, 4vw, 56px);
+  position: relative;
+  z-index: 1;
+  overflow-x: clip;
 }
 
-/* Laptop-height screens: keep each proof number and its label in the first screen. */
-@media (min-width: 961px) and (max-height: 1000px) {
-  .hero-name {
-    margin: var(--s-4) 0;
-  }
-
-  .hero-actions {
-    margin-top: var(--s-5);
-  }
+.hero-stage {
+  position: relative;
 }
 
-.hero-grid {
+.centre {
+  position: relative;
+  z-index: 22;
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 6fr);
-  gap: clamp(32px, 5vw, 80px);
-  align-items: center;
+  justify-items: center;
+  text-align: center;
 }
 
-/* Studio headshot beside the availability line: a face before the claims. */
-.hero-who {
+.who {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.hero-portrait {
-  width: clamp(80px, 7vw, 104px);
-  height: clamp(80px, 7vw, 104px);
+.portrait {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid var(--acc-line);
-  box-shadow:
-    0 0 0 4px var(--ink),
-    0 0 0 5px var(--hair-2),
-    var(--glass-shadow);
-  flex: none;
+  border: 1px solid var(--hair-2);
+  box-shadow: var(--elev-1);
 }
 
-.hero-where {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: var(--text-3);
+.who-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  text-align: left;
 }
 
 .status {
@@ -247,9 +238,10 @@
   gap: 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
+  font-weight: 500;
+  letter-spacing: var(--tr-label);
   text-transform: uppercase;
-  color: var(--text-2);
+  color: var(--text);
 }
 
 .status i {
@@ -257,439 +249,503 @@
   height: 8px;
   border-radius: 50%;
   background: var(--ok);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent);
+}
+
+.where {
+  font-size: 14px;
+  color: var(--text-3);
 }
 
 .hero-name {
   font-family: var(--font-display);
-  font-weight: 400;
   font-size: var(--fs-hero);
   line-height: 0.92;
   letter-spacing: var(--tr-display);
-  margin: var(--s-5) 0;
+  color: var(--text);
+  white-space: nowrap;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 40px color-mix(in srgb, var(--ink) 80%, transparent);
+}
+
+.hero-name .br {
+  display: none;
+}
+
+.identity {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.identity-sub {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+  max-width: 54ch;
+  margin-bottom: 10px;
   text-wrap: balance;
 }
 
-/* One slow gold sheen across "Sriram": a pass every 9s. Personality in one
-   word, not per-letter neon. Static brass under reduced motion. */
-.hero-name em {
-  font-style: italic;
-  color: var(--acc);
-  background: linear-gradient(100deg, var(--acc) 0 42%, var(--acc-2) 50%, var(--acc) 58% 100%);
-  background-size: 260% 100%;
-  background-position: 100% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: sheen 9s var(--ease) infinite;
-  padding-right: 0.06em;
+.cred {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  margin-bottom: 20px;
+  max-width: 70ch;
 }
 
-@keyframes sheen {
-  0%,
-  72% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: 0% 0;
-  }
+.cred-long {
+  display: none;
 }
 
-.hero-identity {
-  font-family: var(--font-display);
-  font-size: var(--fs-lead);
-  line-height: 1.2;
-  letter-spacing: -0.005em;
-  max-width: 30ch;
-}
-
-.hero-identity span {
-  color: var(--text-2);
-}
-
-.hero-proof {
-  color: var(--text-2);
-  margin: var(--s-4) 0 0;
-  max-width: 50ch;
-}
-
-.hero-actions {
+.actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
-  margin-top: var(--s-6);
 }
 
-/* ---- The deck: "What I've built" ------------------------------------------ */
-.deck {
+/* An ink veil behind the copy keeps it legible over the brightest beams. */
+.shield {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 820px;
+  height: 560px;
+  max-width: 160vw;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--ink) 90%, transparent) 0%,
+    color-mix(in srgb, var(--ink) 66%, transparent) 26%,
+    color-mix(in srgb, var(--ink) 22%, transparent) 48%,
+    transparent 68%
+  );
+}
+
+/* ---- The orbit ring: shared card ----------------------------------------- */
+.orbit {
   position: relative;
-  min-width: 0;
 }
 
-.deck-head {
+.orbit-scene {
+  position: relative;
+}
+
+.card {
+  position: relative;
+  width: var(--orbit-card-w);
+  flex: 0 0 auto;
+}
+
+.card-link {
+  display: block;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--glass);
+  border: 1px solid var(--hair-2);
+  box-shadow: var(--elev-2);
+  color: var(--text);
+  transition: border-color 0.3s var(--ease);
+}
+
+.card.is-front .card-link {
+  border-color: var(--acc);
+}
+
+.card-media {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.card-status {
+  display: block;
+  min-height: 30px; /* two badge lines for every card, so the ring's cards share one height */
+}
+
+.card-badge {
+  justify-self: start;
+  max-width: 100%;
+  min-height: 0;
+  padding: 2px 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: left;
+}
+
+/* Thin electric-blue line along the front card's media: time until it turns on. */
+.card-prog {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: color-mix(in srgb, var(--acc) 22%, transparent);
+  opacity: var(--near, 0);
+}
+
+.card-prog i {
+  display: block;
+  height: 100%;
+  width: calc(var(--prog, 0) * 100%);
+  background: var(--acc);
+}
+
+.card-cap {
+  display: grid;
+  gap: 6px;
+  padding: 11px 12px 12px;
+  align-content: start;
+  opacity: var(--cap, 1);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.card-one {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.7em;
+}
+
+.card-cta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-text);
+  opacity: var(--near, 1);
 }
 
-.deck-head .eyebrow {
-  color: var(--text-2);
+.card-idx {
+  color: var(--text-3);
 }
 
-.deck-ctl {
+.card-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-lg);
+  background: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.track {
+  display: none;
+}
+
+.orbit-bar {
   display: flex;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.deck-ctl button {
+.orbit-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctl {
   width: 44px;
   height: 44px;
-  border-radius: var(--r-sm);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-  display: grid;
+  display: inline-grid;
   place-items: center;
+  border-radius: 50%;
+  color: var(--text-2);
+  border: 1px solid transparent;
   transition:
-    color var(--dur) var(--ease),
-    background var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
+    color 0.2s,
+    border-color 0.2s;
 }
 
-.deck-ctl button:hover {
-  background: var(--surface);
+.ctl:hover {
   color: var(--text);
   border-color: var(--hair-2);
 }
 
-.deck-stage {
-  position: relative;
-  padding-top: 40px; /* room for the two peeking cards */
+.orbit[data-state='static'] .ctl-pause,
+.orbit[data-mode='row'] .ctl-pause {
+  display: none;
 }
 
-.deck-card {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 40px;
-  padding: 10px 10px 14px;
-  border-radius: var(--r-lg);
-  background: var(--glass);
-  border: 1px solid var(--glass-line);
-  backdrop-filter: blur(16px) saturate(1.3);
-  box-shadow:
-    var(--glass-shadow),
-    inset 0 1px 0 var(--glass-hi);
-  color: inherit;
-  transform-origin: 50% 0;
-  transition:
-    transform var(--dur-deck) var(--ease),
-    opacity var(--dur-deck) var(--ease);
-  will-change: transform, opacity;
-}
-
-/* The one link in a slide: screenshot and caption, as a single target. */
-.deck-link {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  color: inherit;
-  text-decoration: none;
-  border-radius: var(--r-md);
-}
-
-/* Invisible copy of the longest caption: keeps the deck's height, no JS. */
-.deck-sizer {
-  position: relative;
-  top: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Cards behind the active one read as dark glass edges, not bright image tops. */
-.deck-card::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: var(--r-lg);
-  background: var(--ink);
-  opacity: 0;
-  transition: opacity var(--dur-deck) var(--ease);
-  pointer-events: none;
-}
-
-.deck-card[data-pos='1']::after {
-  opacity: 0.8;
-}
-
-.deck-card[data-pos='2']::after {
-  opacity: 0.9;
-}
-
-.deck-card[data-pos='0'] {
-  opacity: 1;
-  transform: none;
-  z-index: 3;
-}
-
-.deck-card[data-pos='1'] {
-  opacity: 0.85;
-  transform: translateY(-20px) scale(0.95);
-  z-index: 2;
-  pointer-events: none;
-}
-
-.deck-card[data-pos='2'] {
-  opacity: 0.55;
-  transform: translateY(-38px) scale(0.9);
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* The card that was just on top deals off to the left. */
-.deck-card[data-pos='out'] {
-  opacity: 0;
-  transform: translate(-56px, 24px) rotate(-4deg);
-  z-index: 4;
-  pointer-events: none;
-  /* Fades faster than it moves, so its taller caption never shows below the new top card. */
-  transition:
-    transform var(--dur-deck) var(--ease),
-    opacity 0.2s linear;
-}
-
-.deck-card[data-pos='hid'] {
-  opacity: 0;
-  transform: translateY(-38px) scale(0.9);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.deck-card:hover .deck-cta {
-  color: var(--acc-2);
-}
-
-.deck-shot {
-  position: relative;
-  display: block;
-  aspect-ratio: 16 / 10;
-  border-radius: var(--r-md);
-  overflow: hidden;
-  border: 1px solid var(--hair-2);
-  background: var(--surface-2);
-}
-
-.deck-shot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top left;
-}
-
-/* Index chip: in the caption row, never on top of the product screenshot. */
-.deck-idx {
-  grid-column: 2;
-  grid-row: 3;
-  justify-self: end;
-  align-self: end;
+.counter {
   font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.1em;
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
   color: var(--text-3);
-}
-
-.deck-cap {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 12px;
-  padding: 0 6px;
-  align-items: center;
-}
-
-.deck-cap b {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 26px;
-  letter-spacing: -0.01em;
-  line-height: 1;
-}
-
-.deck-cap .badge {
-  justify-self: end;
-}
-
-.deck-line {
-  grid-column: 1 / -1;
-  color: var(--text-2);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.deck-cta {
-  grid-column: 1;
-  grid-row: 3;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--acc);
-  font-weight: 500;
-  margin-top: 2px;
-  transition: color var(--dur) var(--ease);
-}
-
-/* Typographic slide: the paper's headline number instead of a screenshot. */
-.deck-tile {
-  position: absolute;
-  inset: 0;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  background:
-    radial-gradient(80% 90% at 80% 0%, var(--acc-tint-2), transparent 62%),
-    var(--surface-2);
-}
-
-.deck-tile .paper-num {
-  font-size: clamp(40px, 4.2vw, 58px);
-}
-
-.deck-tile .paper-line {
-  font-size: 14px;
-  max-width: 40ch;
-}
-
-.paper-num {
-  font-family: var(--font-display);
-  line-height: 1;
-  letter-spacing: -0.01em;
-}
-
-.paper-num em {
-  font-style: italic;
-  color: var(--acc);
-}
-
-.paper-line {
-  color: var(--text-2);
-}
-
-/* Progress: N 44px-tall hit areas, each a 2px track; the active one fills over
-   one dwell. Paused: full, in --text-2. */
-.deck-seg {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 4px;
-  margin-top: 0;
-}
-
-.deck-seg button {
-  height: 44px;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  position: relative;
-}
-
-.deck-seg button::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 21px;
-  height: 2px;
-  border-radius: var(--r-xs);
-  background: var(--hair-2);
-  transition: background var(--dur) var(--ease);
-}
-
-.deck-seg button:hover::before {
-  background: var(--text-3);
-}
-
-.deck-fill {
-  position: absolute;
-  left: 0;
-  top: 21px;
-  height: 2px;
-  width: 0;
-  border-radius: var(--r-xs);
-  background: var(--acc);
-  animation: deck-fill calc(var(--slide-ms) * 1ms) linear forwards;
-}
-
-.deck-fill[data-paused] {
-  animation: none;
-  width: 100%;
-  background: var(--text-2);
-}
-
-@keyframes deck-fill {
-  to {
-    width: 100%;
-  }
-}
-
-/* ============================== PROOF BAND ================================ */
-/* The one loud moment: a full-bleed brass band. Nothing else uses --fs-num. */
-.proof {
-  background: var(--acc);
-  color: var(--acc-ink);
-}
-
-.proof-list {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-}
-
-.proof-list li {
-  padding: 30px 20px 28px;
-  border-left: 1px solid color-mix(in srgb, var(--acc-ink) 16%, transparent);
-}
-
-.proof-list li:first-child {
-  border-left: 0;
-  padding-left: 0;
-}
-
-.proof-num {
-  font-family: var(--font-display);
-  font-size: var(--fs-num);
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+  min-width: 60px;
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-.proof-label {
-  margin-top: 12px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 500;
+.card-tile {
+  display: grid;
+  gap: 6px;
+  align-content: center;
+  height: 100%;
+  padding: 14px;
 }
 
-.proof-sub {
-  color: var(--acc-ink-2);
-  font-size: 13px;
-  margin-top: 4px;
-  line-height: 1.4;
+/* ---- Row mode: phones and short windows. A swipeable snap row. ------------ */
+.hero-stage {
+  padding-top: 40px;
+  padding-bottom: 24px;
 }
 
-/* =============================== EXPERIENCE =============================== */
+.hero-stage .centre {
+  padding-left: max(var(--pad), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--pad), env(safe-area-inset-right, 0px));
+  justify-items: start;
+  text-align: left;
+  margin-bottom: 36px;
+}
+
+.hero-stage .actions {
+  justify-content: flex-start;
+}
+
+.hero-stage .hero-name {
+  white-space: normal;
+}
+
+.hero-stage .hero-name .br {
+  display: inline;
+}
+
+.hero-stage .identity-sub {
+  text-wrap: pretty;
+}
+
+.hero-stage .cred-short {
+  display: none;
+}
+
+.hero-stage .cred-long {
+  display: inline;
+}
+
+.hero-stage .shield {
+  display: none;
+}
+
+.orbit-bar {
+  padding-left: max(var(--pad), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--pad), env(safe-area-inset-right, 0px));
+  margin-bottom: 14px;
+}
+
+.orbit .counter {
+  display: none;
+}
+
+.cards {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  padding: 10px max(var(--pad), env(safe-area-inset-right, 0px)) 24px max(var(--pad), env(safe-area-inset-left, 0px));
+  scrollbar-width: none;
+}
+
+.cards::-webkit-scrollbar {
+  display: none;
+}
+
+.orbit-scene .card {
+  width: min(78vw, 320px);
+  scroll-snap-align: center;
+}
+
+.orbit-scene .card-shade,
+.orbit-scene .card-prog {
+  display: none;
+}
+
+/* ---- Ring mode: a wide, tall window ----------------------------------------- */
+@media (min-width: 960px) and (min-height: 640px) {
+  :root {
+    --fs-hero: clamp(56px, min(7.2vw, 11.5svh), 112px);
+  }
+
+  .hero-stage {
+    height: clamp(600px, calc(100svh - var(--nav-h)), 860px);
+    padding: 0;
+    --oy: 47%;
+  }
+
+  .hero-stage .centre {
+    position: absolute;
+    left: 50%;
+    top: var(--oy);
+    transform: translate(-50%, calc(-100% + var(--centre-off, 20px)));
+    width: min(100%, 760px);
+    padding: 0;
+    justify-items: center;
+    text-align: center;
+    margin: 0;
+  }
+
+  .hero-stage .actions {
+    justify-content: center;
+  }
+
+  .hero-stage .hero-name {
+    white-space: nowrap;
+  }
+
+  .hero-stage .hero-name .br {
+    display: none;
+  }
+
+  .hero-stage .identity-sub {
+    text-wrap: balance;
+  }
+
+  .hero-stage .cred-short {
+    display: inline;
+  }
+
+  .hero-stage .cred-long {
+    display: none;
+  }
+
+  .hero-stage .shield {
+    display: block;
+    top: calc(var(--oy) - 120px);
+  }
+
+  /* The ring's layer covers the stage but only the cards and the control bar
+     take the pointer, so the empty space around them is not part of the ring. */
+  .orbit {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .orbit-scene {
+    position: absolute;
+    inset: 0;
+  }
+
+  .orbit-scene .card,
+  .orbit-bar {
+    pointer-events: auto;
+  }
+
+  .cards {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: visible;
+    padding: 0;
+    perspective: calc(var(--orbit-persp) * 1px);
+    perspective-origin: 50% var(--oy);
+  }
+
+  .orbit-scene .card {
+    position: absolute;
+    left: 50%;
+    top: var(--oy);
+    width: var(--orbit-card-w);
+    will-change: transform;
+    /* Hidden until the script has posed the ring, so the prerendered page never
+       shows eleven cards stacked in the middle. */
+    opacity: 0;
+    transition: opacity 0.6s var(--ease);
+  }
+
+  .orbit[data-ready] .card {
+    opacity: 1;
+  }
+
+  .orbit-scene .card-shade,
+  .orbit-scene .card-prog {
+    display: block;
+  }
+
+  .orbit-scene .card-cta {
+    opacity: var(--near, 0);
+  }
+
+  .orbit .counter {
+    display: block;
+  }
+
+  /* The ring's footprint on the ground: a faint ellipse, fading out behind. */
+  .track {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: var(--oy);
+    width: calc(var(--rx, 600) * 2px);
+    height: calc(var(--rz, 380) * 2px);
+    border: 1px solid var(--hair-2);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%) translateZ(calc(var(--rz, 380) * -0.8988px)) rotateX(64deg);
+    mask-image: linear-gradient(to bottom, transparent 12%, var(--ink) 55%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 12%, var(--ink) 55%);
+  }
+
+  .orbit-bar {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--oy) + var(--bar-y, 330px));
+    transform: translateX(-50%);
+    z-index: 23;
+    width: min(100%, 560px);
+    padding: 0 16px;
+    margin: 0;
+  }
+}
+
+/* ============================== EXPERIENCE ================================ */
+.work {
+  padding-top: clamp(40px, 6vw, 72px);
+}
+
 .xp {
   border-top: var(--rule);
 }
 
 .xp-row {
   display: grid;
-  grid-template-columns: 260px 1fr 190px;
+  grid-template-columns: 260px 1fr 232px;
   gap: 32px;
   padding: 32px 0;
   border-bottom: var(--rule);
@@ -706,9 +762,8 @@
 }
 
 .xp-logo {
-  min-width: 40px;
+  width: 60px;
   height: 40px;
-  padding: 0 6px;
   border-radius: var(--r-md);
   background: var(--surface);
   border: 1px solid var(--hair-2);
@@ -719,13 +774,13 @@
 }
 
 .xp-logo img {
-  width: auto;
+  width: 48px;
   height: 28px;
-  max-width: 48px; /* wide wordmarks (Comcast) use the tile's width */
   object-fit: contain;
 }
 
 .xp-org h3 {
+  font-family: var(--font-ui);
   font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -771,300 +826,532 @@
 }
 
 /* ================================= BUILDS ================================= */
-.builds-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s-5);
-  align-items: start; /* each card is as tall as its own content: no empty slabs */
-}
-
-.build,
 .flag,
-.research {
-  border: 1px solid var(--hair);
-  border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  overflow: hidden;
-  scroll-margin-top: 84px;
-}
-
-.build {
-  display: flex;
-  flex-direction: column;
-  transition: border-color var(--dur) var(--ease);
-}
-
-.build:hover {
-  border-color: var(--hair-2);
-}
-
-.build-media {
+.build,
+.paper,
+.mini {
   position: relative;
-  aspect-ratio: 16 / 10; /* fixed: a neighbour's extra height never crops the screenshot */
-  flex: none;
-  background: var(--surface-2);
-  border-bottom: var(--rule);
-  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  box-shadow: var(--elev-2);
+  perspective: var(--persp);
+  scroll-margin-top: calc(var(--nav-h) + 16px);
 }
 
-.build-media img {
-  position: absolute;
-  inset: 10px; /* one frame for every screenshot: inset, rounded, hairline (like the deck) */
-  width: calc(100% - 20px);
-  height: calc(100% - 20px);
-  object-fit: cover;
-  object-position: top left;
+/* Media: a frame with real depth. The tilt and the badges' lift are transforms
+   only; the badges sit one elevation step above the frame. */
+.media {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s var(--ease);
+}
+
+.media.tilting {
+  transition: none;
+  will-change: transform;
+}
+
+.media-frame {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--r-md);
   border: 1px solid var(--hair-2);
-}
-
-.build-awards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.build-body {
-  padding: 24px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  flex: 1; /* the body absorbs the row's extra height; .links (margin-top: auto) pins to the foot */
-}
-
-
-.build-kind {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 16px;
-}
-
-.build-title {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--fs-card);
-  letter-spacing: -0.01em;
-  line-height: 1;
-}
-
-.build-title span,
-.flag-title span {
-  color: var(--text-2);
-  font-style: italic;
-}
-
-.build-one {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.build-text {
-  color: var(--text-2);
-}
-
-.build-role {
-  color: var(--text-2);
-  padding-left: 12px;
-  border-left: 2px solid var(--acc-line);
-  font-size: 15px;
-}
-
-.build-stack {
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  color: var(--text-3);
-  line-height: 1.6;
-}
-
-/* ---- Flagship (PrismAI) ---------------------------------------------------- */
-.flag {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  margin-bottom: var(--s-5);
-  overflow: clip; /* not hidden: the sticky screen needs a non-scrolling ancestor */
-}
-
-.flag-media {
   background: var(--surface-2);
-  border-right: var(--rule);
-  padding: 28px;
+  box-shadow: var(--elev-3);
 }
 
-/* The screen and its metrics stay in view while the long story scrolls past. */
-.flag-sticky {
-  position: sticky;
-  top: 88px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.flag-sticky .metrics {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-
-.flag-screen {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: var(--r-md);
-  overflow: hidden;
-  border: 1px solid var(--hair-2);
-  box-shadow: var(--glass-shadow);
-}
-
-.flag-screen img,
-.flag-screen video {
+.media-frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top left;
+  object-position: top center;
 }
 
-.flag-body {
-  padding: 32px;
+.glare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--text) 14%, transparent), transparent 46%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.media.tilting .glare {
+  opacity: 1;
+}
+
+.media-awards {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 14px;
   display: flex;
-  flex-direction: column;
+  gap: 8px;
+  flex-wrap: wrap;
+  transform: translateZ(var(--z-2));
+  pointer-events: none;
+}
+
+.media-awards .badge {
+  white-space: normal;
+  text-align: left;
+  max-width: 100%;
+}
+
+.media-cap {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-3);
+  margin-top: 8px;
+}
+
+.tile {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  height: 100%;
+  padding: 24px;
+}
+
+.tile-num {
+  font-family: var(--font-display);
+  font-size: var(--fs-metric);
+  line-height: 1;
+  color: var(--text);
+}
+
+.tile-num em {
+  color: var(--acc-text);
+}
+
+.tile-line {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* Shared card text. */
+.kind {
+  display: flex;
+  justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
+}
+
+.flag-title,
+.build-title,
+.paper-title {
+  font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: var(--tr-display);
 }
 
 .flag-title {
-  font-family: var(--font-display);
-  font-weight: 400;
   font-size: var(--fs-flag);
-  letter-spacing: -0.01em;
-  line-height: 1;
 }
 
-.flag-one {
-  font-size: clamp(17px, 1.3vw, 19px);
+.build-title,
+.paper-title {
+  font-size: var(--fs-card);
 }
 
-/* ---- Research row ---------------------------------------------------------- */
-.research {
+.flag-title span,
+.build-title span,
+.paper-title span {
+  font-style: italic;
+  color: var(--text-2);
+}
+
+.one {
+  font-weight: 500;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.text {
+  color: var(--text-2);
+  max-width: 62ch;
+}
+
+.role {
+  color: var(--text-2);
+  font-size: 15px;
+  padding-left: 14px;
+  border-left: 2px solid var(--acc);
+}
+
+.stack {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+
+/* ---- Flagship (PrismAI): one grid, every edge shared ----------------------- */
+.flag {
   display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  margin-top: var(--s-5);
+  grid-template-columns: 1.1fr 1fr;
+  grid-template-areas:
+    'media body'
+    'stills stills'
+    'metrics facts';
+  margin-bottom: 24px;
 }
 
-.research-tile {
-  position: relative;
-  padding: 32px;
+.flag-media {
+  grid-area: media;
+  padding: 22px 0 22px 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background:
-    radial-gradient(75% 70% at 85% 0%, var(--acc-tint-2), transparent 68%),
-    linear-gradient(var(--hair) 1px, transparent 1px) 0 0 / 44px 44px,
-    linear-gradient(90deg, var(--hair) 1px, transparent 1px) 0 0 / 44px 44px,
-    var(--surface-2);
-  border-right: var(--rule);
-  min-height: 300px;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
 }
 
-/* Eyebrow at the top, the number in the middle, the award at the foot. */
-.research-tile .paper-num,
-.research-tile .research-awards {
-  margin-top: auto;
-}
-
-.research-tile .paper-num {
-  font-size: clamp(44px, 4.6vw, 64px);
-}
-
-.research-tile .paper-line {
-  font-size: 15px;
-  max-width: 38ch;
-}
-
-.research-awards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.research-body {
-  padding: 32px;
+.flag-body {
+  grid-area: body;
+  padding: 32px 32px 22px 28px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 
-.research-title {
+.flag-body .role {
+  margin-top: auto;
+}
+
+.flag-lead .media-awards {
+  justify-content: flex-end;
+}
+
+/* The three stills: one full-width band, identical frames, captions on one line. */
+.flag-stack {
+  grid-area: stills;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 22px 32px 22px 22px;
+  border-top: 1px solid var(--hair);
+}
+
+.flag-stack figure {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.flag-stack .media-frame {
+  border-radius: var(--r-md);
+  box-shadow: var(--elev-1);
+}
+
+.flag-metrics {
+  grid-area: metrics;
+  padding: 4px 0 30px 22px;
+}
+
+.flag-metrics .metrics {
+  padding-top: 0;
+}
+
+.flag-facts {
+  grid-area: facts;
+  padding: 0 32px 22px 28px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+
+.now-box {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--hair-2);
+}
+
+.now {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-text);
+}
+
+.now i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acc);
+  box-shadow: 0 0 0 3px var(--acc-glow);
+}
+
+/* ---- Featured cards -------------------------------------------------------- */
+.build-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.build {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.build-media {
+  padding: 16px 16px 0;
+}
+
+.build-body {
+  padding: 22px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.build-body .links,
+.paper-body .links {
+  margin-top: auto;
+}
+
+/* ---- The paper ------------------------------------------------------------- */
+.paper {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  margin-top: 24px;
+}
+
+.paper-media {
+  padding: 22px 0 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* The two headline results sit on the column's bottom edge, under a hairline,
+   so the media column ends on the same line as the text column. */
+.paper-media .metrics {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--hair);
+}
+
+.paper-body {
+  padding: 32px 32px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ---- More builds: a 12-column grid so the last row is never an orphan ------- */
+.more-head {
+  display: grid;
+  gap: 10px;
+  max-width: 720px;
+  margin: clamp(48px, 6vw, 80px) 0 24px;
+}
+
+.more-head h3 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(28px, 2.6vw, 36px);
-  letter-spacing: -0.01em;
-  line-height: 1.05;
+  font-size: clamp(30px, 3.2vw, 42px);
+  line-height: 1;
+  letter-spacing: var(--tr-display);
 }
 
-.research-meta {
+.more-head p {
+  color: var(--text-2);
+}
+
+/* Seven cards: 4 + 3 at full width, 3 + 2 + 2 below 1100, 2 + 2 + 2 + 1 below
+   760, a single column below 560. Every row spans the full width. */
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.mini {
+  grid-column: span 3;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  box-shadow: var(--elev-1);
+}
+
+.mini:nth-child(n + 5) {
+  grid-column: span 4;
+}
+
+.mini-media {
+  padding: 12px 12px 0;
+}
+
+.mini-media .media-frame {
+  border-radius: 8px;
+  box-shadow: var(--elev-1);
+}
+
+.mini-body {
+  padding: 16px 16px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mini-body .eyebrow {
+  font-size: 10px;
+}
+
+.mini-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.mini-title span {
+  font-style: italic;
+  color: var(--text-2);
+}
+
+.mini-one {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.mini-role {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-2);
+  padding-left: 12px;
+  border-left: 2px solid var(--acc);
+  margin-bottom: 10px;
+}
+
+.mini-more .metrics {
+  gap: 14px 22px;
+  padding: 2px 0 10px;
+}
+
+.mini-more .metric b {
+  font-size: 26px;
+}
+
+.mini-more {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.mini-more summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-text);
+}
+
+.mini-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.mini-more summary::after {
+  content: '+';
   color: var(--text-3);
   font-size: 14px;
 }
 
-/* ---- Compact index --------------------------------------------------------- */
-.compact-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  margin: var(--s-8) 0 var(--s-4);
+.mini-more[open] summary::after {
+  content: '\2212';
 }
 
-.compact-head h3 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(26px, 2.4vw, 34px);
-  letter-spacing: -0.01em;
+.mini-more .text {
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
-.compact-row {
-  display: grid;
-  grid-template-columns: 170px minmax(0, 1fr) 160px 70px 184px;
-  gap: 16px;
-  align-items: baseline;
-  padding: 18px 0;
-  border-top: var(--rule);
-  scroll-margin-top: 84px;
+.mini-more .stack {
+  font-size: 11px;
+  margin-bottom: 8px;
 }
 
-.compact-row:last-child {
-  border-bottom: var(--rule);
+.mini-body .links {
+  margin-top: auto;
+  gap: 0 14px;
 }
 
-.compact-title {
-  font-weight: 600;
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-}
-
-.compact-title i {
-  font-style: normal;
-  font-family: var(--font-mono);
+.mini-body .links a {
   font-size: var(--fs-micro);
-  color: var(--acc);
-  letter-spacing: 0.08em;
 }
 
-.compact-what {
+/* ============================== HIGHLIGHTS ================================ */
+.hl {
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(56px, 7vw, 96px) 0;
+  perspective: var(--persp);
+}
+
+.hl .eyebrow {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.hl-slab {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  box-shadow: var(--elev-2);
+}
+
+.hl-cell {
+  padding: 26px 28px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  border-left: 1px solid var(--hair);
   color: var(--text-2);
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.5;
+  min-width: 0;
 }
 
-.compact-stack,
-.compact-year {
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  color: var(--text-3);
+.hl-cell:nth-child(odd) {
+  border-left: 0;
 }
 
-.compact-links {
-  margin: -10px -10px;
-  justify-content: flex-end;
-  flex-wrap: nowrap; /* two links stay on one line, so every row is the same height */
-  white-space: nowrap;
+.hl-cell:nth-child(n + 3) {
+  border-top: 1px solid var(--hair);
+}
+
+.hl-cell i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--acc);
+  margin-top: 8px;
 }
 
 /* ============================== PROOF OF WORK ============================= */
@@ -1077,7 +1364,8 @@
 .pow-card {
   border: 1px solid var(--hair);
   border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  background: var(--surface);
+  box-shadow: var(--elev-2);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -1097,20 +1385,16 @@
   font-size: var(--fs-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  text-decoration: none;
-  color: var(--text);
+  color: var(--link);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 40px;
-  padding: 0 10px;
-  margin: -10px;
-  border-radius: var(--r-sm);
-  transition: background var(--dur) var(--ease);
+  min-height: 44px;
+  margin: -10px 0;
 }
 
 .pow-top a:hover {
-  background: var(--surface-2);
+  color: var(--text);
 }
 
 .pow-top a::after {
@@ -1131,11 +1415,12 @@
   font-size: var(--fs-metric);
   line-height: 1;
   letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 .pow-stats b em {
   font-style: italic;
-  color: var(--acc);
+  color: var(--text-2);
 }
 
 .pow-stats span {
@@ -1148,41 +1433,72 @@
   margin-top: 8px;
 }
 
-/* Heatmap: brass ramp, never GitHub green. */
+/* Heatmap: a blue ramp from the ground color up to the brightest light. Each
+   level is one <path>; the 3px round stroke gives every cell its rounded corners. */
+.heat-wrap {
+  position: relative;
+}
+
 .heat {
   width: 100%;
-  height: auto; /* the graph is full card width, so it scales up with it */
+  height: auto;
   display: block;
+}
+
+.heat path {
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 .heat .c0,
 .heat-sw-0 {
   fill: var(--hair);
+  stroke: var(--hair);
   background: var(--hair);
 }
 
 .heat .c1,
 .heat-sw-1 {
   fill: color-mix(in srgb, var(--acc) 30%, var(--surface));
+  stroke: color-mix(in srgb, var(--acc) 30%, var(--surface));
   background: color-mix(in srgb, var(--acc) 30%, var(--surface));
 }
 
 .heat .c2,
 .heat-sw-2 {
-  fill: color-mix(in srgb, var(--acc) 55%, var(--surface));
-  background: color-mix(in srgb, var(--acc) 55%, var(--surface));
+  fill: color-mix(in srgb, var(--acc) 58%, var(--surface));
+  stroke: color-mix(in srgb, var(--acc) 58%, var(--surface));
+  background: color-mix(in srgb, var(--acc) 58%, var(--surface));
 }
 
 .heat .c3,
 .heat-sw-3 {
-  fill: color-mix(in srgb, var(--acc) 80%, var(--surface));
-  background: color-mix(in srgb, var(--acc) 80%, var(--surface));
+  fill: var(--acc);
+  stroke: var(--acc);
+  background: var(--acc);
 }
 
 .heat .c4,
 .heat-sw-4 {
   fill: var(--acc-2);
+  stroke: var(--acc-2);
   background: var(--acc-2);
+}
+
+.heat-tip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 12px));
+  padding: 4px 9px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--hair-2);
+  box-shadow: var(--elev-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  color: var(--text);
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .heat text {
@@ -1194,7 +1510,7 @@
 }
 
 .pow-foot {
-  margin-top: auto; /* the note and key sit at the foot of the card */
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1243,16 +1559,15 @@
   width: 13px;
   height: 13px;
   margin-top: 4px;
-  color: var(--acc);
+  color: var(--win);
 }
 
 .pow-wins a {
   display: block;
-  text-decoration: none;
 }
 
 .pow-wins a:hover b {
-  color: var(--acc-2);
+  color: var(--acc-text);
 }
 
 .pow-wins b {
@@ -1284,9 +1599,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 20px 20px 20px;
+  padding: 20px;
   border-left: var(--rule);
-  text-decoration: none;
   color: inherit;
   min-height: 44px;
   transition: background var(--dur) var(--ease);
@@ -1298,7 +1612,7 @@
 }
 
 .pow-tiles a:hover {
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
 }
 
 .pow-k {
@@ -1330,52 +1644,57 @@
 }
 
 /* =============================== PRINCIPLES =============================== */
-.pri-grid {
+.principles {
+  padding-top: var(--sec-y);
+}
+
+.p-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--s-5);
+  gap: 20px;
 }
 
-.pri-card {
-  border: 1px solid var(--hair);
+.p-tile {
+  padding: 28px 28px 30px;
   border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  box-shadow: var(--elev-1);
+  display: grid;
   gap: 12px;
+  align-content: start;
 }
 
-.pri-idx {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  color: var(--acc);
-  letter-spacing: 0.1em;
+.p-tile::before {
+  content: '';
+  width: 28px;
+  height: 2px;
+  background: var(--acc);
+  border-radius: 2px;
 }
 
-.pri-card h3 {
+.p-tile h3 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(26px, 2.2vw, 32px);
+  font-size: clamp(26px, 2.4vw, 32px);
+  line-height: 1.05;
   letter-spacing: -0.01em;
-  line-height: 1.1;
 }
 
-.pri-card p {
+.p-tile p {
   color: var(--text-2);
 }
 
 /* ================================== VALUE ================================= */
-/* Hairline rows, deliberately not cards, so it never reads as Principles twice. */
+/* Hairline rows, deliberately not tiles, so it never reads as Principles twice. */
+.val {
+  border-top: var(--rule);
+}
+
 .val-row {
   display: grid;
   grid-template-columns: 160px 1fr 1.2fr;
   gap: 32px;
   padding: 28px 0;
-  border-top: var(--rule);
-}
-
-.val-row:last-child {
   border-bottom: var(--rule);
 }
 
@@ -1390,7 +1709,6 @@
 
 .val-row h3 {
   font-family: var(--font-display);
-  font-weight: 400;
   font-size: clamp(22px, 1.9vw, 27px);
   line-height: 1.2;
   letter-spacing: -0.005em;
@@ -1429,20 +1747,21 @@
 }
 
 /* ================================= TOOLKIT ================================ */
+.tk {
+  border-top: var(--rule);
+}
+
 .tk-row {
   display: grid;
   grid-template-columns: 200px 1fr;
   gap: 24px;
   padding: 20px 0;
-  border-top: var(--rule);
+  border-bottom: var(--rule);
   align-items: start;
 }
 
-.tk-row:last-child {
-  border-bottom: var(--rule);
-}
-
 .tk-row h3 {
+  font-family: var(--font-ui);
   font-size: var(--fs-body);
   font-weight: 500;
   padding-top: 6px;
@@ -1461,67 +1780,87 @@
   padding: 0 11px;
   border: 1px solid var(--hair);
   background: var(--surface);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   font-size: 13px;
   color: var(--text-2);
 }
 
 /* ================================= CONTACT ================================ */
 .contact {
+  overflow: hidden;
   padding-bottom: var(--sec-y);
 }
 
-.contact-blurb {
+/* The second pedestal: soft bands of light rising from the ground. CSS only. */
+.rise {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(900px, 120vw);
+  height: 70%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+  background: linear-gradient(
+    90deg,
+    transparent 0 8%,
+    rgba(var(--beam-b), 0.16) 8% 13%,
+    transparent 13% 24%,
+    rgba(var(--beam-a), 0.22) 24% 31%,
+    transparent 31% 40%,
+    rgba(var(--beam-c), 0.14) 40% 45%,
+    transparent 45% 54%,
+    rgba(var(--beam-b), 0.22) 54% 62%,
+    transparent 62% 71%,
+    rgba(var(--beam-a), 0.14) 71% 75%,
+    transparent 75% 86%,
+    rgba(var(--beam-c), 0.18) 86% 92%,
+    transparent 92%
+  );
+  filter: blur(10px);
+  mask-image: linear-gradient(to top, var(--ink) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, var(--ink) 0%, transparent 100%);
+}
+
+.contact .wrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 18px;
+}
+
+.contact .blurb {
   color: var(--text-2);
-  max-width: 52ch;
+  max-width: 56ch;
+}
+
+.email-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
   margin-top: 8px;
 }
 
-.contact-mail {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin: var(--s-6) 0;
-}
-
-.contact-mail a {
+.email {
   font-family: var(--font-display);
-  font-size: clamp(30px, 5vw, 72px);
+  font-size: clamp(26px, 3.4vw, 44px);
   line-height: 1;
+  color: var(--text);
   letter-spacing: -0.01em;
-  text-decoration: none;
+  word-break: break-all;
   border-bottom: 2px solid var(--hair-2);
   padding-bottom: 8px;
   transition: border-color var(--dur) var(--ease);
-  word-break: break-all;
 }
 
-.contact-mail a:hover,
-.contact-mail a:focus-visible {
+.email:hover,
+.email:focus-visible {
   border-color: var(--acc);
-}
-
-.copy {
-  height: 44px;
-  padding: 0 14px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--hair-2);
-  background: transparent;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
-}
-
-.copy:hover {
-  background: var(--surface);
-  border-color: var(--text-3);
 }
 
 .copy[data-state='done'] {
@@ -1529,37 +1868,37 @@
   border-color: var(--ok);
 }
 
-.contact-links {
+.c-links {
   display: flex;
-  gap: 8px 24px;
+  gap: 4px 22px;
   flex-wrap: wrap;
-  border-top: var(--rule);
-  padding-top: 12px;
+  justify-content: center;
 }
 
-.contact-links a {
+.c-links a {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 44px;
-  text-decoration: none;
+  min-height: 44px;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tr-label);
   text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.c-links a b {
+  color: var(--text);
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.c-links a:hover {
   color: var(--text);
 }
 
-.contact-links a span {
-  color: var(--text-3);
-}
-
-.contact-links a::after {
-  content: '↗';
-  color: var(--text-3);
-}
-
 .foot {
+  position: relative;
+  z-index: 1;
   background: var(--ink-2);
   border-top: var(--rule);
   padding: 22px 0 28px;
@@ -1578,54 +1917,65 @@
 }
 
 /* =============================== RESPONSIVE =============================== */
+@media (max-width: 1100px) {
+  .mini {
+    grid-column: span 4;
+  }
+
+  .mini:nth-child(n + 4) {
+    grid-column: span 6;
+  }
+}
+
 @media (max-width: 960px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: var(--s-7);
-  }
-
-  .proof-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .proof-list li:nth-child(4) {
-    border-left: 0;
-    padding-left: 0;
-  }
-
-  .proof-list li:nth-child(n + 4) {
-    border-top: 1px solid color-mix(in srgb, var(--acc-ink) 16%, transparent);
-  }
-
-  .builds-grid,
-  .pri-grid,
-  .pow-grid {
-    grid-template-columns: 1fr;
+  .nav-links {
+    display: none;
   }
 
   .flag,
-  .research {
+  .paper {
     grid-template-columns: 1fr;
   }
 
-  .flag-media,
-  .research-tile {
-    border-right: 0;
-    border-bottom: var(--rule);
+  .flag {
+    grid-template-areas:
+      'media'
+      'body'
+      'stills'
+      'metrics'
+      'facts';
   }
 
-  .flag-sticky {
-    position: static;
+  .flag-media,
+  .paper-media {
+    padding: 16px 16px 0;
+  }
+
+  .flag-body,
+  .paper-body {
+    padding: 22px 20px 20px;
+  }
+
+  .flag-stack {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+
+  .flag-metrics {
+    padding: 0 20px;
+  }
+
+  .flag-facts {
+    padding: 12px 20px 22px;
   }
 
   .xp-row {
-    grid-template-columns: 1fr auto;
-    gap: 16px 24px;
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
-  .xp-row .xp-note {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  .xp-when {
+    text-align: left;
   }
 
   .val-row {
@@ -1653,98 +2003,37 @@
 }
 
 @media (max-width: 760px) {
-  .compact-row {
-    grid-template-columns: 1fr auto;
-    gap: 8px 16px;
+  .build-grid,
+  .p-grid {
+    grid-template-columns: 1fr;
   }
 
-  .compact-what,
-  .compact-stack,
-  .compact-links {
-    grid-column: 1 / -1;
+  .hl-slab {
+    grid-template-columns: 1fr;
   }
 
-  .compact-year {
-    grid-row: 1;
-    grid-column: 2;
-    text-align: right;
+  .hl-cell {
+    border-left: 0;
+    padding: 20px;
   }
 
-  .compact-stack:empty,
-  .compact-year:empty {
-    display: none;
+  .hl-cell:nth-child(n + 2) {
+    border-top: 1px solid var(--hair);
   }
 
-  .compact-links {
-    margin: 0 -10px -10px;
+  .mini,
+  .mini:nth-child(n + 4) {
+    grid-column: span 6;
+  }
+
+  .mini:last-child:nth-child(odd) {
+    grid-column: span 12;
   }
 }
 
 @media (max-width: 640px) {
-  .nav li:not(:last-child) {
-    display: none;
-  }
-
-  .proof-list {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .proof-list li {
-    padding: 22px 16px 20px;
-  }
-
-  .proof-list li:nth-child(4) {
-    border-left: 1px solid color-mix(in srgb, var(--acc-ink) 16%, transparent);
-    padding-left: 16px;
-  }
-
-  .proof-list li:nth-child(odd) {
-    border-left: 0;
-    padding-left: 0;
-  }
-
-  .proof-list li:nth-child(n + 3) {
-    border-top: 1px solid color-mix(in srgb, var(--acc-ink) 16%, transparent);
-  }
-
-  .hero-actions .btn {
-    flex: 1 1 calc(50% - 10px);
-  }
-
-  .build-kind {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .deck-cap b {
-    font-size: 22px;
-  }
-
-  /* The badge drops under the one-liner, never over the screenshot. */
-  .deck-cap .badge {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    justify-self: start;
-    margin-top: 4px;
-  }
-
-  .deck-cta,
-  .deck-idx {
-    grid-row: 4;
-  }
-
-  .contact-links {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .contact-links a {
-    width: 100%;
-    border-bottom: var(--rule);
-  }
-
-  .contact-links a::after {
-    margin-left: auto;
+  .actions .btn:not(.btn-icon) {
+    flex: 1 1 auto;
   }
 
   .pow-wins {
@@ -1754,13 +2043,6 @@
   .pow-wins li:nth-child(2) {
     border-top: var(--rule);
     padding-top: 12px;
-  }
-
-  .flag-media,
-  .flag-body,
-  .research-tile,
-  .research-body {
-    padding: 20px;
   }
 
   .pow-card {
@@ -1775,16 +2057,25 @@
     height: 96px;
   }
 
-  .xp-row {
+  .kind {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 560px) {
+  .mini,
+  .mini:nth-child(n + 4),
+  .mini:last-child:nth-child(odd) {
+    grid-column: span 12;
+  }
+
+  .flag-stack {
     grid-template-columns: 1fr;
   }
 
-  .xp-row .xp-note {
-    grid-row: auto;
-  }
-
-  .xp-when {
-    text-align: left;
+  .metrics {
+    gap: 14px 22px;
   }
 }
 
@@ -1804,25 +2095,30 @@
   }
 }
 
+/* ============================ REDUCED MOTION ============================== */
+/* Everything is already in place: static beams, a static ring pose, no tilt. */
 @media (prefers-reduced-motion: reduce) {
-  .deck-card {
+  .media {
     transition: none;
   }
 
-  .hero-name em {
+  .card-link,
+  .bg[data-ready] .bg-static,
+  .ctl,
+  .pow-tiles a,
+  .email {
+    transition: none;
+  }
+
+  .bg[data-ready] .bg-beams {
     animation: none;
   }
 
-  .deck-fill {
-    animation: none;
-    width: 100%;
-  }
-
-  .bg-canvas {
-    transition: none;
-  }
-
-  .nav-prog {
-    transition: none;
+  .bg-glow,
+  .bg-beams,
+  .bg-stars,
+  .bg-static {
+    transform: none;
+    will-change: auto;
   }
 }
