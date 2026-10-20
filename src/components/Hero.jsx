@@ -47,10 +47,7 @@ export default function Hero() {
             </h1>
             <p className="identity">{hero.identity}</p>
             <p className="identity-sub">{hero.identitySub}</p>
-            <p className="cred">
-              <span className="cred-short">{hero.credential}</span>
-              <span className="cred-long">{hero.credentialLong}</span>
-            </p>
+            <p className="cred">{hero.credential}</p>
             <div className="actions">
               {hero.actions
                 .filter((a) => a.href)

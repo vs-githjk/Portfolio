@@ -20,7 +20,7 @@
    - `proof` (the six-number band under the hero) is GONE. Its facts now live
      in Experience, Builds and the paper. `highlights` (below Builds) is the
      optional replacement: four complete one-line statements, not figures.
-   - `hero.proofLine` is gone; `hero.credential` / `credentialLong` replace it.
+   - `hero.proofLine` is gone; `hero.credential` replaces it.
    - `hero.carousel.slides` (the orbit ring) has 11 cards in Vidyut's order
      (V4 SIGN-OFF, Oct 20): PrismAI, BetterBill, MVR, Vytal, Match Day,
      Yinzone, Terrametric, the paper, Quorum, FilingWatch, NextRound. Tune the
@@ -64,7 +64,7 @@ export const nav = {
    Around it: the orbit ring. No figures in the hero except the live-status
    badge on the PrismAI card, which says what it counts. */
 export const hero = {
-  status: 'Available Jan 2027',
+  status: 'Forward-deployed and AI engineer · available Jan 2027',
   /* Studio headshot: 180px and 360px (2x) squares, shown at about 160px beside
      the name on a laptop and 112px on a phone. The 600px and 1200px originals
      stay in public/ for the share card. */
@@ -78,13 +78,11 @@ export const hero = {
   /* The plain line under the identity: what that means in practice. */
   identitySub:
     'Agents that do real work, with code checking the numbers and a person approving before anything goes out.',
-  /* Short form clears the side cards at 1440. Long form for row mode and
-     anywhere with room. "1st place in four tracks" = Visa + Photon (LA Hacks
-     AI Hackathon) + Real World + Data Science (Bitcamp). */
+  /* One short form everywhere (it clears the side cards at 1440 and stays a caption
+     on a phone). "1st place in four tracks" = Visa + Photon (LA Hacks AI
+     Hackathon) + Real World + Data Science (Bitcamp). */
   credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
-  credentialLong:
-    'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
-  locationNote: 'State College, PA · open to relocate',
+  locationNote: 'Penn State CS, Dec 2026 · State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
     { label: 'Email me', href: 'mailto:vidyut0712@gmail.com', primary: true },
@@ -129,7 +127,7 @@ export const hero = {
         id: 'betterbill',
         title: 'BetterBill',
         oneLiner: 'Finds hospital charges you may not owe.',
-        badge: '2× 1st · LA Hacks',
+        badge: '2× 1st · LA Hacks AI',
         badgeKind: 'win',
         tone: 'light', // pale thumbnail: the ring dims it further at the back
         image: {
@@ -462,7 +460,7 @@ export const builds = {
       kind: 'Product · live',
       title: 'Match Day',
       descriptor: 'racket tournament platform',
-      when: '2026', // TODO: build dates (domain registered Sep 10 2026; launch video Sep 2026)
+      when: '', // TODO: build dates (domain registered Sep 10 2026; launch video Sep 2026)
       oneLiner:
         'Run a racket tournament from one screen: the draw, the courts, the schedule and live scores on every phone.',
       awards: [],
@@ -492,7 +490,7 @@ export const builds = {
       awards: [], // Not in the published top 3 (Technical.ly, Oct 8 2026). No badge.
       role: 'I built the AI chat: voice, cited answers, what-if reruns of the real scorer, and a guard that drops any sentence with a number that is not in the facts.',
       body: [
-        'Yinzone scores the city’s parcels on indicators drawn from 134 public datasets. Deterministic code decides every score and every legal status; AI only explains, and when the site-fit model is unsure, it flags a human instead of guessing.',
+        'Yinzone scores the city’s parcels on indicators drawn from 134 public datasets. Deterministic code decides every score and every legal status. AI explains and advises: a site-fit model rates each housing type with a confidence, and when it is unsure, it flags a human instead of guessing.',
       ],
       metrics: [
         { value: '~142,000', label: 'Pittsburgh parcels scored\non 53 indicators' },
@@ -788,7 +786,7 @@ export const principles = {
   items: [
     {
       title: 'The model explains. Code decides.',
-      body: 'In BetterBill, Yinzone, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s change orders are priced the same way. When a number matters, it should never come from a guess.',
+      body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s change orders are priced the same way. When a number matters, it should never come from a guess.',
     },
     {
       title: 'Something has to be able to say no.',
@@ -796,7 +794,7 @@ export const principles = {
     },
     {
       title: 'Measure, then claim.',
-      body: 'Every number I publish travels with its denominator: BetterBill’s catch rate comes with the fact that we planted the errors, and the paper’s error reduction comes with the set of tasks it was measured on. "Feels better" stays a hunch until a number backs it.',
+      body: 'Every number I publish says what it measures, and where I can, how: BetterBill’s catch rate comes with the fact that we planted the errors, and the paper’s error reduction comes with the set of tasks it was measured on. "Feels better" stays a hunch until a number backs it.',
     },
     {
       title: 'End to end first, then polish.',
@@ -839,7 +837,7 @@ export const value = {
       tag: 'Modernizer',
       claim: 'When I see a manual workflow, I want to rebuild it.',
       receipts: [
-        'At Comcast the pilot I shipped **replaced separate planning, budget and communication tools with one interface**.',
+        'At Comcast the pilot I shipped **put planning, budget tracking and team communication in one interface**.',
         'MVR exists to modernize legacy software safely: **every claim about the old system links to evidence**.',
       ],
     },
@@ -904,7 +902,7 @@ export const toolkit = {
     },
     {
       name: 'Frontend',
-      items: ['React 19', 'Next.js', 'TanStack Start', 'Tailwind CSS', 'Three.js', 'Chrome extensions'],
+      items: ['React 19', 'Next.js', 'TanStack Start', 'Tailwind CSS', 'Chrome extensions'],
     },
     {
       name: 'Verification & testing',
@@ -932,7 +930,7 @@ export const proofOfWork = {
   heading: 'Verify me in',
   headingEm: 'one click.',
   intro:
-    'Most of what is above leaves a public trail: the graph counts my private-repo work too, and every hackathon win links to its Devpost page. On a few repos (Quorum, PaperTrail, Terrametric) GitHub’s contributor list skips me because my commits carry a laptop email; the commit log shows them under Vidyut Sriram.',
+    'Most of what is above leaves a public trail: the graph counts my private-repo work too, and every hackathon win links to its Devpost page.',
   github: {
     eyebrow: 'GitHub · last 12 months',
     handle: '@vs-githjk',
@@ -943,7 +941,7 @@ export const proofOfWork = {
       active: 'active days',
       streak: 'longest streak',
       streakUnit: ' days',
-      month: 'in {month} so far',
+      month: 'contributions, {month} 1 to {day}',
     },
     note: '',
     phoneNote: 'The graph shows the latest six months on a phone; the totals cover the whole year.',
@@ -976,7 +974,7 @@ export const proofOfWork = {
         href: 'https://devpost.com/software/terrametric',
       },
       {
-        title: 'Terrametric · 3rd, Open Source',
+        title: 'Terrametric · 3rd, Open Source (Featherless)',
         event: 'Bitcamp 2026 · Apr 2026',
         href: 'https://devpost.com/software/terrametric',
       },

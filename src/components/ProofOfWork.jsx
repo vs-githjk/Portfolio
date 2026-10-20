@@ -83,7 +83,7 @@ export default function ProofOfWork() {
               </div>
               <div>
                 <b>{fmt(current.count)}</b>
-                <span>{fill(g.stats.month, { month: t.month })}</span>
+                <span>{fill(g.stats.month, { month: t.month, day: t.day })}</span>
               </div>
             </div>
             <Heatmap days={github.days} label={fill(g.graphLabel, { n: fmt(github.total) })} />
