@@ -118,16 +118,17 @@ export default function ProofOfWork() {
               {proofOfWork.wins.items.map((w) => (
                 <li key={w.title}>
                   <StarIcon />
-                  <div>
-                    {w.href ? (
-                      <a href={w.href} target="_blank" rel="noopener noreferrer">
-                        <b>{w.title}</b>
-                      </a>
-                    ) : (
+                  {w.href ? (
+                    <a href={w.href} target="_blank" rel="noopener noreferrer">
                       <b>{w.title}</b>
-                    )}
-                    <span>{w.event}</span>
-                  </div>
+                      <span>{w.event}</span>
+                    </a>
+                  ) : (
+                    <div>
+                      <b>{w.title}</b>
+                      <span>{w.event}</span>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
