@@ -4,8 +4,12 @@ import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
 import Stack from './Stack';
+import { builds } from '../data/content';
 
-/* One featured build. The anchor id matches the ring card id. */
+/* One featured build. The anchor id matches the ring card id. The one-liner, the role
+   line, the results and the stack stay on show; the full story opens under "Read
+   more" (a native <details>, like the compact cards), so the page stays a minute's
+   read and the story is one click away. */
 export default function BuildCard({ item, delay }) {
   return (
     <article className="build reveal" id={`build-${item.id}`} data-delay={delay}>
@@ -28,13 +32,19 @@ export default function BuildCard({ item, delay }) {
           {item.title} <span>{item.descriptor}</span>
         </h3>
         <p className="one">{item.oneLiner}</p>
-        {item.body.map((p) => (
-          <p className="text" key={p.slice(0, 24)}>
-            <Rich text={p} />
-          </p>
-        ))}
         {item.role && <p className="role">{item.role}</p>}
         <Metrics items={item.metrics} />
+        <details className="mini-more build-more">
+          <summary>
+            {builds.more.readMore}
+            <span className="sr">{builds.more.readMoreSr.replace('{title}', item.title)}</span>
+          </summary>
+          {item.body.map((p) => (
+            <p className="text" key={p.slice(0, 24)}>
+              <Rich text={p} />
+            </p>
+          ))}
+        </details>
         <Stack text={item.stack} />
         <LinkRow links={item.links} />
       </div>
