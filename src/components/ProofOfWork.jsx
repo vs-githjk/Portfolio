@@ -91,7 +91,7 @@ export default function ProofOfWork() {
             <Heatmap days={github.days} label={fill(g.graphLabel, { n: fmt(github.total) })} />
             <div className="pow-foot">
               <span>
-                {g.note} {g.updated} {updated}
+                {g.note ? `${g.note} ` : ''}{g.updated} {updated}
               </span>
               <span>
                 {g.keyLess}{' '}

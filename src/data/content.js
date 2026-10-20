@@ -31,7 +31,7 @@ export const nav = {
   links: [
     { label: 'Work', href: '#work' },
     { label: 'Builds', href: '#builds' },
-    { label: 'Proof', href: '#verify' },
+    { label: 'Verify', href: '#verify' },
     { label: 'How I build', href: '#principles' },
   ],
   cta: { label: 'Email', href: 'mailto:vidyut0712@gmail.com' },
@@ -54,8 +54,8 @@ export const hero = {
   identity: 'Builds safe, reliable AI systems.',
   identitySub: 'Penn\u00A0State CS, graduating Dec\u00A02026.',
   proofLine:
-    'Shipped **PrismAI to 14 beta users**, interned at **Comcast** and **Sherlock AI**, first author on an **arXiv preprint**, and **six awards**, four of them first place.',
-  locationNote: 'State College, PA',
+    'Shipped **PrismAI to 14 beta users**, interned at **Comcast** and **Sherlock AI**, wrote a first-author **arXiv preprint**, and won **six awards**, four of them first place.',
+  locationNote: 'State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
     { label: 'Email me', href: 'mailto:vidyut0712@gmail.com', primary: true },
@@ -66,8 +66,9 @@ export const hero = {
 
   /* ---- Carousel: "What I've built" ----------------------------------------
      Slide id = Builds card id, so the slide links to #build-<id>.
-     oneLiner: 8 words or fewer. award: badge text, '' = no badge.
-     JPEG q82, under 180KB) into image.src before shipping.
+     oneLiner: 8 words or fewer. award: badge text, '' = none. status: a live
+     receipt shown in the same badge slot when there is no award.
+     Images: 1600x1000 JPEG, under 180KB.
      The paper slide has no image: it renders the typographic tile from
      builds.research.tile. MVR is never called AI. */
   carousel: {
@@ -87,9 +88,10 @@ export const hero = {
         title: 'PrismAI',
         oneLiner: 'Turns meetings into follow-up emails and tasks.',
         award: '',
+        status: 'Live beta · 14 users',
         image: {
-          src: '/builds/prismai-analysis.jpg',
-          alt: 'PrismAI meeting analysis: a summary, topics covered, action items, decisions and a health score',
+          src: '/builds/prismai-deck.jpg',
+          alt: 'PrismAI meeting analysis: tabs for action items, decisions and follow-ups, a summary and the topics covered',
         },
       },
       {
@@ -109,7 +111,7 @@ export const hero = {
         award: '',
         image: {
           src: '/builds/mvr.jpg',
-          alt: 'MVR system model where every claim about the codebase is linked to evidence',
+          alt: 'MVR system model where every claim about the codebase is linked to evidence (local run on a synthetic codebase)',
         },
       },
       {
@@ -174,7 +176,7 @@ export const proof = [
   {
     value: '6',
     label: 'Awards',
-    sub: '4 first places. Awards by event: LA Hacks AI Hackathon 2, BitCamp 3, Penn State Exhibition 1.',
+    sub: '4 first, 1 second, 1 third place',
   },
   { value: '12', label: 'Builds', sub: 'products, hackathon builds, research' },
   { value: '14', label: 'Live beta users', sub: 'PrismAI, multi-tenant' },
@@ -204,7 +206,7 @@ export const experience = {
       logo: '/logos/comcast.png',
       role: 'Software Development Engineer Intern',
       team: 'India Engineering Centre',
-      note: 'Asked whether low-code agent tooling could work inside engineering teams. I scoped the problem, chose Langflow and shipped the pilot: one interface for planning, budget tracking, structured data and team communication, plus a code-input surface. Then I added RAG over internal docs based on real usage.',
+      note: 'The question: could low-code agent tooling work inside engineering teams? I scoped the problem, chose Langflow and shipped the pilot: one interface for planning, budget tracking, structured data and team communication, plus a code-input surface. Then I added RAG over internal docs based on real usage.',
       wins: [
         'Adopted by a 40-person engineering team',
         '~40% less recurring planning and coordination work',
@@ -339,7 +341,7 @@ export const builds = {
         'FastAPI · React 19 · TypeScript · PostgreSQL (forced RLS) · Temporal · S3 · OIDC · OpenTelemetry',
       media: {
         image: '/builds/mvr.jpg',
-        alt: 'MVR system model where every claim about the codebase is linked to evidence',
+        alt: 'MVR system model where every claim about the codebase is linked to evidence (local run on a synthetic codebase)',
       },
       links: [{ label: 'Source', href: '' }], // private repo, no public URL
     },
@@ -381,7 +383,12 @@ export const builds = {
       body: [
         'Live at joinmatchday.com. Organizers seed the draw, schedule courts and score matches live; the scheduler flags double-booked players and courts, and entry caps are enforced in the database so two people cannot take the last slot. A command center shows which matches are running late and which court is overloaded.',
       ],
-      metrics: [],
+      metrics: [
+        // From the live landing page copy: knockout, round robin, groups into knockout.
+        { value: '3', label: 'draw\nformats' },
+        // joinmatchday.com meta description: one account for playing, organizing and officiating.
+        { value: '3', label: 'roles, one\naccount' },
+      ],
       stack: '', // TODO: confirm stack (public bundle suggests React, Vite, Supabase, Vercel)
       media: {
         image: '/builds/matchday.jpg',
@@ -543,7 +550,7 @@ export const principles = {
   items: [
     {
       title: 'Code decides. The model explains.',
-      body: 'In BetterBill, Yinzone, Vytal and PrismAI, deterministic code computes every score, flag and dollar. The model reads, drafts and explains. When the number matters, it should not come from a guess.',
+      body: 'In BetterBill, Yinzone and Vytal, deterministic code computes every score, flag and dollar; PrismAI’s change orders, building now for Dec 2026, are priced by code too, never by a model. The model reads, drafts and explains. When the number matters, it should not come from a guess.',
     },
     {
       title: 'Distrust the first output.',
@@ -571,7 +578,7 @@ export const value = {
       claim: 'I care most about the gap between "works in the demo" and "works."',
       receipts: [
         'My repair loop cut CodeLlama 7B’s CodeQL errors **83.7%** across 5,000 C tasks.',
-        'In PrismAI, a **cross-tenant attack suite blocks CI**, so one customer’s data cannot leak into another’s.',
+        'In PrismAI, a **cross-tenant attack suite blocks CI**, so a cross-tenant leak fails the build before it ships.',
       ],
     },
     {
@@ -711,7 +718,7 @@ export const proofOfWork = {
       streakUnit: ' days',
       month: 'in {month} so far',
     },
-    note: 'Includes private repos (PrismAI, Vytal, MVR).',
+    note: '',
     updated: 'Updated',
     keyLess: 'Less',
     keyMore: 'More',
@@ -774,7 +781,7 @@ export const proofOfWork = {
     {
       kind: 'LinkedIn',
       value: '/in/vidyut-sriram',
-      detail: 'Roles, dates and references',
+      detail: 'Roles and dates',
       href: 'https://www.linkedin.com/in/vidyut-sriram-4b5a012aa',
     },
   ],
