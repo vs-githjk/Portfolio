@@ -199,7 +199,10 @@ export default function Orbit({ stageRef, centreRef }) {
         cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg) scale(${(1 - CFG.side * s * s).toFixed(3)})`;
         // Dim with depth. A back card that sits behind the hero copy goes almost
         // fully dark, so nothing on it competes with the text in front.
-        const cap = Math.max(0, Math.min(1, (c - 0.3) / 0.4));
+        // The caption is either shown or gone, never half there: the side cards of the ring
+        // rest at c = 0.42 (two steps from the front), where a gradual fade would leave a
+        // bright thumbnail over text at 20 to 30%. They rest as logos instead.
+        const cap = Math.max(0, Math.min(1, (c - 0.5) / 0.2));
         let shade = CFG.shade * Math.pow((1 - c) / 2, 1.2);
         // A pale thumbnail (tone: 'light') would stay the brightest thing at the back of
         // the ring, so it dims further as it leaves the front.
