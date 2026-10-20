@@ -941,7 +941,7 @@
 
 .xp-note {
   color: var(--text-2);
-  max-width: 62ch;
+  max-width: 70ch;
 }
 
 .xp-pills {
@@ -988,18 +988,11 @@
     var(--elev-2);
 }
 
-/* Media: a frame with real depth. The tilt and the badges' lift are transforms
-   only; the badges sit one elevation step above the frame. */
+/* Media: a flat, straight frame (it never rotates). The badges sit one
+   elevation step above it. */
 .media {
   position: relative;
   transform-style: preserve-3d;
-  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.5s var(--ease);
-}
-
-.media.tilting {
-  transition: none;
-  will-change: transform;
 }
 
 .media-frame {
@@ -1016,19 +1009,6 @@
   height: 100%;
   object-fit: cover;
   object-position: top center;
-}
-
-.glare {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), color-mix(in srgb, var(--text) 14%, transparent), transparent 46%);
-  opacity: 0;
-  transition: opacity 0.4s;
-  pointer-events: none;
-}
-
-.media.tilting .glare {
-  opacity: 1;
 }
 
 .media-awards {
@@ -1200,6 +1180,25 @@
   object-position: left top;
 }
 
+/* Side by side, the story sets the row height and the lead still crops to fit
+   (it contributes no height of its own), so the role line follows the story and
+   the two columns end together with no band between paragraphs. */
+@media (min-width: 961px) {
+  .flag-media {
+    contain: size;
+    min-height: 300px;
+  }
+
+  .flag-media .media {
+    min-height: 0;
+  }
+
+  .flag-media .media-frame {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
 .flag-now {
   grid-area: now;
   align-self: end;
@@ -1295,12 +1294,13 @@
 
 /* ---- Featured cards -------------------------------------------------------- */
 /* Two columns, and every card is a subgrid on the same nine rows: media, kind,
-   title, one-liner, role, results, read more, stack, links. A row is as tall as the
+   title, one-liner, role, results, stack, links, read more. A row is as tall as the
    tallest cell in it, so the two cards of a pair always have one height, and every
    field starts on one line across the pair. A field one card does not have (a
-   role line, a link) leaves its row empty, which is the reserved space. The links
-   sit in the last row, pinned to the card foot. Opening one "Read more" grows that
-   row in both cards of the pair. Each card owns its rows on a phone, one column. */
+   role line, a link) leaves its row empty, which is the reserved space. "Read more"
+   is the last row, at the card foot, so opening one grows that row in both cards of
+   the pair and the mate gets padding at its foot, never a hole between its fields.
+   Each card owns its rows on a phone, one column. */
 .build-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1358,19 +1358,18 @@
   margin-top: 12px;
 }
 
-.build-body .build-more {
-  grid-row: 6;
-  margin-top: 4px;
-}
-
 .build-body .stack {
-  grid-row: 7;
+  grid-row: 6;
   margin-top: 8px;
 }
 
 .build-body .links {
+  grid-row: 7;
+  margin-top: 4px;
+}
+
+.build-body .build-more {
   grid-row: 8;
-  align-self: end;
   margin-top: 4px;
 }
 
@@ -1457,8 +1456,8 @@
 
 /* Seven cards on a 12-column grid: 4 x span-3, then 3 x span-4, so both rows fill the
    width. Every card is a subgrid on the same seven rows (media, kind, title,
-   one-liner, role, read more, links), so a row of cards has one height and each field
-   starts on one line, with the links on the foot; a field a card lacks leaves its
+   one-liner, role, links, read more), so a row of cards has one height and each field
+   starts on one line, with "Read more" on the foot; a field a card lacks leaves its
    row empty. Below 1100 it is 3 + 2 + 2 (spans 4, 6, 6), below 760 it is 2 + 2 + 2 + a
    full-width horizontal card, and below 560 one column. Opening one "Read more" grows
    that row across its lane of cards. */
@@ -1600,17 +1599,16 @@
   margin-bottom: 8px;
 }
 
-/* The story opens in row 5; the links sit on the foot of row 6. */
-.mini-body .mini-more {
+/* The links sit in row 5; the story opens in row 6, the foot of the card. */
+.mini-body .links {
   grid-row: 5;
-  margin-top: 10px;
+  margin-top: 6px;
+  gap: 0 14px;
 }
 
-.mini-body .links {
+.mini-body .mini-more {
   grid-row: 6;
-  align-self: end;
-  margin-top: 0;
-  gap: 0 14px;
+  margin-top: 4px;
 }
 
 .mini-body .links a {
@@ -2465,7 +2463,7 @@
   }
 
   .flag-metrics {
-    padding: 0 4px;
+    padding: 20px 4px 0;
   }
 
   .flag-facts {
@@ -2593,7 +2591,7 @@
 }
 
 /* ============================ REDUCED MOTION ============================== */
-/* Everything is already in place: static beams, a static ring pose, no tilt. */
+/* Everything is already in place: static beams, a static ring pose. */
 @media (prefers-reduced-motion: reduce) {
   .media {
     transition: none;
