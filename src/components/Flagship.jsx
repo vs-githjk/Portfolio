@@ -3,8 +3,8 @@ import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
 
-/* The PrismAI panel: a "screen" on the left with the headline metrics under
-   it, the story on the right. A muted loop replaces the still when
+/* The PrismAI panel: a "screen" on the left with the headline metrics, the
+   stack and the links under it, the story on the right. A muted loop replaces the still when
    media.video is set (and never autoplays under reduced motion). */
 export default function Flagship({ item }) {
   const { media } = item;
@@ -38,6 +38,8 @@ export default function Flagship({ item }) {
             )}
           </div>
           <Metrics items={item.metrics} />
+          <p className="build-stack">{item.stack}</p>
+          <LinkRow links={item.links} />
         </div>
       </div>
       <div className="flag-body">
@@ -54,8 +56,6 @@ export default function Flagship({ item }) {
             <Rich text={p} />
           </p>
         ))}
-        <p className="build-stack">{item.stack}</p>
-        <LinkRow links={item.links} />
       </div>
     </article>
   );

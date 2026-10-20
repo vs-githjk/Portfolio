@@ -26,6 +26,9 @@ export default function Nav() {
 
   return (
     <nav className="nav" aria-label="Primary">
+      <a className="skip" href="#main">
+        {nav.skip}
+      </a>
       <div className="wrap nav-in">
         <a href="#top" className="nav-brand">
           <i aria-hidden="true" />

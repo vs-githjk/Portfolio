@@ -28,17 +28,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom prism cursor on mouse devices only; touch and keyboard are untouched. */
-@media (pointer: fine) {
-  body {
-    cursor: url('/cursor.png') 4 4, auto;
-  }
-  a,
-  button {
-    cursor: url('/cursor.png') 4 4, pointer;
-  }
-}
-
 a {
   color: inherit;
 }

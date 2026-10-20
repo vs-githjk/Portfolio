@@ -1,7 +1,8 @@
 import LinkRow from './LinkRow';
 
-/* "More builds": four hairline index rows. Empty stack/year render a quiet dot;
-   the index continues the numbering from the cards above (09 to 12). */
+/* "More builds": four hairline index rows. An empty stack or year renders
+   nothing (the cell collapses); the index continues the numbering from the
+   cards above (09 to 12). */
 export default function CompactRows({ compact, start }) {
   const last = start + compact.items.length - 1;
   const label = compact.indexLabel
@@ -21,8 +22,8 @@ export default function CompactRows({ compact, start }) {
               {c.title}
             </span>
             <span className="compact-what">{c.oneLiner}</span>
-            <span className="compact-stack">{c.stack || '·'}</span>
-            <span className="compact-year">{c.year || '·'}</span>
+            <span className="compact-stack">{c.stack}</span>
+            <span className="compact-year">{c.year}</span>
             <LinkRow links={c.links} className="links compact-links" />
           </li>
         ))}

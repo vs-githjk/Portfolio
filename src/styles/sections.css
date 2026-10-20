@@ -47,7 +47,18 @@
     radial-gradient(1.5px 1.5px at 49% 9%, var(--text) 50%, transparent 60%),
     radial-gradient(1px 1px at 35% 88%, var(--text-2) 50%, transparent 60%),
     radial-gradient(2px 2px at 78% 36%, var(--acc-2) 50%, transparent 60%),
-    radial-gradient(70% 55% at 72% 18%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 70%);
+    radial-gradient(1px 1px at 4% 46%, var(--text-2) 50%, transparent 60%),
+    radial-gradient(1px 1px at 19% 33%, var(--text) 50%, transparent 60%),
+    radial-gradient(1px 1px at 23% 7%, var(--text-2) 50%, transparent 60%),
+    radial-gradient(1.5px 1.5px at 38% 52%, var(--text) 50%, transparent 60%),
+    radial-gradient(1px 1px at 52% 41%, var(--text-2) 50%, transparent 60%),
+    radial-gradient(1px 1px at 61% 93%, var(--text) 50%, transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 81%, var(--text-2) 50%, transparent 60%),
+    radial-gradient(1px 1px at 88% 29%, var(--text) 50%, transparent 60%),
+    radial-gradient(1px 1px at 95% 88%, var(--text-2) 50%, transparent 60%),
+    radial-gradient(1px 1px at 15% 71%, var(--text) 50%, transparent 60%),
+    radial-gradient(75% 60% at 72% 18%, var(--acc-tint-2), transparent 70%),
+    radial-gradient(60% 50% at 28% 72%, var(--surface-2), transparent 75%);
 }
 
 /* Darkens the lower half of the viewport so dense text never sits on bright stars. */
@@ -64,6 +75,27 @@
 }
 
 /* ================================== NAV =================================== */
+.skip {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  z-index: 10;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  background: var(--acc);
+  color: var(--acc-ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.skip:focus-visible {
+  top: 8px;
+}
+
 .nav {
   position: sticky;
   top: 0;
@@ -81,6 +113,7 @@
 }
 
 .nav-brand {
+  min-height: 44px;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   letter-spacing: 0.14em;
@@ -129,12 +162,19 @@
 }
 
 .nav li a.nav-cta {
+  position: relative; /* the ::after below grows the hit area to 44px */
   color: var(--acc-ink);
   background: var(--acc);
   font-weight: 500;
   height: 36px;
   margin-left: 8px;
   padding: 0 14px;
+}
+
+.nav li a.nav-cta::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
 }
 
 .nav li a.nav-cta:hover {
@@ -297,9 +337,6 @@
   left: 0;
   right: 0;
   top: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   padding: 10px 10px 14px;
   border-radius: var(--r-lg);
   background: var(--glass);
@@ -307,14 +344,23 @@
   backdrop-filter: blur(16px) saturate(1.3);
   box-shadow:
     var(--glass-shadow),
-    inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
-  text-decoration: none;
+    inset 0 1px 0 var(--glass-hi);
   color: inherit;
   transform-origin: 50% 0;
   transition:
     transform var(--dur-deck) var(--ease),
     opacity var(--dur-deck) var(--ease);
   will-change: transform, opacity;
+}
+
+/* The one link in a slide: screenshot and caption, as a single target. */
+.deck-link {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--r-md);
 }
 
 /* Invisible copy of the longest caption: keeps the deck's height, no JS. */
@@ -338,11 +384,11 @@
 }
 
 .deck-card[data-pos='1']::after {
-  opacity: 0.42;
+  opacity: 0.8;
 }
 
 .deck-card[data-pos='2']::after {
-  opacity: 0.62;
+  opacity: 0.9;
 }
 
 .deck-card[data-pos='0'] {
@@ -371,6 +417,10 @@
   transform: translate(-56px, 24px) rotate(-4deg);
   z-index: 4;
   pointer-events: none;
+  /* Fades faster than it moves, so its taller caption never shows below the new top card. */
+  transition:
+    transform var(--dur-deck) var(--ease),
+    opacity 0.2s linear;
 }
 
 .deck-card[data-pos='hid'] {
@@ -388,7 +438,7 @@
   position: relative;
   display: block;
   aspect-ratio: 16 / 10;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   overflow: hidden;
   border: 1px solid var(--hair-2);
   background: var(--surface-2);
@@ -401,18 +451,24 @@
   object-position: top left;
 }
 
+/* Index chip: in the caption row, never on top of the product screenshot. */
 .deck-idx {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  grid-column: 2;
+  grid-row: 3;
+  justify-self: end;
+  align-self: end;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: 0.1em;
-  color: var(--text-2);
-  background: color-mix(in srgb, var(--ink) 78%, transparent);
-  border: 1px solid var(--hair-2);
-  border-radius: var(--r-pill);
-  padding: 4px 8px;
+  color: var(--text-3);
+}
+
+/* Phones: the award badge moves onto the screenshot corner (see Deck.jsx). */
+.deck-shot-badge {
+  display: none;
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
 }
 
 .deck-cap {
@@ -443,7 +499,8 @@
 }
 
 .deck-cta {
-  grid-column: 1 / -1;
+  grid-column: 1;
+  grid-row: 3;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: 0.1em;
@@ -464,7 +521,7 @@
   justify-content: center;
   gap: 8px;
   background:
-    radial-gradient(80% 90% at 80% 0%, var(--acc-tint), transparent 60%),
+    radial-gradient(80% 90% at 80% 0%, var(--acc-tint-2), transparent 62%),
     var(--surface-2);
 }
 
@@ -492,18 +549,18 @@
   color: var(--text-2);
 }
 
-/* Progress: N 24px-tall hit areas, each a 2px track; the active one fills over
+/* Progress: N 44px-tall hit areas, each a 2px track; the active one fills over
    one dwell. Paused: full, in --text-2. */
 .deck-seg {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   gap: 4px;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .deck-seg button {
-  height: 24px;
+  height: 44px;
   border: 0;
   background: transparent;
   padding: 0;
@@ -516,9 +573,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 11px;
+  top: 21px;
   height: 2px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: var(--hair-2);
   transition: background var(--dur) var(--ease);
 }
@@ -530,10 +587,10 @@
 .deck-fill {
   position: absolute;
   left: 0;
-  top: 11px;
+  top: 21px;
   height: 2px;
   width: 0;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: var(--acc);
   animation: deck-fill calc(var(--slide-ms) * 1ms) linear forwards;
 }
@@ -620,9 +677,10 @@
 }
 
 .xp-logo {
-  width: 40px;
+  min-width: 40px;
   height: 40px;
-  border-radius: 9px;
+  padding: 0 6px;
+  border-radius: var(--r-md);
   background: var(--surface);
   border: 1px solid var(--hair-2);
   display: grid;
@@ -632,8 +690,9 @@
 }
 
 .xp-logo img {
-  width: 28px;
+  width: auto;
   height: 28px;
+  max-width: 48px; /* wide wordmarks (Comcast) use the tile's width */
   object-fit: contain;
 }
 
@@ -712,11 +771,16 @@
 .build-media {
   position: relative;
   aspect-ratio: 16 / 10;
+  flex: 1 0 auto; /* the screenshot takes any height the neighbouring card adds... */
+  max-height: 460px; /* ...up to a limit, so it is never cropped beyond recognition */
   background: var(--surface-2);
   border-bottom: var(--rule);
+  overflow: hidden;
 }
 
 .build-media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -734,7 +798,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  flex: 1;
 }
 
 .build-kind {
@@ -812,7 +875,7 @@
 .flag-screen {
   width: 100%;
   aspect-ratio: 16 / 10;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   overflow: hidden;
   border: 1px solid var(--hair-2);
   box-shadow: var(--glass-shadow);
@@ -857,13 +920,20 @@
   padding: 32px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 12px;
   background:
-    radial-gradient(80% 90% at 85% 0%, var(--acc-tint), transparent 60%),
+    radial-gradient(75% 70% at 85% 0%, var(--acc-tint-2), transparent 68%),
+    linear-gradient(var(--hair) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(90deg, var(--hair) 1px, transparent 1px) 0 0 / 44px 44px,
     var(--surface-2);
   border-right: var(--rule);
   min-height: 300px;
+}
+
+/* Eyebrow at the top, the number in the middle, the award at the foot. */
+.research-tile .paper-num,
+.research-tile .research-awards {
+  margin-top: auto;
 }
 
 .research-tile .paper-num {
@@ -918,8 +988,8 @@
 
 .compact-row {
   display: grid;
-  grid-template-columns: 220px 1fr 200px 64px auto;
-  gap: 24px;
+  grid-template-columns: 180px minmax(0, 1fr) 190px 76px 170px;
+  gap: 20px;
   align-items: baseline;
   padding: 18px 0;
   border-top: var(--rule);
@@ -959,6 +1029,7 @@
 
 .compact-links {
   margin: -10px -10px;
+  justify-content: flex-end;
 }
 
 /* ============================== PROOF OF WORK ============================= */
@@ -1045,7 +1116,8 @@
 /* Heatmap: brass ramp, never GitHub green. */
 .heat {
   width: 100%;
-  height: 118px;
+  flex: 1 1 118px; /* takes the height the Wins card adds; the graph sits centred in it */
+  min-height: 118px;
   display: block;
 }
 
@@ -1087,53 +1159,6 @@
   text-transform: uppercase;
 }
 
-.ramp {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 6px;
-  align-items: end;
-  height: 96px;
-  margin-top: 6px;
-}
-
-.ramp div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-  height: 100%;
-  min-width: 0;
-}
-
-.ramp i {
-  display: block;
-  width: 100%;
-  border-radius: 3px 3px 1px 1px;
-  background: var(--acc);
-  height: var(--h);
-  min-height: 2px;
-}
-
-.ramp div[data-zero] i {
-  background: var(--hair-2);
-}
-
-.ramp b,
-.ramp span {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  font-weight: 500;
-  line-height: 1;
-}
-
-.ramp b {
-  color: var(--text-2);
-}
-
 .pow-foot {
   display: flex;
   justify-content: space-between;
@@ -1155,7 +1180,7 @@
 .pow-key i {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   display: inline-block;
 }
 
@@ -1183,6 +1208,14 @@
   height: 13px;
   margin-top: 4px;
   color: var(--acc);
+}
+
+.pow-wins a {
+  text-decoration: none;
+}
+
+.pow-wins a:hover b {
+  color: var(--acc-2);
 }
 
 .pow-wins b {
@@ -1346,7 +1379,7 @@
   width: 5px;
   height: 5px;
   background: var(--acc);
-  border-radius: 1px;
+  border-radius: var(--r-xs);
 }
 
 .val-foot {
@@ -1595,7 +1628,14 @@
   }
 
   .compact-year {
+    grid-row: 1;
+    grid-column: 2;
     text-align: right;
+  }
+
+  .compact-stack:empty,
+  .compact-year:empty {
+    display: none;
   }
 
   .compact-links {
@@ -1644,8 +1684,11 @@
   }
 
   .deck-cap .badge {
-    grid-row: 3;
-    justify-self: start;
+    display: none;
+  }
+
+  .deck-shot-badge {
+    display: block;
   }
 
   .flag-media,
@@ -1664,11 +1707,9 @@
   }
 
   .heat {
+    flex: none;
     height: 96px;
-  }
-
-  .pow-hide-m {
-    display: none;
+    min-height: 0;
   }
 
   .xp-row {

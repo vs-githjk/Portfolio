@@ -27,6 +27,7 @@ export const meta = {
 /* Sticky nav: four section links plus one Email pill. */
 export const nav = {
   brand: 'Vidyut Sriram',
+  skip: 'Skip to content',
   links: [
     { label: 'Work', href: '#work' },
     { label: 'Builds', href: '#builds' },
@@ -38,14 +39,14 @@ export const nav = {
 
 /* ---------------------------------------------------------------- HERO ---- */
 /* Left: name, identity, proof, actions. Right: the project carousel.
-   proofLine says "six awards": LA Hacks 2026 (2) + BitCamp 2026 (3) +
+   proofLine says "six awards": LA Hacks AI Hackathon (2) + BitCamp 2026 (3) +
    Penn State Exhibition 2026 (1). Keep it in sync with proof[0] and with the
    awards[] arrays below (2 + 3 + 1). */
 export const hero = {
   status: 'Available Jan 2027',
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
-  identitySub: 'Penn State CS, graduating Dec 2026.',
+  identitySub: 'Penn\u00A0State CS, graduating Dec\u00A02026.',
   proofLine:
     'Shipped **PrismAI to 14 beta users**, interned at **Comcast** and **Sherlock AI**, first author on an **arXiv preprint**, and **six awards**, four of them first place.',
   locationNote: 'State College, PA · open to relocate',
@@ -81,15 +82,15 @@ export const hero = {
         oneLiner: 'Turns meetings into follow-up emails and tasks.',
         award: '',
         image: {
-          src: '/builds/prismai-scope.jpg',
-          alt: 'PrismAI flags a client request that falls outside the signed agreement and quotes the clause',
+          src: '/builds/prismai-analysis.jpg',
+          alt: 'PrismAI meeting analysis: a summary, topics covered, action items, decisions and a health score',
         },
       },
       {
         id: 'betterbill',
         title: 'BetterBill',
         oneLiner: 'Snap a hospital bill, find charges worth questioning.',
-        award: '2 first places · LA Hacks 2026',
+        award: '2 first places · LA Hacks',
         image: {
           src: '/builds/betterbill.jpg',
           alt: 'BetterBill results screen with flagged bill lines and a fair balance',
@@ -158,7 +159,7 @@ export const hero = {
 
 /* ---------------------------------------------------------- PROOF STRIP ---- */
 /* Six cells, directly under the hero. Done stuff, won stuff.
-   Awards = 6: LA Hacks 2026 1st Visa track + 1st Photon track (2);
+   Awards = 6: LA Hacks AI Hackathon 1st Visa track + 1st Photon track (2);
    BitCamp 2026 1st Real World + 1st Data Science + 3rd Open Source (3);
    Penn State Undergraduate Exhibition 2026 2nd, Engineering (1).
    First places = 4 (2 LA Hacks + 2 BitCamp).
@@ -167,7 +168,7 @@ export const proof = [
   {
     value: '6',
     label: 'Awards',
-    sub: '4 first places · LA Hacks 2026 (2), BitCamp 2026 (3), Penn State Exhibition 2026 (1)',
+    sub: '4 first places. Awards by event: LA Hacks AI Hackathon 2, BitCamp 3, Penn State Exhibition 1.',
   },
   { value: '12', label: 'Builds', sub: 'products, hackathon builds, research' },
   { value: '14', label: 'Live beta users', sub: 'PrismAI, multi-tenant' },
@@ -259,13 +260,13 @@ export const builds = {
     stack:
       'React · FastAPI · LangGraph · Claude · OpenAI · Supabase/pgvector · BM25/RRF · MCP · Recall.ai · Deepgram · Cartesia',
     media: {
-      /* Silent loop: prism-film-usd.mp4 01:22 to 01:35 ("scope catch").
-         Cutting it needs ffmpeg fixed (Vidyut's OK). Until then the panel
-         shows the real workspace; the deck's first slide shows the scope
-         catch frame. */
-      video: '', // TODO: /builds/prismai-loop.mp4 once cut
-      image: '/builds/prismai-dash.jpg',
-      alt: 'PrismAI workspace home in dark mode, with the sidebar, a getting-started checklist and the four ways to start a meeting',
+      /* The live product doing work: a meeting analysis with summary, topics,
+         action items, decisions and a health score (Chrome Web Store
+         screenshot, Vidyut's own meeting). The scope-check storyboard film is
+         a design preview of an unbuilt feature, so it is not shown as product. */
+      video: '', // TODO: a screen-recording loop of the live product
+      image: '/builds/prismai-analysis.jpg',
+      alt: 'PrismAI meeting analysis: a summary, topics covered, action items, decisions and a health score',
     },
     links: [
       { label: 'Live site', href: 'https://www.meetprismai.com/' },
@@ -277,10 +278,10 @@ export const builds = {
   items: [
     {
       id: 'betterbill',
-      kind: 'Hackathon · 24 hours · team of 4',
+      kind: 'Hackathon · 24 hours · team\u00A0of\u00A04',
       title: 'BetterBill',
       descriptor: 'hospital bill advocate',
-      when: 'Oct 2026 · LA Hacks AI Hackathon, UCLA',
+      when: 'Oct 2026 · LA Hacks AI Hackathon 2026',
       oneLiner:
         'Snap a hospital bill. It flags charges worth questioning, shows the proof, and acts only after you approve.',
       /* Confirmed by Vidyut in chat. Official challenge titles (event portal,
@@ -293,7 +294,7 @@ export const builds = {
         'Our team won **1st place in the Visa track**, and **1st place in the Photon track** for the voice agent that calls the billing office over a Photon line once you approve. The model only transcribes; a deterministic rules engine computes every flag and dollar in integer cents, each tied to a source. On test bills with planted errors it caught **22 of 22 with zero false flags** on clean bills.',
       ],
       metrics: [
-        { value: '2', label: 'first places\nLA Hacks 2026' },
+        { value: '2', label: 'first places\nLA Hacks AI Hackathon' },
         { value: '22/22', label: 'planted errors\ncaught' },
         { value: '88.8%', label: 'line recall on\n35 bill photos' },
       ],
@@ -387,7 +388,7 @@ export const builds = {
     },
     {
       id: 'yinzone',
-      kind: 'Hackathon · 30 hours · team of 5',
+      kind: 'Hackathon · 30 hours · team\u00A0of\u00A05',
       title: 'Yinzone',
       descriptor: 'where new housing can go in Pittsburgh',
       when: 'Sep 2026 · AI for Housing Hackathon, Track 3',
@@ -410,14 +411,14 @@ export const builds = {
         alt: 'Yinzone 3D map of Pittsburgh at street scale',
       },
       links: [
-        { label: 'Live site', href: 'https://yin.zone' }, // TODO: open in a browser before shipping
+        { label: 'Live site', href: '' }, // yin.zone is suspended (WHOIS verification page, Oct 19 2026); restore once it serves the app
         { label: 'Source', href: 'https://github.com/matmanna/yinzone' },
         { label: 'Video', href: 'https://youtu.be/ECZnv7R-q_8' },
       ],
     },
     {
       id: 'terrametric',
-      kind: 'Hackathon · 36 hours · team of 3',
+      kind: 'Hackathon · 36 hours · team\u00A0of\u00A03',
       title: 'Terrametric',
       descriptor: 'crop drought intelligence',
       when: 'Apr 2026 · BitCamp, UMD',
@@ -491,8 +492,8 @@ export const builds = {
         title: 'CinemaChat',
         oneLiner:
           'Movie and TV picks in plain language. Claude chooses which retrieval tools to call (filmographies, semantic search) and reasons to a recommendation instead of keyword-matching one.',
-        stack: '', // TODO
-        year: '', // TODO
+        stack: 'JavaScript · Claude',
+        year: 'Mar 2026', // repo created
         links: [
           { label: 'Live demo', href: 'https://cinema-chat-nine.vercel.app/' },
           { label: 'Source', href: 'https://github.com/vs-githjk/CinemaChat' },
@@ -503,8 +504,8 @@ export const builds = {
         title: 'TransitGuard',
         oneLiner:
           'Scores each transfer bag by its odds of missing the connection, then tells airport ops what to do before the bag is gone.',
-        stack: '', // TODO
-        year: '', // TODO
+        stack: 'FastAPI · Next.js · TypeScript',
+        year: 'Mar 2026', // repo created
         links: [{ label: 'Source', href: 'https://github.com/vs-githjk/TransitGuard' }],
       },
       {
@@ -512,16 +513,16 @@ export const builds = {
         title: 'PaperTrail',
         oneLiner:
           'Give it a topic, title, DOI or link. It finds the seed paper, builds the ancestor tree and lays out a reading path from the foundations up.',
-        stack: '', // TODO
-        year: '', // TODO
+        stack: 'JavaScript · TypeScript',
+        year: 'Apr 2026', // repo created
         links: [{ label: 'Source', href: 'https://github.com/vs-githjk/PaperTrail' }],
       },
       {
         id: 'algoquest',
         title: 'AlgoQuest',
         oneLiner: 'Data structures and algorithms taught as a game instead of a problem set.',
-        stack: 'React',
-        year: '', // TODO
+        stack: 'React · JavaScript',
+        year: 'Apr 2026', // repo created
         links: [{ label: 'Source', href: 'https://github.com/vs-githjk/AlgoQuest' }],
       },
     ],
@@ -580,7 +581,7 @@ export const value = {
       claim: 'I treat every build as mine to run, not mine to hand off.',
       receipts: [
         'PrismAI: **1,120 of its 1,352 commits are mine**, from first commit to 14 live beta users.',
-        'Terrametric: satellite data, ML, backend, globe UI and SMS, **deployed in 36 hours**.',
+        'Vytal: **333 commits in 12 weeks**, live in a controlled beta at joinvytal.live.',
       ],
     },
     {
@@ -618,14 +619,10 @@ export const toolkit = {
         'RAG',
         'pgvector',
         'BM25 / RRF',
-        'Query rewriting',
-        'LLM reranking',
         'MCP',
-        'Tool calling',
         'Anthropic API',
         'OpenAI API',
         'Gemini',
-        'StepFun',
         'Langflow',
         'XGBoost',
       ],
@@ -638,17 +635,11 @@ export const toolkit = {
       name: 'Backend & data',
       items: [
         'FastAPI',
-        'SQLAlchemy',
-        'Alembic',
         'PostgreSQL',
         'Row-level security',
         'Supabase',
         'Drizzle',
-        'oRPC',
         'Temporal',
-        'REST',
-        'SSE',
-        'WebSockets',
         'Multi-tenant isolation',
       ],
     },
@@ -657,36 +648,23 @@ export const toolkit = {
       items: [
         'React 19',
         'Next.js',
-        'Vite',
         'TanStack Start',
-        'TanStack Query',
-        'Tailwind CSS',
         'Three.js',
-        'Leaflet',
         'Chrome extensions',
       ],
     },
     {
       name: 'Verification & testing',
-      items: ['GitHub CodeQL', 'KLEE', 'GCC', 'Symbolic execution', 'pytest', 'Vitest', 'Playwright'],
+      items: ['GitHub CodeQL', 'KLEE', 'pytest'],
     },
     {
       name: 'Infra & observability',
       items: [
         'Docker',
-        'Git',
         'Vercel',
         'Render',
-        'Cloudflare R2',
-        'S3',
-        'OIDC',
         'OpenTelemetry',
         'Sentry',
-        'PostHog',
-        'pnpm',
-        'uv',
-        'Bun',
-        'Turborepo',
       ],
     },
     {
@@ -694,13 +672,9 @@ export const toolkit = {
       items: [
         'Slack',
         'Microsoft Teams',
-        'Notion',
         'Jira',
         'Linear',
         'GitHub',
-        'Outlook',
-        'Google Calendar',
-        'Resend',
         'Twilio',
       ],
     },
@@ -718,7 +692,7 @@ export const proofOfWork = {
   heading: 'Verify me in',
   headingEm: 'one click.',
   intro:
-    'Everything above leaves a public trail. The commit graph includes private repos, and every win links to the page that lists it.',
+    'Everything above leaves a public trail. Each hackathon win links to its Devpost page.',
   github: {
     eyebrow: 'GitHub · last 12 months',
     handle: '@vs-githjk',
@@ -731,11 +705,6 @@ export const proofOfWork = {
       streakUnit: ' days',
       month: 'in {month} so far',
     },
-    ramp: {
-      eyebrow: 'Monthly ramp · {from} to {to}',
-      note: '{month} is {n} days in',
-      cellLabel: '{n} contributions in {month} {year}',
-    },
     note: 'Includes private repos (PrismAI, Vytal, MVR).',
     updated: 'Updated',
     keyLess: 'Less',
@@ -745,17 +714,35 @@ export const proofOfWork = {
     eyebrow: 'Wins',
     link: { label: 'Devpost', href: 'https://devpost.com/vs-githjk' },
     items: [
-      { title: 'BetterBill · 1st, Visa track', event: 'AI Hackathon 2026 by LA Hacks · Oct 2026' },
+      {
+        title: 'BetterBill · 1st, Visa track',
+        event: 'LA Hacks AI Hackathon 2026 · Oct 2026',
+        href: 'https://devpost.com/software/betterbill',
+      },
       {
         title: 'BetterBill · 1st, Photon track (voice agent)',
-        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
+        event: 'LA Hacks AI Hackathon 2026 · Oct 2026',
+        href: 'https://devpost.com/software/betterbill',
       },
-      { title: 'Terrametric · 1st, Real World track', event: 'BitCamp 2026 · Apr 2026' },
-      { title: 'Terrametric · 1st, Data Science track', event: 'BitCamp 2026 · Apr 2026' },
-      { title: 'Terrametric · 3rd, Open Source', event: 'BitCamp 2026 · Apr 2026' },
+      {
+        title: 'Terrametric · 1st, Real World track',
+        event: 'BitCamp 2026 · Apr 2026',
+        href: 'https://devpost.com/software/terrametric',
+      },
+      {
+        title: 'Terrametric · 1st, Data Science track',
+        event: 'BitCamp 2026 · Apr 2026',
+        href: 'https://devpost.com/software/terrametric',
+      },
+      {
+        title: 'Terrametric · 3rd, Open Source',
+        event: 'BitCamp 2026 · Apr 2026',
+        href: 'https://devpost.com/software/terrametric',
+      },
       {
         title: 'Research paper · 2nd Place, Engineering',
         event: 'Penn State Undergraduate Exhibition 2026',
+        href: '', // resume only, no public results page
       },
     ],
   },
@@ -793,7 +780,7 @@ export const contact = {
   heading: "Tell me what's",
   headingEm: 'broken.',
   blurb:
-    'Hiring for 2027, building with agents or retrieval, or want to push back on something above? Write to me. I reply within a day.',
+    'Hiring for 2027, building with agents or retrieval, or want to push back on something above? Write to me.',
   email: 'vidyut0712@gmail.com',
   copyLabel: 'Copy',
   copiedLabel: 'Copied',

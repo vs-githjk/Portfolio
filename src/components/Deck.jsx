@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { hero } from '../data/content';
 import { useReducedMotion } from '../hooks/useMediaQuery';
 import Badge from './Badge';
@@ -10,7 +10,9 @@ import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from './Icons'
 
    Behavior (WAI-ARIA carousel, basic pattern):
    - autoplay, paused by hover, focus inside, a hidden tab, or the toggle;
-   - the toggle is the first focusable control in the region;
+   - the toggle is the first focusable control in the region (absent under
+     prefers-reduced-motion, where nothing ever plays);
+   - arrow keys keep focus inside the carousel: focus follows the new slide;
    - prev / next / progress buttons / arrow keys restart the dwell;
    - prefers-reduced-motion: no autoplay, instant swap, manual picker.
    Card positions live in data-pos ('0' | '1' | '2' | 'out' | 'hid') and are
@@ -32,13 +34,19 @@ function posOf(n, view) {
   return n === view.prev && rel === N - 1 ? 'out' : 'hid';
 }
 
-function Caption({ slide }) {
+/* The award badge shows in the caption row on wide cards and over the corner
+   of the screenshot on phones, so the card height never depends on it. Only
+   one of the two is displayed at a time. */
+function Caption({ slide, k }) {
   return (
     <span className="deck-cap">
       <b>{slide.title}</b>
       {slide.award && <Badge>{slide.award}</Badge>}
       <span className="deck-line">{slide.oneLiner}</span>
       <span className="deck-cta">{carousel.slideCta} →</span>
+      <span className="deck-idx" aria-hidden="true">
+        {pad(k + 1)} / {pad(N)}
+      </span>
     </span>
   );
 }
@@ -58,9 +66,11 @@ function Shot({ slide, k }) {
       ) : (
         <PaperTile className="deck-tile" />
       )}
-      <span className="deck-idx" aria-hidden="true">
-        {pad(k + 1)} / {pad(N)}
-      </span>
+      {slide.award && (
+        <span className="deck-shot-badge">
+          <Badge>{slide.award}</Badge>
+        </span>
+      )}
     </span>
   );
 }
@@ -74,8 +84,19 @@ export default function Deck() {
   const [hidden, setHidden] = useState(false);
   // Bumped whenever the dwell restarts, so the progress fill restarts with it.
   const [cycle, setCycle] = useState(0);
+  const links = useRef([]);
+  const refocus = useRef(false);
 
   const paused = userPaused || hovered || focused || hidden || reduced;
+
+  // An arrow key pressed on a slide moves focus to the new top slide, so a
+  // keyboard user is never dropped onto <body> when the old one goes inert.
+  useEffect(() => {
+    if (refocus.current) {
+      refocus.current = false;
+      links.current[view.i]?.focus({ preventScroll: true });
+    }
+  }, [view.i]);
 
   const go = useCallback((k) => {
     setView((v) => ({ i: (k + N) % N, prev: v.i }));
@@ -111,8 +132,11 @@ export default function Deck() {
   };
 
   const onKeyDown = (e) => {
-    if (e.key === 'ArrowRight') go(view.i + 1);
-    if (e.key === 'ArrowLeft') go(view.i - 1);
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    refocus.current = !!e.target.closest?.('.deck-link');
+    go(view.i + step);
   };
 
   return (
@@ -131,14 +155,16 @@ export default function Deck() {
       <div className="deck-head">
         <span className="eyebrow">{carousel.label}</span>
         <div className="deck-ctl">
-          <button
-            type="button"
-            aria-label={userPaused ? carousel.controls.play : carousel.controls.pause}
-            aria-pressed={userPaused}
-            onClick={toggle}
-          >
-            {userPaused ? <PlayIcon /> : <PauseIcon />}
-          </button>
+          {!reduced && (
+            <button
+              type="button"
+              aria-label={userPaused ? carousel.controls.play : carousel.controls.pause}
+              aria-pressed={userPaused}
+              onClick={toggle}
+            >
+              {userPaused ? <PlayIcon /> : <PauseIcon />}
+            </button>
+          )}
           <button type="button" aria-label={carousel.controls.prev} onClick={() => go(view.i - 1)}>
             <ChevronLeftIcon />
           </button>
@@ -150,33 +176,41 @@ export default function Deck() {
 
       <div className="deck-stage" aria-live={paused ? 'polite' : 'off'}>
         <div className="deck-card deck-sizer" aria-hidden="true">
-          <span className="deck-shot" />
-          <span className="deck-cap">
-            <b>{tallest.title}</b>
-            <Badge>{tallest.award || tallest.title}</Badge>
-            <span className="deck-line">{tallest.oneLiner}</span>
-            <span className="deck-cta">{carousel.slideCta} →</span>
+          <span className="deck-link">
+            <span className="deck-shot" />
+            <span className="deck-cap">
+              <b>{tallest.title}</b>
+              <Badge>{tallest.award || tallest.title}</Badge>
+              <span className="deck-line">{tallest.oneLiner}</span>
+              <span className="deck-cta">{carousel.slideCta} →</span>
+            </span>
           </span>
         </div>
         {slides.map((s, k) => {
           const pos = posOf(k, view);
           const on = pos === '0';
           return (
-            <a
+            <div
               key={s.id}
               className="deck-card"
-              href={`#build-${s.id}`}
               role="group"
               aria-roledescription="slide"
               aria-label={`${k + 1} of ${N}: ${s.title}`}
               data-pos={pos}
               aria-hidden={on ? 'false' : 'true'}
               inert={!on}
-              tabIndex={on ? 0 : -1}
             >
-              <Shot slide={s} k={k} />
-              <Caption slide={s} />
-            </a>
+              <a
+                className="deck-link"
+                href={`#build-${s.id}`}
+                ref={(el) => {
+                  links.current[k] = el;
+                }}
+              >
+                <Shot slide={s} k={k} />
+                <Caption slide={s} k={k} />
+              </a>
+            </div>
           );
         })}
       </div>

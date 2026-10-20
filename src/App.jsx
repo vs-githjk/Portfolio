@@ -33,7 +33,7 @@ export default function App() {
       <Background />
       <div className="page">
         <Nav />
-        <main>
+        <main id="main" tabIndex={-1}>
           <Hero />
           <Proof />
           <Experience />

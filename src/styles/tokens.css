@@ -32,6 +32,7 @@
   --acc-ink: #100f0e; /* text on brass */
   --acc-ink-2: #3a3222; /* muted text on the brass band */
   --acc-tint: color-mix(in srgb, var(--acc) 12%, transparent);
+  --acc-tint-2: color-mix(in srgb, var(--acc) 20%, transparent); /* typographic tiles */
   --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
 
   /* ---- STATE ------------------------------------------------------------- */
@@ -41,6 +42,7 @@
   /* ---- GLASS: hero deck only --------------------------------------------- */
   --glass: color-mix(in srgb, var(--surface) 58%, transparent);
   --glass-line: color-mix(in srgb, white 9%, transparent);
+  --glass-hi: color-mix(in srgb, white 6%, transparent); /* top-edge highlight */
   --glass-shadow: 0 40px 80px -40px color-mix(in srgb, black 70%, transparent);
 
   /* ---- TYPE -------------------------------------------------------------- */
@@ -76,6 +78,7 @@
   --r-lg: 16px;
   --r-md: 10px;
   --r-sm: 6px;
+  --r-xs: 2px;
   --r-pill: 999px;
   --rule: 1px solid var(--hair);
 
