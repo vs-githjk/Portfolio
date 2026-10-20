@@ -85,10 +85,11 @@ FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`
   out whole (`--orbit-ghost`, written as `--vis`). "Behind the copy" is measured, not assumed:
   `measure()` reads the portrait's left edge and the name block's right end, and a card whose
   projected edge overlaps that span fades. A card is a thumbnail panel plus a caption panel; the
-  caption panel (glass, border, text) is shown or gone, never half there (`--cap` runs from 0 at
-  a depth of 0.5 to 1 at 0.7, so the side cards that rest two steps from the front read as
-  logo thumbnails, not as bright images over faint text), so the back half reads as thumbnails
-  and never as empty boxes. `measure()` keeps every card at least
+  caption panel (glass, border, text) is wiped away from its foot with a clip-path, never faded
+  (`--cap` runs from 0 at a depth of 0.5 to 1 at 0.7; the panel and the thumbnail always share
+  one opacity, so a card in motion is a shorter card, not a ghost; the text fades in the last
+  quarter of the wipe). The side cards that rest two steps from the front read as logo
+  thumbnails, and the back half never shows empty boxes. `measure()` keeps every card at least
   16px inside the window at any width (it samples the ring's outer edge, yaw included) and, on a
   short window, eases the front lift until the control bar is on screen.
 - Hover on a card pauses the ring (and lifts that card); focus inside stops it for good; only
@@ -238,10 +239,13 @@ Don't add these back without asking:
 
 ## Later rounds: layout rules worth keeping
 
-- Cards in a row share one height (`align-items: stretch`) so every row ends on one line;
-  the spare height lands above the stack, the "Read more" line and the links, which are
-  pinned to the card's foot. Opening "Read more" on one More-builds card makes its row
-  mates taller, never uneven. More builds is a centred flex grid of one card size (4, 3, 2
+- Cards are as tall as their own content (`align-items: start`): equal heights left 100 to
+  170px holes inside the shorter card, and opening one "Read more" stretched its row mates
+  into empty shells. The six featured cards keep the one-liner, role, results and stack on
+  show and put the story behind the same "Read more" the More-builds cards use (a native
+  `<details>`, so the text stays in the HTML). Section padding is `--sec-y` (56 to 100px);
+  the page is about 12,600px at 1440.
+- More builds is a centred flex grid of one card size (4, 3, 2
   or 1 per row via `--mini-per`); when the seventh card would sit alone on a row (3 or 2 per
   row) it takes the whole row as a horizontal card.
 - The PrismAI lead still grows (cover crop, left-aligned) when the story beside it is longer,
