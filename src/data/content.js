@@ -1,26 +1,48 @@
 /* ============================================================================
-   CONTENT
+   CONTENT (v4)
    ----------------------------------------------------------------------------
    Every word on the site lives here. Nothing in this file controls design.
    Change copy here; change looks in src/styles/. The two never touch.
 
    THESIS: "Vidyut Sriram builds safe, reliable AI systems."
-   Goal for a recruiter, in 60 seconds: he has done a lot, he has won things,
-   and he is good at the job. Then: email him.
+   Goal for a reader, in 60 seconds: he builds AI systems that work, he has
+   won things, and he owns what he ships. Then: email him.
 
    Rules for this file:
-   - Every number traces to a source. The map is in copy-notes.md.
+   - Every number sits inside a sentence or label that says what it measures
+     and where. No bare figures. The claim-to-source map is in copy-notes.md.
    - Unknown facts are omitted (empty href/value is filtered at render) or
      marked TODO. Never invent.
    - **double asterisks** = emphasis, the only markup.
    - No em dashes or en dashes anywhere. Date ranges use "to".
+
+   v4 changes for the builder:
+   - `proof` (the six-number band under the hero) is GONE. Its facts now live
+     in Experience, Builds and the paper. `highlights` (below Builds) is the
+     optional replacement: four complete one-line statements, not figures.
+   - `hero.proofLine` is gone; `hero.credential` / `credentialLong` replace it.
+   - `hero.carousel.slides` (the orbit ring) has 11 cards in Vidyut's order
+     (V4 SIGN-OFF, Oct 20): PrismAI, BetterBill, MVR, Vytal, Match Day,
+     Yinzone, Terrametric, the paper, Quorum, FilingWatch, NextRound. Tune the
+     ring geometry for 11; do not drop cards.
+   - NextRound and prep-console are ONE entry, `nextround` (Vidyut, Oct 20).
+   - Every ring card and build card now has an image: the finder's logo-led
+     thumbnails, including the paper, TransitGuard and AlgoQuest. Alts
+     describe the thumbnail. `tile` stays only as a fallback.
+   - `builds.flagship.media` is now a gallery: one `lead` still plus a
+     `stack` of three, to fill the empty left column (V4 feedback 6).
+   - `builds.compact` is replaced by `builds.more`: same card shape as
+     `builds.items`, each with an image or a typographic `tile`.
+   - Image paths follow /builds/<id>.webp (plus <id>-640.webp for phones). Source files for every image are
+     listed in copy-notes.md ("Media"). Logo-led thumbnails can replace any of
+     them at the same path.
    ========================================================================== */
 
 export const meta = {
   name: 'Vidyut Sriram',
   title: 'Vidyut Sriram | safe, reliable AI systems',
   description:
-    'Vidyut Sriram builds safe, reliable AI systems. Penn State CS, graduating Dec 2026, available Jan 2027. Builder of PrismAI, six awards, first author on arXiv:2607.21641.',
+    'Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 1st in four hackathon tracks, arXiv first author. Forward-deployed and AI engineer, from Jan 2027.',
   location: 'State College, PA',
 };
 
@@ -38,23 +60,29 @@ export const nav = {
 };
 
 /* ---------------------------------------------------------------- HERO ---- */
-/* Left: name, identity, proof, actions. Right: the project carousel.
-   proofLine says "six awards": LA Hacks AI Hackathon (2) + BitCamp 2026 (3) +
-   Penn State Exhibition 2026 (1). Keep it in sync with proof[0] and with the
-   awards[] arrays below (2 + 3 + 1). */
+/* Centre: status row, name, identity, one plain line, credentials, actions.
+   Around it: the orbit ring. No figures in the hero except the live-status
+   badge on the PrismAI card, which says what it counts. */
 export const hero = {
   status: 'Available Jan 2027',
-  /* Studio headshot: 600px and 1200px (2x) squares, shown as a circle. */
+  /* Studio headshot, shown as a 48px circle: 72px and 144px (2x) squares. The
+     600px and 1200px originals stay in public/ for the share card. */
   portrait: {
-    src: '/portrait.jpg',
-    src2x: '/portrait@2x.jpg',
+    src: '/portrait-72.webp',
+    src2x: '/portrait-144.webp',
     alt: 'Vidyut Sriram, smiling, in a light blue polo',
   },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
-  identitySub: 'Penn\u00A0State CS, graduating Dec\u00A02026.',
-  proofLine:
-    'Shipped **PrismAI to 14 beta users**, interned at **Comcast** and **Sherlock AI**, wrote a first-author **arXiv preprint**, and won **six awards**, four of them first place.',
+  /* The plain line under the identity: what that means in practice. */
+  identitySub:
+    'Agents that do real work, with code checking the numbers and a person approving before anything goes out.',
+  /* Short form clears the side cards at 1440. Long form for row mode and
+     anywhere with room. "1st place in four tracks" = Visa + Photon (LA Hacks
+     AI Hackathon) + Real World + Data Science (Bitcamp). */
+  credential: 'Comcast · Sherlock AI · arXiv first author · Penn State CS ’26',
+  credentialLong:
+    'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
   locationNote: 'State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
@@ -64,19 +92,21 @@ export const hero = {
     { label: 'GitHub', href: 'https://github.com/vs-githjk' },
   ],
 
-  /* ---- Carousel: "What I've built" ----------------------------------------
-     Slide id = Builds card id, so the slide links to #build-<id>.
-     oneLiner: 8 words or fewer. award: badge text, '' = none. status: a live
-     receipt shown in the same badge slot when there is no award.
-     Images: 1600x1000 JPEG, under 180KB.
-     The paper slide has no image: it renders the typographic tile from
-     builds.research.tile. MVR is never called AI. */
+  /* ---- Orbit ring: "What I've built" ---------------------------------------
+     Slide id = Builds card id, so a card links to #build-<id>.
+     oneLiner: plain "what it does", 9 words or fewer, fits two lines at 13px.
+     badge: award text, or a live receipt when there is no award; '' = none.
+     badgeKind: 'win' (gold, an award), 'live' (mint, live or in beta) or ''
+     (plain). The Builds cards reuse the badge of the slide with the same id.
+     Images are the logo-led thumbnails (v4-assets/thumbs); alts describe
+     them. If the paper image is missing, render builds.research.tile.
+     MVR is never called AI. */
   carousel: {
     label: "What I've built",
     slideCta: 'See the build',
     controls: {
-      pause: 'Stop automatic slide show',
-      play: 'Start automatic slide show',
+      pause: 'Stop the rotation',
+      play: 'Start the rotation',
       prev: 'Previous project',
       next: 'Next project',
       choose: 'Choose project',
@@ -86,131 +116,155 @@ export const hero = {
       {
         id: 'prismai',
         title: 'PrismAI',
-        oneLiner: 'Turns meetings into follow-up emails and tasks.',
-        award: '',
-        status: 'Live beta · 14 users',
+        oneLiner: 'Joins your calls and does the follow-up work.',
+        badge: 'Live beta · 14 users',
+        badgeKind: 'live',
         image: {
-          src: '/builds/prismai-deck.jpg',
-          alt: 'PrismAI meeting analysis: tabs for action items, decisions and follow-ups, a summary and the topics covered',
+          src: '/builds/ring/prismai.webp',
+          alt: 'PrismAI logo and the line "Get paid for the extra work clients ask for on calls. You approve every word." beside its live-meeting view',
         },
       },
       {
         id: 'betterbill',
         title: 'BetterBill',
-        oneLiner: 'Snap a hospital bill, find charges worth questioning.',
-        award: '2 first places · LA Hacks',
+        oneLiner: 'Finds charges on hospital bills you may not owe.',
+        badge: '1st place, 2 tracks · LA Hacks AI',
+        badgeKind: 'win',
         image: {
-          src: '/builds/betterbill.jpg',
-          alt: 'BetterBill results screen with flagged bill lines and a fair balance',
+          src: '/builds/ring/betterbill.webp',
+          alt: 'BetterBill: "Know the price before you go. Fix the bill after. We make the call." beside its price, bill-check and billing-call screens (sample bill, synthetic)',
         },
       },
       {
         id: 'mvr',
         title: 'MVR',
         oneLiner: 'Maps legacy code, every claim linked to evidence.',
-        award: '',
+        badge: 'Proof of concept',
+        badgeKind: '',
         image: {
-          src: '/builds/mvr.jpg',
-          alt: 'MVR system model where every claim about the codebase is linked to evidence (local run on a synthetic codebase)',
+          src: '/builds/ring/mvr.webp',
+          alt: 'MVR logo, "Verified software modernization", beside its evidence view: "Every claim is linked to evidence."',
         },
       },
       {
         id: 'vytal',
         title: 'Vytal',
-        oneLiner: 'Coaching platform for fitness coaches, live in beta.',
-        award: '',
+        oneLiner: 'Coaching software where the coach stays in charge.',
+        badge: 'Controlled beta',
+        badgeKind: 'live',
         image: {
-          src: '/builds/vytal.jpg',
-          alt: 'Vytal coach overview showing which trainees need attention first (synthetic data)',
+          src: '/builds/ring/vytal.webp',
+          alt: 'Vytal logo, "One place to coach. One place to train.", beside its coach workspace (synthetic data)',
         },
       },
       {
         id: 'matchday',
         title: 'Match Day',
-        oneLiner: 'Run a racket tournament from one screen.',
-        award: '',
+        oneLiner: 'Runs a racket tournament from one screen.',
+        badge: 'Live',
+        badgeKind: 'live',
         image: {
-          src: '/builds/matchday.jpg',
-          alt: 'Match Day command center flagging matches that are running late',
+          src: '/builds/ring/matchday.webp',
+          alt: 'Match Day wordmark, "Play. Compete. Belong.", beside its tournament command center',
         },
       },
       {
         id: 'yinzone',
         title: 'Yinzone',
-        oneLiner: 'Where new housing can go in Pittsburgh.',
-        award: '',
+        oneLiner: 'Shows where new housing can go in Pittsburgh.',
+        badge: 'Hackathon · team of 5',
+        badgeKind: '',
         image: {
-          src: '/builds/yinzone.jpg',
-          alt: 'Yinzone 3D map of Pittsburgh at street scale',
+          src: '/builds/ring/yinzone.webp',
+          alt: 'Yinzone logo over a 3D street-scale map of Pittsburgh: "Where could new housing go in Pittsburgh, and what stands in the way?"',
         },
       },
       {
         id: 'terrametric',
         title: 'Terrametric',
-        oneLiner: 'Field-level drought risk and irrigation plans for farmers.',
-        award: '3 awards · BitCamp 2026',
+        oneLiner: 'Drought risk and irrigation plans, field by field.',
+        badge: '1st place, 2 tracks · Bitcamp',
+        badgeKind: 'win',
         image: {
-          src: '/builds/terrametric.jpg', // already in public/builds/
-          alt: 'Terrametric landing page with a field-level crop stress map',
+          src: '/builds/ring/terrametric.webp',
+          alt: 'Terrametric wordmark, "Soil, weather and crop stress, turned into early warnings", beside a globe marking an Iowa field cluster',
         },
       },
       {
         id: 'secure-codegen',
         title: 'Research paper',
         oneLiner: 'A repair loop that makes LLM-written C safer.',
-        award: '2nd · PSU Exhibition 2026',
-        image: null, // typographic slide: renders builds.research.tile
+        badge: '2nd · Penn State Exhibition',
+        badgeKind: 'win',
+        image: {
+          src: '/builds/ring/paper.webp',
+          alt: 'The paper title and "83.7% fewer CodeQL errors" beside a diagram of the GCC, CodeQL and repair loop, with KLEE as the final check',
+        },
+      },
+      {
+        id: 'quorum',
+        title: 'Quorum',
+        oneLiner: 'An AI teammate that joins the call and acts.',
+        badge: 'Hackathon · YHack',
+        badgeKind: '',
+        image: {
+          src: '/builds/ring/quorum.webp',
+          alt: 'Quorum logo, "Joins your meeting, listens, takes the action, and speaks back", beside a meeting where someone says "Hey Q, file a GitHub issue for the auth bug"',
+        },
+      },
+      {
+        id: 'filingwatch',
+        title: 'FilingWatch',
+        oneLiner: 'Reports what a company filed, never what it means.',
+        badge: 'Solo build',
+        badgeKind: '',
+        image: {
+          src: '/builds/ring/filingwatch.webp',
+          alt: 'FilingWatch "8K" mark, "Reports what was filed, never what it means", beside its feed of recent SEC 8-K filings',
+        },
+      },
+      {
+        id: 'nextround',
+        title: 'NextRound',
+        oneLiner: 'Plans your interview prep and diagnoses every miss.',
+        badge: 'Working build · live prototype',
+        badgeKind: '',
+        image: {
+          src: '/builds/ring/nextround.webp',
+          alt: 'NextRound logo and the line "Readiness, measured." beside its interactive prototype',
+        },
       },
     ],
   },
 };
 
-/* ---------------------------------------------------------- PROOF STRIP ---- */
-/* Six cells, directly under the hero. Done stuff, won stuff.
-   Awards = 6: LA Hacks AI Hackathon 1st Visa track + 1st Photon track (2);
-   BitCamp 2026 1st Real World + 1st Data Science + 3rd Open Source (3);
-   Penn State Undergraduate Exhibition 2026 2nd, Engineering (1).
-   First places = 4 (2 LA Hacks + 2 BitCamp).
-   Builds = 12: PrismAI + 6 featured + the paper + 4 compact. */
-export const proof = [
-  {
-    value: '6',
-    label: 'Awards',
-    sub: '4 first, 1 second, 1 third place',
-  },
-  { value: '12', label: 'Builds', sub: 'products, hackathon builds, research' },
-  { value: '14', label: 'Live beta users', sub: 'PrismAI, multi-tenant' },
-  { value: '100+', label: 'Meetings analyzed', sub: 'PrismAI beta' },
-  { value: '~40%', label: 'Coordination work cut', sub: 'Comcast, 40-person eng team' },
-  { value: '83.7%', label: 'Fewer CodeQL errors', sub: 'first-author arXiv preprint' },
-];
-
 /* --------------------------------------------------------------- WHERE ---- */
-/* `wins` render as neutral outcome pills. */
+/* `wins` render as neutral outcome pills. Each pill is a complete statement:
+   it names what changed and for whom, so no number stands alone. */
 export const experience = {
   eyebrow: "Where I've worked",
   heading: 'Experience',
   roles: [
     {
       org: 'Sherlock AI',
-      logo: '/logos/sherlock.png',
+      logo: '/logos/sherlock.webp',
       role: 'Software Engineering Intern',
       team: '',
-      note: 'Owned the public demo interview flow end to end in Next.js: adaptive interview behavior, in-browser recording and submission. It is the surface prospective customers evaluate before they talk to the team. Also prototyped a Google Meet add-on that shows audit logs and checks interview integrity from a sidebar inside the live call.',
-      wins: [],
+      note: 'Owned the public demo interview flow end to end in Next.js: adaptive interview behavior, in-browser recording and submission. It is the surface prospective customers evaluate before they ever talk to the team. I also prototyped a Google Meet add-on that shows audit logs and checks interview integrity from a sidebar inside the live call, so review happens where the interview already takes place.',
+      wins: ['Owned the customer-facing demo end to end', 'Prototyped a Google Meet add-on'],
       when: 'Jun to Aug 2026',
       where: 'Remote',
     },
     {
       org: 'Comcast',
-      logo: '/logos/comcast.png',
+      logo: '/logos/comcast.webp',
       role: 'Software Development Engineer Intern',
       team: 'India Engineering Centre',
-      note: 'The question: could low-code agent tooling work inside engineering teams? I scoped the problem, chose Langflow and shipped the pilot: one interface for planning, budget tracking, structured data and team communication, plus a code-input surface. Then I added RAG over internal docs based on real usage.',
+      note: 'I was asked whether low-code agent tooling could work inside engineering teams. I scoped the problem, chose Langflow and shipped the pilot: one place for planning, budget tracking, structured data and team communication, plus a surface that turns a coding question into a generated solution. Then I watched how the team actually used it and added RAG over internal documentation.',
       wins: [
-        'Adopted by a 40-person engineering team',
-        '~40% less recurring planning and coordination work',
-        '~18% further gain in communication efficiency',
+        'Adopted across a 40-person engineering team',
+        'Cut ~40% of the team’s recurring planning and coordination work',
+        'RAG over internal docs: a further ~18% gain in communication efficiency',
       ],
       when: 'May to Aug 2025',
       where: 'Chennai, India',
@@ -219,11 +273,11 @@ export const experience = {
        forward-deployed work. Keep it. */
     {
       org: 'Penn State',
-      logo: '/logos/psu.png',
+      logo: '/logos/psu.webp',
       role: 'Learning Assistant · Math Peer Tutor',
       team: 'B.S. Computer Science, Math minor',
-      note: 'Calculus review sessions and one-on-one tutoring across introductory math: explaining hard ideas to people who do not share my context, and finding where a mental model broke.',
-      wins: ['GPA 3.84', "Dean's List 6 of 6"],
+      note: 'As a Learning Assistant I ran calculus review sessions, and as a peer tutor I work one on one across introductory math. The work is explaining hard ideas to people who do not share my context, and finding the exact spot where a mental model broke. It is the same skill a forward-deployed engineer uses with a customer.',
+      wins: ['GPA 3.84 of 4.00', "Dean's List, 6 of 6 semesters"],
       when: 'LA · Aug 2025 to May 2026\nTutor · Jan 2026 to Present',
       where: 'University Park, PA',
     },
@@ -231,53 +285,86 @@ export const experience = {
 };
 
 /* -------------------------------------------------------------- BUILDS ---- */
-/* Order (Vidyut's): PrismAI, BetterBill, MVR, Vytal, Match Day, Yinzone,
-   Terrametric, the paper; then CinemaChat, TransitGuard, PaperTrail,
-   AlgoQuest.
-   Shape of every build:
-   id (= carousel slide id; card anchor is #build-<id>), kind, title,
+/* Order: PrismAI (flagship); items = BetterBill, MVR, Vytal, Match Day,
+   Yinzone, Terrametric; then the paper (research); then `more` = Quorum,
+   FilingWatch, NextRound (same order as the end of the ring), CinemaChat,
+   TransitGuard, PaperTrail, AlgoQuest.
+   Shape of every card (items and more):
+   id (= ring slide id; card anchor is #build-<id>), kind, title,
    descriptor, when, oneLiner, awards (verified only; badge text), role
-   (team builds), body (outcome first), metrics (sourced only, max 3), stack,
-   links (empty href hides), media. Cards reuse the carousel images. */
+   (team builds: his part, strongest accurate form), body (outcome first,
+   2 to 3 sentences), metrics (max 2; each label says what the value
+   measures), stack, links (empty href hides), media { image, alt } or
+   tile { eyebrow, number, line } when no honest image exists. */
 export const builds = {
   eyebrow: "What I've built",
   heading: 'Builds',
   intro:
-    'Twelve builds: a flagship product, six more products and hackathon wins, a first-author paper and four smaller projects. Every number here has a source I can show you.',
+    'Fifteen builds, flagship first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
 
   /* ---- Flagship panel ---------------------------------------------------- */
   flagship: {
     id: 'prismai',
-    kind: 'Product · live beta · public launch Dec 2026',
+    kind: 'Product · live beta · agency release launching Dec 2026',
     title: 'PrismAI',
     descriptor: 'approval-first meeting agent',
     when: 'Mar 2026 to Present',
-    oneLiner: 'A meeting agent that turns what people promise on a call into work that gets done.',
+    oneLiner:
+      'A meeting agent that turns what people promise on a call into finished work, and asks before it acts.',
     awards: [],
-    role: '',
+    role: 'I wrote 1,120 of its 1,352 commits, starting with the first one.',
+    /* Shipped and live. */
     body: [
-      '**Live in beta with 14 users across isolated workspaces, 100+ meetings analyzed**, built from zero in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks, with hybrid search (pgvector plus BM25, fused) and an MCP connector for Claude and ChatGPT.',
-      'Building now for agencies and client-services teams: PrismAI checks each client request against the signed agreement, quotes the clause, and drafts a change order at the agency’s own rates. **Code computes the money, not a model, and nothing is sent until the owner approves.**',
-      'Tenancy is enforced, not hoped for: a route-coverage test fails the build for any unregistered route, and a cross-tenant attack suite blocks CI.',
+      'I took PrismAI from an empty repo to a **live beta with 14 users across isolated workspaces and 100+ meetings analyzed** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
+      'Hybrid search (pgvector plus BM25, fused with reciprocal rank fusion) answers questions across every past meeting, and an MCP connector brings that context into Claude and ChatGPT. Tenant isolation is enforced in CI: a route-coverage test fails the build for any unregistered route, and a cross-tenant attack suite blocks CI.',
     ],
+    /* In development: always rendered under this label. */
+    now: {
+      label: 'Now building · agency release, Dec 2026',
+      text: 'For agencies and client-services teams, PrismAI checks each client request against the signed agreement, quotes the clause, and drafts a priced change order at the agency’s own rates. **Code computes every dollar, and nothing reaches the client until the owner approves.**',
+    },
     metrics: [
-      { value: '14', label: 'live beta\nusers' },
-      { value: '100+', label: 'meetings\nanalyzed' },
-      { value: '12', label: 'LangGraph\nagents' },
+      { value: '14', label: 'live beta users\nin isolated workspaces' },
+      { value: '100+', label: 'meetings analyzed\nin the beta' },
     ],
     stack:
       'React · FastAPI · LangGraph · Claude · OpenAI · Supabase/pgvector · BM25/RRF · MCP · Recall.ai · Deepgram · Cartesia',
+    /* Gallery fills the left column (V4 feedback 6): a lead still, then a
+       stack of three. The live-meeting and agents frames are product
+       illustrations from PrismAI's own landing page, not a customer meeting;
+       captions say so. The agency frame is the in-development release. */
     media: {
-      /* The live product doing work: a meeting analysis with summary, topics,
-         action items, decisions and a health score (Chrome Web Store
-         screenshot, Vidyut's own meeting). The scope-check storyboard film is
-         a design preview of an unbuilt feature, so it is not shown as product. */
-      video: '', // TODO: a screen-recording loop of the live product
-      image: '/builds/prismai-analysis.jpg',
-      alt: 'PrismAI meeting analysis: a summary, topics covered, action items, decisions and a health score',
+      video: '', // TODO: a screen-recording loop of the new UI
+      lead: {
+        image: '/builds/prismai-agency.webp',
+        alt: 'PrismAI agency release: a client asks for an iPhone app on a weekly call, PrismAI checks it against clause 3.2 of the agreement and drafts change order #3 for approval',
+        badge: 'Now building · Dec 2026',
+        caption: 'Agency release, in development: a client’s extra ask, checked against the agreement and drafted as a change order you approve.',
+      },
+      stack: [
+        {
+          image: '/builds/prismai-live-meeting.webp',
+          alt: 'PrismAI live-meeting view with highlighted commitments, a meeting health score, decisions and action items with owners',
+          caption: 'The live-meeting view, from PrismAI’s landing page.',
+        },
+        {
+          image: '/builds/prismai-agents.webp',
+          alt: 'PrismAI after the call: a health score with clarity, participation and outcomes, and action items with owners checked off',
+          caption: 'Twelve agents read every meeting at once.',
+        },
+        {
+          image: '/builds/prismai-standin.webp',
+          alt: 'PrismAI stand-in tab: open action items, decisions, and notes on what PrismAI should know about you',
+          caption: 'Stand-in: PrismAI covers a meeting you cannot attend.',
+        },
+      ],
     },
     links: [
       { label: 'Live site', href: 'https://www.meetprismai.com/' },
+      {
+        label: 'Chrome extension',
+        href: 'https://chromewebstore.google.com/detail/prismai-notetaker/bmnjdhgofbbjlngcahneegalddlpjkbh',
+      },
       { label: 'Source', href: '' }, // private repo
     ],
   },
@@ -286,84 +373,81 @@ export const builds = {
   items: [
     {
       id: 'betterbill',
-      kind: 'Hackathon · 24 hours · team\u00A0of\u00A04',
+      kind: 'Hackathon · 24 hours · team of 4',
       title: 'BetterBill',
       descriptor: 'hospital bill advocate',
-      when: 'Oct 2026 · LA Hacks AI Hackathon 2026',
+      when: 'Oct 2026 · AI Hackathon 2026 by LA Hacks, UCLA',
       oneLiner:
-        'Snap a hospital bill. It flags charges worth questioning, shows the proof, and acts only after you approve.',
-      /* Confirmed by Vidyut in chat. Official challenge titles (event portal,
-         per ~/hackathons/la-hacks-2026/plan/sat/challenges.md): Visa, "The
-         Future of Shopping: Powered by AI, Secured by Visa"; Photon,
-         messaging and calling agents. No public results page found. */
-      awards: ['1st · Visa track', '1st · Photon track'],
-      role: 'I owned bill intelligence: the rules engine, the bill readers, the API and Sentry AI monitoring.',
+        'Snap a hospital bill. It finds the charges worth questioning, shows the proof, and calls the billing office once you approve.',
+      /* Devpost prize names: "Visa - The Future of Shopping: Powered by AI,
+         Secured by Visa" and "Photon: Best Voice Agent". "1st" per Vidyut
+         and his resume. */
+      awards: ['1st · Visa track', '1st · Photon, Best Voice Agent'],
+      role: 'I owned bill intelligence: the deterministic rules engine, the photo and text bill readers, the API, and Sentry monitoring of every AI call.',
       body: [
-        'Our team won **1st place in the Visa track**, and **1st place in the Photon track** for the voice agent that calls the billing office over a Photon line once you approve. The model only transcribes; a deterministic rules engine computes every flag and dollar in integer cents, each tied to a source. On test bills with planted errors it caught **22 of 22 with zero false flags** on clean bills.',
+        'We took **1st place in the Visa track** and **1st place for Photon’s Best Voice Agent**, the agent that calls the billing office over a Photon line once you approve the script. The model only transcribes the bill; a deterministic rules engine computes every flag and dollar in integer cents, each tied to its source. On test bills seeded with errors it caught **22 of 22, with zero false flags on clean bills**.',
       ],
       metrics: [
-        { value: '2', label: 'first places\nLA Hacks AI Hackathon' },
-        { value: '22/22', label: 'planted errors\ncaught' },
-        { value: '88.8%', label: 'line recall on\n35 bill photos' },
+        { value: '22 of 22', label: 'seeded billing errors caught,\nzero false flags on clean bills' },
+        { value: '88.8%', label: 'of bill lines recovered\nfrom 35 phone photos' },
       ],
       stack:
         'TypeScript · TanStack Start · Expo · oRPC · Drizzle · Postgres · StepFun · Gemini · ElevenLabs · Photon · Sentry',
       media: {
-        image: '/builds/betterbill.jpg',
-        alt: 'BetterBill results screen with flagged bill lines and a fair balance',
+        image: '/builds/betterbill.webp',
+        alt: 'BetterBill: "Know the price before you go. Fix the bill after. We make the call." beside its price, bill-check and billing-call screens (sample bill, synthetic)',
       },
       links: [
-        { label: 'Live site', href: 'https://betterbill.matmanna.dev' }, // TODO: open in a browser before shipping
+        { label: 'Live site', href: '' }, // pending from Vidyut (brief: keep hidden until he sends it)
+        { label: 'Devpost', href: 'https://devpost.com/software/betterbill' },
         { label: 'Source', href: 'https://github.com/matmanna/betterbill' },
         { label: 'Video', href: 'https://vimeo.com/matmanna/betterbillgg' },
-        { label: 'Devpost', href: 'https://devpost.com/software/betterbill' },
       ],
     },
     {
       id: 'mvr',
-      kind: 'Product · proof of concept',
+      kind: 'Product · working proof of concept · solo',
       title: 'MVR',
       descriptor: 'verified software modernization',
       when: 'Sep 2026 to Present',
       oneLiner:
-        'Rebuilds an existing codebase into a model where every claim links to evidence, before anyone changes a line.',
+        'Before anyone rewrites a legacy system, MVR rebuilds it as a model where every claim links to evidence.',
       awards: [],
-      role: '', // TODO: confirm solo build
+      role: 'Solo build: every commit in the repo is mine.',
       body: [
-        'A working proof of concept, run locally on synthetic codebases. Seven deterministic analyzers turn a content-addressed snapshot into a system model, and anything they cannot prove is recorded as unknown, never guessed. On its own evaluation it made **zero false-certainty claims**, with tenant isolation enforced by forced Postgres row-level security.',
+        'MVR captures a codebase as an immutable, content-addressed snapshot, and seven deterministic analyzers turn it into a system model where every claim points to the exact evidence behind it. Anything they cannot prove is recorded as unknown, never guessed. On its own evaluation over synthetic codebases it made **zero false-certainty claims**, with tenant isolation enforced by forced Postgres row-level security.',
       ],
       metrics: [
-        { value: '0', label: 'false-certainty\nclaims' },
-        { value: '2,320', label: 'unit tests\npassing' },
-        { value: '312', label: 'tenant-isolation\ntests' },
+        { value: '0', label: 'false-certainty claims\non its own evaluation' },
+        { value: '2,320', label: 'unit tests passing,\nplus 312 tenant-isolation tests' },
       ],
       stack:
         'FastAPI · React 19 · TypeScript · PostgreSQL (forced RLS) · Temporal · S3 · OIDC · OpenTelemetry',
       media: {
-        image: '/builds/mvr.jpg',
-        alt: 'MVR system model where every claim about the codebase is linked to evidence (local run on a synthetic codebase)',
+        image: '/builds/mvr.webp',
+        alt: 'MVR logo, "Verified software modernization", beside its evidence view: "Every claim is linked to evidence." (local run on a synthetic codebase)',
       },
       links: [{ label: 'Source', href: '' }], // private repo, no public URL
     },
     {
       id: 'vytal',
-      kind: 'Product · controlled beta',
+      kind: 'Product · controlled beta · solo',
       title: 'Vytal',
       descriptor: 'coaching platform for fitness coaches',
       when: 'Jul 2026 to Present', // TODO: confirm still active
       oneLiner:
-        'Coaching software where the coach stays in charge: explainable scores, and AI only where a person confirms it.',
+        'Coaching software where the coach stays in charge: every score explains itself, and AI acts only where a person confirms it.',
       awards: [],
-      role: '', // TODO: confirm solo build
+      role: 'Solo build: 333 commits in 12 weeks, all mine.',
       body: [
-        'Live at joinvytal.live in a controlled beta for multi-coach organizations. Every score is deterministic, versioned and explained with reason codes; the one model in the loop turns a meal photo into a macro estimate the trainee must confirm. Access control runs through a single policy check, and trainee reassignments keep an append-only audit trail.',
+        'Live at joinvytal.live in a controlled beta for multi-coach organizations. Every score is deterministic, versioned and explained with reason codes; the one model in the loop turns a meal photo into a macro estimate that the trainee confirms before it is logged. Access control runs through a single policy check, and every trainee reassignment leaves an append-only audit trail.',
       ],
-      metrics: [{ value: '333', label: 'commits in\n12 weeks' }],
+      metrics: [],
       stack:
         'FastAPI · SQLAlchemy · PostgreSQL · React · TypeScript · TanStack Query · Claude Haiku 4.5 · Cloudflare R2 · Render · Vercel',
       media: {
-        image: '/builds/vytal.jpg',
-        alt: 'Vytal coach overview showing which trainees need attention first (synthetic data)',
+        image: '/builds/vytal.webp',
+        alt: 'Vytal logo, "One place to coach. One place to train.", beside its coach workspace showing which trainee needs attention first (synthetic data)',
       },
       links: [
         { label: 'Live site', href: 'https://joinvytal.live' },
@@ -375,24 +459,19 @@ export const builds = {
       kind: 'Product · live',
       title: 'Match Day',
       descriptor: 'racket tournament platform',
-      when: '2026', // TODO: build dates
+      when: '2026', // TODO: build dates (domain registered Sep 10 2026; launch video Sep 2026)
       oneLiner:
-        'Run a racket tournament from one screen: the draw, courts, schedule and live scores on every phone.',
+        'Run a racket tournament from one screen: the draw, the courts, the schedule and live scores on every phone.',
       awards: [],
       role: '', // TODO: solo or team? If team, "Team of N. I built ..."
       body: [
-        'Live at joinmatchday.com. Organizers seed the draw, schedule courts and score matches live; the scheduler flags double-booked players and courts, and entry caps are enforced in the database so two people cannot take the last slot. A command center shows which matches are running late and which court is overloaded.',
+        'Live at joinmatchday.com. Organizers seed the draw (knockout, round robin, or groups into knockout), schedule courts and score matches live, while the scheduler flags double-booked players, double-booked courts and short rest. Entry caps are enforced in the database, so two players can never grab the last slot at once, and a command center shows which matches are running late before the day slips.',
       ],
-      metrics: [
-        // From the live landing page copy: knockout, round robin, groups into knockout.
-        { value: '3', label: 'draw\nformats' },
-        // joinmatchday.com meta description: one account for playing, organizing and officiating.
-        { value: '3', label: 'roles, one\naccount' },
-      ],
+      metrics: [],
       stack: '', // TODO: confirm stack (public bundle suggests React, Vite, Supabase, Vercel)
       media: {
-        image: '/builds/matchday.jpg',
-        alt: 'Match Day command center flagging matches that are running late',
+        image: '/builds/matchday.webp',
+        alt: 'Match Day wordmark, "Play. Compete. Belong.", beside its command center flagging matches that are running late',
       },
       links: [
         { label: 'Live site', href: 'https://www.joinmatchday.com' },
@@ -401,66 +480,63 @@ export const builds = {
     },
     {
       id: 'yinzone',
-      kind: 'Hackathon · 30 hours · team\u00A0of\u00A05',
+      kind: 'Hackathon · 30 hours · team of 5',
       title: 'Yinzone',
       descriptor: 'where new housing can go in Pittsburgh',
-      when: 'Sep 2026 · AI for Housing Hackathon, Track 3',
+      when: 'Sep 2026 · AI Horizons 2026: AI for Housing Hackathon, Track 3',
       oneLiner:
         'Click any lot in Pittsburgh and see which of 16 housing types fit, by what approval path, and what stands in the way.',
       awards: [], // Not in the published top 3 (Technical.ly, Oct 8 2026). No badge.
-      role: 'I built the explain-only AI chat: voice, cited answers, and a guard that drops any sentence with a number not in the facts.',
+      role: 'I built the AI chat: voice, cited answers, what-if reruns of the real scorer, and a guard that drops any sentence with a number that is not in the facts.',
       body: [
-        'Scores **about 142,000 city parcels** on 53 indicators drawn from 134 public datasets. Deterministic code decides every score and legal status; AI only explains, and a person is flagged when the model is unsure.',
+        'Yinzone scores **about 142,000 city parcels** on 53 indicators drawn from 134 public datasets. Deterministic code decides every score and every legal status; AI only explains, and when the site-fit model is unsure, it flags a human instead of guessing.',
       ],
       metrics: [
-        { value: '142K', label: 'parcels\nscored' },
-        { value: '53', label: 'indicators' },
-        { value: '134', label: 'public\ndatasets' },
+        { value: '~142,000', label: 'Pittsburgh parcels scored\non 53 indicators' },
       ],
       stack:
         'TypeScript · React 19 · TanStack Start · MapLibre GL · oRPC · Drizzle · Neon Postgres + PostGIS · Gemini · Vercel',
       media: {
-        image: '/builds/yinzone.jpg',
-        alt: 'Yinzone 3D map of Pittsburgh at street scale',
+        image: '/builds/yinzone.webp',
+        alt: 'Yinzone logo over a 3D street-scale map of Pittsburgh: "Where could new housing go in Pittsburgh, and what stands in the way?"',
       },
       links: [
-        { label: 'Live site', href: '' }, // yin.zone is suspended (WHOIS verification page, Oct 19 2026); restore once it serves the app
+        { label: 'Live site', href: '' }, // pending from Vidyut (yin.zone was suspended on Oct 19 2026)
         { label: 'Source', href: 'https://github.com/matmanna/yinzone' },
         { label: 'Video', href: 'https://youtu.be/ECZnv7R-q_8' },
       ],
     },
     {
       id: 'terrametric',
-      kind: 'Hackathon · 36 hours · team\u00A0of\u00A03',
+      kind: 'Hackathon · 36 hours · team of 3',
       title: 'Terrametric',
       descriptor: 'crop drought intelligence',
-      when: 'Apr 2026 · BitCamp, UMD',
+      when: 'Apr 2026 · Bitcamp 2026, University of Maryland',
       oneLiner:
-        'Satellite data is abundant. Irrigation decisions are still guesses. This closes the gap.',
-      awards: ['1st · Real World track', '1st · Data Science track', '3rd · Open Source'],
-      role: '', // TODO: solo or team?
+        'Tells farmers which fields are heading into drought stress, and what irrigating them will cost and save.',
+      awards: ['1st · Real World track (Ambrook)', '1st · Data Science track', '3rd · Open Source'],
+      role: 'The idea was mine, and I led the build: system orchestration, model training, the grounded RAG chat and the stress metrics. I also led the live pitch to the judges.',
       body: [
-        'Three awards at BitCamp 2026, including **1st in the Real World track (Ambrook)** and **1st in Data Science**. It scores drought risk per field, writes an irrigation prescription with cost and savings projections, and lets a farmer simulate the decision first. A 14-day per-field forecast runs on XGBoost, a RAG agent grounds it in Iowa and USDA documents, and alerts go out by SMS.',
+        'Three prizes at Bitcamp 2026, including **1st in the Real World track (Ambrook)** and **1st in Data Science**. It scores drought stress per field, forecasts it 14 days ahead with XGBoost, and writes an irrigation prescription with cost and savings projections that a farmer can simulate before committing. A RAG agent grounds its answers in Iowa and USDA agronomy documents, and alerts go out by SMS for farmers who never open a dashboard.',
       ],
       metrics: [
-        { value: '3', label: 'awards in\n36 hours' },
-        { value: '14-day', label: 'per-field stress\nforecast' },
+        { value: '14-day', label: 'drought-stress forecast\nfor every field' },
       ],
       stack: 'React · Three.js · Leaflet · FastAPI · XGBoost · Qwen 2.5-7B · Twilio · WebSockets',
       media: {
-        image: '/builds/terrametric.jpg',
-        alt: 'Terrametric landing page with a field-level crop stress map',
+        image: '/builds/terrametric.webp',
+        alt: 'Terrametric wordmark, "Soil, weather and crop stress, turned into early warnings", beside a globe marking an Iowa field cluster',
       },
       links: [
         { label: 'Live demo', href: 'https://terrametric-delta.vercel.app/' },
-        { label: 'Source', href: 'https://github.com/vs-githjk/Terrametric' },
         { label: 'Devpost', href: 'https://devpost.com/software/terrametric' },
+        { label: 'Source', href: 'https://github.com/vs-githjk/Terrametric' },
       ],
     },
   ],
 
   /* ---- Research row (its own shape, after the six cards) ------------------ */
-  /* A preprint. Never "published". */
+  /* A preprint. Never "published". Two models in the results, never three. */
   research: {
     id: 'secure-codegen',
     kind: 'Research · arXiv preprint · first author',
@@ -469,19 +545,25 @@ export const builds = {
     descriptor: 'GCC · CodeQL · KLEE',
     when: 'Sep 2025 to Jul 2026',
     oneLiner:
-      'A repair loop that does not accept a model’s C code until the compiler and a static analyzer agree.',
-    awards: ['2nd · PSU Exhibition 2026'],
+      'A repair loop that does not accept a model’s C code until the compiler and a static analyzer stop objecting.',
+    awards: ['2nd · Penn State Exhibition 2026'],
     awardsLong: '2nd Place, Engineering · Penn State Undergraduate Exhibition 2026',
     role: 'First author, with Saatvik Pradhan and Suman Saha.',
     body: [
-      'Across 5,000 C tasks, the loop **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463** and nearly halved DeepSeek Coder 1.3B’s compile failures, 42% to 22%, with its security defects falling from 35% to 15%. Each repair round retrieves lessons from a growing library of past fixes, ranked by how far they got through GCC, CodeQL and KLEE symbolic execution.',
+      'Without help, the models we tested failed to compile up to 46% of their C programs and left security defects in up to 49%. My loop feeds GCC and CodeQL findings back to the model for up to three repair rounds, guided by a growing library of past fixes ranked by how far each got through GCC, CodeQL and KLEE symbolic execution.',
+      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463 (83.7% fewer)**, and nearly halved DeepSeek Coder 1.3B’s compile failures, from 42% to 22%, while its security defects fell from 35% to 15%.',
     ],
     metrics: [
-      { value: '83.7%', label: 'fewer CodeQL errors\nCodeLlama 7B' },
-      { value: '42 → 22%', label: 'compile failures\nDeepSeek 1.3B' },
-      { value: '5,000', label: 'C tasks\nevaluated' },
+      { value: '83.7%', label: 'fewer CodeQL errors in\nCodeLlama 7B’s C, 5,000 tasks' },
+      { value: '42% → 22%', label: 'compile failures for\nDeepSeek Coder 1.3B' },
     ],
-    /* Typographic tile: used by the research row and carousel slide 8.
+    /* Logo-led thumbnail (finder's typeset card with the repair-loop
+       diagram). Same file as the ring card. */
+    media: {
+      image: '/builds/paper.webp',
+      alt: 'The paper title and "83.7% fewer CodeQL errors" beside a diagram of the GCC, CodeQL and repair loop, with KLEE as the final check',
+    },
+    /* Typographic tile: fallback only, if the image is not shipped.
        The arrow is a glyph, never a dash. */
     tile: {
       eyebrow: 'arXiv:2607.21641 · first author',
@@ -495,18 +577,105 @@ export const builds = {
     ],
   },
 
-  /* ---- Compact tier: hairline index rows ---------------------------------- */
-  compact: {
+  /* ---- More builds: same card shape as `items`, smaller in the layout ----- */
+  more: {
     heading: 'More builds',
-    indexLabel: 'Index {from} to {to}',
+    intro: 'A hackathon meeting agent, an interview-prep product, public tools and side projects. Every one has a public repo you can open.',
     items: [
       {
-        id: 'cinemachat',
-        title: 'CinemaChat',
+        id: 'quorum',
+        kind: 'Hackathon · weekend · team of 4',
+        title: 'Quorum',
+        descriptor: 'AI meeting participant',
+        when: 'Mar 2026 · YHack',
         oneLiner:
-          'Movie and TV picks in plain language. Claude chooses which retrieval tools to call (filmographies, semantic search) and reasons to a recommendation instead of keyword-matching one.',
-        stack: 'JavaScript · Claude',
-        year: 'Mar 2026', // repo created
+          'An AI teammate that sits in the meeting, listens, talks back, and does the task you ask for out loud.',
+        awards: [],
+        role: 'I wrote most of the code.',
+        body: [
+          'Quorum joins a live meeting as a participant: it listens in real time, contributes ideas, speaks back, takes actions like filing a GitHub issue on request, and can drive a shared screen. Built over a weekend on Recall.ai, Deepgram, Claude and ElevenLabs, it attacks the same problem I keep working on in PrismAI.',
+        ],
+        metrics: [],
+        stack: 'Python · FastAPI · Claude · Recall.ai · Deepgram · ElevenLabs',
+        media: {
+          image: '/builds/quorum.webp',
+          alt: 'Quorum logo, "Joins your meeting, listens, takes the action, and speaks back", beside a meeting where someone says "Hey Q, file a GitHub issue for the auth bug"',
+        },
+        links: [
+          { label: 'Devpost', href: 'https://devpost.com/software/quorum-vntz2e' },
+          { label: 'Source', href: 'https://github.com/vs-githjk/Quorum' },
+        ],
+      },
+      {
+        id: 'filingwatch',
+        kind: 'Tool · solo · public repo',
+        title: 'FilingWatch',
+        descriptor: 'SEC 8-K monitor',
+        when: 'Sep 2026',
+        oneLiner:
+          'Watches SEC filings for the companies you follow and tells you what was filed, never what it means.',
+        awards: [],
+        role: '',
+        body: [
+          'Once a day it checks EDGAR for new 8-Ks, marks each one notable or routine with fixed rules on item codes (every verdict names the rule that decided it), and emails a digest. Claude Haiku 4.5 writes a one-sentence factual summary, and an output check throws out any summary that drifts into advice, price prediction or opinion. A missing summary is acceptable; a slanted one never ships.',
+        ],
+        metrics: [],
+        stack: 'Python · FastAPI · Claude Haiku 4.5 · SEC EDGAR · APScheduler',
+        media: {
+          image: '/builds/filingwatch.webp',
+          alt: 'FilingWatch "8K" mark, "Reports what was filed, never what it means", beside its feed of recent SEC 8-K filings with notable ones marked',
+        },
+        links: [{ label: 'Source', href: 'https://github.com/vs-githjk/filingwatch' }],
+      },
+      /* NextRound = ~/NextRound (platform repo, public) + ~/prep-console
+         (the working build, private). One project per Vidyut, Oct 20. */
+      {
+        id: 'nextround',
+        kind: 'Product · private working build · public prototype',
+        title: 'NextRound',
+        descriptor: 'interview readiness, measured',
+        when: 'Jul to Sep 2026',
+        oneLiner:
+          'Interview prep for software engineers: it plans each day, diagnoses what went wrong, and computes every score in code instead of asking a model.',
+        awards: [],
+        role: 'I wrote 75 of the 78 commits across its two repos, including the architecture and the cost model. A teammate set up the staging deploy.',
+        body: [
+          'I built the working version for my own prep first. It plans each day to a minute budget, picks problems just above my level in each topic, schedules spaced re-solves and runs a mock interview with a voiced interviewer. When a problem goes badly, Claude diagnoses why, but **every rating and the green, amber or red verdict a mentor sees are computed in code**, with the reasons attached.',
+          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**.',
+        ],
+        metrics: [
+          { value: '73%', label: 'lower input cost per 12-turn\nmock interview, with prompt caching' },
+        ],
+        stack: 'React 19 · Vite · Vercel functions · Supabase · Claude API · ElevenLabs · FastAPI · PostgreSQL · Redis',
+        media: {
+          image: '/builds/nextround.webp',
+          alt: 'NextRound logo and the line "Readiness, measured." beside its interactive prototype',
+        },
+        links: [
+          { label: 'Prototype', href: 'https://vs-githjk.github.io/NextRound-demo/' },
+          { label: 'Source', href: 'https://github.com/vs-githjk/NextRound' },
+          // The working build (prep-console) is a private repo and a personal
+          // deployment that spends API credit: never linked.
+        ],
+      },
+      {
+        id: 'cinemachat',
+        kind: 'Side project · solo',
+        title: 'CinemaChat',
+        descriptor: 'agentic movie and TV picks',
+        when: 'Mar to Apr 2026',
+        oneLiner: 'Ask for a movie the way you would ask a friend, and get picks with reasons.',
+        awards: [],
+        role: '',
+        body: [
+          'Every request runs a Claude tool-use loop: Claude decides which tools to call (semantic search over about 1,000 movies, actor and director filmographies, a friend’s taste profile) and how many times, then ranks its picks with a reason for each. It also handles the social part: ask for something you and a friend would both love, or blend your tastes into one shared playlist.',
+        ],
+        metrics: [],
+        stack: 'React · Node/Express · Claude tool use · Pinecone · PostgreSQL · TMDB',
+        media: {
+          image: '/builds/cinemachat.webp',
+          alt: 'CinemaChat wordmark, "Turns vibes into watchlists.", beside its landing page with a row of movie posters',
+        },
         links: [
           { label: 'Live demo', href: 'https://cinema-chat-nine.vercel.app/' },
           { label: 'Source', href: 'https://github.com/vs-githjk/CinemaChat' },
@@ -514,32 +683,97 @@ export const builds = {
       },
       {
         id: 'transitguard',
+        kind: 'Course project · solo',
         title: 'TransitGuard',
+        descriptor: 'baggage risk dashboard for airport ops',
+        when: 'Mar to Apr 2026',
         oneLiner:
-          'Scores each transfer bag by its odds of missing the connection, then tells airport ops what to do before the bag is gone.',
-        stack: 'FastAPI · Next.js · TypeScript',
-        year: 'Mar 2026', // repo created
+          'Flags the transfer bags most likely to miss their connection, while there is still time to save them.',
+        awards: [],
+        role: '',
+        body: [
+          'A machine-learning model gives every transfer bag a live risk score from its connection window, delays, gate or terminal changes and congestion. The dashboard ranks bags by urgency, recommends the fix (prioritize the transfer, expedite customs, escalate to a supervisor), and lets staff log each action from flag to resolution. It retrains on historical outcomes from a CSV upload, so it can adapt to a different airport.',
+        ],
+        metrics: [],
+        stack: 'FastAPI · Next.js · TypeScript · ML risk model',
+        /* Logo-led thumbnail; no product screenshot (the demo backend is
+           gone and is never linked, PROJECT DECISIONS Oct 20). */
+        media: {
+          image: '/builds/transitguard.webp',
+          alt: 'TransitGuard logo, "Missed-connection risk for transfer bags, before the bag misses the flight", beside high, medium and low risk levels',
+        },
+        tile: { // fallback only
+          eyebrow: 'Airport ops · risk scoring',
+          number: '0 to 100',
+          line: 'A live miss-risk score for every transfer bag, ranked so staff act on the worst first.',
+        },
         links: [{ label: 'Source', href: 'https://github.com/vs-githjk/TransitGuard' }],
       },
       {
         id: 'papertrail',
+        kind: 'Side project · team of 2',
         title: 'PaperTrail',
-        oneLiner:
-          'Give it a topic, title, DOI or link. It finds the seed paper, builds the ancestor tree and lays out a reading path from the foundations up.',
-        stack: 'JavaScript · TypeScript',
-        year: 'Apr 2026', // repo created
-        links: [{ label: 'Source', href: 'https://github.com/vs-githjk/PaperTrail' }],
+        descriptor: 'reading paths for research papers',
+        when: 'Apr 2026',
+        oneLiner: 'Give it a topic, title, DOI or link, and it maps the papers to read first.',
+        awards: [],
+        role: 'I wrote most of the code.',
+        body: [
+          'PaperTrail finds the likely seed paper, builds its ancestor tree from Semantic Scholar and arXiv citations, and lays it out in learning layers, from the paper itself back to its earliest foundations. Broad prompts like "rag" or "agents" get a short clarifying question first, so the tree starts from the right paper.',
+        ],
+        metrics: [],
+        stack: 'React · Vite · D3 · Node/Express · PostgreSQL · Redis · Neo4j',
+        media: {
+          image: '/builds/papertrail.webp',
+          alt: 'PaperTrail wordmark, "Give it a topic, title, DOI or link. It maps the lineage and the reading path.", beside its search screen',
+        },
+        links: [
+          { label: 'Live demo', href: 'https://paper-trail-three-kappa.vercel.app/' },
+          { label: 'Source', href: 'https://github.com/vs-githjk/PaperTrail' },
+        ],
       },
       {
         id: 'algoquest',
+        kind: 'Side project · team of 2',
         title: 'AlgoQuest',
+        descriptor: 'algorithms as a game',
+        when: 'Apr to May 2026',
         oneLiner: 'Data structures and algorithms taught as a game instead of a problem set.',
-        stack: 'React · JavaScript',
-        year: 'Apr 2026', // repo created
+        awards: [],
+        role: '',
+        body: [
+          'Eight core algorithms, from bubble sort to Dijkstra, each with a step-by-step visualizer, code in JavaScript and Python, and a short quiz. XP, levels, badges and a timed daily quest keep a learner coming back.',
+        ],
+        metrics: [],
+        stack: 'React · React Router · CSS Modules',
+        /* Logo-led thumbnail; the bars are decorative, not a screenshot. */
+        media: {
+          image: '/builds/algoquest.webp',
+          alt: 'AlgoQuest logo, "Learn data structures and algorithms through play", beside decorative sorting bars',
+        },
+        tile: { // fallback only
+          eyebrow: 'DSA, as a game',
+          number: 'Bubble sort → Dijkstra',
+          line: 'Eight algorithms with step-through visualizers, quizzes and XP.',
+        },
         links: [{ label: 'Source', href: 'https://github.com/vs-githjk/AlgoQuest' }],
       },
     ],
   },
+};
+
+/* ----------------------------------------------------------- HIGHLIGHTS --- */
+/* Optional strip. Never directly under the hero: place it after Builds (or
+   inside Proof of work). Each line is a complete statement: what changed,
+   by how much, for whom, where. Replaces the old `proof` band. */
+export const highlights = {
+  eyebrow: 'In one line each',
+  items: [
+    'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
+    'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months.',
+    'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
+    'Won **1st place in four hackathon tracks** in 2026: two at the AI Hackathon by LA Hacks, two at Bitcamp.',
+  ],
 };
 
 /* ---------------------------------------------------------- HOW I BUILD --- */
@@ -549,20 +783,20 @@ export const principles = {
   heading: 'Principles',
   items: [
     {
-      title: 'Code decides. The model explains.',
-      body: 'In BetterBill, Yinzone and Vytal, deterministic code computes every score, flag and dollar; PrismAI’s change orders, building now for Dec 2026, are priced by code too, never by a model. The model reads, drafts and explains. When the number matters, it should not come from a guess.',
+      title: 'The model explains. Code decides.',
+      body: 'In BetterBill, Yinzone, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag and dollar, and the model reads, drafts and explains. PrismAI’s change orders are priced the same way. When a number matters, it should never come from a guess.',
     },
     {
-      title: 'Distrust the first output.',
-      body: 'Every system I build has something that can say no: a compiler, a static analyzer, a claim checker, a human at the gate. If nothing can say no, the output is a guess with good formatting.',
+      title: 'Something has to be able to say no.',
+      body: 'Every system I build has at least one check that can reject the output: a compiler, a static analyzer, an output guard, a test that fails the build, or a person at the approval gate. If nothing can say no, the output is a guess with good formatting.',
     },
     {
       title: 'Measure, then claim.',
-      body: '~40% at Comcast, 5,000 tasks in the paper, 22 of 22 planted errors in BetterBill’s eval. "Feels better" is a hunch, not a result.',
+      body: 'I quote BetterBill’s 22 of 22 together with the fact that we planted those errors, and the paper’s 83.7% together with the 5,000 tasks behind it. "Feels better" stays a hunch until a number backs it.',
     },
     {
-      title: 'End to end, then optimize.',
-      body: 'Terrametric went from satellite data to an SMS in a farmer’s hand in 36 hours because the whole path ran before any part of it was polished. You cannot tune what does not run.',
+      title: 'End to end first, then polish.',
+      body: 'Terrametric ran from field data to a 14-day forecast to an SMS alert inside 36 hours, because the whole path worked before any part of it was pretty. You cannot tune what does not run.',
     },
   ],
 };
@@ -575,47 +809,49 @@ export const value = {
   claims: [
     {
       tag: 'Reliability',
-      claim: 'I care most about the gap between "works in the demo" and "works."',
+      claim: 'I care most about the gap between a good demo and a system people can depend on.',
       receipts: [
         'My repair loop cut CodeLlama 7B’s CodeQL errors **83.7%** across 5,000 C tasks.',
-        'In PrismAI, a **cross-tenant attack suite blocks CI**, so a data leak between customers fails the build before it ships.',
+        'In PrismAI, a **cross-tenant attack suite blocks CI**, so a data leak between customers fails the build before it can ship.',
       ],
     },
     {
       tag: 'Forward-deployed',
-      claim: 'I want to sit where the system meets the user, not two teams away.',
+      claim: 'I want to work where the system meets the people using it.',
       receipts: [
-        'At Sherlock AI I owned the **demo flow prospective customers evaluate** before they talk to the team.',
-        'At Comcast I **drove adoption across a 40-person team**, then iterated on how they actually used it.',
+        'At Sherlock AI I owned the **demo prospective customers evaluate** before they talk to the team.',
+        'At Comcast I **drove adoption across a 40-person team**, then improved it based on how they actually used it.',
       ],
     },
     {
       tag: 'Owner',
-      claim: 'I treat every build as mine to run, not mine to hand off.',
+      claim: 'I run what I build, from the first commit to the first users.',
       receipts: [
-        'PrismAI: **1,120 of its 1,352 commits are mine**, from first commit to 14 live beta users.',
-        'Vytal: **333 commits in 12 weeks**, live in a controlled beta at joinvytal.live.',
+        'PrismAI: **1,120 of its 1,352 commits are mine**, from an empty repo to 14 beta users.',
+        'Vytal and MVR are **solo builds**: Vytal is live in a controlled beta, MVR is a working proof of concept.',
       ],
     },
     {
       tag: 'Modernizer',
-      claim: 'I see a manual workflow and cannot leave it alone.',
+      claim: 'When I see a manual workflow, I want to rebuild it.',
       receipts: [
-        'At Comcast the pilot I shipped removed **~40% of a team’s recurring planning and coordination work**.',
+        'At Comcast the pilot I shipped removed **~40% of a 40-person team’s recurring planning and coordination work**.',
         'MVR exists to modernize legacy software safely: **every claim about the old system links to evidence**.',
       ],
     },
   ],
   footer:
-    'What that adds up to: an engineer who owns an AI system end to end, keeps it safe and reliable, and sits close enough to the users to know whether it is helping.',
+    'What that adds up to: an engineer who can own an AI system end to end, keep it safe and measurable, and stay close enough to the people using it to know whether it helps.',
 };
 
 /* --------------------------------------------------------------- TOOLKIT --- */
 /* Only tools Vidyut used himself: resume Technical Skills plus stacks of
    projects or lanes he owned (PrismAI, Vytal, MVR, Terrametric, the paper,
-   Comcast, Sherlock AI, his BetterBill and Yinzone lanes). Team-only tools
-   from BetterBill/Yinzone (ElevenLabs, Photon, Browser Use, PostGIS, Expo)
-   and Match Day's unconfirmed stack are left out. Groq stays out. */
+   FilingWatch, CinemaChat, Comcast, Sherlock AI, his BetterBill and Yinzone
+   lanes, NextRound). Team-only tools from BetterBill/Yinzone (Photon,
+   Browser Use, PostGIS, Expo) and Match Day's unconfirmed stack are left
+   out. ElevenLabs is in because he wired it himself in NextRound's voiced
+   interviewer. Groq stays out. */
 export const toolkit = {
   eyebrow: 'Toolkit',
   heading: 'Shipped with,',
@@ -629,10 +865,13 @@ export const toolkit = {
       name: 'AI systems',
       items: [
         'LangGraph',
+        'Tool calling',
         'RAG',
         'pgvector',
         'BM25 / RRF',
+        'Pinecone',
         'MCP',
+        'Prompt caching',
         'Anthropic API',
         'OpenAI API',
         'Gemini',
@@ -642,7 +881,7 @@ export const toolkit = {
     },
     {
       name: 'Voice & meetings',
-      items: ['Recall.ai', 'Deepgram', 'Cartesia', 'Pipecat'],
+      items: ['Recall.ai', 'Deepgram', 'Cartesia', 'Pipecat', 'ElevenLabs'],
     },
     {
       name: 'Backend & data',
@@ -650,46 +889,30 @@ export const toolkit = {
         'FastAPI',
         'PostgreSQL',
         'Row-level security',
+        'Multi-tenant isolation',
         'Supabase',
+        'Redis',
+        'SQLAlchemy',
         'Drizzle',
         'Temporal',
-        'Multi-tenant isolation',
+        'SSE / WebSockets',
       ],
     },
     {
       name: 'Frontend',
-      items: [
-        'React 19',
-        'Next.js',
-        'TanStack Start',
-        'Three.js',
-        'Chrome extensions',
-      ],
+      items: ['React 19', 'Next.js', 'TanStack Start', 'Tailwind CSS', 'Three.js', 'Chrome extensions'],
     },
     {
       name: 'Verification & testing',
-      items: ['GitHub CodeQL', 'KLEE', 'pytest'],
+      items: ['GitHub CodeQL', 'KLEE', 'GCC', 'pytest', 'Vitest', 'Playwright'],
     },
     {
       name: 'Infra & observability',
-      items: [
-        'Docker',
-        'Vercel',
-        'Render',
-        'OpenTelemetry',
-        'Sentry',
-      ],
+      items: ['Docker', 'Vercel', 'Render', 'OpenTelemetry', 'Sentry'],
     },
     {
       name: 'Integrations',
-      items: [
-        'Slack',
-        'Microsoft Teams',
-        'Jira',
-        'Linear',
-        'GitHub',
-        'Twilio',
-      ],
+      items: ['Slack', 'Microsoft Teams', 'Jira', 'Linear', 'Notion', 'GitHub', 'Twilio'],
     },
   ],
 };
@@ -705,7 +928,7 @@ export const proofOfWork = {
   heading: 'Verify me in',
   headingEm: 'one click.',
   intro:
-    'Everything above leaves a public trail. Each hackathon win links to its Devpost page.',
+    'Everything above leaves a public trail. The graph counts my private-repo work too, and every hackathon win links to its Devpost page.',
   github: {
     eyebrow: 'GitHub · last 12 months',
     handle: '@vs-githjk',
@@ -729,27 +952,27 @@ export const proofOfWork = {
     items: [
       {
         title: 'BetterBill · 1st, Visa track',
-        event: 'LA Hacks AI Hackathon 2026 · Oct 2026',
+        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
         href: 'https://devpost.com/software/betterbill',
       },
       {
-        title: 'BetterBill · 1st, Photon track (voice agent)',
-        event: 'LA Hacks AI Hackathon 2026 · Oct 2026',
+        title: 'BetterBill · 1st, Photon: Best Voice Agent',
+        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
         href: 'https://devpost.com/software/betterbill',
       },
       {
-        title: 'Terrametric · 1st, Real World track',
-        event: 'BitCamp 2026 · Apr 2026',
+        title: 'Terrametric · 1st, Real World track (Ambrook)',
+        event: 'Bitcamp 2026 · Apr 2026',
         href: 'https://devpost.com/software/terrametric',
       },
       {
         title: 'Terrametric · 1st, Data Science track',
-        event: 'BitCamp 2026 · Apr 2026',
+        event: 'Bitcamp 2026 · Apr 2026',
         href: 'https://devpost.com/software/terrametric',
       },
       {
         title: 'Terrametric · 3rd, Open Source',
-        event: 'BitCamp 2026 · Apr 2026',
+        event: 'Bitcamp 2026 · Apr 2026',
         href: 'https://devpost.com/software/terrametric',
       },
       {
@@ -793,7 +1016,7 @@ export const contact = {
   heading: "Tell me what's",
   headingEm: 'broken.',
   blurb:
-    'Hiring for 2027, building with agents or retrieval, or want to push back on something above? Write to me.',
+    'Hiring a forward-deployed engineer or an AI engineer, or building agents that have to hold up with real users? Write to me. I am available from January 2027 and open to relocating. If you think I got something on this page wrong, tell me that too.',
   email: 'vidyut0712@gmail.com',
   copyLabel: 'Copy',
   copiedLabel: 'Copied',
