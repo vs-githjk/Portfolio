@@ -207,7 +207,7 @@ export default function Orbit({ stageRef, centreRef }) {
         let shade = CFG.shade * Math.pow((1 - c) / 2, 1.2);
         // A pale thumbnail (tone: 'light') would stay the brightest thing at the back of
         // the ring, so it dims further as it leaves the front.
-        if (slides[k].tone === 'light') shade += (1 - shade) * 0.4 * (1 - cap);
+        if (slides[k].tone === 'light') shade += (1 - shade) * 0.62 * (1 - cap);
         let hidden = 0;
         if (c < 0) {
           // How far the card's near edge is from the copy on its side (negative while
