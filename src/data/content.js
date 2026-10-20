@@ -128,8 +128,8 @@ export const hero = {
       {
         id: 'betterbill',
         title: 'BetterBill',
-        oneLiner: 'Finds charges on hospital bills you may not owe.',
-        badge: '2× 1st place · LA Hacks AI',
+        oneLiner: 'Finds hospital charges you may not owe.',
+        badge: '2× 1st · LA Hacks',
         badgeKind: 'win',
         image: {
           src: '/builds/ring/betterbill.webp',
@@ -139,7 +139,7 @@ export const hero = {
       {
         id: 'mvr',
         title: 'MVR',
-        oneLiner: 'Maps legacy code, every claim linked to evidence.',
+        oneLiner: 'Maps legacy code, every claim evidenced.',
         badge: 'Proof of concept',
         badgeKind: '',
         image: {
@@ -150,7 +150,7 @@ export const hero = {
       {
         id: 'vytal',
         title: 'Vytal',
-        oneLiner: 'Coaching software where the coach stays in charge.',
+        oneLiner: 'Coaching software where the coach decides.',
         badge: 'Controlled beta',
         badgeKind: 'live',
         image: {
@@ -183,8 +183,8 @@ export const hero = {
       {
         id: 'terrametric',
         title: 'Terrametric',
-        oneLiner: 'Drought risk and irrigation plans, field by field.',
-        badge: '2× 1st place · Bitcamp',
+        oneLiner: 'Drought risk and irrigation plans, per field.',
+        badge: '2× 1st · Bitcamp',
         badgeKind: 'win',
         image: {
           src: '/builds/ring/terrametric.webp',
@@ -216,7 +216,7 @@ export const hero = {
       {
         id: 'filingwatch',
         title: 'FilingWatch',
-        oneLiner: 'Reports what a company filed, never what it means.',
+        oneLiner: 'Reports what was filed, never what it means.',
         badge: 'Solo build',
         badgeKind: '',
         image: {
@@ -227,7 +227,7 @@ export const hero = {
       {
         id: 'nextround',
         title: 'NextRound',
-        oneLiner: 'Plans your interview prep and diagnoses every miss.',
+        oneLiner: 'Plans your prep and diagnoses every miss.',
         badge: 'Live prototype',
         badgeKind: '',
         image: {

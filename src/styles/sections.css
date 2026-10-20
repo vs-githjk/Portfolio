@@ -364,6 +364,16 @@
   .card-idx {
     display: none;
   }
+
+  .card .card-one {
+    font-size: 12.5px;
+  }
+
+  .card .card-badge {
+    font-size: 9px;
+    letter-spacing: 0.03em;
+    padding: 2px 6px;
+  }
 }
 
 .card-link {
@@ -786,6 +796,14 @@
     padding: 0 16px;
     margin: 0;
   }}
+
+/* Narrow laptop windows: the credential line wraps instead of running under the
+   side cards of the ring. */
+@media (min-width: 960px) and (max-width: 1199px) and (min-height: 640px) {
+  .hero-stage .cred {
+    max-width: 46ch;
+  }
+}
 
 /* Short laptop windows: the ring needs the height more than the explanatory
    line does, so the plain sentence gives way (it stays in the page for readers
