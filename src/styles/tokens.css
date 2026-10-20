@@ -127,7 +127,7 @@
   /* The phone's drift wall, which stands in for the ring below its breakpoint. */
   --drift-card-w: clamp(132px, 34vw, 184px);
   --drift-tilt: 24deg; /* plane tipped back into the beams */
-  --drift-turn: -7deg; /* and turned off the horizontal */
+  --drift-turn: 0deg; /* rows stay level (Vidyut: diagonal read as odd) */
   --drift-dim: 0.5; /* thumbnails read as atmosphere, not content */
   --drift-light: 0.45; /* pale thumbnails dimmed to sit with the dark ones */
   --drift-loop: 70s; /* one third of a row per loop */
