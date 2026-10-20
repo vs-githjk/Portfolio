@@ -70,6 +70,7 @@ export default function Orbit({ stageRef, centreRef }) {
     // Last written opacities: a style is only touched when its value really moves.
     const lastCap = cards.map(() => -1);
     const lastNear = cards.map(() => -1);
+    const lastVis = cards.map(() => -1);
     const css = getComputedStyle(document.documentElement);
     const num = (name, fb) => parseFloat(css.getPropertyValue(name)) || fb;
     const reducedMq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -86,10 +87,12 @@ export default function Orbit({ stageRef, centreRef }) {
       shade: num('--orbit-shade', 0.7),
       front: num('--orbit-front', 0),
       behind: num('--orbit-behind', 0.95),
+      ghost: num('--orbit-ghost', 0.78),
+      side: num('--orbit-side', 0.1),
       stepMs: num('--orbit-step-ms', 5200),
       linger: num('--orbit-linger', 0.85),
     };
-    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, copyHalf: 340 };
+    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, copyHalf: 340, front: CFG.front };
     const reasons = { user: false, hover: false, hidden: document.hidden, offscreen: false };
     const hov = cards.map(() => 0);
     const hovT = cards.map(() => 0);
@@ -103,6 +106,7 @@ export default function Orbit({ stageRef, centreRef }) {
     let anim = null;
     let ringMode = false;
     let focusAfter = false;
+    let liveT = 0;
 
     const paused = () => reasons.user || reasons.hover || reasons.hidden || reasons.offscreen;
 
@@ -113,14 +117,33 @@ export default function Orbit({ stageRef, centreRef }) {
       return -STEP * (k + p - (CFG.linger / (2 * Math.PI)) * Math.sin(2 * Math.PI * p));
     }
 
+    // How far right of the ring centre the outer edge of a card reaches, on screen,
+    // at ring angle w: its position, half its width turned by the yaw (the outer edge
+    // swings toward the camera and so looks larger), then the perspective scale.
+    function edgeAt(rx, w) {
+      const s = Math.sin(w);
+      const c = Math.cos(w);
+      const a = (CFG.yaw * s * Math.PI) / 180;
+      const half = geo.cardW / 2;
+      const z = geo.rz * geo.cosT * (c - 1) + half * Math.sin(a);
+      return (rx * s + half * Math.cos(a)) * (CFG.persp / (CFG.persp - z)) + 4;
+    }
+
     function measure() {
       // Layout size, never getBoundingClientRect: that one includes the ring's own transforms.
       geo.cardW = cards[0].offsetWidth || 248;
-      const sideScale = CFG.persp / (CFG.persp + geo.rz * geo.cosT);
-      const rxMax = scene.clientWidth >= 1400 ? CFG.rx + 40 : CFG.rx;
-      geo.rx = Math.min(rxMax, scene.clientWidth / 2 / sideScale - geo.cardW / 2 - 16);
       const stageH = stage.clientHeight;
       geo.rz = Math.min(CFG.rz, Math.round(stageH * 0.46));
+      // The widest the ring may be: the outermost card keeps 16px to spare on each side.
+      const room = scene.clientWidth / 2 - 16;
+      let rx = scene.clientWidth >= 1400 ? CFG.rx + 40 : CFG.rx;
+      for (let i = 0; i < 8; i++) {
+        let e = 0;
+        for (let w = 0.5; w <= Math.PI / 2 + 0.01; w += 0.04) e = Math.max(e, edgeAt(rx, w));
+        if (e <= room) break;
+        rx = Math.max(200, rx - (e - room) / 0.85);
+      }
+      geo.rx = rx;
       scene.style.setProperty('--rx', geo.rx.toFixed(0));
       scene.style.setProperty('--rz', geo.rz.toFixed(0));
       const cardH = cards[0].offsetHeight || 240;
@@ -133,9 +156,14 @@ export default function Orbit({ stageRef, centreRef }) {
       stage.style.setProperty('--oy', `${O}px`);
       stage.style.setProperty('--centre-off', `${(frontTop - 18).toFixed(0)}px`);
       // The lifted front card is nearer the camera, so it grows about the ring centre.
-      const grow = CFG.persp / (CFG.persp - CFG.front) - 1;
-      const barY = frontTop + cardH + grow * (geo.rz * geo.sinT + cardH / 2) + 18;
-      stage.style.setProperty('--bar-y', `${barY.toFixed(0)}px`);
+      // On a short window the lift gives way first, so the control bar stays on screen.
+      const barAt = (front) => {
+        const grow = CFG.persp / (CFG.persp - front) - 1;
+        return frontTop + cardH + grow * (geo.rz * geo.sinT + cardH / 2) + 18;
+      };
+      geo.front = CFG.front;
+      while (geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
+      stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
     }
 
     function pose() {
@@ -149,14 +177,23 @@ export default function Orbit({ stageRef, centreRef }) {
         const y = geo.rz * c * geo.sinT;
         // The front card is pushed toward the camera so it clearly leads the ring.
         const lead = Math.pow(Math.max(0, (c - 0.7) / 0.3), 2);
-        const z = geo.rz * geo.cosT * (c - 1) + hov[k] * 14 + CFG.front * lead;
-        cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg)`;
+        const z = geo.rz * geo.cosT * (c - 1) + hov[k] * 14 + geo.front * lead;
+        cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg) scale(${(1 - CFG.side * s * s).toFixed(3)})`;
         // Dim with depth. A back card that sits behind the hero copy goes almost
         // fully dark, so nothing on it competes with the text in front.
         let shade = CFG.shade * Math.pow((1 - c) / 2, 1.2);
+        let hidden = 0;
         if (c < 0) {
           const cover = Math.max(0, Math.min(1, (geo.copyHalf + 90 - Math.abs(x)) / 90));
-          shade += (CFG.behind - shade) * cover * Math.min(1, -c * 2);
+          hidden = cover * Math.min(1, -c * 2);
+          shade += (CFG.behind - shade) * hidden;
+        }
+        // A card behind the hero copy fades out whole, so the beams show through
+        // where a dark slab would otherwise sit behind the name.
+        const vis = 1 - CFG.ghost * hidden;
+        if (Math.abs(vis - lastVis[k]) > 0.004) {
+          lastVis[k] = vis;
+          cards[k].style.setProperty('--vis', vis.toFixed(3));
         }
         shades[k].style.opacity = (shade * (1 - hov[k])).toFixed(3);
         // Text on the back half is faded out completely: the cards there sit
@@ -356,6 +393,8 @@ export default function Orbit({ stageRef, centreRef }) {
         });
         lastCap.fill(-1);
         lastNear.fill(-1);
+        lastVis.fill(-1);
+        cards.forEach((c) => c.style.removeProperty('--vis'));
         shades.forEach((s) => {
           s.style.opacity = '';
         });
@@ -364,6 +403,8 @@ export default function Orbit({ stageRef, centreRef }) {
         });
         stage.style.removeProperty('--oy');
         front = -1;
+        clearTimeout(liveT);
+        delete region.dataset.live;
         region.dataset.ready = '';
         return;
       }
@@ -374,6 +415,11 @@ export default function Orbit({ stageRef, centreRef }) {
       }
       pose();
       region.dataset.ready = '';
+      // After the first fade-in, per-frame opacity changes must not be eased.
+      clearTimeout(liveT);
+      liveT = setTimeout(() => {
+        region.dataset.live = '';
+      }, 900);
       if (reduced()) return;
       speed = paused() ? 0 : 1;
       kick();
@@ -405,6 +451,7 @@ export default function Orbit({ stageRef, centreRef }) {
     }
     return () => {
       if (raf) cancelAnimationFrame(raf);
+      clearTimeout(liveT);
       ro.disconnect();
       io?.disconnect();
       region.removeEventListener('keydown', onKey);

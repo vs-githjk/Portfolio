@@ -21,55 +21,55 @@ export default function Hero() {
       <div className="hero-stage" ref={stage}>
         <div className="shield" aria-hidden="true" />
         <div className="centre" ref={centre}>
-          <div className="who">
-            <img
-              className="portrait"
-              src={hero.portrait.src}
-              srcSet={`${hero.portrait.src} 1x, ${hero.portrait.src2x} 2x`}
-              alt={hero.portrait.alt}
-              width="48"
-              height="48"
-              decoding="async"
-            />
-            <div className="who-text">
-              <span className="status">
-                <i aria-hidden="true" />
-                {hero.status}
-              </span>
-              <span className="where">{hero.locationNote}</span>
-            </div>
+          <img
+            className="portrait"
+            src={hero.portrait.src}
+            srcSet={`${hero.portrait.src} 1x, ${hero.portrait.src2x} 2x`}
+            alt={hero.portrait.alt}
+            width="160"
+            height="160"
+            decoding="async"
+          />
+          <div className="who-text">
+            <span className="status">
+              <i aria-hidden="true" />
+              {hero.status}
+            </span>
+            <span className="where">{hero.locationNote}</span>
           </div>
-          <h1 className="hero-name">
-            {first}
-            <span className="br">
-              <br />
-            </span>{' '}
-            {rest.join(' ')}
-          </h1>
-          <p className="identity">{hero.identity}</p>
-          <p className="identity-sub">{hero.identitySub}</p>
-          <p className="cred">
-            <span className="cred-short">{hero.credential}</span>
-            <span className="cred-long">{hero.credentialLong}</span>
-          </p>
-          <div className="actions">
-            {hero.actions
-              .filter((a) => a.href)
-              .map((a) => {
-                const Icon = ICONS[a.label];
-                const external = /^https?:/.test(a.href);
-                return (
-                  <a
-                    key={a.label}
-                    className={`btn${a.primary ? ' btn-pri' : ''}${Icon ? ' btn-icon' : ''}`}
-                    href={a.href}
-                    {...(Icon ? { 'aria-label': a.label, title: a.label } : {})}
-                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  >
-                    {Icon ? <Icon /> : a.label}
-                  </a>
-                );
-              })}
+          <div className="who-main">
+            <h1 className="hero-name">
+              {first}
+              <span className="br">
+                <br />
+              </span>{' '}
+              {rest.join(' ')}
+            </h1>
+            <p className="identity">{hero.identity}</p>
+            <p className="identity-sub">{hero.identitySub}</p>
+            <p className="cred">
+              <span className="cred-short">{hero.credential}</span>
+              <span className="cred-long">{hero.credentialLong}</span>
+            </p>
+            <div className="actions">
+              {hero.actions
+                .filter((a) => a.href)
+                .map((a) => {
+                  const Icon = ICONS[a.label];
+                  const external = /^https?:/.test(a.href);
+                  return (
+                    <a
+                      key={a.label}
+                      className={`btn${a.primary ? ' btn-pri' : ''}${Icon ? ' btn-icon' : ''}`}
+                      href={a.href}
+                      {...(Icon ? { 'aria-label': a.label, title: a.label } : {})}
+                      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    >
+                      {Icon ? <Icon /> : a.label}
+                    </a>
+                  );
+                })}
+            </div>
           </div>
         </div>
         <Orbit stageRef={stage} centreRef={centre} />

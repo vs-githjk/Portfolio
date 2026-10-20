@@ -203,32 +203,47 @@
   position: relative;
   z-index: 22;
   display: grid;
-  justify-items: center;
-  text-align: center;
-}
-
-.who {
-  display: flex;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'p t'
+    'm m';
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  column-gap: 18px;
+  row-gap: 20px;
+  justify-items: start;
+  text-align: left;
 }
 
+/* The portrait is a real element of the hero: 112px on a phone, about 160px
+   beside the name on a laptop. A thin electric-blue ring and one soft halo of the
+   same blue lift it off the dark ground; no glow beyond that. */
 .portrait {
-  width: 48px;
-  height: 48px;
+  grid-area: p;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid var(--hair-2);
-  box-shadow: var(--elev-1);
+  border: 1px solid color-mix(in srgb, var(--acc) 60%, transparent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--acc) 12%, transparent),
+    var(--elev-2);
+  background: var(--surface-2);
 }
 
 .who-text {
+  grid-area: t;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   text-align: left;
+}
+
+.who-main {
+  grid-area: m;
+  display: grid;
+  justify-items: start;
+  min-width: 0;
 }
 
 .status {
@@ -536,8 +551,6 @@
 .hero-stage .centre {
   padding-left: max(var(--pad), env(safe-area-inset-left, 0px));
   padding-right: max(var(--pad), env(safe-area-inset-right, 0px));
-  justify-items: start;
-  text-align: left;
   margin-bottom: 36px;
 }
 
@@ -620,15 +633,44 @@
     left: 50%;
     top: var(--oy);
     transform: translate(-50%, calc(-100% + var(--centre-off, 20px)));
-    width: min(100%, 760px);
+    width: min(100%, 900px);
     padding: 0;
-    justify-items: center;
-    text-align: center;
     margin: 0;
+    /* The portrait stands to the left of the name block, so the head and the
+       copy share one band of height and the ring below keeps its room. */
+    grid-template-columns: auto auto;
+    grid-template-areas:
+      'p t'
+      'p m';
+    justify-content: center;
+    align-items: start;
+    column-gap: clamp(24px, 3vw, 40px);
+    row-gap: 12px;
+  }
+
+  .hero-stage .portrait {
+    width: clamp(132px, 11.5vw, 164px);
+    height: clamp(132px, 11.5vw, 164px);
+    align-self: center;
+  }
+
+  .hero-stage .who-main {
+    max-width: 100%;
+  }
+
+  .hero-stage .cred {
+    max-width: none;
+  }
+
+  .hero-stage .who-text {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
   }
 
   .hero-stage .actions {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .hero-stage .hero-name {
@@ -696,8 +738,13 @@
     transition: opacity 0.6s var(--ease);
   }
 
+  /* --vis is written per frame for cards that sit behind the hero copy. */
   .orbit[data-ready] .card {
-    opacity: 1;
+    opacity: var(--vis, 1);
+  }
+
+  .orbit[data-live] .card {
+    transition: none;
   }
 
   .orbit-scene .card-shade,
@@ -748,8 +795,8 @@
     display: none;
   }
 
-  .who {
-    margin-bottom: 12px;
+  .hero-stage .centre {
+    row-gap: 8px;
   }
 }
 

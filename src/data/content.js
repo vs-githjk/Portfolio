@@ -65,11 +65,12 @@ export const nav = {
    badge on the PrismAI card, which says what it counts. */
 export const hero = {
   status: 'Available Jan 2027',
-  /* Studio headshot, shown as a 48px circle: 72px and 144px (2x) squares. The
-     600px and 1200px originals stay in public/ for the share card. */
+  /* Studio headshot: 180px and 360px (2x) squares, shown at about 160px beside
+     the name on a laptop and 112px on a phone. The 600px and 1200px originals
+     stay in public/ for the share card. */
   portrait: {
-    src: '/portrait-72.webp',
-    src2x: '/portrait-144.webp',
+    src: '/portrait-180.webp',
+    src2x: '/portrait-360.webp',
     alt: 'Vidyut Sriram, smiling, in a light blue polo',
   },
   headline: 'Vidyut Sriram',
@@ -80,7 +81,7 @@ export const hero = {
   /* Short form clears the side cards at 1440. Long form for row mode and
      anywhere with room. "1st place in four tracks" = Visa + Photon (LA Hacks
      AI Hackathon) + Real World + Data Science (Bitcamp). */
-  credential: 'Comcast · Sherlock AI · arXiv first author · Penn State CS ’26',
+  credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
   credentialLong:
     'Interned at Comcast and Sherlock AI · first author on an arXiv preprint · 1st place in four hackathon tracks in 2026 · Penn State CS, graduating Dec 2026',
   locationNote: 'State College, PA · open to relocate',
