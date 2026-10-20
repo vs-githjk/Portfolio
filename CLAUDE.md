@@ -28,7 +28,7 @@ Two rules encode the thesis visually:
 1. **Color is scarce, so it means something.** The base is warm graphite. One accent,
    brass (`--acc`), means exactly four things: the italic half of the name and of three
    headings, the primary action, an award, and the proof band plus the commit-graph
-   ramp. Mint (`--ok`) means available or live. Coral (`--bad`) is reserved for a
+   heatmap. Mint (`--ok`) means available or live. Coral (`--bad`) is reserved for a
    defect state and nothing uses it today. If you are about to add a gradient wash or a
    second accent, stop and ask first.
 
@@ -51,7 +51,7 @@ Two rules encode the thesis visually:
 | Proof | A full-bleed brass band of six numbers (the one loud moment) |
 | Experience | Where he has worked |
 | Builds | PrismAI flagship, six featured builds, the paper, four compact rows (Vidyut's order) |
-| Proof of work | GitHub commit graph + monthly ramp, the six wins, four verification links |
+| Proof of work | GitHub commit graph, the six wins (each hackathon win links to Devpost), four verification links |
 | Principles | How he thinks about building (2x2 cards) |
 | Value | What that is worth to you (hairline rows) |
 | Toolkit | The inventory, grouped chips |
@@ -84,12 +84,15 @@ recolors the sky. Do not add a second canvas.
 
 ## Proof of work (`components/ProofOfWork.jsx`)
 
-The commit graph is drawn from `src/data/github.json`, a snapshot written by
-`scripts/fetch-github.mjs` as the `prebuild` step (GraphQL if `GITHUB_TOKEN` is set,
-else the public contributions page, else the committed snapshot; it validates before
-overwriting and never fails the build offline). There are no runtime third-party calls.
-Every GitHub number on the page is computed from that JSON, never typed in. Running
-`npm run build` rewrites `github.json`; commit it when you want a fresher snapshot.
+The commit graph is drawn from a build-time snapshot. `scripts/fetch-github.mjs` (the
+`prebuild` step) writes `src/data/github.local.json`, which is gitignored (GraphQL if
+`GITHUB_TOKEN` is set, else the public contributions page; it validates first and never
+fails the build offline). The committed `src/data/github.json` is the fallback, so a plain
+build never dirties git. Copy `github.local.json` over `github.json` when you want a
+fresher committed snapshot. There are no runtime third-party calls. Every GitHub number
+on the page is computed from that JSON, never typed in. There is deliberately no monthly
+ramp: a chunk of the early PrismAI commits used an email GitHub does not link, so the
+months before May under-count his real work.
 
 ## Architecture rules
 
@@ -157,11 +160,14 @@ Search the repo for `TODO`:
 
 - Build dates and solo-or-team role lines for MVR, Vytal, Match Day, Terrametric
 - Match Day stack line, and which of Vytal's dates are still current
-- Compact-row stack and year cells (CinemaChat, TransitGuard, PaperTrail, AlgoQuest)
-- A silent PrismAI loop for the flagship panel (needs ffmpeg), and a Yinzone Devpost link
+- A silent PrismAI loop for the flagship panel (needs ffmpeg)
 - Live demo links for TransitGuard and PaperTrail; source links for the paper and MVR
-- Open yin.zone and betterbill.matmanna.dev in a browser before shipping the links
-- A fresh `public/og-card-v2.png` that matches the new look (the current one is the old design)
+- Yinzone "Live site" link: yin.zone is suspended (Oct 19 2026), so the link is hidden;
+  restore it when the domain serves the app. Open betterbill.matmanna.dev in a browser
+  before relying on it
+- Compact-row stacks and years come from the public repos (languages, creation month);
+  replace them with the real dates and stacks when known
+- `public/og-card-v3.jpg` is the link-preview card; re-render it when the headline numbers change
 
 ## Things deliberately left out
 
