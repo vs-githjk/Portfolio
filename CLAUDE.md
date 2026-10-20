@@ -85,7 +85,9 @@ FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`
   out whole (`--orbit-ghost`, written as `--vis`). "Behind the copy" is measured, not assumed:
   `measure()` reads the portrait's left edge and the name block's right end, and a card whose
   projected edge overlaps that span fades. A card is a thumbnail panel plus a caption panel; the
-  caption panel (glass, border, text) fades with `--cap`, so the back half reads as thumbnails
+  caption panel (glass, border, text) is shown or gone, never half there (`--cap` runs from 0 at
+  a depth of 0.5 to 1 at 0.7, so the side cards that rest two steps from the front read as
+  logo thumbnails, not as bright images over faint text), so the back half reads as thumbnails
   and never as empty boxes. `measure()` keeps every card at least
   16px inside the window at any width (it samples the ring's outer edge, yaw included) and, on a
   short window, eases the front lift until the control bar is on screen.
@@ -179,7 +181,10 @@ nav, buttons, badges and stack lines.
   thumbnail; the paper, TransitGuard and AlgoQuest use the finder's compositions, not
   screenshots. Never use a frame that shows personal info.
 - Breakpoints in use: 1100, 960, 760, 640, 560, 460, plus the ring's own
-  `(min-width: 960px) and (min-height: 640px)`. Reuse them; don't invent more.
+  `(min-width: 960px) and (min-height: 640px)`. Reuse them; don't invent more. Three
+  complements of those are allowed so a range has no overlap: 961, 761 and 561 (one above
+  the listed value), 959.98 (just under 960), and 1199 for the narrow-laptop ring (the
+  upper end of the 960 to 1199 band).
 - Type sizes use `clamp()` and are already fluid. Never add a media query for font size.
 - Animation state on a DOM node goes in a `data-*` attribute (`data-state`, `data-mode`,
   `data-ready`, `data-delay`), styled with attribute selectors.
@@ -233,15 +238,21 @@ Don't add these back without asking:
 
 ## Later rounds: layout rules worth keeping
 
-- Cards are as tall as their own content (`align-items: start`): a card that says less is
-  shorter, never padded with an empty band above its links. More builds is a centred flex
-  grid of one card size (4, 3, 2 or 1 per row via `--mini-per`); when the seventh card would
-  sit alone on a row (3 or 2 per row) it takes the whole row as a horizontal card.
+- Cards in a row share one height (`align-items: stretch`) so every row ends on one line;
+  the spare height lands above the stack, the "Read more" line and the links, which are
+  pinned to the card's foot. Opening "Read more" on one More-builds card makes its row
+  mates taller, never uneven. More builds is a centred flex grid of one card size (4, 3, 2
+  or 1 per row via `--mini-per`); when the seventh card would sit alone on a row (3 or 2 per
+  row) it takes the whole row as a horizontal card.
 - The PrismAI lead still grows (cover crop, left-aligned) when the story beside it is longer,
   so the left column ends on the same line; the paper's stack and links sit on the foot of
   its left column for the same reason.
 - Below 960px the four section links become a second row of the sticky nav (`--nav-h` is 104px
-  there, which `scroll-margin-top` reads), and the footer has a back-to-top link.
+  there, which `scroll-margin-top` reads), and the footer has a back-to-top link. On a phone
+  that bar slides away while the reader scrolls down and returns on the first scroll up
+  (`Nav.jsx` sets `data-hide`; keyboard focus inside it keeps it shown).
+- A nav link lands with the section heading about 24px under the bar: `.sec` subtracts its
+  own top padding (`--pad-top`) from `scroll-margin-top`.
 - `.reveal` hides only under `html.js`; `index.html` sets `js` and removes it after 4s if
   `useReveal` has not marked `<html data-reveal>`, so prerendered content is never stranded.
 - Mobile LCP (Lighthouse simulation) was 2.4 to 2.6s because the 85 KB bundle was requested
