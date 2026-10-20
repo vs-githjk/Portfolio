@@ -1,10 +1,12 @@
 // Build-time GitHub contribution snapshot. Runs in `prebuild`; never at runtime.
-// Writes src/data/github.json. If GitHub is unreachable or the parse looks wrong,
-// keeps the committed snapshot and exits 0 so the build never fails offline.
+// Writes src/data/github.local.json (gitignored), so a build never dirties the tree.
+// src/data/github.json is the committed fallback: if GitHub is unreachable or the
+// parse looks wrong, the build keeps it and exits 0 so it never fails offline.
 import { readFile, writeFile } from 'node:fs/promises';
 
 const USER = 'vs-githjk';
-const OUT = new URL('../src/data/github.json', import.meta.url);
+const OUT = new URL('../src/data/github.local.json', import.meta.url);
+const COMMITTED = new URL('../src/data/github.json', import.meta.url);
 const TIMEOUT_MS = 8000;
 
 async function get(url, opts = {}) {
@@ -76,9 +78,9 @@ try {
   if (!valid(r)) throw new Error(`parse check failed (days=${r.days.length}, total=${r.total})`);
   const out = { user: USER, fetchedAt: new Date().toISOString(), ...r, ...stats(r.days) };
   await writeFile(OUT, JSON.stringify(out) + '\n');
-  console.log(`github.json: ${out.total} contributions, ${out.days.length} days (${out.source})`);
+  console.log(`github.local.json: ${out.total} contributions, ${out.days.length} days (${out.source})`);
 } catch (err) {
-  try { await readFile(OUT); console.warn(`github.json: kept committed snapshot (${err.message})`); }
+  try { await readFile(COMMITTED); console.warn(`github.json: kept committed snapshot (${err.message})`); }
   catch { console.warn(`github.json: no snapshot and fetch failed (${err.message}); section should hide`); }
   process.exitCode = 0;
 }

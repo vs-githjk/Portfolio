@@ -1,9 +1,11 @@
 import { proofOfWork } from '../data/content';
-import github from '../data/github.json';
 import Heatmap from './Heatmap';
-import Ramp from './Ramp';
 import { StarIcon } from './Icons';
-import { MONTHS } from '../lib/months';
+
+/* The build writes a fresh snapshot to github.local.json (gitignored); the
+   committed github.json is the fallback, so a plain build never dirties git. */
+const snaps = import.meta.glob('../data/github*.json', { eager: true, import: 'default' });
+const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'];
 
 /* Verify him in one click: the commit graph (a build-time snapshot, no runtime
    calls), the six wins, and four links to where each claim can be checked.
@@ -32,23 +34,17 @@ function build() {
     const key = d.date.slice(0, 7);
     totals[key] = (totals[key] || 0) + d.count;
   });
-  const keys = Object.keys(totals).sort().slice(-12);
-  const ramp = keys.map((key) => ({ key, count: totals[key] }));
-  const current = ramp[ramp.length - 1];
+  const key = Object.keys(totals).sort().pop();
   return {
     t,
-    ramp,
-    current,
-    first: ramp[0],
+    current: { key, count: totals[key] },
     updated: `${t.month} ${t.day}, ${t.year}`,
   };
 }
 
 export default function ProofOfWork() {
   const g = proofOfWork.github;
-  const { t, ramp, current, updated } = build();
-  const rampFrom = `${MONTHS[Number(ramp[0].key.slice(5, 7)) - 1]} ${ramp[0].key.slice(0, 4)}`;
-  const rampTo = `${MONTHS[Number(current.key.slice(5, 7)) - 1]} ${current.key.slice(0, 4)}`;
+  const { t, current, updated } = build();
 
   return (
     <section className="sec" id="verify">
@@ -93,11 +89,6 @@ export default function ProofOfWork() {
               </div>
             </div>
             <Heatmap days={github.days} label={fill(g.graphLabel, { n: fmt(github.total) })} />
-            <div className="pow-top">
-              <span className="eyebrow">{fill(g.ramp.eyebrow, { from: rampFrom, to: rampTo })}</span>
-              <span className="eyebrow pow-hide-m">{fill(g.ramp.note, { month: t.month, n: t.day })}</span>
-            </div>
-            <Ramp totals={ramp} cellLabel={g.ramp.cellLabel} />
             <div className="pow-foot">
               <span>
                 {g.note} {g.updated} {updated}
@@ -128,7 +119,13 @@ export default function ProofOfWork() {
                 <li key={w.title}>
                   <StarIcon />
                   <div>
-                    <b>{w.title}</b>
+                    {w.href ? (
+                      <a href={w.href} target="_blank" rel="noopener noreferrer">
+                        <b>{w.title}</b>
+                      </a>
+                    ) : (
+                      <b>{w.title}</b>
+                    )}
                     <span>{w.event}</span>
                   </div>
                 </li>
