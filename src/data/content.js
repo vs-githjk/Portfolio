@@ -316,7 +316,7 @@ export const builds = {
     role: 'I wrote 1,120 of its 1,352 commits, starting with the first one.',
     /* Shipped and live. */
     body: [
-      'I took PrismAI from an empty repo to a **live beta with 14 users across isolated workspaces and 100+ meetings analyzed** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
+      'I took PrismAI from an empty repo to a **live beta** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
       'Hybrid search (pgvector plus BM25, fused with reciprocal rank fusion) answers questions across every past meeting, and an MCP connector brings that context into Claude and ChatGPT. Tenant isolation is enforced in CI: a route-coverage test fails the build for any unregistered route, and a cross-tenant attack suite blocks CI.',
     ],
     /* In development: always rendered under this label. */
@@ -351,7 +351,7 @@ export const builds = {
         {
           image: '/builds/prismai-agents.webp',
           alt: 'PrismAI after the call: a health score with clarity, participation and outcomes, and action items with owners checked off',
-          caption: 'Twelve agents read every meeting at once.',
+          caption: 'Twelve agents work through every meeting.',
         },
         {
           image: '/builds/prismai-standin.webp',
@@ -386,7 +386,7 @@ export const builds = {
       awards: ['1st · Visa track', '1st · Photon, Best Voice Agent'],
       role: 'I owned bill intelligence: the deterministic rules engine, the photo and text bill readers, the API, and Sentry monitoring of every AI call.',
       body: [
-        'We took **1st place in the Visa track** and **1st place for Photon’s Best Voice Agent**, the agent that calls the billing office over a Photon line once you approve the script. The model only transcribes the bill; a deterministic rules engine computes every flag and dollar in integer cents, each tied to its source. On test bills seeded with errors it caught **22 of 22, with zero false flags on clean bills**.',
+        'We took **1st place in the Visa track** and **1st place for Photon’s Best Voice Agent**, the agent that calls the billing office over a Photon line once you approve the script. The model only transcribes the bill; a deterministic rules engine computes every flag and dollar in integer cents, each tied to its source. On test bills seeded with errors it caught **every one, with zero false flags on clean bills**.',
       ],
       metrics: [
         { value: '22 of 22', label: 'seeded billing errors caught,\nzero false flags on clean bills' },
@@ -416,7 +416,7 @@ export const builds = {
       awards: [],
       role: 'Solo build: every commit in the repo is mine.',
       body: [
-        'MVR captures a codebase as an immutable, content-addressed snapshot, and seven deterministic analyzers turn it into a system model where every claim points to the exact evidence behind it. Anything they cannot prove is recorded as unknown, never guessed. On its own evaluation over synthetic codebases it made **zero false-certainty claims**, with tenant isolation enforced by forced Postgres row-level security.',
+        'MVR captures a codebase as an immutable, content-addressed snapshot, and seven deterministic analyzers turn it into a system model where every claim points to the exact evidence behind it. Anything they cannot prove is recorded as unknown, never guessed. On its own evaluation over synthetic codebases it **never claimed certainty it could not prove**, with tenant isolation enforced by forced Postgres row-level security.',
       ],
       metrics: [
         { value: '0', label: 'false-certainty claims\non its own evaluation' },
@@ -490,7 +490,7 @@ export const builds = {
       awards: [], // Not in the published top 3 (Technical.ly, Oct 8 2026). No badge.
       role: 'I built the AI chat: voice, cited answers, what-if reruns of the real scorer, and a guard that drops any sentence with a number that is not in the facts.',
       body: [
-        'Yinzone scores **about 142,000 city parcels** on 53 indicators drawn from 134 public datasets. Deterministic code decides every score and every legal status; AI only explains, and when the site-fit model is unsure, it flags a human instead of guessing.',
+        'Yinzone scores the city’s parcels on indicators drawn from 134 public datasets. Deterministic code decides every score and every legal status; AI only explains, and when the site-fit model is unsure, it flags a human instead of guessing.',
       ],
       metrics: [
         { value: '~142,000', label: 'Pittsburgh parcels scored\non 53 indicators' },
@@ -515,10 +515,10 @@ export const builds = {
       when: 'Apr 2026 · Bitcamp 2026, University of Maryland',
       oneLiner:
         'Tells farmers which fields are heading into drought stress, and what irrigating them will cost and save.',
-      awards: ['1st · Real World track (Ambrook)', '1st · Data Science track', '3rd · Open Source'],
+      awards: ['2× 1st · Bitcamp 2026'],
       role: 'The idea was mine, and I led the build: system orchestration, model training, the grounded RAG chat and the stress metrics. I also led the live pitch to the judges.',
       body: [
-        'Three prizes at Bitcamp 2026, including **1st in the Real World track (Ambrook)** and **1st in Data Science**. It scores drought stress per field, forecasts it 14 days ahead with XGBoost, and writes an irrigation prescription with cost and savings projections that a farmer can simulate before committing. A RAG agent grounds its answers in Iowa and USDA agronomy documents, and alerts go out by SMS for farmers who never open a dashboard.',
+        'Three prizes at Bitcamp 2026, including **1st in the Real World track (Ambrook)** and **1st in the Intermediate Data Science track**. It scores drought stress per field, forecasts it 14 days ahead with XGBoost, and writes an irrigation prescription with cost and savings projections that a farmer can simulate before committing. A RAG agent grounds its answers in Iowa and USDA agronomy documents, and alerts go out by SMS for farmers who never open a dashboard.',
       ],
       metrics: [
         { value: '14-day', label: 'drought-stress forecast\nfor every field' },
@@ -544,20 +544,18 @@ export const builds = {
     title: 'Tool-guided repair for LLM-generated C',
     fullTitle: 'Tool-Guided Retrieval-Augmented Repair for Securing LLM-Generated C Code',
     descriptor: 'GCC · CodeQL · KLEE',
-    when: 'Sep 2025 to Jul 2026',
+    when: 'Sep 2025 to Jul 2026 · 2nd Place, Engineering, Penn State Undergraduate Exhibition 2026',
     oneLiner:
       'A repair loop that does not accept a model’s C code until the compiler and a static analyzer stop objecting.',
     awards: ['2nd · Penn State Exhibition 2026'],
-    awardsLong: '2nd Place, Engineering · Penn State Undergraduate Exhibition 2026',
     role: 'First author, with Saatvik Pradhan and Suman Saha.',
     body: [
       'Without help, the models we tested failed to compile up to 46% of their C programs and left security defects in up to 49%. My loop feeds GCC and CodeQL findings back to the model for up to three repair rounds, guided by a growing library of past fixes ranked by how far each got through GCC, CodeQL and KLEE symbolic execution.',
-      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463 (83.7% fewer)**, and nearly halved DeepSeek Coder 1.3B’s compile failures, from 42% to 22%, while its security defects fell from 35% to 15%.',
+      'Across 5,000 C tasks it **cut CodeLlama 7B’s CodeQL errors from 15,088 to 2,463 **, and nearly halved DeepSeek Coder 1.3B’s compile failures while its security defects fell from 35% to 15%.',
     ],
     metrics: [
       { value: '83.7%', label: 'fewer CodeQL errors in\nCodeLlama 7B’s C, 5,000 tasks' },
       { value: '42% → 22%', label: 'compile failures for\nDeepSeek Coder 1.3B' },
-      { value: '49% → 19%', label: 'security defect rate,\nCodeLlama 7B' },
     ],
     /* Logo-led thumbnail (finder's typeset card with the repair-loop
        diagram). Same file as the ring card. */
@@ -971,7 +969,7 @@ export const proofOfWork = {
         href: 'https://devpost.com/software/terrametric',
       },
       {
-        title: 'Terrametric · 1st, Data Science track',
+        title: 'Terrametric · 1st, Intermediate Data Science track',
         event: 'Bitcamp 2026 · Apr 2026',
         href: 'https://devpost.com/software/terrametric',
       },

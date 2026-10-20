@@ -1,4 +1,3 @@
-import Badge from './Badge';
 import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
@@ -18,7 +17,6 @@ export default function ResearchRow({ item }) {
           tile={item.tile}
           tilt={3}
           sizes="(min-width: 960px) 440px, 92vw"
-          badges={<Badge kind="win">{item.awardsLong}</Badge>}
         />
         <Metrics items={item.metrics} />
       </div>
