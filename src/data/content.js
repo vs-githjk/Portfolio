@@ -578,7 +578,7 @@ export const value = {
       claim: 'I care most about the gap between "works in the demo" and "works."',
       receipts: [
         'My repair loop cut CodeLlama 7B’s CodeQL errors **83.7%** across 5,000 C tasks.',
-        'In PrismAI, a **cross-tenant attack suite blocks CI**, so a cross-tenant leak fails the build before it ships.',
+        'In PrismAI, a **cross-tenant attack suite blocks CI**, so a data leak between customers fails the build before it ships.',
       ],
     },
     {
