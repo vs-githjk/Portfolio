@@ -1,46 +1,40 @@
-import Badge from './Badge';
+import MediaBadges from './MediaBadges';
+import Media from './Media';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
 
-/* One featured build. The anchor id matches the deck slide id. */
-export default function BuildCard({ item }) {
+/* One featured build. The anchor id matches the ring card id. */
+export default function BuildCard({ item, delay }) {
   return (
-    <article className="build reveal" id={`build-${item.id}`}>
+    <article className="build reveal" id={`build-${item.id}`} data-delay={delay}>
       <div className="build-media">
-        <img
-          src={item.media.image}
-          alt={item.media.alt}
-          width="1600"
-          height="1000"
-          loading="lazy"
-          decoding="async"
+        <Media
+          image={item.media?.image}
+          alt={item.media?.alt}
+          tile={item.tile}
+          tilt={4}
+          sizes="(min-width: 800px) 500px, 92vw"
+          badges={<MediaBadges item={item} />}
         />
       </div>
       <div className="build-body">
-        {item.awards.length > 0 && (
-          <div className="build-awards">
-            {item.awards.map((a) => (
-              <Badge key={a}>{a}</Badge>
-            ))}
-          </div>
-        )}
-        <div className="build-kind">
+        <div className="kind">
           <span className="eyebrow">{item.kind}</span>
           <span className="eyebrow">{item.when}</span>
         </div>
         <h3 className="build-title">
           {item.title} <span>{item.descriptor}</span>
         </h3>
-        <p className="build-one">{item.oneLiner}</p>
+        <p className="one">{item.oneLiner}</p>
         {item.body.map((p) => (
-          <p className="build-text" key={p.slice(0, 24)}>
+          <p className="text" key={p.slice(0, 24)}>
             <Rich text={p} />
           </p>
         ))}
-        {item.role && <p className="build-role">{item.role}</p>}
+        {item.role && <p className="role">{item.role}</p>}
         <Metrics items={item.metrics} />
-        {item.stack && <p className="build-stack">{item.stack}</p>}
+        {item.stack && <p className="stack">{item.stack}</p>}
         <LinkRow links={item.links} />
       </div>
     </article>

@@ -8,10 +8,8 @@ export default function Value() {
     <section className="sec" id="value">
       <div className="wrap">
         <div className="sec-head reveal">
-          <div>
-            <span className="eyebrow">{value.eyebrow}</span>
-            <h2>{value.heading}</h2>
-          </div>
+          <span className="eyebrow">{value.eyebrow}</span>
+          <h2>{value.heading}</h2>
         </div>
         <div className="val">
           {value.claims.map((c) => (

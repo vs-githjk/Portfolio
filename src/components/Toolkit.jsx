@@ -1,17 +1,15 @@
 import { toolkit } from '../data/content';
 
-/* Grouped chips, no color, no levels. */
+/* Grouped chips: no color, no levels, nobody is 87% at Python. */
 export default function Toolkit() {
   return (
     <section className="sec" id="toolkit">
       <div className="wrap">
         <div className="sec-head reveal">
-          <div>
-            <span className="eyebrow">{toolkit.eyebrow}</span>
-            <h2>
-              {toolkit.heading} <em>{toolkit.headingEm}</em>
-            </h2>
-          </div>
+          <span className="eyebrow">{toolkit.eyebrow}</span>
+          <h2>
+            {toolkit.heading} <em>{toolkit.headingEm}</em>
+          </h2>
         </div>
         <div className="tk">
           {toolkit.groups.map((g) => (

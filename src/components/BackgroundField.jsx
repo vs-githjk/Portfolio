@@ -1,181 +1,218 @@
 import { useEffect, useRef } from 'react';
+import { beamFade } from '../lib/beamFade';
 
-/* The one WebGL layer: a warm starfield. Raw WebGL2, no dependencies: one
-   fullscreen triangle, a fragment shader, no attributes, no textures.
+/* The vertical light-beam field, on two 2D canvases (no WebGL, no dependency).
 
-   A faint nebula haze (brightest top-right, behind the hero deck) plus three
-   star layers that drift with scroll at different speeds, so the page has
-   parallax without moving a single piece of content. Rare stars carry a soft
-   four-point flare. Colors come from tokens.css at mount.
+   Beams: a dozen soft vertical columns of indigo, blue and violet light that
+   cluster toward the centre, as if from one source above the name. Each beam is
+   rendered ONCE into its own offscreen canvas (the blur is applied there), then
+   composited per frame with 'lighter' and a slowly breathing globalAlpha. So a
+   frame is a dozen drawImage calls and no blur: about 24 fps, a few percent of
+   one core. When the filter property is missing (Safari before 18) each beam is
+   masked with a horizontal gradient instead of blurred.
 
-   Cost control: backing store is CSS size x min(dpr, 1.5) x 0.7 (smaller on
-   phones), 30 fps, paused while the tab is hidden or the context is lost,
-   never created under prefers-reduced-motion or without WebGL2 (the static CSS
-   layer stays). */
+   Stars: one canvas, drawn once.
 
-const VERT = `#version 300 es
-void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);gl_Position=vec4(p*2.-1.,0.,1.);}`;
+   Cost control: backing store is 1x CSS pixels (the light is soft by design),
+   the loop stops when the layer has faded out after the first screen, when the
+   tab is hidden, and under prefers-reduced-motion (drawn once, no shimmer).
+   Positions are seeded, so the layout is the same on every load. Parallax and
+   the fade are CSS, driven by --bg-y and --bg-fade set in Background.jsx. */
 
-const FRAG = `#version 300 es
-precision mediump float; out vec4 o;
-uniform vec2 uRes; uniform float uT,uScroll,uDim,uHero; uniform vec3 uInk,uWarm,uAcc,uStar;
-float h21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
-  return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}
-float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<3;i++){v+=a*vn(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
-/* one star layer: hashed point per cell, soft core, twinkle, rare 4-point flare */
-vec4 stars(vec2 uv,float t,float dens,float r,float flare){
-  vec2 id=floor(uv),f=fract(uv);vec4 s=vec4(0.);
-  for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
-    vec2 o=vec2(float(x),float(y));vec2 c=id+o;
-    float a=h21(c),b=h21(c+7.7),g=h21(c+3.3);
-    if(a>dens)continue;
-    vec2 pos=o+vec2(b,g)-f; float d=length(pos);
-    float tw=.7+.3*sin(t*(.6+a*8.)+b*40.);
-    float core=smoothstep(r,0.,d);
-    float halo=smoothstep(r*5.,0.,d)*.12;
-    float fl=flare*step(a,dens*.18)*(max(0.,1.-abs(pos.x)*22.)*max(0.,1.-abs(pos.y)*2.2)+max(0.,1.-abs(pos.y)*22.)*max(0.,1.-abs(pos.x)*2.2))*.35;
-    float gold=step(.78,g);
-    s+=vec4((core+halo+fl)*tw*(.4+.6*b),gold,0.,0.);
-  }
-  return s;
-}
-void main(){
-  vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;
-  float t=uT;
-  vec2 p=uv*1.7+vec2(.4,.2)+vec2(t*.008,-uScroll*.00012);
-  float n=smoothstep(.30,.85,fbm(p));
-  vec2 ctr=vec2(.46+.05*sin(t*.07),.26+.04*cos(t*.05));
-  float spot=1.-smoothstep(.1,1.15+.35*uHero,length((uv-ctr)*vec2(1.,1.35)));
-  vec3 c=mix(uInk,uWarm*1.9,n*(.7+1.1*spot)*uDim*(1.+.55*uHero));
-  c=mix(c,uAcc,n*spot*.13*uDim*(1.+.9*uHero));
-  vec4 s=vec4(0.);
-  s+=stars(uv*26.+vec2(0.,uScroll*.0005),t,.09,.07,0.)*.35;
-  s+=stars(uv*13.+vec2(3.1,uScroll*.0011),t,.08,.06,.6)*.65;
-  s+=stars(uv*6.5+vec2(9.3,uScroll*.0020),t,.085,.045,1.)*1.1;
-  float lum=min(s.x,1.4)*uDim*(.55+.45*spot);
-  vec3 sc=mix(uStar,uAcc,clamp(s.y,0.,1.)*.9);
-  c+=sc*lum*1.1;
-  o=vec4(c,1.);
-}`;
+const FRAME_MS = 40; // about 24 fps
+const read = (css, name) =>
+  css
+    .getPropertyValue(name)
+    .split(',')
+    .map((v) => parseInt(v, 10));
 
-const FRAME_MS = 1000 / 30;
-
-function readToken(css, name) {
-  const h = css.getPropertyValue(name).trim().replace('#', '');
-  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+function seeded(start) {
+  let s = start;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
 }
 
 export default function BackgroundField({ onReady }) {
-  const ref = useRef(null);
+  const beamsRef = useRef(null);
+  const starsRef = useRef(null);
 
   useEffect(() => {
-    const cv = ref.current;
+    const beams = beamsRef.current;
+    const stars = starsRef.current;
+    const ctx = beams.getContext('2d');
+    const sctx = stars.getContext('2d');
+    if (!ctx || !sctx) return undefined;
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (rm.matches) return undefined;
-    const gl = cv.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'low-power' });
-    if (!gl) return undefined;
-
-    const compile = (type, src) => {
-      const sh = gl.createShader(type);
-      gl.shaderSource(sh, src);
-      gl.compileShader(sh);
-      return gl.getShaderParameter(sh, gl.COMPILE_STATUS) ? sh : null;
-    };
-    const vs = compile(gl.VERTEX_SHADER, VERT);
-    const fs = compile(gl.FRAGMENT_SHADER, FRAG);
-    if (!vs || !fs) return undefined;
-    const prog = gl.createProgram();
-    gl.attachShader(prog, vs);
-    gl.attachShader(prog, fs);
-    gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return undefined;
-    gl.useProgram(prog);
-
     const css = getComputedStyle(document.documentElement);
-    const U = (n) => gl.getUniformLocation(prog, n);
-    gl.uniform3fv(U('uInk'), readToken(css, '--ink'));
-    gl.uniform3fv(U('uWarm'), readToken(css, '--surface-2'));
-    gl.uniform3fv(U('uAcc'), readToken(css, '--acc'));
-    gl.uniform3fv(U('uStar'), readToken(css, '--text'));
-    const uRes = U('uRes');
-    const uT = U('uT');
-    const uDim = U('uDim');
-    const uScroll = U('uScroll');
-    const uHero = U('uHero');
+    const HUES = ['--beam-a', '--beam-b', '--beam-c'].map((n) => read(css, n));
+    const STAR_HUES = ['--star-a', '--star-b'].map((n) => read(css, n));
+    const canFilter = 'filter' in ctx;
 
-    const small = window.innerWidth < 720;
-    const SCALE = small ? 0.6 : 0.7;
-    const DPR = Math.min(window.devicePixelRatio || 1, small ? 1 : 1.5);
-    const size = () => {
-      cv.width = Math.round(window.innerWidth * DPR * SCALE);
-      cv.height = Math.round(window.innerHeight * DPR * SCALE);
-      gl.viewport(0, 0, cv.width, cv.height);
-      gl.uniform2f(uRes, cv.width, cv.height);
-    };
-    size();
-    window.addEventListener('resize', size, { passive: true });
-
+    let list = [];
+    let bw = 0;
+    let bh = 0;
     let raf = 0;
     let timer = 0;
     let running = false;
-    const t0 = performance.now();
-    const frame = (now) => {
-      const y = window.scrollY;
-      gl.uniform1f(uT, (now - t0) / 1000);
-      gl.uniform1f(uDim, 1 - 0.5 * Math.min(1, y / 900)); // settles once you scroll into the reading
-      gl.uniform1f(uHero, 1 - Math.min(1, y / 700)); // the nebula behind the hero deck is brightest at the top
-      gl.uniform1f(uScroll, y);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-    };
-    // A frame is requested only when one is due (30 fps), not every 16 ms.
-    const draw = (now) => {
+    let visible = true;
+    let builtW = -1;
+    let builtH = -1;
+
+    function build() {
+      bw = window.innerWidth;
+      bh = window.innerHeight;
+      builtW = bw;
+      builtH = bh;
+      beams.width = bw;
+      beams.height = bh;
+      const rnd = seeded(11);
+      const count = Math.max(10, Math.round(bw / 84));
+      const fadeTo = Math.round(bh * 0.86); // beams die out before the first screen ends
+      list = [];
+      for (let i = 0; i < count; i++) {
+        const u = (i + 0.5) / count;
+        const x = (u + (rnd() - 0.5) * (1 / count) * 1.6) * bw;
+        const centre = 1 - Math.abs(u - 0.5) * 2; // 1 at the centre, 0 at the edges
+        const haze = rnd() < 0.3; // a few wide soft beams carry the atmosphere
+        const w = haze ? 140 + rnd() * 160 : 18 + rnd() * 72 * (0.6 + 0.4 * centre);
+        const hue = HUES[Math.floor(rnd() * HUES.length)];
+        const a = (haze ? 0.16 + rnd() * 0.12 : 0.3 + rnd() * 0.4) * (0.5 + 0.5 * centre);
+        const blur = haze ? 26 + rnd() * 18 : 3 + rnd() * 9;
+        const pad = Math.ceil(blur * 3);
+        const c = document.createElement('canvas');
+        c.width = Math.round(w + pad * 2);
+        c.height = fadeTo;
+        const g = c.getContext('2d');
+        const grad = g.createLinearGradient(0, 0, 0, fadeTo);
+        const rgb = `${hue[0]},${hue[1]},${hue[2]}`;
+        grad.addColorStop(0, `rgba(${rgb},1)`);
+        grad.addColorStop(0.28, `rgba(${rgb},0.7)`);
+        grad.addColorStop(0.62, `rgba(${rgb},0.22)`);
+        grad.addColorStop(1, `rgba(${rgb},0)`);
+        g.fillStyle = grad;
+        if (canFilter) {
+          g.filter = `blur(${blur.toFixed(0)}px)`;
+          g.fillRect(pad, -pad, w, fadeTo + pad);
+        } else {
+          g.fillRect(pad, -pad, w, fadeTo + pad);
+          const edge = g.createLinearGradient(0, 0, c.width, 0);
+          edge.addColorStop(0, 'rgba(0,0,0,0)');
+          edge.addColorStop(0.5, 'rgba(0,0,0,1)');
+          edge.addColorStop(1, 'rgba(0,0,0,0)');
+          g.globalCompositeOperation = 'destination-in';
+          g.fillStyle = edge;
+          g.fillRect(0, 0, c.width, fadeTo);
+        }
+        list.push({ x: x - w / 2 - pad, img: c, a, phase: rnd() * Math.PI * 2, speed: 0.2 + rnd() * 0.4 });
+      }
+      draw(0);
+    }
+
+    function draw(t) {
+      ctx.clearRect(0, 0, bw, bh);
+      ctx.globalCompositeOperation = 'lighter';
+      const s = t / 1000;
+      const still = rm.matches;
+      for (const b of list) {
+        ctx.globalAlpha = b.a * (still ? 1 : 0.78 + 0.22 * Math.sin(s * b.speed + b.phase));
+        ctx.drawImage(b.img, b.x, 0);
+      }
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function drawStars() {
+      const d = Math.min(1.5, window.devicePixelRatio || 1);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      stars.width = Math.round(w * d);
+      stars.height = Math.round(h * d);
+      sctx.setTransform(d, 0, 0, d, 0, 0);
+      const rnd = seeded(7);
+      const count = Math.round(w * h * 0.00016);
+      for (let i = 0; i < count; i++) {
+        const x = rnd() * w;
+        const y = rnd() * h;
+        const r = 0.4 + rnd() * 1.2;
+        const a = 0.18 + rnd() * 0.6;
+        const c = rnd() < 0.3 ? STAR_HUES[1] : STAR_HUES[0];
+        sctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(2)})`;
+        sctx.beginPath();
+        sctx.arc(x, y, r, 0, Math.PI * 2);
+        sctx.fill();
+      }
+    }
+
+    // A frame is requested only when one is due, not every display refresh.
+    function loop(now) {
       if (!running) return;
-      frame(now);
+      draw(now);
       const wait = Math.max(0, FRAME_MS - (performance.now() - now));
-      timer = setTimeout(() => {
-        raf = requestAnimationFrame(draw);
+      timer = window.setTimeout(() => {
+        raf = requestAnimationFrame(loop);
       }, wait);
-    };
-    const start = () => {
-      if (running) return;
+    }
+    function start() {
+      if (running || !visible || document.hidden || rm.matches) return;
       running = true;
-      raf = requestAnimationFrame(draw);
-    };
-    const stop = () => {
+      raf = requestAnimationFrame(loop);
+    }
+    function stop() {
       running = false;
       clearTimeout(timer);
       cancelAnimationFrame(raf);
+    }
+
+    const onScroll = () => {
+      const v = beamFade(window.scrollY, window.innerHeight) > 0.01;
+      if (v === visible) return;
+      visible = v;
+      if (v) start();
+      else stop();
     };
     const onVisibility = () => (document.hidden ? stop() : start());
-    const onMotion = (e) => {
-      if (e.matches) {
-        stop();
-        cv.style.display = 'none';
-      }
-    };
-    // A lost GPU context stops the loop and falls back to the static sky.
-    const onLost = (e) => {
-      e.preventDefault();
+    const onMotion = () => {
       stop();
-      cv.style.display = 'none';
+      draw(0);
+      start();
     };
-    document.addEventListener('visibilitychange', onVisibility);
-    rm.addEventListener('change', onMotion);
-    cv.addEventListener('webglcontextlost', onLost);
+    let rsz = 0;
+    const onResize = () => {
+      clearTimeout(rsz);
+      rsz = window.setTimeout(() => {
+        // Phone URL bars change the height on every scroll; only a real change rebuilds.
+        if (window.innerWidth === builtW && Math.abs(window.innerHeight - builtH) < 150) return;
+        build();
+        drawStars();
+      }, 120);
+    };
 
-    frame(performance.now());
+    build();
+    drawStars();
+    visible = beamFade(window.scrollY, window.innerHeight) > 0.01;
     onReady?.();
     start();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
+    document.addEventListener('visibilitychange', onVisibility);
+    rm.addEventListener('change', onMotion);
 
     return () => {
       stop();
-      window.removeEventListener('resize', size);
+      clearTimeout(rsz);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
       document.removeEventListener('visibilitychange', onVisibility);
       rm.removeEventListener('change', onMotion);
-      cv.removeEventListener('webglcontextlost', onLost);
     };
   }, [onReady]);
 
-  return <canvas ref={ref} className="bg-canvas" />;
+  return (
+    <>
+      <canvas ref={beamsRef} className="bg-beams" />
+      <canvas ref={starsRef} className="bg-stars" />
+    </>
+  );
 }

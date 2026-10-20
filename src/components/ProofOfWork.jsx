@@ -50,12 +50,10 @@ export default function ProofOfWork() {
     <section className="sec" id="verify">
       <div className="wrap">
         <div className="sec-head reveal">
-          <div>
-            <span className="eyebrow">{proofOfWork.eyebrow}</span>
-            <h2>
-              {proofOfWork.heading} <em>{proofOfWork.headingEm}</em>
-            </h2>
-          </div>
+          <span className="eyebrow">{proofOfWork.eyebrow}</span>
+          <h2>
+            {proofOfWork.heading} <em>{proofOfWork.headingEm}</em>
+          </h2>
           <p>{proofOfWork.intro}</p>
         </div>
 

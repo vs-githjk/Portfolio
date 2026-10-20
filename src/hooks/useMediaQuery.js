@@ -1,22 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
-/** Live `matchMedia` match. Safe to call during render; updates on change. */
+/** Live `matchMedia` match. The server (and the hydration pass) always read
+    `false`, so the prerendered HTML and the first client render agree; React then
+    re-renders with the real value. */
 export function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() =>
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia(query).matches
-      : false
+  const subscribe = useCallback(
+    (notify) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener('change', notify);
+      return () => mq.removeEventListener('change', notify);
+    },
+    [query]
   );
-
-  useEffect(() => {
-    const mq = window.matchMedia(query);
-    const onChange = () => setMatches(mq.matches);
-    onChange();
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, [query]);
-
-  return matches;
+  const getSnapshot = useCallback(() => window.matchMedia(query).matches, [query]);
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
 export const useReducedMotion = () => useMediaQuery('(prefers-reduced-motion: reduce)');

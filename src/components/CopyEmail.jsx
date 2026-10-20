@@ -20,7 +20,7 @@ export default function CopyEmail() {
 
   return (
     <>
-      <button type="button" className="copy" data-state={done ? 'done' : 'idle'} onClick={copy}>
+      <button type="button" className="btn copy" data-state={done ? 'done' : 'idle'} onClick={copy}>
         {done ? contact.copiedLabel : contact.copyLabel}
       </button>
       <span className="sr" role="status">
