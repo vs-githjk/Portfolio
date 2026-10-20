@@ -34,14 +34,20 @@ function posOf(n, view) {
   return n === view.prev && rel === N - 1 ? 'out' : 'hid';
 }
 
-/* The award badge shows in the caption row on wide cards and over the corner
-   of the screenshot on phones, so the card height never depends on it. Only
-   one of the two is displayed at a time. */
+/* The badge is an award (brass star) or, where there is none, a live-status
+   receipt (check). It sits beside the title on wide cards and under the
+   one-liner on phones; it is never drawn over the screenshot. */
+function SlideBadge({ slide }) {
+  if (slide.award) return <Badge>{slide.award}</Badge>;
+  if (slide.status) return <Badge variant="outcome">{slide.status}</Badge>;
+  return null;
+}
+
 function Caption({ slide, k }) {
   return (
     <span className="deck-cap">
       <b>{slide.title}</b>
-      {slide.award && <Badge>{slide.award}</Badge>}
+      <SlideBadge slide={slide} />
       <span className="deck-line">{slide.oneLiner}</span>
       <span className="deck-cta">{carousel.slideCta} →</span>
       <span className="deck-idx" aria-hidden="true">
@@ -65,11 +71,6 @@ function Shot({ slide, k }) {
         />
       ) : (
         <PaperTile className="deck-tile" />
-      )}
-      {slide.award && (
-        <span className="deck-shot-badge">
-          <Badge>{slide.award}</Badge>
-        </span>
       )}
     </span>
   );
@@ -126,7 +127,13 @@ export default function Deck() {
   // height without any JS measurement.
   const tallest = slides.reduce((a, b) => (b.oneLiner.length > a.oneLiner.length ? b : a));
 
+  // Pressing Play is an explicit command: it overrides the hover and focus
+  // pauses (the pointer and focus are on the button itself), per the APG pattern.
   const toggle = () => {
+    if (userPaused) {
+      setHovered(false);
+      setFocused(false);
+    }
     setUserPaused((p) => !p);
     setCycle((c) => c + 1);
   };
@@ -159,7 +166,6 @@ export default function Deck() {
             <button
               type="button"
               aria-label={userPaused ? carousel.controls.play : carousel.controls.pause}
-              aria-pressed={userPaused}
               onClick={toggle}
             >
               {userPaused ? <PlayIcon /> : <PauseIcon />}
@@ -180,7 +186,7 @@ export default function Deck() {
             <span className="deck-shot" />
             <span className="deck-cap">
               <b>{tallest.title}</b>
-              <Badge>{tallest.award || tallest.title}</Badge>
+              <Badge>{tallest.award || tallest.status || tallest.title}</Badge>
               <span className="deck-line">{tallest.oneLiner}</span>
               <span className="deck-cta">{carousel.slideCta} →</span>
             </span>
