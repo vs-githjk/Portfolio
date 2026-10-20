@@ -127,7 +127,7 @@ export const hero = {
         id: 'betterbill',
         title: 'BetterBill',
         oneLiner: 'Finds hospital charges you may not owe.',
-        badge: '2× 1st · LA Hacks AI',
+        badge: '2× 1st · LA Hacks',
         badgeKind: 'win',
         tone: 'light', // pale thumbnail: the ring dims it further at the back
         image: {
@@ -172,7 +172,7 @@ export const hero = {
         id: 'yinzone',
         title: 'Yinzone',
         oneLiner: 'Shows where new housing can go in Pittsburgh.',
-        badge: 'Hackathon · team of 5',
+        badge: '~142k parcels scored',
         badgeKind: '',
         image: {
           src: '/builds/ring/yinzone.webp',
@@ -317,7 +317,7 @@ export const builds = {
     /* Shipped and live. */
     body: [
       'I took PrismAI from an empty repo to a **live beta** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
-      'Hybrid search (pgvector plus BM25, fused with reciprocal rank fusion) answers questions across every past meeting, and an MCP connector brings that context into Claude and ChatGPT. Tenant isolation is enforced in CI: a route-coverage test fails the build for any unregistered route, and a cross-tenant attack suite blocks CI.',
+      'Hybrid search (pgvector plus BM25) answers questions across every past meeting, an MCP connector brings that context into Claude and ChatGPT, and a cross-tenant attack suite blocks CI.',
     ],
     /* In development: always rendered under this label. */
     now: {
@@ -351,7 +351,7 @@ export const builds = {
         {
           image: '/builds/prismai-agents.webp',
           alt: 'PrismAI after the call: a health score with clarity, participation and outcomes, and action items with owners checked off',
-          caption: 'Twelve agents work through every meeting.',
+          caption: 'Twelve agents work through every meeting (from PrismAI’s landing page).',
         },
         {
           image: '/builds/prismai-standin.webp',
@@ -807,7 +807,7 @@ export const principles = {
 /* Hairline rows: tag, claim, receipts. Keep distinct from Principles. */
 export const value = {
   eyebrow: 'Who I am at work',
-  heading: 'Value',
+  heading: 'What you get',
   claims: [
     {
       tag: 'Reliability',
@@ -938,7 +938,6 @@ export const proofOfWork = {
     graphLabel: '{n} contributions in the last year',
     stats: {
       total: 'contributions',
-      active: 'active days',
       streak: 'longest streak',
       streakUnit: ' days',
       month: 'contributions, {month} 1 to {day}',
