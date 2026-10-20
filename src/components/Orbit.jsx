@@ -57,7 +57,9 @@ export default function Orbit({ stageRef, centreRef }) {
   const counterRef = useRef(null);
   const api = useRef({ step: () => {}, toggle: () => {} });
   const [userPaused, setUserPaused] = useState(false);
-  const state = reducedHook ? 'static' : userPaused ? 'paused' : 'running';
+  const [hovering, setHovering] = useState(false);
+  // data-state reports what the ring is doing: a hover stops it as surely as the button.
+  const state = reducedHook ? 'static' : userPaused || hovering ? 'paused' : 'running';
 
   useEffect(() => {
     const region = regionRef.current;
@@ -69,7 +71,6 @@ export default function Orbit({ stageRef, centreRef }) {
     const links = cards.map((c) => c.querySelector('.card-link'));
     const shades = cards.map((c) => [...c.querySelectorAll('.card-shade')]);
     const parts = cards.map((c) => ({
-      cap: c.querySelector('.card-cap'),
       cta: c.querySelector('.card-cta'),
       prog: c.querySelector('.card-prog'),
       bar: c.querySelector('.card-prog i'),
@@ -220,7 +221,9 @@ export default function Orbit({ stageRef, centreRef }) {
         }
         // A card behind the hero copy fades out whole, so the beams show through
         // where a dark slab would otherwise sit behind the name.
-        const vis = 1 - CFG.ghost * hidden;
+        // It leaves a little early (full cover is not needed), so no faint outline of a
+        // card lingers beside the hero copy while it turns.
+        const vis = Math.max(0, 1 - CFG.ghost * Math.min(1, hidden * 1.35));
         if (Math.abs(vis - lastVis[k]) > 0.004) {
           lastVis[k] = vis;
           cards[k].style.setProperty('--vis', vis.toFixed(3));
@@ -228,14 +231,13 @@ export default function Orbit({ stageRef, centreRef }) {
         const sh = (shade * (1 - hov[k])).toFixed(3);
         shades[k][0].style.opacity = sh;
         shades[k][1].style.opacity = sh;
-        // Text on the back half is faded out completely: the cards there sit
-        // behind the hero copy, and their captions must never show through it.
-        // The card's body (its glass panel and border) fades with the text, so the
-        // back half reads as thumbnails, not as empty panels (--cap also squares the
-        // thumbnail's lower corners back into rounded ones).
+        // The caption is wiped away from its foot as the card leaves the front, and its
+        // text fades ahead of the wipe (both read --cap in CSS). The panel never sits
+        // at a different opacity from the thumbnail above it, so a card in motion is
+        // a shorter card, not a ghost. The back half reads as thumbnails, and the
+        // captions never show through the hero copy.
         if (Math.abs(cap - lastCap[k]) > 0.004) {
           lastCap[k] = cap;
-          parts[k].cap.style.opacity = cap.toFixed(3);
           cards[k].style.setProperty('--cap', cap.toFixed(3));
         }
         // Only the front card shows its call to action and its progress line.
@@ -367,10 +369,12 @@ export default function Orbit({ stageRef, centreRef }) {
     };
     const onEnter = () => {
       reasons.hover = true;
+      setHovering(true);
       kick();
     };
     const onLeave = () => {
       reasons.hover = false;
+      setHovering(false);
       kick();
     };
     const onFocusIn = (e) => {
@@ -430,7 +434,6 @@ export default function Orbit({ stageRef, centreRef }) {
           c.style.zIndex = '';
         });
         parts.forEach((p) => {
-          p.cap.style.opacity = '';
           p.cta.style.opacity = '';
           p.prog.style.opacity = '';
           p.bar.style.transform = '';
