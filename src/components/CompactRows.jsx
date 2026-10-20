@@ -5,10 +5,10 @@ import Rich from './Rich';
 import Stack from './Stack';
 
 /* "More builds": compact cards with the same fields as the featured ones. The
-   one-liner and the links are always visible; the role line, the full story, any
-   metric and the stack open under "Read more" (a native <details>, so it needs no
-   script). The role line is one sentence and stays visible: it is the ownership
-   fact a skimmer wants. All seven cards share one size, see .mini-grid. */
+   one-liner, the role line and the links are always visible; the full story, any
+   metric and the stack open under "Read more" at the card foot (a native <details>,
+   so it needs no script). The role line is one sentence and stays visible: it is the
+   ownership fact a skimmer wants. All seven cards share one size, see .mini-grid. */
 export default function CompactRows({ more }) {
   return (
     <div className="more">
@@ -37,6 +37,7 @@ export default function CompactRows({ more }) {
               </h4>
               <p className="mini-one">{c.oneLiner}</p>
               {c.role && <p className="mini-role">{c.role}</p>}
+              <LinkRow links={c.links} />
               <details className="mini-more">
                 <summary>
                   {more.readMore}
@@ -50,7 +51,6 @@ export default function CompactRows({ more }) {
                 <Metrics items={c.metrics} />
                 <Stack text={c.stack} />
               </details>
-              <LinkRow links={c.links} />
             </div>
           </article>
         ))}
