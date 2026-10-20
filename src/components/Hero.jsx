@@ -10,10 +10,24 @@ export default function Hero() {
     <header className="hero" id="top">
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <span className="status">
-            <i aria-hidden="true" />
-            {hero.status}
-          </span>
+          <div className="hero-who">
+            <img
+              className="hero-portrait"
+              src={hero.portrait.src}
+              srcSet={`${hero.portrait.src} 1x, ${hero.portrait.src2x} 2x`}
+              alt={hero.portrait.alt}
+              width="96"
+              height="96"
+              decoding="async"
+            />
+            <div>
+              <span className="status">
+                <i aria-hidden="true" />
+                {hero.status}
+              </span>
+              <p className="hero-where">{hero.locationNote}</p>
+            </div>
+          </div>
           <h1 className="hero-name">
             {first}
             <br />

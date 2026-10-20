@@ -204,6 +204,32 @@
   align-items: center;
 }
 
+/* Studio headshot beside the availability line: a face before the claims. */
+.hero-who {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.hero-portrait {
+  width: clamp(80px, 7vw, 104px);
+  height: clamp(80px, 7vw, 104px);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--acc-line);
+  box-shadow:
+    0 0 0 4px var(--ink),
+    0 0 0 5px var(--hair-2),
+    var(--glass-shadow);
+  flex: none;
+}
+
+.hero-where {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
 .status {
   display: inline-flex;
   align-items: center;
@@ -1116,8 +1142,7 @@
 /* Heatmap: brass ramp, never GitHub green. */
 .heat {
   width: 100%;
-  flex: 1 1 118px; /* takes the height the Wins card adds; the graph sits centred in it */
-  min-height: 118px;
+  height: 118px;
   display: block;
 }
 
@@ -1160,6 +1185,7 @@
 }
 
 .pow-foot {
+  margin-top: auto; /* the note and key sit at the foot of the card */
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1707,9 +1733,7 @@
   }
 
   .heat {
-    flex: none;
     height: 96px;
-    min-height: 0;
   }
 
   .xp-row {

@@ -44,12 +44,18 @@ export const nav = {
    awards[] arrays below (2 + 3 + 1). */
 export const hero = {
   status: 'Available Jan 2027',
+  /* Studio headshot: 600px and 1200px (2x) squares, shown as a circle. */
+  portrait: {
+    src: '/portrait.jpg',
+    src2x: '/portrait@2x.jpg',
+    alt: 'Vidyut Sriram, smiling, in a light blue polo',
+  },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
   identitySub: 'Penn\u00A0State CS, graduating Dec\u00A02026.',
   proofLine:
     'Shipped **PrismAI to 14 beta users**, interned at **Comcast** and **Sherlock AI**, first author on an **arXiv preprint**, and **six awards**, four of them first place.',
-  locationNote: 'State College, PA · open to relocate',
+  locationNote: 'State College, PA',
   /* Buttons. Email is the one primary action. */
   actions: [
     { label: 'Email me', href: 'mailto:vidyut0712@gmail.com', primary: true },
