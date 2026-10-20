@@ -7,7 +7,7 @@ import Rich from './Rich';
 /* The PrismAI panel, laid out on one grid so every edge is shared:
 
      [ lead still + caption     ] [ kind, title, story, role ]
-     [ "Now building" box       ] [                          ]
+     [ "Now building" box       ] [                          ]  (on a phone it follows the story)
      [ three stills: one band, equal frames, full width      ]
      [ metrics                  ] [ stack, links             ]
 
@@ -20,19 +20,19 @@ export default function Flagship({ item }) {
   const { lead, stack } = item.media;
   return (
     <article className="flag reveal" id={`build-${item.id}`}>
-      <div className="flag-media">
-        <div className="flag-lead">
-          <Media
-            image={lead.image}
-            alt={lead.alt}
-            tilt={2.5}
-            badges={<Badge dot>{lead.badge}</Badge>}
-            width={1200}
-            height={750}
-            sizes="(min-width: 960px) 540px, 92vw"
-          />
-          <p className="media-cap">{lead.caption}</p>
-        </div>
+      <div className="flag-media flag-lead">
+        <Media
+          image={lead.image}
+          alt={lead.alt}
+          tilt={2.5}
+          badges={<Badge dot>{lead.badge}</Badge>}
+          width={1200}
+          height={750}
+          sizes="(min-width: 960px) 540px, 92vw"
+        />
+        <p className="media-cap">{lead.caption}</p>
+      </div>
+      <div className="flag-now">
         <div className="now-box">
           <span className="now">
             <i aria-hidden="true" />

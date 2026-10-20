@@ -31,10 +31,15 @@ const RING_MQ = '(min-width: 960px) and (min-height: 640px)';
 const pad2 = (k) => String(k).padStart(2, '0');
 const easeOut = (p) => 1 - Math.pow(1 - p, 3);
 
+/* Two widths per ring card: 320 for the desktop ring (cards are about 220px wide),
+   640 for a phone's row (cards up to 320px wide at 2x or more). */
 function Shot({ slide, k }) {
+  const src = slide.image.src;
   return (
     <img
-      src={slide.image.src}
+      src={src}
+      srcSet={`${src.replace('.webp', '-320.webp')} 320w, ${src} 640w`}
+      sizes="(min-width: 960px) 240px, min(78vw, 320px)"
       alt={slide.image.alt}
       width="640"
       height="400"
@@ -136,7 +141,8 @@ export default function Orbit({ stageRef, centreRef }) {
       geo.rz = Math.min(CFG.rz, Math.round(stageH * 0.46));
       // The widest the ring may be: the outermost card keeps 16px to spare on each side.
       const room = scene.clientWidth / 2 - 16;
-      let rx = scene.clientWidth >= 1400 ? CFG.rx + 40 : CFG.rx;
+      const wide = scene.clientWidth;
+      let rx = wide >= 1800 ? CFG.rx + 130 : wide >= 1400 ? CFG.rx + 40 : CFG.rx;
       for (let i = 0; i < 8; i++) {
         let e = 0;
         for (let w = 0.5; w <= Math.PI / 2 + 0.01; w += 0.04) e = Math.max(e, edgeAt(rx, w));
