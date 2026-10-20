@@ -312,10 +312,6 @@
   max-width: 70ch;
 }
 
-.cred-long {
-  display: none;
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -597,22 +593,22 @@
   text-wrap: balance;
 }
 
-.hero-stage .cred-short {
-  display: none;
-}
-
-.hero-stage .cred-long {
-  display: inline;
-}
-
 .hero-stage .shield {
   display: none;
 }
 
+/* In row mode the label and the arrows sit above the swipe row, so the row has a
+   heading when the reader reaches it. */
+.orbit {
+  display: flex;
+  flex-direction: column;
+}
+
 .orbit-bar {
+  order: -1;
   padding-left: max(var(--pad), env(safe-area-inset-left, 0px));
   padding-right: max(var(--pad), env(safe-area-inset-right, 0px));
-  margin-bottom: 14px;
+  margin-bottom: 4px;
 }
 
 .orbit .counter {
@@ -690,10 +686,8 @@
   }
 
   .hero-stage .who-text {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 14px;
+    gap: 4px;
+    white-space: nowrap;
   }
 
   .hero-stage .actions {
@@ -708,17 +702,16 @@
     display: none;
   }
 
+  /* The sentence and the status row wrap inside the width of the name block instead of
+     setting it, so the copy group is as wide as its own ink and sits on the ring's
+     centre line. The status and the school line are each one line. */
   .hero-stage .identity-sub {
     text-wrap: balance;
+    width: 0;
+    min-width: 100%;
+    max-width: none;
   }
 
-  .hero-stage .cred-short {
-    display: inline;
-  }
-
-  .hero-stage .cred-long {
-    display: none;
-  }
 
   .hero-stage .shield {
     display: block;
@@ -857,7 +850,7 @@
 
 /* ============================== EXPERIENCE ================================ */
 .work {
-  padding-top: clamp(40px, 6vw, 72px);
+  --pad-top: clamp(40px, 6vw, 72px);
 }
 
 .xp {
@@ -1265,13 +1258,13 @@
 }
 
 /* ---- Featured cards -------------------------------------------------------- */
-/* Each card is as tall as its own content: a card that says less is shorter, not
-   padded, so no card carries an empty band above its links. */
+/* Cards in a row share one height, so every row ends on one line; the spare height
+   lands above the stack and the links, which are pinned to the card's foot. */
 .build-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .build {
@@ -1376,15 +1369,15 @@
 
 /* Seven cards of one size: 4 + 3 at full width, 3 + 3 + 1 below 1100, 2 + 2 + 2 + 1
    below 760, a single column below 560. A short last row is centred, so it keeps the
-   same card width as the rows above it. Each card is as tall as its own content, so
-   opening "Read more" on one never stretches its neighbours. */
+   same card width as the rows above it. Cards in a row share one height and the "Read
+   more" line and the links sit on the card's foot. */
 .mini-grid {
   --mini-per: 4;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 18px;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .mini {
@@ -1461,9 +1454,10 @@
 
 .mini-more summary {
   display: inline-flex;
-  align-items: center;
   gap: 6px;
   min-height: 44px;
+  align-items: flex-end;
+  padding-bottom: 8px;
   cursor: pointer;
   list-style: none;
   font-family: var(--font-mono);
@@ -1506,11 +1500,12 @@
 /* "Read more" and the links form the card's foot: spare height sits above them. */
 .mini-body .mini-more {
   margin-top: auto;
-  margin-bottom: -8px;
 }
 
 .mini-body .links a {
   font-size: var(--fs-micro);
+  align-items: flex-start;
+  padding-top: 8px;
 }
 
 /* When the cards wrap 3 per row (761 to 1100px) or 2 per row (561 to 760px) the
@@ -2223,6 +2218,16 @@
     height: 60px;
   }
 
+  /* The two-row bar slides away while the reader scrolls down and returns on the
+     first scroll up; keyboard focus inside it brings it back. */
+  .nav {
+    transition: transform 0.25s var(--ease);
+  }
+
+  .nav[data-hide='true']:not(:has(:focus-visible)) {
+    transform: translateY(-100%);
+  }
+
   .nav-links {
     position: absolute;
     left: 0;
@@ -2258,7 +2263,26 @@
     grid-template-areas:
       'media'
       'body'
+      'metrics'
       'foot';
+  }
+
+  /* The image comes first, then the story, then the results: a reader meets the
+     title before the numbers. */
+  .paper-media {
+    display: contents;
+  }
+
+  .paper-media > .media {
+    grid-area: media;
+    margin: 16px 16px 0;
+  }
+
+  .paper-media > .metrics {
+    grid-area: metrics;
+    margin: 0 20px;
+    padding: 18px 0;
+    border-top: 1px solid var(--hair);
   }
 
   .paper-foot {
@@ -2278,8 +2302,7 @@
       'facts';
   }
 
-  .flag-media,
-  .paper-media {
+  .flag-media {
     padding: 16px 16px 0;
   }
 
@@ -2443,6 +2466,7 @@
   .card-link,
   .bg[data-ready] .bg-static,
   .ctl,
+  .nav,
   .pow-tiles a,
   .email {
     transition: none;

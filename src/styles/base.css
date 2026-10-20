@@ -104,9 +104,12 @@ button {
 .sec {
   position: relative;
   z-index: 1;
-  padding-block: var(--sec-y) 0;
+  --pad-top: var(--sec-y);
+  padding-block: var(--pad-top) 0;
   perspective: var(--persp);
-  scroll-margin-top: calc(var(--nav-h) + 8px);
+  /* A nav link lands with the section's heading just under the bar, not with the
+     section's own top padding filling the first screen. */
+  scroll-margin-top: calc(var(--nav-h) + 24px - var(--pad-top));
 }
 
 .sr {
