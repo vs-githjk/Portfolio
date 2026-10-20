@@ -439,11 +439,15 @@ export const builds = {
       oneLiner:
         'Coaching software where the coach stays in charge: every score explains itself, and AI acts only where a person confirms it.',
       awards: [],
-      role: 'Solo build: 333 commits in 12 weeks, all mine.',
+      role: 'Solo build: I designed and wrote all of it.',
       body: [
         'Live at joinvytal.live in a controlled beta for multi-coach organizations. Every score is deterministic, versioned and explained with reason codes; the one model in the loop turns a meal photo into a macro estimate that the trainee confirms before it is logged. Access control runs through a single policy check, and every trainee reassignment leaves an append-only audit trail.',
       ],
-      metrics: [],
+      // 988 passed, 1 skipped: backend pytest run on Oct 20, 2026. Usage stays unquoted (small closed beta).
+      metrics: [
+        { value: '988', label: 'automated backend tests,\nall passing' },
+        { value: '333', label: 'commits in 12 weeks,\nall mine' },
+      ],
       stack:
         'FastAPI · SQLAlchemy · PostgreSQL · React · TypeScript · TanStack Query · Claude Haiku 4.5 · Cloudflare R2 · Render · Vercel',
       media: {
@@ -466,12 +470,15 @@ export const builds = {
       oneLiner:
         'Tournament day, coordinated: registration, draws, courts and live scoring for racket sports in one system.',
       awards: [],
-      role: 'Built with a team, badminton-first, for organizers, players, scorers, officials and spectators.',
+      role: 'Built with a team, badminton-first. We are now talking with badminton coaching centres about hosting their tournaments on it.',
       body: [
         'Replaces the spreadsheets, WhatsApp threads, paper check-in sheets and separate scoring tools most tournaments still run on. Players register for singles or doubles, check in, and follow their courts, live scores, rankings and history. Organizers configure categories, manage waitlists, seed players, generate draws, schedule matches, assign staff and handle disputes.',
         'Live scoring runs inside the tournament workflow, with game-state management, score corrections and an **offline scoring queue for unreliable venue internet**. Spectators follow draws, courts and live matches without an account. Scoring, draws, scheduling, rankings and the tournament lifecycle sit in **isolated, testable business logic** behind one repository layer.',
       ],
-      metrics: [],
+      // No usage figures yet (Oct 20): in talks with coaching centres, no hosted events. Never invent any.
+      metrics: [
+        { value: '5', label: 'roles in one system: organizers,\nplayers, scorers, officials, spectators' },
+      ],
       stack:
         'React 19 · Vite · React Router · Tailwind CSS · Motion · Supabase (Postgres, Auth, row-level security, Realtime, Storage, Edge Functions)',
       media: {
