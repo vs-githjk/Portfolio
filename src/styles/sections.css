@@ -1144,11 +1144,27 @@
   line-height: 1.7;
 }
 
+/* Each item stays whole: it moves to the next line before it breaks, and an item
+   wider than the column (Supabase's long feature list) wraps inside itself instead
+   of running out of the card. */
 .stack span {
-  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
 }
 
 /* ---- Flagship (PrismAI): one grid, every edge shared ----------------------- */
+/* One 28px inset on all four sides and one 32px gutter between the columns:
+
+     [ lead still + caption     ] [ kind, title, story, role ]
+     [ "Now building" box       ] [                          ]  (on a phone it follows the story)
+     [ three stills: one band, equal frames, full width      ]
+     [ metrics                  ] [ stack, links             ]
+
+   The lead still's top edge sits on the cap line of the kind label, and the
+   "Now building" box ends on the line the role sentence ends on, so the two
+   columns share a top and a bottom. If the story is the longer column the spare
+   height goes to the lead still (it grows and crops), never to a hole. The three
+   stills are one band of identical frames with their captions on one line. */
 .flag {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
@@ -1158,20 +1174,18 @@
     'now body'
     'stills stills'
     'metrics facts';
+  column-gap: 32px;
+  padding: 28px;
   margin-bottom: 24px;
 }
 
 .flag-media {
   grid-area: media;
-  padding: 22px 0 0 22px;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* When the story beside it runs longer (narrow laptops), the spare height goes to
-   the lead still, which grows and crops, so the column never opens a hole above the
-   "Now building" box and both columns end on the same line. */
 .flag-media .media {
   flex: 1 1 auto;
   display: flex;
@@ -1186,18 +1200,15 @@
   object-position: left top;
 }
 
-/* The "Now building" box sits on the bottom of the left column, so the column
-   ends on the same line as the story beside it. */
 .flag-now {
   grid-area: now;
   align-self: end;
-  padding: 18px 0 22px 22px;
+  padding-top: 18px;
   min-width: 0;
 }
 
 .flag-body {
   grid-area: body;
-  padding: 32px 32px 22px 28px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1212,13 +1223,13 @@
   justify-content: flex-end;
 }
 
-/* The three stills: one full-width band, identical frames, captions on one line. */
 .flag-stack {
   grid-area: stills;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
-  padding: 22px 32px 22px 22px;
+  margin-top: 24px;
+  padding-top: 24px;
   border-top: 1px solid var(--hair);
 }
 
@@ -1235,7 +1246,7 @@
 
 .flag-metrics {
   grid-area: metrics;
-  padding: 4px 0 30px 22px;
+  padding-top: 24px;
 }
 
 .flag-metrics .metrics {
@@ -1244,7 +1255,7 @@
 
 .flag-facts {
   grid-area: facts;
-  padding: 0 32px 22px 28px;
+  padding-top: 24px;
   display: grid;
   gap: 8px;
   align-content: start;
@@ -1283,18 +1294,25 @@
 }
 
 /* ---- Featured cards -------------------------------------------------------- */
-/* Each card is as tall as its own content, so a short card never carries a hole and
-   opening one card's "Read more" grows only that card. */
+/* Two columns, and every card is a subgrid on the same nine rows: media, kind,
+   title, one-liner, role, results, read more, stack, links. A row is as tall as the
+   tallest cell in it, so the two cards of a pair always have one height, and every
+   field starts on one line across the pair. A field one card does not have (a
+   role line, a link) leaves its row empty, which is the reserved space. The links
+   sit in the last row, pinned to the card foot. Opening one "Read more" grows that
+   row in both cards of the pair. Each card owns its rows on a phone, one column. */
 .build-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
 }
 
 .build {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
+  grid-row: span 9;
+  margin-bottom: 24px;
 }
 
 .build-media {
@@ -1302,14 +1320,57 @@
 }
 
 .build-body {
-  padding: 22px 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  grid-row: 2 / span 8;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
+  padding: 0 24px 20px;
   min-width: 0;
 }
 
+.build-body > * {
+  align-self: start;
+  min-width: 0;
+}
+
+.build-body .kind {
+  grid-row: 1;
+  margin-top: 22px;
+}
+
+.build-body .build-title {
+  grid-row: 2;
+  margin-top: 12px;
+}
+
+.build-body .one {
+  grid-row: 3;
+  margin-top: 12px;
+}
+
+.build-body .role {
+  grid-row: 4;
+  margin-top: 12px;
+}
+
+.build-body .metrics {
+  grid-row: 5;
+  margin-top: 12px;
+}
+
+.build-body .build-more {
+  grid-row: 6;
+  margin-top: 4px;
+}
+
+.build-body .stack {
+  grid-row: 7;
+  margin-top: 8px;
+}
+
 .build-body .links {
+  grid-row: 8;
+  align-self: end;
   margin-top: 4px;
 }
 
@@ -1319,6 +1380,7 @@
 }
 
 /* ---- The paper ------------------------------------------------------------- */
+/* The same 28px inset and 32px gutter as the flagship. */
 .paper {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
@@ -1326,6 +1388,8 @@
   grid-template-areas:
     'media body'
     'foot body';
+  column-gap: 32px;
+  padding: 28px;
   margin-top: 24px;
 }
 
@@ -1333,7 +1397,7 @@
    links sit on its foot, so the column fills the height of the story beside it. */
 .paper-media {
   grid-area: media;
-  padding: 22px 0 18px 22px;
+  padding-bottom: 18px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -1342,7 +1406,6 @@
 
 .paper-foot {
   grid-area: foot;
-  padding: 0 0 26px 22px;
   display: grid;
   gap: 8px;
   align-content: start;
@@ -1362,11 +1425,15 @@
 
 .paper-body {
   grid-area: body;
-  padding: 32px 32px 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+}
+
+/* Every kind label starts on its cap line, so a frame beside it shares that edge. */
+.kind > .eyebrow:first-child {
+  margin-top: calc((1cap - 1lh) / 2);
 }
 
 /* ---- More builds: a 12-column grid so the last row is never an orphan ------- */
@@ -1388,25 +1455,32 @@
   color: var(--text-2);
 }
 
-/* Seven cards of one size: 4 + 3 at full width, 3 + 3 + 1 below 1100, 2 + 2 + 2 + 1
-   below 760, a single column below 560. A short last row is centred, so it keeps the
-   same card width as the rows above it. Each card is as tall as its own content, so
-   opening one "Read more" grows only that card. */
+/* Seven cards on a 12-column grid: 4 x span-3, then 3 x span-4, so both rows fill the
+   width. Every card is a subgrid on the same seven rows (media, kind, title,
+   one-liner, role, read more, links), so a row of cards has one height and each field
+   starts on one line, with the links on the foot; a field a card lacks leaves its
+   row empty. Below 1100 it is 3 + 2 + 2 (spans 4, 6, 6), below 760 it is 2 + 2 + 2 + a
+   full-width horizontal card, and below 560 one column. Opening one "Read more" grows
+   that row across its lane of cards. */
 .mini-grid {
-  --mini-per: 4;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 18px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 18px;
 }
 
 .mini {
-  flex: 0 0 calc((100% - (var(--mini-per) - 1) * 18px) / var(--mini-per));
+  grid-column: span 3;
+  grid-row: span 7;
   min-width: 0;
+  margin-bottom: 18px;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
   box-shadow: var(--elev-1);
+}
+
+.mini:nth-child(n + 5) {
+  grid-column: span 4;
 }
 
 .mini-media {
@@ -1419,20 +1493,30 @@
 }
 
 .mini-body {
-  padding: 16px 16px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  grid-row: 2 / span 6;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: subgrid;
+  padding: 0 16px 6px;
+  min-width: 0;
+}
+
+.mini-body > * {
+  align-self: start;
   min-width: 0;
 }
 
 .mini-body .eyebrow {
+  grid-row: 1;
+  margin-top: 16px;
   display: grid;
   gap: 2px;
   font-size: 10px;
 }
 
 .mini-title {
+  grid-row: 2;
+  margin-top: 8px;
   font-family: var(--font-display);
   font-size: 24px;
   line-height: 1;
@@ -1445,18 +1529,21 @@
 }
 
 .mini-one {
+  grid-row: 3;
+  margin-top: 8px;
   font-size: 14px;
   line-height: 1.45;
   color: var(--text);
 }
 
 .mini-role {
+  grid-row: 4;
+  margin-top: 8px;
   font-size: 13px;
   line-height: 1.45;
   color: var(--text-2);
   padding-left: 12px;
   border-left: 2px solid var(--acc);
-  margin-bottom: 10px;
 }
 
 .mini-more .metrics {
@@ -1513,7 +1600,15 @@
   margin-bottom: 8px;
 }
 
+/* The story opens in row 5; the links sit on the foot of row 6. */
+.mini-body .mini-more {
+  grid-row: 5;
+  margin-top: 10px;
+}
+
 .mini-body .links {
+  grid-row: 6;
+  align-self: end;
   margin-top: 0;
   gap: 0 14px;
 }
@@ -1524,32 +1619,59 @@
   padding-top: 8px;
 }
 
-/* When the cards wrap 3 per row (761 to 1100px) or 2 per row (561 to 760px) the
-   seventh card would sit alone on the last row. It takes the whole row instead, as
-   a horizontal card: the thumbnail on the left, the story beside it. */
-@media (min-width: 761px) and (max-width: 1100px) {
-  .mini:last-child:nth-child(3n + 1) {
-    flex-basis: 100%;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    grid-template-rows: none;
-    align-items: center;
+/* Below 1100 the lane of seven is 3 + 2 + 2. Below 760 it is 2 + 2 + 2, and the seventh
+   card takes the whole row as a horizontal card: the thumbnail on the left, the story
+   beside it. Below 560 every card has its own full-width row. */
+@media (max-width: 1100px) {
+  .mini,
+  .mini:nth-child(n + 5) {
+    grid-column: span 4;
   }
 
-  .mini:last-child:nth-child(3n + 1) .mini-media {
-    padding: 14px;
+  .mini:nth-child(n + 4) {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 760px) {
+  .mini,
+  .mini:nth-child(n + 4),
+  .mini:nth-child(n + 5) {
+    grid-column: span 6;
   }
 }
 
 @media (min-width: 561px) and (max-width: 760px) {
-  .mini:last-child:nth-child(2n + 1) {
-    flex-basis: 100%;
+  .mini:last-child {
+    grid-column: 1 / -1;
+    grid-row: span 1;
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     grid-template-rows: none;
     align-items: center;
   }
 
-  .mini:last-child:nth-child(2n + 1) .mini-media {
+  .mini:last-child .mini-media {
     padding: 14px;
+  }
+
+  .mini:last-child .mini-body {
+    grid-row: auto;
+    grid-template-rows: none;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+  }
+
+  .mini:last-child .mini-body > * {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .mini,
+  .mini:nth-child(n + 4),
+  .mini:nth-child(n + 5) {
+    grid-column: 1 / -1;
   }
 }
 
@@ -2219,12 +2341,6 @@
 }
 
 /* =============================== RESPONSIVE =============================== */
-@media (max-width: 1100px) {
-  .mini-grid {
-    --mini-per: 3;
-  }
-}
-
 /* On a narrow laptop the two PrismAI columns are equal, so the story runs shorter and
    the lead still is cropped as little as possible. */
 @media (min-width: 961px) and (max-width: 1199px) {
@@ -2284,6 +2400,12 @@
     grid-template-columns: 1fr;
   }
 
+  .flag,
+  .paper {
+    column-gap: 0;
+    padding: 16px 16px 22px;
+  }
+
   .paper {
     grid-template-rows: none;
     grid-template-areas:
@@ -2301,18 +2423,17 @@
 
   .paper-media > .media {
     grid-area: media;
-    margin: 16px 16px 0;
   }
 
   .paper-media > .metrics {
     grid-area: metrics;
-    margin: 0 20px;
+    margin: 0 4px;
     padding: 18px 0;
     border-top: 1px solid var(--hair);
   }
 
   .paper-foot {
-    padding: 0 20px 22px;
+    padding: 0 4px;
   }
 
   /* On a phone the story comes before the in-development box: a reader learns
@@ -2328,30 +2449,27 @@
       'facts';
   }
 
-  .flag-media {
-    padding: 16px 16px 0;
-  }
-
   .flag-now {
-    padding: 0 16px 4px;
+    padding-top: 20px;
   }
 
   .flag-body,
   .paper-body {
-    padding: 22px 20px 20px;
+    padding: 22px 4px 0;
   }
 
   .flag-stack {
-    padding: 20px 16px;
+    margin-top: 22px;
+    padding-top: 20px;
     gap: 12px;
   }
 
   .flag-metrics {
-    padding: 0 20px;
+    padding: 0 4px;
   }
 
   .flag-facts {
-    padding: 12px 20px 22px;
+    padding: 12px 4px 0;
   }
 
   .xp-row {
@@ -2418,10 +2536,6 @@
   .hl-cell:nth-child(n + 2) {
     border-top: 1px solid var(--hair);
   }
-
-  .mini-grid {
-    --mini-per: 2;
-  }
 }
 
 @media (max-width: 640px) {
@@ -2453,10 +2567,6 @@
 }
 
 @media (max-width: 560px) {
-  .mini-grid {
-    --mini-per: 1;
-  }
-
   .flag-stack {
     grid-template-columns: 1fr;
   }
