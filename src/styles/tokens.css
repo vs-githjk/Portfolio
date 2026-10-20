@@ -114,12 +114,12 @@
   --orbit-rx: 700;
   --orbit-rz: 420;
   --orbit-tilt: 27;
-  --orbit-yaw: 20;
+  --orbit-yaw: 26;
   --orbit-lean: 4;
   --orbit-shade: 0.72; /* darkness of a card at the back, away from the copy */
   --orbit-behind: 0.95; /* darkness of a back card sitting behind the hero copy */
   --orbit-ghost: 1; /* how much of a card's opacity is lost when it sits behind the hero copy */
-  --orbit-side: 0.1; /* extra shrink of cards at the sides of the ring */
+  --orbit-side: 0.16; /* extra shrink of cards at the sides of the ring */
   --orbit-front: 150; /* px the front card is pushed toward the camera */
   --orbit-step-ms: 5200;
   --orbit-linger: 0.85;
@@ -146,7 +146,7 @@
   /* ---- LAYOUT ------------------------------------------------------------ */
   --pad: clamp(16px, 5vw, 72px); /* gutter: exactly 16px at 390 */
   --maxw: 1200px;
-  --sec-y: clamp(72px, 10vw, 140px);
+  --sec-y: clamp(56px, 7vw, 100px);
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
