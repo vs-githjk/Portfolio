@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { hero } from '../data/content';
 import Orbit from './Orbit';
+import Rich from './Rich';
 import { GitHubIcon, LinkedInIcon } from './Icons';
 
 /* The first screen. The name is the monument at the centre, lit from above by
@@ -47,7 +48,9 @@ export default function Hero() {
             </h1>
             <p className="identity">{hero.identity}</p>
             <p className="identity-sub">{hero.identitySub}</p>
-            <p className="cred">{hero.credential}</p>
+            <p className="cred">
+              <Rich text={hero.credential} />
+            </p>
             <div className="actions">
               {hero.actions
                 .filter((a) => a.href)

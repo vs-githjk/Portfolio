@@ -6,9 +6,12 @@ import Rich from './Rich';
    it measures. */
 export default function Highlights() {
   return (
-    <section className="hl" aria-label={highlights.eyebrow}>
+    <section className="hl" aria-labelledby="hl-h">
       <div className="wrap">
-        <span className="eyebrow reveal">{highlights.eyebrow}</span>
+        <h2 className="sr" id="hl-h">
+          {highlights.eyebrow}
+        </h2>
+        <span className="eyebrow reveal" aria-hidden="true">{highlights.eyebrow}</span>
         <ul className="hl-slab reveal" data-delay="1">
           {highlights.items.map((t) => (
             <li className="hl-cell" key={t.slice(0, 28)}>
