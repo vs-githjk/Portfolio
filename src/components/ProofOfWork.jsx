@@ -71,10 +71,6 @@ export default function ProofOfWork() {
                 <span>{g.stats.total}</span>
               </div>
               <div>
-                <b>{github.activeDays}</b>
-                <span>{g.stats.active}</span>
-              </div>
-              <div>
                 <b>
                   {github.longestStreak}
                   <em>{g.stats.streakUnit}</em>

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { MONTHS } from '../lib/months';
 
@@ -20,6 +20,7 @@ export default function Heatmap({ days, label }) {
   const phone = useMediaQuery('(max-width: 640px)');
   const svg = useRef(null);
   const [tip, setTip] = useState(null);
+  const [seen, setSeen] = useState(Infinity); // graph units visible from the right edge
 
   const { paths, labels, width, at } = useMemo(() => {
     const first = new Date(`${days[0].date}T00:00:00Z`);
@@ -55,6 +56,26 @@ export default function Heatmap({ days, label }) {
     };
   }, [days]);
 
+  // The phone crop (slice) hides the oldest weeks, and a month label that straddles the
+  // cut would read as a stray letter pair, so a label is drawn only when it fits whole.
+  useEffect(() => {
+    const el = svg.current;
+    if (!el || !phone) {
+      setSeen(Infinity);
+      return undefined;
+    }
+    const measure = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (!w || !h) return;
+      setSeen(w / Math.max(w / width, h / (TOP + 7 * PITCH)));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [phone, width]);
+
   const show = (e) => {
     const el = svg.current;
     const m = el.getScreenCTM();
@@ -83,11 +104,13 @@ export default function Heatmap({ days, label }) {
         role="img"
         aria-label={label}
       >
-        {labels.map((l) => (
-          <text key={l.x} x={l.x} y={10}>
-            {l.text}
-          </text>
-        ))}
+        {labels
+          .filter((l) => l.x >= width - seen + 4)
+          .map((l) => (
+            <text key={l.x} x={l.x} y={10}>
+              {l.text}
+            </text>
+          ))}
         {paths.map((d, level) => (
           <path key={level} className={`c${level}`} d={d} />
         ))}
