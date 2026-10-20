@@ -5,7 +5,7 @@
 //   3. This script renders the app to a string, puts it in dist/index.html, and
 //      inlines the stylesheet, so the first paint needs no extra request and no
 //      JavaScript. The client then hydrates the same markup (its script is
-//      fetched at low priority so the first image and the fonts go first).
+//      requested after the first paint so the first image and the fonts go first).
 //
 // It only rewrites dist/index.html. If anything is off it exits non-zero, so a
 // broken prerender fails the build instead of shipping an empty page.
@@ -36,9 +36,14 @@ setMeta(/<title>[\s\S]*?<\/title>/, `<title>${esc(meta.title)}</title>`);
 setMeta(/<meta\s+name="description"[\s\S]*?\/>/, `<meta name="description" content="${esc(meta.description)}" />`);
 setMeta(/<meta property="og:title"[\s\S]*?\/>/, `<meta property="og:title" content="${esc(meta.title)}" />`);
 setMeta(/<meta\s+property="og:description"[\s\S]*?\/>/, `<meta property="og:description" content="${esc(meta.description)}" />`);
-// The page is already painted from HTML, so hydration can wait: let the first
-// image and the fonts have the bandwidth first.
-out = out.replace(/<script type="module"/, '<script type="module" fetchpriority="low"');
+// The page is already painted from HTML, so hydration can wait: the first image and
+// the fonts get the bandwidth first. The bundle is requested only after the first
+// largest-contentful-paint entry (the name), or after 1.5s where that is not
+// supported, so it is not part of the work the first paint waits for.
+const bundle = out.match(/<script type="module"[^>]*src="([^"]+)"[^>]*><\/script>/);
+if (!bundle) throw new Error('prerender: module script not found in dist/index.html');
+const loader = `<script>(function(){var n=0;function go(){if(n++)return;var s=document.createElement('script');s.type='module';s.crossOrigin='';s.src='${bundle[1]}';document.head.appendChild(s)}try{new PerformanceObserver(function(){setTimeout(go,0)}).observe({type:'largest-contentful-paint',buffered:true})}catch(e){}setTimeout(go,1500)})()</script>`;
+out = out.replace(bundle[0], () => loader);
 out = out.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
 if (out === html) throw new Error('prerender: nothing changed');
 await writeFile(new URL('index.html', dist), out);

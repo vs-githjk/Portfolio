@@ -233,12 +233,19 @@ Don't add these back without asking:
 
 ## Later rounds: layout rules worth keeping
 
-- Cards in a row share one height (`align-items: stretch`); the links (and "Read more" on a
-  More builds card) are pinned to the card's foot with `margin-top: auto`. More builds is a
-  centred flex grid of one card size (4, 3, 2 or 1 per row via `--mini-per`).
+- Cards are as tall as their own content (`align-items: start`): a card that says less is
+  shorter, never padded with an empty band above its links. More builds is a centred flex
+  grid of one card size (4, 3, 2 or 1 per row via `--mini-per`); when the seventh card would
+  sit alone on a row (3 or 2 per row) it takes the whole row as a horizontal card.
+- The PrismAI lead still grows (cover crop, left-aligned) when the story beside it is longer,
+  so the left column ends on the same line; the paper's stack and links sit on the foot of
+  its left column for the same reason.
 - Below 960px the four section links become a second row of the sticky nav (`--nav-h` is 104px
   there, which `scroll-margin-top` reads), and the footer has a back-to-top link.
 - `.reveal` hides only under `html.js`; `index.html` sets `js` and removes it after 4s if
   `useReveal` has not marked `<html data-reveal>`, so prerendered content is never stranded.
-- Mobile LCP sits at 2.4 to 2.6s in Lighthouse's simulation (FCP 1.2s). Tried and measured with
-  no effect: `font-display: optional`, deferring the bundle until `load`, dropping the preloads.
+- Mobile LCP (Lighthouse simulation) was 2.4 to 2.6s because the 85 KB bundle was requested
+  before the first paint, and Lighthouse counts everything requested before the LCP entry.
+  `scripts/prerender.mjs` now requests the bundle only after the first
+  largest-contentful-paint entry (1.5s fallback), which measured about 2.0s. Do not turn it
+  back into a plain `<script type="module">` in the head.
