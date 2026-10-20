@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 export function useReveal() {
   useEffect(() => {
     const nodes = document.querySelectorAll('.reveal');
+    document.documentElement.dataset.reveal = 'on';
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduce || !('IntersectionObserver' in window)) {

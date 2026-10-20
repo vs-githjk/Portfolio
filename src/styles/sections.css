@@ -1574,6 +1574,13 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 640px) {
+  .pow-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .pow-stats b {
   display: block;
   font-family: var(--font-display);
@@ -2031,6 +2038,9 @@
 }
 
 .email {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-display);
   font-size: clamp(26px, 3.4vw, 44px);
   line-height: 1;

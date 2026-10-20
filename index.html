@@ -41,9 +41,16 @@
       media="(max-width: 959px)"
       fetchpriority="high"
     />
+    <script>
+      // Reveals start hidden only if the page script runs: useReveal marks <html
+      // data-reveal>; if that has not happened after 4s, show everything.
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (!document.documentElement.dataset.reveal) document.documentElement.classList.remove('js');
+      }, 4000);
+    </script>
     <noscript>
       <style>
-        .reveal { opacity: 1; transform: none; }
         .orbit { display: none; }
       </style>
     </noscript>
