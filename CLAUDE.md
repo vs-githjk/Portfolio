@@ -54,7 +54,7 @@ Three rules encode the thesis:
 
 | Section | Job |
 |---|---|
-| Hero | The name, lit from above by the beam field, and the orbit ring of eleven builds |
+| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of eleven builds |
 | Experience | Where he has worked; every result is a complete statement |
 | Builds | PrismAI flagship, six featured builds, the paper, seven more (15 in all) |
 | Highlights | Four one-line statements, after the stories they summarize |
@@ -81,8 +81,11 @@ FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`
   `measure()` fits the radius to the scene width and the ring centre to the hero copy above it.
   Tuned for 11 cards; adding or removing one means re-checking the sides at 1440 and 1280.
 - The front card is pushed toward the camera (`--orbit-front`) and carries the blue border and
-  a progress line. Cards behind the hero copy go almost fully dark (`--orbit-behind`) and the
-  captions of the whole back half fade to zero (`--cap`), so nothing shows through the text.
+  a progress line. Cards behind the hero copy go almost fully dark (`--orbit-behind`) and fade
+  out whole (`--orbit-ghost`, written as `--vis`), and the captions of the whole back half fade
+  to zero (`--cap`), so nothing shows through the text. `measure()` keeps every card at least
+  16px inside the window at any width (it samples the ring's outer edge, yaw included) and, on a
+  short window, eases the front lift until the control bar is on screen.
 - Hover on a card pauses the ring (and lifts that card); focus inside stops it for good; only
   the front card is tabbable; ArrowLeft/Right step, Home/End jump; Pause, Prev, Next buttons.
 - Below 960px wide or 640px tall it becomes a swipeable snap row. Under
@@ -169,7 +172,7 @@ nav, buttons, badges and stack lines.
 - `**double asterisks**` in `content.js` render as emphasis via `<Rich>`. That is the
   only markup supported; don't add a markdown dependency.
 - Build images ship as `/builds/<id>.webp` (1200px) plus `-640` and `-900` variants; `Media`
-  builds the `srcset`. Ring images are 640px in `/builds/ring/`. Every build has a logo-led
+  builds the `srcset`. Ring images are 640px in `/builds/ring/`, each with a `-320` variant for the desktop ring. The portrait ships as `portrait-180.webp` and `portrait-360.webp` (1x and 2x). Every build has a logo-led
   thumbnail; the paper, TransitGuard and AlgoQuest use the finder's compositions, not
   screenshots. Never use a frame that shows personal info.
 - Breakpoints in use: 1100, 960, 760, 640, 560, 460, plus the ring's own
