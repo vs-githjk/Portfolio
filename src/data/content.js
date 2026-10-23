@@ -254,7 +254,7 @@ export const hero = {
         badgeKind: 'win',
         image: {
           src: '/builds/ring/firesight.webp',
-          alt: 'FireSight logo, "The fire floor, before the wheels stop", beside a 3D cutaway of a fire floor with a battery room and a cafeteria marked from SF public records',
+          alt: 'FireSight logo, "The fire floor, before the wheels stop", beside a San Francisco tower exploded floor by floor on the city map, with battery rooms on floors 22 and 23 pinned from fire permits',
         },
       },
     ],
@@ -591,7 +591,7 @@ export const builds = {
       stack: 'React · three.js · React Three Fiber · Hono · Zod · Claude · ElevenLabs · MCP · DataSF',
       media: {
         image: '/builds/firesight.webp',
-        alt: 'FireSight logo, "The fire floor, before the wheels stop" and "Cited SF public records", beside a 3D cutaway of a fire floor with a battery room and a cafeteria marked',
+        alt: 'FireSight logo, "The fire floor, before the wheels stop" and "Cited SF public records", beside 140 New Montgomery St exploded floor by floor on the San Francisco city map, with battery rooms on floors 22 and 23 and a recent build-out on floor 21 pinned from city permits',
       },
       links: [
         { label: 'Live demo', href: 'https://firesight-ten.vercel.app' },
