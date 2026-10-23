@@ -54,11 +54,11 @@ Three rules encode the thesis:
 
 | Section | Job |
 |---|---|
-| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of eleven builds |
+| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of thirteen builds |
 | Experience | Where he has worked; every result is a complete statement |
-| Builds | PrismAI flagship, six featured builds, the paper, seven more (15 in all) |
+| Builds | PrismAI flagship, seven featured builds (the odd one centred), the paper, eight more (17 in all) |
 | Highlights | Four one-line statements, after the stories they summarize |
-| Proof of work | GitHub commit graph, the six wins (each hackathon win links to Devpost), four verification links |
+| Proof of work | GitHub commit graph, the seven wins (each hackathon win with a Devpost page links to it), four verification links |
 | Principles | How he thinks about building (2x2 tiles) |
 | Value | What that is worth to you (hairline rows) |
 | Toolkit | The inventory, grouped chips |
@@ -69,9 +69,9 @@ not read as the same module twice. Keep them visually distinct.
 
 ## The orbit ring (`components/Orbit.jsx`)
 
-Eleven glass cards on an elliptical CSS 3D ring around the name, in Vidyut's order:
+Thirteen glass cards on an elliptical CSS 3D ring around the name, in Vidyut's order:
 PrismAI, BetterBill, MVR, Vytal, Match Day, Yinzone, Terrametric, the paper, Quorum,
-FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`); a slide
+FilingWatch, NextRound, PrismKeep, FireSight. Each card is one link to its Builds entry (`#build-<id>`); a slide
 `id` in `hero.carousel.slides` must equal the Builds entry id.
 
 - One rAF loop writes transforms straight to the nodes (no React state per frame, no layout
@@ -79,7 +79,7 @@ FilingWatch, NextRound. Each card is one link to its Builds entry (`#build-<id>`
   own transforms). It asks for frames only while something moves.
 - Geometry lives in the `--orbit-*` tokens (radius, tilt, yaw, shade, front lift, card width).
   `measure()` fits the radius to the scene width and the ring centre to the hero copy above it.
-  Tuned for 11 cards; adding or removing one means re-checking the sides at 1440 and 1280.
+  Tuned for 13 cards (checked at 1600, 1440, 1280 and 1199); adding or removing one means re-checking the sides.
 - The front card is pushed toward the camera (`--orbit-front`) and carries the blue border and
   a progress line. Cards behind the hero copy go almost fully dark (`--orbit-behind`) and fade
   out whole (`--orbit-ghost`, written as `--vis`). "Behind the copy" is measured, not assumed:
@@ -253,10 +253,11 @@ Don't add these back without asking:
   `align-items: start`. Section padding is `--sec-y` (56 to 100px); the page is about
   12,600px at 1440.
 - Every card in a lane is one width and one height, across rows too (Vidyut's rule, Oct
-  2026). More builds is an 8-column grid, each card span 2, the fifth starting on column 2
-  so the row of three is centred under the row of four (3 + 3 + 1 on six columns below
-  1100, 2 + 2 + 2 + 1 on four below 760, the odd card centred at the same width, one column
-  below 560). Each card is a subgrid on seven rows (media, kind, title, one-liner, role,
+  2026). More builds is an 8-column grid of eight cards, each span 2, two rows of four (3 + 3 + 2
+  on six columns below 1100 with the last two centred, four rows of two below 760, one
+  column below 560). The featured grid is 4 columns with each card span 2, so an odd last
+  card (FireSight today) sits centred at the same width. Compact cards show gold award
+  badges too (PrismKeep). Each card is a subgrid on seven rows (media, kind, title, one-liner, role,
   links, read more). `useEqualRows` reads the natural track sizes and writes the tallest of
   each (all but Read more) to `--tracks`, which both grids use as `grid-auto-rows`, so the
   three featured rows and the two More builds rows match. Read more stays auto: opening a

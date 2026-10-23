@@ -42,7 +42,7 @@ export const meta = {
   name: 'Vidyut Sriram',
   title: 'Vidyut Sriram | safe, reliable AI systems',
   description:
-    'Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 1st in four hackathon tracks, arXiv first author. Forward-deployed and AI engineer, from Jan 2027.',
+    'Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 1st place five times at hackathons, arXiv first author. Forward-deployed and AI engineer, from Jan 2027.',
   location: 'State College, PA',
 };
 
@@ -79,9 +79,9 @@ export const hero = {
   identitySub:
     'Agents that do real work, with code checking the numbers and a person approving before anything goes out.',
   /* One short form everywhere (it clears the side cards at 1440 and stays a caption
-     on a phone). "1st place in four tracks" = Visa + Photon (LA Hacks AI
+     on a phone). "5× 1st" = 1st overall (SF Startup Challenge) + Visa + Photon (LA Hacks AI
      Hackathon) + Real World + Data Science (Bitcamp). */
-  credential: 'Comcast · Sherlock AI · 1st in 4 hackathon tracks · arXiv first author',
+  credential: 'Comcast · Sherlock AI · 5× 1st at hackathons · arXiv first author',
   locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
@@ -235,6 +235,28 @@ export const hero = {
           alt: 'NextRound logo and the line "Readiness, measured." beside its interactive prototype',
         },
       },
+      {
+        id: 'prismkeep',
+        title: 'PrismKeep',
+        oneLiner: 'Six agents run a founder’s follow-ups.',
+        badge: '1st overall · SF Startup',
+        badgeKind: 'win',
+        image: {
+          src: '/builds/ring/prismkeep.webp',
+          alt: 'PrismKeep logo, "Promises kept. Stories straight.", beside an investor draft "No churn risk this quarter" marked Not true against a customer call saying "We’ll look at alternatives"',
+        },
+      },
+      {
+        id: 'firesight',
+        title: 'FireSight',
+        oneLiner: 'A cited 3D arrival brief for fire officers.',
+        badge: 'Live prototype',
+        badgeKind: 'live',
+        image: {
+          src: '/builds/ring/firesight.webp',
+          alt: 'FireSight logo, "The fire floor, before the wheels stop", beside a 3D cutaway of a fire floor with a battery room and a cafeteria marked from SF public records',
+        },
+      },
     ],
   },
 };
@@ -301,7 +323,7 @@ export const builds = {
   eyebrow: "What I've built",
   heading: 'Builds',
   intro:
-    'Fifteen builds, flagship first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+    'Seventeen builds, flagship first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
 
   /* ---- Flagship panel ---------------------------------------------------- */
   flagship: {
@@ -545,6 +567,36 @@ export const builds = {
         { label: 'Source', href: 'https://github.com/vs-githjk/Terrametric' },
       ],
     },
+    {
+      id: 'firesight',
+      /* Repo github.com/Devaj6190/FireSight (README, Oct 22 2026). Team roles are
+         from its README. Judging result not known yet: no award claimed. The
+         Devpost page under this name is not confirmed as the team's, so not linked. */
+      kind: 'Hackathon · one day · team of 4',
+      title: 'FireSight',
+      descriptor: 'arrival briefs for fire officers',
+      when: 'Oct 2026 · super{set} SF, Track 1: Public Data APIs',
+      oneLiner:
+        'From a dispatch line, it finds the building, opens the 3D tower at the fire floor and briefs the officer from cited San Francisco public records.',
+      awards: [],
+      role: 'I built the spoken brief (ElevenLabs), the AR view on Android, the AI and the MCP server, and planned the build for the team.',
+      body: [
+        'The brief comes life first: people relative to the fire floor, what occupies it, what to bring and check, the nearest hydrants and the wind, then what to verify on arrival. It is assembled from the records by rules, so it is the same every time; Claude only answers free questions, and a validator drops any line without a citation. When two records disagree, both show as a **CONFLICT**, and stairs and standpipes, which no public record has, are listed as checks and **never drawn**.',
+        'Spoken updates such as "people trapped on floor 23" become one typed decision with a confidence score, and below 0.5 it asks "Say again?" instead of guessing. An independent one-day prototype, **not affiliated with SFFD** and not for operational use.',
+      ],
+      metrics: [
+        { value: '88', label: 'public sources queried\nfor every building' },
+      ],
+      stack: 'React · three.js · React Three Fiber · Hono · Zod · Claude · ElevenLabs · MCP · DataSF',
+      media: {
+        image: '/builds/firesight.webp',
+        alt: 'FireSight logo, "The fire floor, before the wheels stop" and "Cited SF public records", beside a 3D cutaway of a fire floor with a battery room and a cafeteria marked',
+      },
+      links: [
+        { label: 'Live demo', href: 'https://firesight-ten.vercel.app' },
+        { label: 'Source', href: 'https://github.com/Devaj6190/FireSight' },
+      ],
+    },
   ],
 
   /* ---- Research row (its own shape, after the six cards) ------------------ */
@@ -595,6 +647,32 @@ export const builds = {
     heading: 'More builds',
     intro: 'A hackathon meeting agent, an interview-prep product, public tools and side projects. Every one has a public repo you can open.',
     items: [
+      {
+        id: 'prismkeep',
+        /* Repo github.com/vs-githjk/sf-startup-challenge, plan/devpost.md "Results
+           from today's run". 1st overall confirmed by Vidyut (Oct 22). Demo data is
+           synthetic. TODO: Devpost link when he has it. */
+        kind: 'Hackathon · team of 4',
+        title: 'PrismKeep',
+        descriptor: 'founder follow-up agents',
+        when: 'Oct 2026 · SF Startup Challenge',
+        oneLiner:
+          'Six AI agents run a founder’s follow-ups, and none of them tells an investor something a customer contradicted.',
+        awards: ['1st overall'],
+        role: 'I built the agents and their Band rooms, and wired in meetings from PrismAI.',
+        body: [
+          '**1st overall at the SF Startup Challenge.** Six agents share one Cognee memory of every investor meeting, customer call and support ticket. A Listener flagged a cross-meeting contradiction without being asked, a Brain agent forgot 5 stale facts on one founder correction, and every outbound draft went out with **0 unverified claims**, approved by the founder, with the sha256 of the approved text matching what was sent. A Security Reviewer blocked a fix until Snyk Code came back clean.',
+        ],
+        metrics: [],
+        stack: 'Python · FastAPI · LangGraph · Band · Claude Code · Codex · Cognee · Neo4j · Snyk · Flexprice',
+        media: {
+          image: '/builds/prismkeep.webp',
+          alt: 'PrismKeep logo, "Promises kept. Stories straight.", beside an investor draft marked Not true against a customer call saying "We’ll look at alternatives"',
+        },
+        links: [
+          { label: 'Source', href: 'https://github.com/vs-githjk/sf-startup-challenge' },
+        ],
+      },
       {
         id: 'quorum',
         kind: 'Hackathon · weekend · team of 4',
@@ -785,7 +863,7 @@ export const highlights = {
     'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
     'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months.',
     'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
-    'Won **1st place in four hackathon tracks** in 2026: two at the AI Hackathon by LA Hacks, two at Bitcamp.',
+    'Won **1st place five times** at hackathons in 2026, including **1st overall** at the SF Startup Challenge.',
   ],
 };
 
@@ -933,7 +1011,7 @@ export const toolkit = {
 /* ----------------------------------------------------------- PROOF OF WORK --- */
 /* The one-click verification section. Numbers on the GitHub card are computed
    at build time from src/data/github.json (scripts/fetch-github.mjs), never
-   typed here. Wins repeat the award badges above (6 in total). "1st" rests on
+   typed here. Wins repeat the award badges above (7 in total). "1st" rests on
    Vidyut's confirmation and his resume; Devpost itself says "Winner" and the
    prize name. Event names follow Devpost. */
 export const proofOfWork = {
@@ -963,6 +1041,11 @@ export const proofOfWork = {
     eyebrow: 'Wins',
     link: { label: 'Devpost', href: 'https://devpost.com/vs-githjk' },
     items: [
+      {
+        title: 'PrismKeep · 1st overall',
+        event: 'SF Startup Challenge, AWS Builder Loft · Oct 2026',
+        href: '', // TODO: Devpost link when Vidyut has it
+      },
       {
         title: 'BetterBill · 1st, Visa track',
         event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',

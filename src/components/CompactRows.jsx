@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useEqualRows } from '../hooks/useEqualRows';
 import Media from './Media';
+import MediaBadges from './MediaBadges';
 import Metrics from './Metrics';
 import LinkRow from './LinkRow';
 import Rich from './Rich';
@@ -28,6 +29,7 @@ export default function CompactRows({ more }) {
                 image={c.media?.image}
                 alt={c.media?.alt}
                 tile={c.tile}
+                badges={c.awards.length > 0 ? <MediaBadges item={c} /> : null}
                 sizes="(min-width: 1100px) 270px, (min-width: 760px) 30vw, (min-width: 560px) 46vw, 92vw"
               />
             </div>
