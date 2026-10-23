@@ -254,7 +254,7 @@ export const hero = {
         badgeKind: 'win',
         image: {
           src: '/builds/ring/firesight.webp',
-          alt: 'FireSight: 140 New Montgomery St exploded floor by floor on the San Francisco city map, a simulated fire on floor 22 glowing red, and the battery room on that floor pinned from a fire permit',
+          alt: 'FireSight on 140 New Montgomery St: the 26-story tower lit in the 3D San Francisco city beside its Hazards panel, 6 danger and 29 caution records such as the battery rooms on floors 22 and 23',
         },
       },
     ],
@@ -591,7 +591,7 @@ export const builds = {
       stack: 'React · three.js · React Three Fiber · Hono · Zod · Claude · ElevenLabs · MCP · DataSF',
       media: {
         image: '/builds/firesight.webp',
-        alt: 'FireSight demo: 140 New Montgomery St exploded floor by floor on the San Francisco city map, a simulated fire on floor 22 glowing red, the battery room on that floor pinned from a 2017 fire permit, and nearby hydrants marked',
+        alt: 'FireSight on 140 New Montgomery St: the 26-story tower lit in the 3D San Francisco city beside its Hazards panel of 56 cited city records (6 danger, 29 caution), including battery rooms on floors 22 and 23 and past building fires',
       },
       links: [
         { label: 'Live demo', href: 'https://firesight-ten.vercel.app' },
