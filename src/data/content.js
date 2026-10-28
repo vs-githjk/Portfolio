@@ -614,8 +614,8 @@ export const builds = {
       id: 'fishmarket',
       /* Repo github.com/vs-githjk/fish-market-nothing-fishy (README, Oct 25 2026).
          Cal Hacks 13.0, Oct 24 to 25 2026. Honorable mention, Fetch.ai track:
-         confirmed by Vidyut (Oct 28). Commits from GitHub contributors (Vidyut 178,
-         team total 386 across 4 people). Every figure below is from the README's
+         confirmed by Vidyut (Oct 28). Role line in his words: his idea, he orchestrated
+         the build, and he plans to keep building it. Every figure below is from the README's
          measured-results table; the shield numbers are reported as the README states
          them, misses included. No Devpost link known. */
       kind: 'Hackathon · Cal Hacks 13.0 · team of 4',
@@ -625,7 +625,7 @@ export const builds = {
       oneLiner:
         'Your buyer agent shops for PC parts while seller agents compete in sealed rounds, and nothing above your allowance is paid until you approve on a phone call.',
       awards: ['Honorable mention · Fetch.ai track'],
-      role: 'I wrote 178 of its 386 commits, the most on the team.',
+      role: 'The idea was mine, and I orchestrated the whole build. I plan to keep building it.',
       body: [
         'Nine agents on Fetch.ai, eight of them registered on Agentverse and reachable from ASI:One. Before any money moves, Smell Test screens every listing for hidden instructions and payee swaps, a deterministic Quality Advocate checks fit and CPSC recalls and can veto the cheapest bid, and the winning price is re-read live. Above your allowance a Cartesia voice agent calls you, but **code decides**: only the one-time code on your screen plus "approve" passes, and payment runs in Stripe test mode.',
         'Every claim is labelled LIVE, MIRROR, SIM or SANDBOX, and the README publishes its misses: Smell Test stopped **13 of 20 held-out attacks** while wrongly blocking 2 of 10 honest listings, so "secure" is the goal we build toward, not a claim yet.',
