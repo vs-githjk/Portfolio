@@ -347,7 +347,7 @@ export const builds = {
     oneLiner:
       'A meeting agent that turns what people promise on a call into finished work, and asks before it acts.',
     awards: [],
-    role: 'I wrote 1,120 of its 1,352 commits, starting with the first one.',
+    role: 'The idea was mine, I built it from the first commit, and I run it on my own now.',
     /* Shipped and live. */
     body: [
       'I took PrismAI from an empty repo to a **live beta** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
