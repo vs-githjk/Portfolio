@@ -54,7 +54,7 @@ Three rules encode the thesis:
 
 | Section | Job |
 |---|---|
-| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of fourteen builds |
+| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of ten builds |
 | Experience | Where he has worked; every result is a complete statement |
 | Builds | PrismAI flagship, eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (18 in all) |
 | Highlights | Four one-line statements, after the stories they summarize |
@@ -62,16 +62,17 @@ Three rules encode the thesis:
 | Principles | How he thinks about building (2x2 tiles) |
 | Value | What that is worth to you (hairline rows) |
 | Toolkit | The inventory, grouped chips |
-| Contact | The ask: the email is the hero of the section |
+| Contact | The ask: his studio headshot (the one face on the page; the hero is a sunset silhouette), then the email as the hero of the section |
 
 Principles and Value are deliberately different shapes (tiles vs hairline rows) so they do
 not read as the same module twice. Keep them visually distinct.
 
 ## The orbit ring (`components/Orbit.jsx`)
 
-Thirteen glass cards on an elliptical CSS 3D ring around the name, in Vidyut's order:
-PrismAI, BetterBill, MVR, Vytal, Match Day, Yinzone, Terrametric, the paper, Quorum,
-FilingWatch, NextRound, PrismKeep, FireSight, Fish Market. Each card is one link to its Builds entry (`#build-<id>`); a slide
+Ten glass cards on an elliptical CSS 3D ring around the name, his ten strongest, in
+Vidyut's order: PrismAI, BetterBill, MVR, Vytal, Match Day, Terrametric, the paper,
+PrismKeep, FireSight, Fish Market. Everything else lives only in Builds (Oct 28: fourteen
+was too crowded). Each card is one link to its Builds entry (`#build-<id>`); a slide
 `id` in `hero.carousel.slides` must equal the Builds entry id.
 
 - One rAF loop writes transforms straight to the nodes (no React state per frame, no layout
@@ -79,7 +80,7 @@ FilingWatch, NextRound, PrismKeep, FireSight, Fish Market. Each card is one link
   own transforms). It asks for frames only while something moves.
 - Geometry lives in the `--orbit-*` tokens (radius, tilt, yaw, shade, front lift, card width).
   `measure()` fits the radius to the scene width and the ring centre to the hero copy above it.
-  Tuned for 14 cards (checked at 1600, 1440, 1280 and 1199); adding or removing one means re-checking the sides.
+  Tuned for 10 cards (checked at 1600, 1440, 1280 and 1199); adding or removing one means re-checking the sides.
 - The front card is pushed toward the camera (`--orbit-front`) and carries the blue border and
   a progress line. Cards behind the hero copy go almost fully dark (`--orbit-behind`) and fade
   out whole (`--orbit-ghost`, written as `--vis`). "Behind the copy" is measured, not assumed:
@@ -224,7 +225,7 @@ Search the repo for `TODO`:
 - A silent screen-recording loop of the new PrismAI UI for the flagship (`media.video` is empty; `Flagship.jsx` does not render video yet)
 - Source links for the paper, MVR, Match Day and Vytal (private repos today)
 - Yinzone and BetterBill "Live site" links (Vidyut is sending them; hidden until then)
-- `public/og-card-v4.jpg` is the link-preview card (1200x630, headshot, Indigo); re-render it
+- `public/og-card-v5.jpg` is the link-preview card (1200x630, headshot, Indigo, "4× hackathon winner · 6 first places"); bump the filename and re-render it
   when the headline facts change
 
 ## Things deliberately left out

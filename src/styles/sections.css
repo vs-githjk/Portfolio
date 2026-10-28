@@ -2300,6 +2300,22 @@
   gap: 18px;
 }
 
+/* His headshot above the ask: the one face on the page, styled like the hero
+   portrait (accent hairline, soft ring). */
+.c-portrait {
+  width: clamp(96px, 9vw, 120px);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid color-mix(in srgb, var(--acc) 60%, transparent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--acc) 12%, transparent),
+    var(--elev-2);
+  background: var(--surface-2);
+  margin-bottom: 6px;
+}
+
 .contact .blurb {
   color: var(--text-2);
   max-width: 56ch;

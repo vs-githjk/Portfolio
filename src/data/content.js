@@ -169,17 +169,6 @@ export const hero = {
         },
       },
       {
-        id: 'yinzone',
-        title: 'Yinzone',
-        oneLiner: 'Shows where new housing can go in Pittsburgh.',
-        badge: '~142k parcels scored',
-        badgeKind: '',
-        image: {
-          src: '/builds/ring/yinzone.webp',
-          alt: 'Yinzone logo over a 3D street-scale map of Pittsburgh: "Where could new housing go in Pittsburgh, and what stands in the way?"',
-        },
-      },
-      {
         id: 'terrametric',
         title: 'Terrametric',
         oneLiner: 'Drought risk and irrigation plans, per field.',
@@ -199,40 +188,6 @@ export const hero = {
         image: {
           src: '/builds/ring/paper.webp',
           alt: 'The paper title and "83.7% fewer CodeQL errors" beside a diagram of the GCC, CodeQL and repair loop, with KLEE as the final check',
-        },
-      },
-      {
-        id: 'quorum',
-        title: 'Quorum',
-        oneLiner: 'An AI teammate that joins the call and acts.',
-        badge: 'Hackathon · YHack',
-        badgeKind: '',
-        image: {
-          src: '/builds/ring/quorum.webp',
-          alt: 'Quorum logo, "Joins your meeting, listens, takes the action, and speaks back", beside a meeting where someone says "Hey Q, file a GitHub issue for the auth bug"',
-        },
-      },
-      {
-        id: 'filingwatch',
-        title: 'FilingWatch',
-        oneLiner: 'Reports what was filed, never what it means.',
-        badge: 'Solo build',
-        badgeKind: '',
-        tone: 'light', // pale thumbnail: the ring dims it further at the back
-        image: {
-          src: '/builds/ring/filingwatch.webp',
-          alt: 'FilingWatch "8K" mark, "Reports what was filed, never what it means", beside its feed of recent SEC 8-K filings',
-        },
-      },
-      {
-        id: 'nextround',
-        title: 'NextRound',
-        oneLiner: 'Plans your prep and diagnoses every miss.',
-        badge: 'Working build',
-        badgeKind: '',
-        image: {
-          src: '/builds/ring/nextround.webp',
-          alt: 'NextRound logo and the line "Readiness, measured." beside its interactive prototype',
         },
       },
       {
@@ -1173,6 +1128,13 @@ export const contact = {
   headingEm: 'broken.',
   blurb:
     'Hiring a forward-deployed engineer or an AI engineer, or building agents that have to hold up with real users? Write to me. I am available from January 2027 and open to relocating. If you think I got something on this page wrong, tell me that too.',
+  /* His studio headshot, so a face is on the page once (the hero uses his sunset
+     silhouette). 240px and 480px (2x) squares from public/portrait@2x.jpg. */
+  portrait: {
+    src: '/headshot-240.webp',
+    src2x: '/headshot-480.webp',
+    alt: 'Vidyut Sriram, smiling, in a light blue polo',
+  },
   email: 'vidyut0712@gmail.com',
   copyLabel: 'Copy',
   copiedLabel: 'Copied',

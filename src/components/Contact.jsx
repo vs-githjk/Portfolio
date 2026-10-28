@@ -8,6 +8,16 @@ export default function Contact() {
     <section className="sec contact" id="contact">
       <div className="rise" aria-hidden="true" />
       <div className="wrap">
+        <img
+          className="c-portrait reveal"
+          src={contact.portrait.src}
+          srcSet={`${contact.portrait.src} 1x, ${contact.portrait.src2x} 2x`}
+          alt={contact.portrait.alt}
+          width="120"
+          height="120"
+          loading="lazy"
+          decoding="async"
+        />
         <span className="eyebrow reveal">{contact.eyebrow}</span>
         <h2 className="reveal">
           {contact.heading} <em>{contact.headingEm}</em>
