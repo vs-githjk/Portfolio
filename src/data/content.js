@@ -614,7 +614,7 @@ export const builds = {
     descriptor: 'GCC · CodeQL · KLEE',
     when: 'Sep 2025 to Jul 2026 · 2nd Place, Engineering, Penn State Undergraduate Exhibition 2026',
     oneLiner:
-      'AI-written C often fails to compile or ships security bugs. This loop hands the compiler’s and analyzers’ findings back to the model to fix, and cut CodeLlama 7B’s CodeQL errors by 83.7%.',
+      'Secure code generation with tool-guided feedback: a repair loop hands compiler and static-analyzer findings back to the model to fix, and cut CodeLlama 7B’s CodeQL errors by 83.7%.',
     awards: ['2nd · Penn State Exhibition 2026'],
     role: 'First author, with Saatvik Pradhan and Suman Saha.',
     body: [
