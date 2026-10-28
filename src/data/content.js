@@ -352,6 +352,8 @@ export const builds = {
     body: [
       'I took PrismAI from an empty repo to a **live beta** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
       'Hybrid search (pgvector plus BM25) answers questions across every past meeting, an MCP connector brings that context into Claude and ChatGPT, and a cross-tenant attack suite blocks CI.',
+      // Vidyut, Oct 28 2026: pitched at the conference with Amazon's CFO in the room, and met him. The photo stays off the site.
+      'I pitched PrismAI at the **Penn State Venture & IP Conference** in front of **Amazon’s CFO**, and met him there.',
     ],
     /* In development: always rendered under this label. */
     now: {
