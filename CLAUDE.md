@@ -245,8 +245,9 @@ Don't add these back without asking:
 ## Later rounds: layout rules worth keeping
 
 - Cards in a row have one height and aligned fields (Vidyut's rule, Oct 2026). The six
-  featured cards are pairs; each card is a `subgrid` on the same nine rows (media, kind,
-  title, one-liner, role, results, stack, links, read more), so every field starts on one
+  featured cards are pairs; each card is a `subgrid` on the same seven rows (media, kind,
+  title, one-liner, results, links, read more); the role line and the stack open inside
+  Read more (Oct 28: shorter cards, a catchy one-liner does the hooking), so every field starts on one
   line across the pair and a field one card lacks leaves its row empty. "Read more" (a
   native `<details>`, so the text stays in the HTML) is the LAST row, at the card foot:
   opening one story grows that row in both cards, and the row mate gets padding at its foot,
@@ -258,8 +259,8 @@ Don't add these back without asking:
   on six columns below 1100 with the last two centred, four rows of two below 760, one
   column below 560). The featured grid is 4 columns with each card span 2, so an odd last
   card (FireSight today) sits centred at the same width. Compact cards show gold award
-  badges too (PrismKeep). Each card is a subgrid on seven rows (media, kind, title, one-liner, role,
-  links, read more). `useEqualRows` reads the natural track sizes and writes the tallest of
+  badges too (PrismKeep). Each card is a subgrid on six rows (media, kind, title, one-liner, links, read
+  more); the role line opens inside Read more. `useEqualRows` reads the natural track sizes and writes the tallest of
   each (all but Read more) to `--tracks`, which both grids use as `grid-auto-rows`, so the
   three featured rows and the two More builds rows match. Read more stays auto: opening a
   story grows only its own row. A row without a field (Vytal and Match Day have no metrics)

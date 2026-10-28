@@ -10,7 +10,7 @@ import CompactRows from './CompactRows';
    order is Vidyut's, and it is the ring's order. */
 export default function Builds() {
   const grid = useRef(null);
-  useEqualRows(grid, 9);
+  useEqualRows(grid, 7);
   return (
     <section className="sec builds" id="builds">
       <div className="wrap">

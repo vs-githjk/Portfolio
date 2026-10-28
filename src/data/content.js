@@ -370,7 +370,7 @@ export const builds = {
       descriptor: 'hospital bill advocate',
       when: 'Oct 2026 · AI Hackathon 2026 by LA Hacks, UCLA',
       oneLiner:
-        'Snap a hospital bill. It finds the charges worth questioning, shows the proof, and calls the billing office once you approve.',
+        'Snap a hospital bill. It finds the charges you may not owe, and calls billing for you once you say yes.',
       /* Devpost prize names: "Visa - The Future of Shopping: Powered by AI,
          Secured by Visa" and "Photon: Best Voice Agent". "1st" per Vidyut
          and his resume. */
@@ -403,7 +403,7 @@ export const builds = {
       descriptor: 'verified software modernization',
       when: 'Sep 2026 to Present',
       oneLiner:
-        'Before anyone rewrites a legacy system, MVR rebuilds it as a model where every claim links to evidence.',
+        'Know what a legacy system really does before you rewrite it: every claim about it links to evidence.',
       awards: [],
       role: 'Solo build: every commit in the repo is mine.',
       body: [
@@ -428,7 +428,7 @@ export const builds = {
       descriptor: 'coaching platform for fitness coaches',
       when: 'Jul 2026 to Present', // TODO: confirm still active
       oneLiner:
-        'Coaching software where the coach stays in charge: every score explains itself, and AI acts only where a person confirms it.',
+        'Coaching software where every score explains itself, and AI acts only after a person confirms.',
       awards: [],
       role: 'Solo build: I designed and wrote all of it.',
       body: [
@@ -459,7 +459,7 @@ export const builds = {
       descriptor: 'racket tournament platform',
       when: '2026 · live at joinmatchday.com',
       oneLiner:
-        'Tournament day, coordinated: registration, draws, courts and live scoring for racket sports in one system.',
+        'Run a whole racket tournament from one system: sign-ups, draws, courts and live scores on every phone.',
       awards: [],
       role: 'Built with a team, badminton-first. We are now talking with badminton coaching centres about hosting their tournaments on it.',
       body: [
@@ -488,7 +488,7 @@ export const builds = {
       descriptor: 'where new housing can go in Pittsburgh',
       when: 'Sep 2026 · AI Horizons 2026: AI for Housing Hackathon, Track 3',
       oneLiner:
-        'Click any lot in Pittsburgh and see which of 16 housing types fit, by what approval path, and what stands in the way.',
+        'Click any lot in Pittsburgh and see what housing could go there, and what stands in the way.',
       awards: [], // Not in the published top 3 (Technical.ly, Oct 8 2026). No badge.
       role: 'I built the AI chat: voice, cited answers, what-if reruns of the real scorer, and a guard that drops any sentence with a number that is not in the facts.',
       body: [
@@ -516,7 +516,7 @@ export const builds = {
       descriptor: 'crop drought intelligence',
       when: 'Apr 2026 · Bitcamp 2026, University of Maryland',
       oneLiner:
-        'Tells farmers which fields are heading into drought stress, and what irrigating them will cost and save.',
+        'Tells farmers which fields are heading into drought, and what saving them will cost.',
       awards: ['2× 1st · Bitcamp 2026'],
       role: 'The idea was mine, and I led the build: system orchestration, model training, the grounded RAG chat and the stress metrics. I also led the live pitch to the judges.',
       body: [
@@ -547,7 +547,7 @@ export const builds = {
       descriptor: 'arrival briefs for fire officers',
       when: 'Oct 2026 · super{set} SF, Track 1: Public Data APIs',
       oneLiner:
-        'From a dispatch line, it finds the building, opens the 3D tower at the fire floor and briefs the officer from cited San Francisco public records.',
+        'Give it the address on a fire call and it opens the building at the fire floor, every fact cited from public records.',
       awards: ['1st · Track 1: Public Data APIs'],
       role: 'I built the spoken brief (ElevenLabs), the AR view on Android, the AI and the MCP server, and planned the build for the team.',
       body: [
@@ -580,7 +580,7 @@ export const builds = {
       descriptor: 'secure agentic marketplace',
       when: 'Oct 2026 · Cal Hacks 13.0, Fetch.ai track',
       oneLiner:
-        'Your buyer agent shops for PC parts while seller agents compete in sealed rounds, and nothing above your allowance is paid until you approve on a phone call.',
+        'Seller agents compete for your order in sealed rounds, every listing is checked for scams, and big buys wait for your OK on a call.',
       awards: ['Honorable mention · Fetch.ai track'],
       role: 'The idea was mine, and I orchestrated the whole build. I plan to keep building it.',
       body: [
@@ -685,7 +685,7 @@ export const builds = {
         descriptor: 'AI meeting participant',
         when: 'Mar 2026 · YHack',
         oneLiner:
-          'An AI teammate that sits in the meeting, listens, talks back, and does the task you ask for out loud.',
+          'An AI teammate that joins the meeting, talks back, and does what you ask out loud.',
         awards: [],
         role: 'I wrote most of the code.',
         body: [
@@ -709,7 +709,7 @@ export const builds = {
         descriptor: 'SEC 8-K monitor',
         when: 'Sep 2026',
         oneLiner:
-          'Watches SEC filings for the companies you follow and tells you what was filed, never what it means.',
+          'Every new SEC 8-K for the companies you follow: what was filed, never what it means.',
         awards: [],
         role: '',
         body: [
@@ -732,7 +732,7 @@ export const builds = {
         descriptor: 'interview readiness, measured',
         when: 'Jul to Sep 2026',
         oneLiner:
-          'Interview prep for software engineers: it plans each day, diagnoses what went wrong, and computes every score in code instead of asking a model.',
+          'Interview prep that plans your day and diagnoses every miss, with every score computed in code, not by a model.',
         awards: [],
         role: 'I wrote 75 of the 78 commits across its two repos, including the architecture.',
         body: [
@@ -811,7 +811,7 @@ export const builds = {
         title: 'PaperTrail',
         descriptor: 'reading paths for research papers',
         when: 'Apr 2026',
-        oneLiner: 'Give it a topic, title, DOI or link, and it maps the papers to read first.',
+        oneLiner: 'Give it a topic or a paper, and it maps what to read first.',
         awards: [],
         role: 'I wrote most of the code.',
         body: [

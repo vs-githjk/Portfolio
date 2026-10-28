@@ -1384,8 +1384,8 @@
 }
 
 /* ---- Featured cards -------------------------------------------------------- */
-/* Two columns, and every card is a subgrid on the same nine rows: media, kind,
-   title, one-liner, role, results, stack, links, read more. A row is as tall as the
+/* Two columns, and every card is a subgrid on the same seven rows: media, kind,
+   title, one-liner, results, links, read more (the role line and stack open inside it). A row is as tall as the
    tallest cell in it, so the two cards of a pair always have one height, and every
    field starts on one line across the pair. A field one card does not have (a
    role line, a link) leaves its row empty, which is the reserved space. "Read more"
@@ -1404,7 +1404,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: subgrid;
-  grid-row: span 9;
+  grid-row: span 7;
   margin-bottom: 24px;
 }
 
@@ -1419,7 +1419,7 @@
 }
 
 .build-body {
-  grid-row: 2 / span 8;
+  grid-row: 2 / span 6;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: subgrid;
@@ -1447,29 +1447,28 @@
   margin-top: 12px;
 }
 
-.build-body .role {
+.build-body .metrics {
   grid-row: 4;
   margin-top: 12px;
 }
 
-.build-body .metrics {
-  grid-row: 5;
-  margin-top: 12px;
-}
-
-.build-body .stack {
-  grid-row: 6;
-  margin-top: 8px;
-}
-
 .build-body .links {
-  grid-row: 7;
+  grid-row: 5;
   margin-top: 4px;
 }
 
 .build-body .build-more {
-  grid-row: 8;
+  grid-row: 6;
   margin-top: 4px;
+}
+
+/* The role line and the stack sit inside "Read more", above and below the story. */
+.build-more .role {
+  margin-top: 12px;
+}
+
+.build-more .stack {
+  margin-top: 12px;
 }
 
 .build-body .mini-more .text {
@@ -1554,8 +1553,8 @@
 }
 
 /* Eight cards, one size. Every card spans two columns of an 8-column grid, two
-   rows of four. Every card is a subgrid on seven rows (media, kind, title,
-   one-liner, role, links, read more), so each field starts on one line, with
+   rows of four. Every card is a subgrid on six rows (media, kind, title,
+   one-liner, links, read more; the role line opens inside it), so each field starts on one line, with
    "Read more" on the foot; a field a card lacks leaves its row empty. useEqualRows
    writes --tracks, the tallest size of each of the first six rows across every row
    of cards, so every row of cards is one height too; the Read more row stays auto,
@@ -1571,7 +1570,7 @@
 
 .mini {
   grid-column: span 2;
-  grid-row: span 7;
+  grid-row: span 6;
   min-width: 0;
   margin-bottom: 18px;
   display: grid;
@@ -1590,7 +1589,7 @@
 }
 
 .mini-body {
-  grid-row: 2 / span 6;
+  grid-row: 2 / span 5;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: subgrid;
@@ -1634,7 +1633,6 @@
 }
 
 .mini-role {
-  grid-row: 4;
   margin-top: 8px;
   font-size: 13px;
   line-height: 1.45;
@@ -1699,13 +1697,13 @@
 
 /* The links sit in row 5; the story opens in row 6, the foot of the card. */
 .mini-body .links {
-  grid-row: 5;
+  grid-row: 4;
   margin-top: 6px;
   gap: 0 14px;
 }
 
 .mini-body .mini-more {
-  grid-row: 6;
+  grid-row: 5;
   margin-top: 4px;
 }
 

@@ -14,7 +14,7 @@ import Stack from './Stack';
    ownership fact a skimmer wants. All seven cards share one size and one height, see .mini-grid. */
 export default function CompactRows({ more }) {
   const grid = useRef(null);
-  useEqualRows(grid, 7);
+  useEqualRows(grid, 6);
   return (
     <div className="more">
       <div className="more-head reveal">
@@ -42,13 +42,13 @@ export default function CompactRows({ more }) {
                 {c.title} <span>{c.descriptor}</span>
               </h4>
               <p className="mini-one">{c.oneLiner}</p>
-              {c.role && <p className="mini-role">{c.role}</p>}
               <LinkRow links={c.links} />
               <details className="mini-more">
                 <summary>
                   {more.readMore}
                   <span className="sr">{more.readMoreSr.replace('{title}', c.title)}</span>
                 </summary>
+                {c.role && <p className="mini-role">{c.role}</p>}
                 {c.body.map((p) => (
                   <p className="text" key={p.slice(0, 24)}>
                     <Rich text={p} />
