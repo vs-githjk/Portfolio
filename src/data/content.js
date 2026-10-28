@@ -65,13 +65,13 @@ export const nav = {
    badge on the PrismAI card, which says what it counts. */
 export const hero = {
   status: 'Forward-deployed and AI engineer · available Jan 2027',
-  /* Studio headshot: 180px and 360px (2x) squares, shown at about 160px beside
-     the name on a laptop and 112px on a phone. The 600px and 1200px originals
-     stay in public/ for the share card. */
+  /* Vidyut's own photo (Oct 2026): his silhouette on a beach at sunset, 180px and
+     360px (2x) squares, shown at about 160px beside the name on a laptop and 112px
+     on a phone. The share card still uses the studio headshot originals in public/. */
   portrait: {
     src: '/portrait-180.webp',
     src2x: '/portrait-360.webp',
-    alt: 'Vidyut Sriram, smiling, in a light blue polo',
+    alt: 'Vidyut Sriram in silhouette on a beach at sunset, the sky orange over the waves',
   },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
@@ -257,6 +257,18 @@ export const hero = {
           alt: 'FireSight on 140 New Montgomery St: the 26-story tower lit in the 3D San Francisco city beside its Hazards panel, 6 danger and 29 caution records such as the battery rooms on floors 22 and 23',
         },
       },
+      {
+        id: 'fishmarket',
+        title: 'Fish Market',
+        oneLiner: 'Seller agents compete; nothing fishy gets paid.',
+        badge: 'Honorable mention',
+        badgeKind: 'win',
+        tone: 'light', // pale thumbnail: the ring dims it further at the back
+        image: {
+          src: '/builds/ring/fishmarket.webp',
+          alt: 'Fish Market landing page: "The secure agentic marketplace. Where buyers and sellers thrive." beside a sealed bidding round on the floor',
+        },
+      },
     ],
   },
 };
@@ -323,7 +335,7 @@ export const builds = {
   eyebrow: "What I've built",
   heading: 'Builds',
   intro:
-    'Seventeen builds, flagship first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+    'Eighteen builds, flagship first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
 
   /* ---- Flagship panel ---------------------------------------------------- */
   flagship: {
@@ -596,6 +608,41 @@ export const builds = {
       links: [
         { label: 'Live demo', href: 'https://firesight-ten.vercel.app' },
         { label: 'Source', href: 'https://github.com/Devaj6190/FireSight' },
+      ],
+    },
+    {
+      id: 'fishmarket',
+      /* Repo github.com/vs-githjk/fish-market-nothing-fishy (README, Oct 25 2026).
+         Cal Hacks 13.0, Oct 24 to 25 2026. Honorable mention, Fetch.ai track:
+         confirmed by Vidyut (Oct 28). Commits from GitHub contributors (Vidyut 178,
+         team total 386 across 4 people). Every figure below is from the README's
+         measured-results table; the shield numbers are reported as the README states
+         them, misses included. No Devpost link known. */
+      kind: 'Hackathon · Cal Hacks 13.0 · team of 4',
+      title: 'Fish Market',
+      descriptor: 'secure agentic marketplace',
+      when: 'Oct 2026 · Cal Hacks 13.0, Fetch.ai track',
+      oneLiner:
+        'Your buyer agent shops for PC parts while seller agents compete in sealed rounds, and nothing above your allowance is paid until you approve on a phone call.',
+      awards: ['Honorable mention · Fetch.ai track'],
+      role: 'I wrote 178 of its 386 commits, the most on the team.',
+      body: [
+        'Nine agents on Fetch.ai, eight of them registered on Agentverse and reachable from ASI:One. Before any money moves, Smell Test screens every listing for hidden instructions and payee swaps, a deterministic Quality Advocate checks fit and CPSC recalls and can veto the cheapest bid, and the winning price is re-read live. Above your allowance a Cartesia voice agent calls you, but **code decides**: only the one-time code on your screen plus "approve" passes, and payment runs in Stripe test mode.',
+        'Every claim is labelled LIVE, MIRROR, SIM or SANDBOX, and the README publishes its misses: Smell Test stopped **13 of 20 held-out attacks** while wrongly blocking 2 of 10 honest listings, so "secure" is the goal we build toward, not a claim yet.',
+      ],
+      metrics: [
+        { value: '9', label: 'agents on Fetch.ai,\n8 live on Agentverse' },
+        { value: '26 of 27', label: 'planted purchasing errors\ncaught on a blind first run' },
+      ],
+      stack: 'Python · Next.js · TypeScript · Fetch.ai uAgents · ASI:One · SpacetimeDB · Cartesia · Stripe (test mode) · Apify · Bright Data',
+      media: {
+        image: '/builds/fishmarket.webp',
+        alt: 'Fish Market landing page: "The secure agentic marketplace. Where buyers and sellers thrive." beside a sealed bidding round on the floor, and a dashboard of goal, round, approval and receipt',
+      },
+      links: [
+        { label: 'Live site', href: 'https://fishmarket.dev' },
+        { label: 'Video', href: 'https://youtu.be/kv0vo8mmN5U' },
+        { label: 'Source', href: 'https://github.com/vs-githjk/fish-market-nothing-fishy' },
       ],
     },
   ],
@@ -1012,7 +1059,7 @@ export const toolkit = {
 /* ----------------------------------------------------------- PROOF OF WORK --- */
 /* The one-click verification section. Numbers on the GitHub card are computed
    at build time from src/data/github.json (scripts/fetch-github.mjs), never
-   typed here. Wins repeat the award badges above (8 in total). "1st" rests on
+   typed here. Wins repeat the award badges above (9 in total). "1st" rests on
    Vidyut's confirmation and his resume; Devpost itself says "Winner" and the
    prize name. Event names follow Devpost. */
 export const proofOfWork = {
@@ -1050,6 +1097,11 @@ export const proofOfWork = {
       {
         title: 'FireSight · 1st, Track 1: Hacking with Public Data APIs',
         event: 'super{set} SF · Oct 2026',
+        href: '',
+      },
+      {
+        title: 'Fish Market · Honorable mention, Fetch.ai track',
+        event: 'Cal Hacks 13.0 · Oct 2026',
         href: '',
       },
       {
