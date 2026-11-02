@@ -42,7 +42,7 @@ export const meta = {
   name: 'Vidyut Sriram',
   title: 'Vidyut Sriram | safe, reliable AI systems',
   description:
-    'Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 1st place six times at hackathons, arXiv first author. Forward-deployed and AI engineer, from Jan 2027.',
+    'Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 5× hackathon winner, arXiv first author. Forward-deployed and AI engineer, from Jan 2027.',
   location: 'State College, PA',
 };
 
@@ -79,9 +79,10 @@ export const hero = {
   identitySub:
     'Agents that do real work, with code checking the numbers and a person approving before anything goes out.',
   /* One short form everywhere (it clears the side cards at 1440 and stays a caption
-     on a phone). "6× 1st" = 1st overall (SF Startup Challenge) + Track 1 (super{set} SF) + Visa + Photon (LA Hacks AI
+     on a phone). "5× hackathon winner" = SF Startup Challenge, super{set} SF, Cal Hacks 13.0, LA Hacks,
+     Bitcamp. Six first places = 1st overall (SF Startup Challenge) + Track 1 (super{set} SF) + Visa + Photon (LA Hacks AI
      Hackathon) + Real World + Data Science (Bitcamp). */
-  credential: 'Comcast · Sherlock AI · 6× 1st at hackathons · arXiv first author',
+  credential: 'Comcast · Sherlock AI · 5× hackathon winner · arXiv first author',
   locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA · open to relocate',
   /* Buttons. Email is the one primary action. */
   actions: [
@@ -216,7 +217,7 @@ export const hero = {
         id: 'fishmarket',
         title: 'Fish Market',
         oneLiner: 'Seller agents compete; nothing fishy gets paid.',
-        badge: 'Honorable mention',
+        badge: 'Winner · Fetch.ai',
         badgeKind: 'win',
         tone: 'light', // pale thumbnail: the ring dims it further at the back
         image: {
@@ -540,8 +541,8 @@ export const builds = {
       id: 'firesight',
       /* Repo github.com/Devaj6190/FireSight (README, Oct 22 2026). Team roles are
          from its README. 1st in Track 1 (Hacking with Public Data APIs) confirmed by
-         Vidyut (Oct 22). The
-         Devpost page under this name is not confirmed as the team's, so not linked. */
+         Vidyut (Oct 22). Its Devpost page
+         lists him; the page itself shows no prize. */
       kind: 'Hackathon · one day · team of 4',
       title: 'FireSight',
       descriptor: 'arrival briefs for fire officers',
@@ -564,24 +565,25 @@ export const builds = {
       },
       links: [
         { label: 'Live demo', href: 'https://firesight-ten.vercel.app' },
+        { label: 'Devpost', href: 'https://devpost.com/software/firesight-fnt4le' },
         { label: 'Source', href: 'https://github.com/Devaj6190/FireSight' },
       ],
     },
     {
       id: 'fishmarket',
       /* Repo github.com/vs-githjk/fish-market-nothing-fishy (README, Oct 25 2026).
-         Cal Hacks 13.0, Oct 24 to 25 2026. Honorable mention, Fetch.ai track:
-         confirmed by Vidyut (Oct 28). Role line in his words: his idea, he orchestrated
+         Cal Hacks 13.0, Oct 23 to 25 2026. Devpost lists the award as "Winner,
+         [Fetch.ai] Best Use of Fetch.ai" (Nov 2); use that wording, never "1st". Role line in his words: his idea, he orchestrated
          the build, and he plans to keep building it. Every figure below is from the README's
          measured-results table; the shield numbers are reported as the README states
-         them, misses included. No Devpost link known. */
+         them, misses included. */
       kind: 'Hackathon · Cal Hacks 13.0 · team of 4',
       title: 'Fish Market',
       descriptor: 'secure agentic marketplace',
       when: 'Oct 2026 · Cal Hacks 13.0, Fetch.ai track',
       oneLiner:
         'AI agents fight for your order, a scam detector screens every listing, and nothing big gets paid until your phone rings.',
-      awards: ['Honorable mention · Fetch.ai track'],
+      awards: ['Winner · Best Use of Fetch.ai'],
       role: 'The idea was mine, and I orchestrated the whole build. I plan to keep building it.',
       body: [
         'Nine agents on Fetch.ai, eight of them registered on Agentverse and reachable from ASI:One. Before any money moves, Smell Test screens every listing for hidden instructions and payee swaps, a deterministic Quality Advocate checks fit and CPSC recalls and can veto the cheapest bid, and the winning price is re-read live. Above your allowance a Cartesia voice agent calls you, but **code decides**: only the one-time code on your screen plus "approve" passes, and payment runs in Stripe test mode.',
@@ -598,6 +600,7 @@ export const builds = {
       },
       links: [
         { label: 'Live site', href: 'https://fishmarket.dev' },
+        { label: 'Devpost', href: 'https://devpost.com/software/fish-market-of6te2' },
         { label: 'Video', href: 'https://youtu.be/kv0vo8mmN5U' },
         { label: 'Source', href: 'https://github.com/vs-githjk/fish-market-nothing-fishy' },
       ],
@@ -868,7 +871,7 @@ export const highlights = {
     'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
     'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months.',
     'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
-    'Won **1st place six times** at hackathons in 2026, including **1st overall** at the SF Startup Challenge.',
+    '**5× hackathon winner** in 2026, with six first places, including **1st overall** at the SF Startup Challenge.',
   ],
 };
 
@@ -1054,12 +1057,12 @@ export const proofOfWork = {
       {
         title: 'FireSight · 1st, Track 1: Hacking with Public Data APIs',
         event: 'super{set} SF · Oct 2026',
-        href: '',
+        href: 'https://devpost.com/software/firesight-fnt4le',
       },
       {
-        title: 'Fish Market · Honorable mention, Fetch.ai track',
+        title: 'Fish Market · Winner, Best Use of Fetch.ai',
         event: 'Cal Hacks 13.0 · Oct 2026',
-        href: '',
+        href: 'https://devpost.com/software/fish-market-of6te2',
       },
       {
         title: 'BetterBill · 1st, Visa track',
@@ -1097,7 +1100,7 @@ export const proofOfWork = {
     {
       kind: 'Devpost',
       value: 'vs-githjk',
-      detail: '5 prize wins across 2 projects',
+      detail: '6 prize wins across 3 projects',
       href: 'https://devpost.com/vs-githjk',
     },
     {
