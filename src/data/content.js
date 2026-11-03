@@ -64,7 +64,7 @@ export const nav = {
    Around it: the orbit ring. No figures in the hero except the live-status
    badge on the PrismAI card, which says what it counts. */
 export const hero = {
-  status: 'Forward-deployed and AI engineer · available Jan 2027',
+  status: 'Forward-deployed and AI engineer',
   /* Vidyut's own photo (Oct 2026): his silhouette on a beach at sunset, 180px and
      360px (2x) squares, shown at about 160px beside the name on a laptop and 112px
      on a phone. The share card still uses the studio headshot originals in public/. */
@@ -83,7 +83,7 @@ export const hero = {
      Bitcamp. Six first places = 1st overall (SF Startup Challenge) + Track 1 (super{set} SF) + Visa + Photon (LA Hacks AI
      Hackathon) + Real World + Data Science (Bitcamp). */
   credential: 'Comcast · Sherlock AI · 5× hackathon winner · arXiv first author',
-  locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA · open to relocate',
+  locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA',
   /* Buttons. Email is the one primary action. */
   actions: [
     { label: 'Email me', href: 'mailto:vidyut0712@gmail.com', primary: true },
@@ -1130,7 +1130,7 @@ export const contact = {
   heading: 'Tell me what’s',
   headingEm: 'broken.',
   blurb:
-    'Hiring a forward-deployed engineer or an AI engineer, or building agents that have to hold up with real users? Write to me. I am available from January 2027 and open to relocating. If you think I got something on this page wrong, tell me that too.',
+    'Building agents that have to hold up with real users? Write to me. If you think I got something on this page wrong, tell me that too.',
   /* His studio headshot, so a face is on the page once (the hero uses his sunset
      silhouette). 240px and 480px (2x) squares from public/portrait@2x.jpg. */
   portrait: {

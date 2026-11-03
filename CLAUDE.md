@@ -225,7 +225,7 @@ Search the repo for `TODO`:
 - A silent screen-recording loop of the new PrismAI UI for the flagship (`media.video` is empty; `Flagship.jsx` does not render video yet)
 - Source links for the paper, MVR, Match Day and Vytal (private repos today)
 - Yinzone and BetterBill "Live site" links (Vidyut is sending them; hidden until then)
-- `public/og-card-v6.jpg` is the link-preview card (1200x630, headshot, Indigo, "5× hackathon winner · 6 first places"); bump the filename and re-render it
+- `public/og-card-v7.jpg` is the link-preview card (1200x630, headshot, Indigo, "5× hackathon winner · 6 first places"); bump the filename and re-render it
   when the headline facts change
 
 ## Things deliberately left out
