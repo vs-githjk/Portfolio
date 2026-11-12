@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../hooks/useMediaQuery';
 import { beamFade, worldFade } from '../lib/beamFade';
+import { heroOrigin } from '../lib/origin';
 
 /* One fixed layer stack behind the page: the vertical light-beam field.
 
@@ -15,10 +16,13 @@ import { beamFade, worldFade } from '../lib/beamFade';
    - World (three.js, its own chunk) is the 3D scene behind every section below
      the first screen; --bg-deep is its opacity, which rises as the hero beams
      fade. Nothing below the first screen is visible until the reader scrolls,
-     so the chunk is requested on the first scroll (and, on a desktop, after the
-     page has been idle for a moment, so it is ready before they do). */
+     so the chunk is requested on the first scroll past the welcome (and, on a
+     desktop, after the page has been idle for a moment, so it is ready first).
+   - Hologram (plain WebGL, a small chunk) is the face of light on the welcome
+     screen above the hero. It mounts with the beams, after first paint. */
 const BackgroundField = lazy(() => import('./BackgroundField'));
 const World = lazy(() => import('./World'));
+const Hologram = lazy(() => import('./Hologram'));
 
 export default function Background() {
   const root = useRef(null);
@@ -40,7 +44,7 @@ export default function Background() {
   useEffect(() => {
     const go = () => setDeep(true);
     const onScroll = () => {
-      if (window.scrollY > 24) go();
+      if (window.scrollY - heroOrigin() > 24) go();
     };
     let idle = 0;
     const timer = window.matchMedia('(min-width: 961px)').matches
@@ -63,11 +67,15 @@ export default function Background() {
     let raf = 0;
     const update = () => {
       raf = 0;
-      const y = window.scrollY;
+      // Everything counts from the hero: the welcome screen above it is lit at
+      // --welcome-beams, and --bg-open (0 to 1) raises the light as the hero arrives.
+      const from = heroOrigin();
+      const y = window.scrollY - from;
       const vh = window.innerHeight;
+      node.style.setProperty('--bg-open', from > 0 ? Math.max(0, Math.min(1, 1 + y / from)).toFixed(3) : '1');
       node.style.setProperty('--bg-fade', beamFade(y, vh).toFixed(3));
       node.style.setProperty('--bg-deep', worldFade(y, vh).toFixed(3));
-      node.style.setProperty('--bg-y', reduced ? '0' : y.toFixed(1));
+      node.style.setProperty('--bg-y', reduced ? '0' : Math.max(0, y).toFixed(1));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -87,6 +95,11 @@ export default function Background() {
       {on && (
         <Suspense fallback={null}>
           <BackgroundField onReady={onReady} />
+        </Suspense>
+      )}
+      {on && (
+        <Suspense fallback={null}>
+          <Hologram />
         </Suspense>
       )}
       {deep && (

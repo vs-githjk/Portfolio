@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { worldFade } from '../lib/beamFade';
+import { heroOrigin } from '../lib/origin';
 import { createWorld } from '../lib/worldScene';
 
 /* The Deep: the 3D world behind every section below the hero (three.js, its own
@@ -44,7 +45,7 @@ export default function World() {
       raf = 0;
       if (document.hidden) return;
       const y = window.scrollY;
-      const visible = worldFade(y, window.innerHeight) > 0.004;
+      const visible = worldFade(y - heroOrigin(), window.innerHeight) > 0.004;
       if (rm.matches) {
         if (!drawn) world.render(40, 0);
         drawn = true;

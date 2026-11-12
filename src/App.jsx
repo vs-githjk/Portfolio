@@ -1,5 +1,6 @@
 import Background from './components/Background';
 import Nav from './components/Nav';
+import Welcome from './components/Welcome';
 import Hero from './components/Hero';
 import Experience from './components/Experience';
 import Builds from './components/Builds';
@@ -16,6 +17,7 @@ import { useReveal } from './hooks/useReveal';
 /* Page order. Reordering these lines reorders the site.
 
    The argument the page makes, in order:
+     Welcome       - his face in light says hello; one scroll plays it into the hero
      Hero          - his name, lit from above, and a ring of what he has built
      Experience    - where he has worked, every result a complete statement
      Builds        - PrismAI, six featured builds, the paper, seven more
@@ -38,6 +40,7 @@ export default function App() {
       <div className="page">
         <Nav />
         <main id="main" tabIndex={-1}>
+          <Welcome />
           <Hero />
           <Experience />
           <Vista set="giant" />
