@@ -125,7 +125,7 @@ and the loop stops once the layer is invisible, when the tab is hidden, and unde
 Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
 asked for planets and things flying, and approved three.js for it). One WebGL canvas in the
 fixed stack, drawn with three.js: a ringed gas giant, a moon, a spiral galaxy of points,
-three large medusae of light that pulse upward, four wireframe shards of glass, one rare comet,
+three large medusae of light that pulse upward, one rare comet (the glass shards were cut, Vidyut Nov 12),
 marine snow that is also the stars, and the lit limb of a world that rises under the footer. Every shader is in
 `worldScene.js`; colours come from `--beam-*`, `--star-*` and the `--world-*` tokens.
 
@@ -135,11 +135,11 @@ marine snow that is also the stars, and the lit limb of a world that rises under
 - A `<Vista set="giant|galaxy|horizon" />` in `App.jsx` is an empty window in the page. The
   scene reads its place in the document and centres that set piece on it, and lays out again
   whenever the page height changes (a ResizeObserver on the body). The moon sits beside the
-  Value heading. Snow, medusae and shards wrap around the camera, so they never run out.
+  Value heading. Snow and medusae wrap around the camera, so they never run out.
 - Less but more (Vidyut, Nov 12, after a first pass with eight medusae and fourteen shards:
   "too much random stuff"). The moments are the set pieces. The reading sections (`QUIET` in
   `worldScene.js`: Experience, Principles, Value, Toolkit) are near-empty: while the middle of
-  the screen is in or near one, the medusae, shards and comet fade out (`uShow`) and only the
+  the screen is in or near one, the medusae and comet fade out (`uShow`) and only the
   snow is left (plus the moon by the Value heading). Do not raise the counts; make one better.
 - Text stays readable three ways: the drifting things keep to the margins and the column
   edges (`edge()`), and dim inside the column (`calm()`); every section paints most of the
@@ -151,7 +151,7 @@ marine snow that is also the stars, and the lit limb of a world that rises under
   a few idle seconds on a desktop, never before the first paint. It draws only while visible
   (not on the first screen, not in a hidden tab), about 30 frames a second when idle and every
   frame while the camera is catching up with a scroll. DPR is capped at 1.75 (1.5 on phones);
-  phones get about a third of the points, two medusae, two shards and no antialiasing.
+  phones get about a third of the points, two medusae and no antialiasing.
 - Under `prefers-reduced-motion` it draws one still frame (snow, the giant and the galaxy in
   the corners, nothing drifting) and the vistas close. Without WebGL
   `<html data-world="off">` closes the vistas and the page is its plain ground.

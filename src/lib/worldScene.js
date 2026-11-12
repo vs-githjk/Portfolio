@@ -5,12 +5,8 @@ import {
   BufferGeometry,
   DoubleSide,
   Group,
-  InstancedBufferAttribute,
-  InstancedMesh,
   LatheGeometry,
   Mesh,
-  Object3D,
-  OctahedronGeometry,
   PerspectiveCamera,
   PlaneGeometry,
   Points,
@@ -28,8 +24,7 @@ import { seeded, triple } from './field';
 
    The idea is a galaxy underwater. The hero's beams are the surface light;
    scrolling is a dive. Down there the sea and the sky are one place: a ringed
-   gas giant hangs in the water, a few medusae of light pulse upward past it, a few
-   shards of glass turn in the current, a spiral galaxy turns like a shoal, now and
+   gas giant hangs in the water, a few medusae of light pulse upward past it, a spiral galaxy turns like a shoal, now and
    then a comet crosses,
    and the page ends on the lit limb of a world rising under the footer.
 
@@ -39,7 +34,7 @@ import { seeded, triple } from './field';
    moves faster. The set pieces are placed from the DOM: each `.vista` spacer in
    the page names the piece that is centred on it when it is centred on screen.
 
-   Fields without a home (snow, medusae, shards) wrap around the camera, so the
+   Fields without a home (snow, medusae) wrap around the camera, so the
    dive never runs out however long the page gets. */
 
 const FOV = 36;
@@ -194,32 +189,6 @@ ${CALM}void main(){
     c = mix(uColor, vec3(1.0), 0.2);
   }
   gl_FragColor = vec4(c, a * uGlow * calm());
-}`;
-
-/* ---- Shards of glass: flat facets, a cold edge light ------------------------ */
-const SHARD_VERT = /* glsl */ `
-attribute float aTint; attribute vec3 aBary;
-varying vec3 vN, vV, vB; varying float vTint;
-void main(){
-  vB = aBary;
-  mat4 m = modelViewMatrix * instanceMatrix;
-  vec4 mv = m * vec4(position, 1.0);
-  vN = normalize(mat3(m) * normal);
-  vV = normalize(-mv.xyz);
-  vTint = aTint;
-  gl_Position = projectionMatrix * mv;
-}`;
-const SHARD_FRAG = /* glsl */ `
-uniform vec3 uLight, uNight, uA, uB, uRim;
-varying vec3 vN, vV, vB; varying float vTint;
-${CALM}void main(){
-  vec3 n = normalize(vN);
-  float line = 1.0 - smoothstep(0.0, 0.07, min(vB.x, min(vB.y, vB.z)));
-  float fres = pow(1.0 - abs(dot(n, vV)), 2.0);
-  float spec = pow(max(dot(reflect(-uLight, n), vV), 0.0), 18.0);
-  float face = 0.5 + 0.5 * dot(n, uLight);
-  vec3 col = mix(uA, uB, vTint) * (0.05 + 0.34 * face * face) + uRim * (fres * fres * 0.4 + spec * 0.9 + line * 0.75);
-  gl_FragColor = vec4(col, (0.2 + 0.5 * face * face + 0.5 * line) * calm());
 }`;
 
 /* ---- The galaxy: a shoal of stars on two arms -------------------------------- */
@@ -540,47 +509,6 @@ export function createWorld(canvas, { still }) {
     });
   }
 
-  /* ---- Shards ------------------------------------------------------------ */
-  const nShard = phone ? 2 : 4;
-  const shardGeo = keep(new OctahedronGeometry(1, 0));
-  const tints = new Float32Array(nShard);
-  const shardData = [];
-  for (let i = 0; i < nShard; i++) {
-    tints[i] = rnd();
-    shardData.push({
-      z: -80 - rnd() * 900,
-      side: i % 2 ? 1 : -1,
-      off: 0.2 + rnd() * 0.6,
-      y: (i + rnd() * 0.5) / nShard,
-      size: 16 + rnd() * 12,
-      long: 1.3 + rnd() * 1.3,
-      spin: new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(0.28),
-      rot: new Vector3(rnd() * TAU, rnd() * TAU, rnd() * TAU),
-      fall: -2 - rnd() * 3,
-    });
-  }
-  shardGeo.setAttribute('aTint', new InstancedBufferAttribute(tints, 1));
-  const nb = shardGeo.attributes.position.count;
-  const bary = new Float32Array(nb * 3);
-  for (let i = 0; i < nb; i++) bary[i * 3 + (i % 3)] = 1;
-  shardGeo.setAttribute('aBary', new BufferAttribute(bary, 3));
-  const shards = new InstancedMesh(
-    shardGeo,
-    keep(
-      new ShaderMaterial({
-        vertexShader: SHARD_VERT,
-        fragmentShader: SHARD_FRAG,
-        uniforms: { uLight: { value: new Vector3(0.5, 0.6, 0.62).normalize() }, uNight: { value: C.night }, uA: { value: C.b }, uB: { value: C.c }, uRim: { value: C.rim }, ...zone },
-        transparent: true,
-        depthWrite: false,
-        side: DoubleSide,
-      })
-    ),
-    nShard
-  );
-  shards.frustumCulled = false;
-  scene.add(shards);
-  const dummy = new Object3D();
 
   /* ---- Comets ------------------------------------------------------------ */
   const comets = [0].map((i) => {
@@ -721,18 +649,6 @@ export function createWorld(canvas, { still }) {
       j.mesh.scale.setScalar(j.size * k);
       j.mesh.rotation.set(0.18, t * 0.05 + j.sway, j.lean + Math.sin(t * 0.21 + j.sway) * 0.08);
     }
-
-    for (let i = 0; i < shardData.length; i++) {
-      const s = shardData[i];
-      const k = view(s.z);
-      const span = h * k * 2.6 + 200;
-      dummy.position.set((s.side * edge(s.off) + Math.sin(t * 0.09 + i) * 14) * k, wrap(s.y * span + t * s.fall, span), s.z);
-      dummy.rotation.set(s.rot.x + t * s.spin.x, s.rot.y + t * s.spin.y, s.rot.z + t * s.spin.z);
-      dummy.scale.set(s.size * k, s.size * k * s.long, s.size * k);
-      dummy.updateMatrix();
-      shards.setMatrixAt(i, dummy.matrix);
-    }
-    shards.instanceMatrix.needsUpdate = true;
 
     for (const c of comets) {
       let u = reduced ? -1 : (t - c.t0) / c.dur;
