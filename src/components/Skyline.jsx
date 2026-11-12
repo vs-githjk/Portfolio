@@ -5,11 +5,14 @@ import { MONTHS } from '../lib/months';
 /* The commit skyline: the year of contributions as towers of light.
 
    The same build-time snapshot as the flat graph, drawn in 3D on one 2D canvas
-   (no WebGL, no dependency): every day is a box on a 53 x 7 floor, its height
-   the square root of that day's count (so one 152-contribution day does not
-   flatten the rest of the year), its colour the same five-level accent ramp.
-   The busiest days carry a short beam of light, the hero's beams turned into
-   data.
+   (no WebGL, no dependency): every day is a box on a 53 x 7 floor. Height is
+   the day's count on a compressed scale (count to the power 0.4, so one
+   300-contribution day does not flatten the rest of the year). Colour is the
+   same five-step accent ramp as the flat graph, but ranked within this year
+   (the busiest tenth of active days is the brightest step) instead of GitHub's
+   own levels, which collapse to one step when a single day is an outlier. The
+   busiest days carry a short beam of light, the hero's beams turned into data.
+   The exact count of any day is in its tooltip.
 
    It is scroll-linked and otherwise still. As the card comes up the screen the
    camera drops from a plan view (the flat graph) to a low angle and the towers
@@ -31,6 +34,8 @@ const PITCH_LOW = 30; // degrees: the resting camera
 const YAW_IN = 9; // degrees of turn as the card enters...
 const YAW_OUT = -7; // ...and as it leaves
 const YAW_MOUSE = 5;
+const CURVE = 0.4; // height = (count / busiest day) ^ CURVE
+const RANKS = [0.4, 0.7, 0.9]; // share of active days below steps 2, 3 and 4
 const INSET = 0.09; // gap around a box, in cells
 const LABEL = 22; // px under the floor for the month labels
 
@@ -99,6 +104,9 @@ export default function Skyline({ days, onReady }) {
       const floor = 7 * unit * Math.sin(PITCH_LOW * RAD);
       top = Math.max(2.5, Math.min(13, (h - LABEL - floor - 14) / (unit * Math.cos(PITCH_LOW * RAD))));
       const max = days.reduce((m, d) => Math.max(m, d.count), 1);
+      const active = days.map((d) => d.count).filter(Boolean).sort((a, b) => a - b);
+      const cuts = RANKS.map((r) => active[Math.min(active.length - 1, Math.floor(r * active.length))] ?? 0);
+      const step = (n) => (n ? 1 + cuts.filter((c) => n > c).length : 0);
       let month = start.getUTCMonth(); // the partial first month never gets a label
       cells = [];
       labels = [];
@@ -121,7 +129,8 @@ export default function Skyline({ days, onReady }) {
           x1: x + 1 - INSET,
           z0: z + INSET,
           z1: z + 1 - INSET,
-          tall: d.count ? 0.22 + Math.sqrt(d.count / max) * (top - 0.22) : 0,
+          lv: step(d.count),
+          tall: d.count ? 0.22 + Math.pow(d.count / max, CURVE) * (top - 0.22) : 0,
           quads: [],
           order: 0,
         });
@@ -190,7 +199,7 @@ export default function Skyline({ days, onReady }) {
         // The rise is a wave: the oldest weeks stand first, the newest last.
         const wave = clamp01(pose.grow * 1.7 - (c.wk / weeks) * 0.7);
         const y = c.tall * smooth(wave);
-        const lv = c.d.level;
+        const lv = c.lv;
         const q = c.quads;
         q.length = 0;
         if (y > 0.01) {
