@@ -647,9 +647,10 @@ export function createWorld(canvas, { still }) {
     const gal = Math.max(170, Math.min(w * 0.32, 480));
     galScale.value = gal / 480;
     if (reduced) {
-      // One still: the giant low on the right, the galaxy high on the left.
-      place(giant, -220, h / 2, w * 0.36, h * 0.3, gr);
-      place(galaxy, -1400, h / 2, -w * 0.36, -h * 0.26, gal * 0.7);
+      // One still: the giant in the lower right corner, the galaxy in the upper left,
+      // both outside the text column because this frame sits behind the whole page.
+      place(giant, -220, h / 2, w * 0.5 + gr * 0.3, h * 0.34, gr);
+      place(galaxy, -1400, h / 2, -w * 0.47, -h * 0.3, gal * 0.5);
       moon.visible = false;
       horizon.visible = false;
     } else {
