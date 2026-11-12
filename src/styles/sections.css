@@ -92,10 +92,82 @@
   will-change: transform;
 }
 
-/* The hall of light behind the later sections (DepthField.jsx). It is drawn in
-   depth on its own canvas; here it only fades in and out with the scroll. */
-.bg-depth {
-  opacity: calc(var(--bg-deep, 0) * var(--depth-dim));
+/* The Deep: the three.js world behind every section below the hero (World.jsx).
+   It only fades in and out here; the scene does its own depth and parallax. */
+.bg-world {
+  opacity: 0;
+  transition: opacity 1.4s var(--ease);
+}
+
+html[data-world='on'] .bg-world {
+  opacity: calc(var(--bg-deep, 0) * var(--world-dim));
+  transition: none;
+  animation: world-in 1.4s var(--ease);
+}
+
+@keyframes world-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A vista is an empty window in the page where a set piece of the world shows
+   whole: the giant, the galaxy, the horizon. Without the world (reduced motion,
+   no WebGL) there is nothing to frame, so it closes. */
+.vista {
+  height: var(--vista-h);
+  pointer-events: none;
+}
+
+.vista[data-set='horizon'] {
+  height: var(--vista-foot);
+}
+
+/* Calm ground: where a section sets text straight on the page, most of the ink
+   comes back behind its column (feathered, so it has no edge), and the letters
+   carry a tight ink halo. The world shows at full strength in the margins, the
+   gaps between sections and the vistas; behind text it is a silhouette. */
+html[data-world='on'] .sec::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: calc(var(--pad-top) - 56px);
+  bottom: -56px;
+  left: 50%;
+  width: min(100%, calc(var(--maxw) + 2 * var(--calm-bleed)));
+  --feather: calc(var(--calm-bleed) * 2);
+  transform: translateX(-50%);
+  background: var(--ink);
+  opacity: var(--world-calm);
+  pointer-events: none;
+  mask-image:
+    linear-gradient(to right, transparent, var(--ink) var(--feather), var(--ink) calc(100% - var(--feather)), transparent),
+    linear-gradient(to bottom, transparent, var(--ink) 72px, var(--ink) calc(100% - 72px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, var(--ink) var(--feather), var(--ink) calc(100% - var(--feather)), transparent),
+    linear-gradient(to bottom, transparent, var(--ink) 72px, var(--ink) calc(100% - 72px), transparent);
+  -webkit-mask-composite: source-in;
+}
+
+/* The contact section clips its own beams, so its ground stops at its foot. */
+html[data-world='on'] .contact::before {
+  bottom: 0;
+}
+
+html[data-world='on'] .sec {
+  text-shadow:
+    0 0 3px var(--ink),
+    0 0 12px var(--ink);
+}
+
+/* The page ends on the limb of a world; the footer lets its night side through. */
+html[data-world='on'] .foot {
+  background: color-mix(in srgb, var(--ink-2) 72%, transparent);
+}
+
+html[data-world='off'] .vista {
+  display: none;
 }
 
 .page {
@@ -2945,8 +3017,13 @@
     transition: none;
   }
 
-  .bg[data-ready] .bg-beams {
+  .bg[data-ready] .bg-beams,
+  html[data-world='on'] .bg-world {
     animation: none;
+  }
+
+  .vista {
+    display: none;
   }
 
   .bg-glow,

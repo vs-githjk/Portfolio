@@ -95,7 +95,17 @@
   --sky: linear-gradient(180deg, #0a0c2a 0%, var(--ink) 46%, var(--ink-2) 100%);
   --glow-core: rgba(228, 232, 255, 0.9);
   --glow-mid: rgba(150, 160, 255, 0.5);
-  --depth-dim: 0.62; /* strength of the hall of light behind the later sections */
+
+  /* ---- THE DEEP: the 3D world below the hero (r, g, b triples for the shaders) */
+  --world-night: 5, 7, 22; /* the unlit side of a world; close to --ink-2 so it meets the footer */
+  --world-day: 44, 58, 150; /* a lit band */
+  --world-band: 104, 96, 214; /* its paler neighbour */
+  --world-rim: 168, 190, 255; /* limb light, ring ice, comet heads */
+  --world-dim: 1; /* strength of the whole layer */
+  --world-calm: 0.62; /* how much of the ground returns behind a text column */
+  --calm-bleed: clamp(0px, 2vw, 28px); /* how far the calm ground feathers out past the column */
+  --vista-h: clamp(220px, 44svh, 440px); /* a window where a set piece shows whole */
+  --vista-foot: clamp(120px, 22svh, 220px); /* the horizon under the contact section */
 
   /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
   --glass: color-mix(in srgb, var(--surface) 88%, transparent);

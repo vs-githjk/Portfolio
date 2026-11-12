@@ -10,6 +10,7 @@ import Value from './components/Value';
 import Toolkit from './components/Toolkit';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import Vista from './components/Vista';
 import { useReveal } from './hooks/useReveal';
 
 /* Page order. Reordering these lines reorders the site.
@@ -25,7 +26,9 @@ import { useReveal } from './hooks/useReveal';
      Toolkit       - the inventory
      Contact       - the ask
 
-   <Background /> is the one fixed light-beam layer behind everything. */
+   <Background /> is the one fixed layer behind everything: the hero's light
+   beams, then the 3D world. A <Vista /> is an empty window in the page where a
+   set piece of that world (the giant, the galaxy, the horizon) shows whole. */
 export default function App() {
   useReveal();
 
@@ -37,13 +40,16 @@ export default function App() {
         <main id="main" tabIndex={-1}>
           <Hero />
           <Experience />
+          <Vista set="giant" />
           <Builds />
           <Highlights />
+          <Vista set="galaxy" />
           <ProofOfWork />
           <Principles />
           <Value />
           <Toolkit />
           <Contact />
+          <Vista set="horizon" />
         </main>
         <Footer />
       </div>
