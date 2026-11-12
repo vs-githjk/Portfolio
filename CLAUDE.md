@@ -115,8 +115,18 @@ seeded, so the field is the same on every load. Scroll sets `--bg-y` and `--bg-f
 CSS turns them into parallax (transform only) and a fade to nothing after the first screen,
 and the loop stops once the layer is invisible, when the tab is hidden, and under
 `prefers-reduced-motion` (drawn once, no shimmer, no parallax). Colors come from
-`--beam-a/b/c` and `--star-a/b` in `tokens.css`. No WebGL, no dependency. Do not add a third
-canvas.
+`--beam-a/b/c` and `--star-a/b` in `tokens.css`. No WebGL, no dependency.
+
+Below the hero (Nov 12 2026, Vidyut asked for 3D past the first screen): `DepthField.jsx` is a
+third 2D canvas, a lazy chunk, that stands shafts of beam-coloured light on a floor either side of
+a dark centre aisle and walks the camera forward with scroll. It fades in as the hero beams fade,
+out before Contact, pauses offscreen and when hidden, draws half as much on phones and holds still
+under reduced motion. Do not add a fourth canvas.
+
+In Proof of work, `Skyline.jsx` stands the commit graph up into 3D towers as it scrolls in
+(height is count^0.4, colour ranked within the year; the tooltip keeps the exact count). The flat
+SVG stays as the accessible image. Principles tiles lean a few degrees toward the pointer
+(`useTilt`, mouse only).
 
 ## Proof of work (`components/ProofOfWork.jsx`)
 
@@ -168,7 +178,7 @@ token. If one does not exist, add it to `tokens.css` rather than inlining a hex.
 
 **One camera for the whole page.** Every raised surface shares `--persp`, one top highlight
 and the `--elev-1/2/3` scale; `.reveal` rises out of the same perspective; media frames stay
-flat (the ring is the only 3D object). Keep it elegant: depth is a few degrees and a few
+flat (the 3D objects are the ring, the depth field, the commit skyline and the Master Agents crew ring). Keep it elegant: depth is a few degrees and a few
 shadows, never a spin.
 
 ## Type
