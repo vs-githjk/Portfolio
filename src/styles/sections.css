@@ -92,6 +92,12 @@
   will-change: transform;
 }
 
+/* The hall of light behind the later sections (DepthField.jsx). It is drawn in
+   depth on its own canvas; here it only fades in and out with the scroll. */
+.bg-depth {
+  opacity: calc(var(--bg-deep, 0) * var(--depth-dim));
+}
+
 .page {
   position: relative;
   z-index: 1;

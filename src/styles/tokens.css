@@ -95,6 +95,7 @@
   --sky: linear-gradient(180deg, #0a0c2a 0%, var(--ink) 46%, var(--ink-2) 100%);
   --glow-core: rgba(228, 232, 255, 0.9);
   --glow-mid: rgba(150, 160, 255, 0.5);
+  --depth-dim: 0.5; /* strength of the hall of light behind the later sections */
 
   /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
   --glass: color-mix(in srgb, var(--surface) 88%, transparent);
