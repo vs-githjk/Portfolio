@@ -21,7 +21,8 @@ only. Keep it that way unless there is a real reason not to.
 The name is the headline, literally: it is the hero h1, a white serif at the centre of the
 first screen. The positioning is forward-deployed engineer and builder: someone who owns a
 system end to end, modernizes workflows with AI, and sits close to the user. The flagship
-build is PrismAI. The research (arXiv:2607.21641, a preprint, never "published") is
+build is Prism (its own site renamed PrismAI to Prism in Nov 2026; the domain and the Chrome
+extension keep PrismAI), with DuelWise as the second flagship. The research (arXiv:2607.21641, a preprint, never "published") is
 evidence of an instinct, not the headline.
 
 Three rules encode the thesis:
@@ -39,9 +40,9 @@ Three rules encode the thesis:
    Vidyut said). Unknown facts get a `TODO` comment in `content.js` or an empty value,
    never invented copy. Empty links are filtered out at render time, so a link that is not
    ready simply does not appear. Never call MVR "AI" (it has no LLM). BetterBill, Yinzone
-   and Terrametric are team builds and say so. PrismAI's agency scope-check and
-   change-order loop is built but not live: it is always labelled "Now building" or
-   "agency release, Dec 2026". TransitGuard's demo is dead: never link it.
+   and Terrametric are team builds and say so. Prism's agency scope check and change
+   orders are live since Oct 20 2026; its in-call private note is built but off, so it
+   sits under "Now building". TransitGuard's demo is dead: never link it.
 
 3. **No bare numbers.** A figure never stands alone. Every number sits inside a sentence or
    a label that says what it measures and where ("Cut ~40% of the team's recurring planning
@@ -56,7 +57,7 @@ Three rules encode the thesis:
 |---|---|
 | Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of ten builds |
 | Experience | Where he has worked; every result is a complete statement |
-| Builds | PrismAI flagship, eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (18 in all) |
+| Builds | Two flagship panels (Prism, then DuelWise), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (19 in all), then the Now building panel (Master Agents, a CSS 3D crew ring) |
 | Highlights | Four one-line statements, after the stories they summarize |
 | Proof of work | GitHub commit graph, the nine wins (each hackathon win with a Devpost page links to it), four verification links |
 | Principles | How he thinks about building (2x2 tiles) |
@@ -69,9 +70,9 @@ not read as the same module twice. Keep them visually distinct.
 
 ## The orbit ring (`components/Orbit.jsx`)
 
-Ten glass cards on an elliptical CSS 3D ring around the name, his ten strongest, in
-Vidyut's order: PrismAI, BetterBill, MVR, Vytal, Match Day, Terrametric, the paper,
-PrismKeep, FireSight, Fish Market. Everything else lives only in Builds (Oct 28: fourteen
+Eleven glass cards on an elliptical CSS 3D ring around the name, his strongest, in
+Vidyut's order: Prism, DuelWise, BetterBill, MVR, Vytal, Match Day, Terrametric, the paper,
+PrismKeep, FireSight, Fish Market (DuelWise added Nov 12). Everything else lives only in Builds (Oct 28: fourteen
 was too crowded). Each card is one link to its Builds entry (`#build-<id>`); a slide
 `id` in `hero.carousel.slides` must equal the Builds entry id.
 
@@ -80,7 +81,7 @@ was too crowded). Each card is one link to its Builds entry (`#build-<id>`); a s
   own transforms). It asks for frames only while something moves.
 - Geometry lives in the `--orbit-*` tokens (radius, tilt, yaw, shade, front lift, card width).
   `measure()` fits the radius to the scene width and the ring centre to the hero copy above it.
-  Tuned for 10 cards (checked at 1600, 1440, 1280 and 1199); adding or removing one means re-checking the sides.
+  Tuned for 11 cards (checked at 1600, 1440 and 1199 on Nov 12); adding or removing one means re-checking the sides.
 - The front card is pushed toward the camera (`--orbit-front`) and carries the blue border and
   a progress line. Cards behind the hero copy go almost fully dark (`--orbit-behind`) and fade
   out whole (`--orbit-ghost`, written as `--vis`). "Behind the copy" is measured, not assumed:
