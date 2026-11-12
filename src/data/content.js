@@ -59,6 +59,15 @@ export const nav = {
   cta: { label: 'Email', href: 'mailto:vidyut0712@gmail.com' },
 };
 
+/* ------------------------------------------------------------- WELCOME ---- */
+/* The first screen: his face drawn in light says hello. Two short lines and a
+   cue; the hero (his name, the ring) is one scroll or one click away. */
+export const welcome = {
+  label: 'Welcome',
+  lines: ['Hey, I’m Vidyut.', 'Welcome to my portfolio.'],
+  cue: 'Scroll or click to see what happens next',
+};
+
 /* ---------------------------------------------------------------- HERO ---- */
 /* Centre: status row, name, identity, one plain line, credentials, actions.
    Around it: the orbit ring. No figures in the hero except the live-status

@@ -107,6 +107,20 @@
   --vista-h: clamp(220px, 44svh, 440px); /* a window where a set piece shows whole */
   --vista-foot: clamp(120px, 22svh, 220px); /* the horizon under the contact section */
 
+  /* ---- THE WELCOME: his face in light, on the screen above the hero ---------- */
+  --holo-gain: 1; /* strength of the hologram's light */
+  --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
+  --welcome-min: 500px; /* the welcome screen never gets shorter than this */
+  --welcome-run: 30svh; /* empty scroll under the greeting: room for the ball before the hero arrives */
+  --fs-hello: clamp(40px, 5.4vw, 72px); /* the greeting's first line */
+  --say-idle: var(--text-3); /* the greeting before it has been said */
+  /* The greeting is typed while the face draws: delay and length of each line.
+     Hologram.jsx mirrors the start of the first and the end of the second. */
+  --say-delay-1: 0.5s;
+  --say-dur-1: 0.8s;
+  --say-delay-2: 1.5s;
+  --say-dur-2: 1.2s;
+
   /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
   --glass: color-mix(in srgb, var(--surface) 88%, transparent);
   --glass-line: rgba(170, 180, 255, 0.16);

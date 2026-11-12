@@ -15,6 +15,13 @@
   pointer-events: none;
   overflow: hidden;
   background: var(--sky);
+  /* How lit the beam field is: low behind the welcome hologram, full by the time
+     the hero has arrived (Background.jsx writes --bg-open, 0 to 1). */
+  --bg-lit: calc(var(--welcome-beams) + (1 - var(--welcome-beams)) * var(--bg-open, 0));
+}
+
+html:not(.js) .bg {
+  --bg-open: 1;
 }
 
 .bg > * {
@@ -31,7 +38,7 @@
     radial-gradient(ellipse 26% 22% at 50% -4%, var(--glow-core), var(--glow-mid) 40%, transparent 72%),
     radial-gradient(ellipse 64% 44% at 50% -6%, rgba(var(--beam-a), 0.55), rgba(var(--beam-b), 0.18) 55%, transparent 76%),
     linear-gradient(180deg, rgba(var(--beam-b), 0.22) 0%, transparent 34%);
-  opacity: var(--bg-fade, 1);
+  opacity: calc(var(--bg-fade, 1) * var(--bg-lit));
   transform: translate3d(0, calc(var(--bg-y, 0) * -0.16px), 0);
   will-change: transform, opacity;
 }
@@ -57,7 +64,7 @@
   );
   mask-image: linear-gradient(to bottom, var(--ink), transparent 80%);
   -webkit-mask-image: linear-gradient(to bottom, var(--ink), transparent 80%);
-  opacity: calc(var(--bg-fade, 1) * 0.9);
+  opacity: calc(var(--bg-fade, 1) * var(--bg-lit) * 0.9);
   transform: translate3d(0, calc(var(--bg-y, 0) * -0.28px), 0);
 }
 
@@ -76,7 +83,7 @@
 }
 
 .bg[data-ready] .bg-beams {
-  opacity: var(--bg-fade, 1);
+  opacity: calc(var(--bg-fade, 1) * var(--bg-lit));
   animation: beams-in 1.2s var(--ease);
 }
 
@@ -90,6 +97,17 @@
   opacity: 0.55;
   transform: translate3d(0, calc(var(--bg-y, 0) * -0.1px), 0);
   will-change: transform;
+}
+
+/* The welcome hologram (Hologram.jsx): his face in light, fixed in the window. */
+.bg-holo {
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+  will-change: transform;
+}
+
+.bg-holo[data-ready] {
+  opacity: 1;
 }
 
 /* The Deep: the three.js world behind every section below the hero (World.jsx).
@@ -266,11 +284,214 @@ html[data-world='off'] .vista {
   padding: 0 18px;
 }
 
+/* ================================ WELCOME ================================= */
+/* The first screen: an empty box for the hologram (it is drawn into the fixed
+   background), the greeting, the cue. With the nav it is exactly one window tall,
+   plus a short empty run (--welcome-run) where the ball of light has the window
+   to itself before the hero arrives. The greeting fades as the page leaves
+   (Hologram.jsx writes --out, 0 to 1). */
+.welcome {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  justify-items: center;
+  height: calc(100svh - var(--nav-h) + var(--welcome-run));
+  min-height: calc(var(--welcome-min) + var(--welcome-run));
+  padding: clamp(12px, 3svh, 28px) var(--pad) calc(clamp(12px, 3svh, 28px) + var(--welcome-run));
+  text-align: center;
+}
+
+.welcome-face {
+  width: 100%;
+  max-width: 760px;
+}
+
+.welcome-say,
+.welcome-cue {
+  opacity: calc(1 - var(--out, 0));
+}
+
+.welcome-say {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin-top: clamp(8px, 2svh, 20px);
+}
+
+.say {
+  position: relative;
+  display: block;
+  font-family: var(--font-display);
+  color: var(--text);
+  text-wrap: balance;
+}
+
+.say[data-line='1'] {
+  font-size: var(--fs-hello);
+  line-height: 1;
+  letter-spacing: var(--tr-display);
+}
+
+.say[data-line='2'] {
+  font-size: var(--fs-lead);
+  line-height: 1.2;
+  color: var(--text-2);
+}
+
+/* With scripts the greeting waits, dim, for the face; then each line is typed in
+   steps, one letter a step, with a caret riding the edge. The words are painted
+   from the first frame either way: only their light changes. */
+html.js:not([data-holo]) .say {
+  color: var(--say-idle);
+}
+
+html[data-holo='in'] .say {
+  --lit: var(--text);
+  background:
+    linear-gradient(var(--lit), var(--lit)) no-repeat 0 0 / 0% 100%,
+    linear-gradient(var(--say-idle), var(--say-idle));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: say var(--say-dur-1) steps(var(--n), end) var(--say-delay-1) forwards;
+}
+
+html[data-holo='in'] .say[data-line='2'] {
+  --lit: var(--text-2);
+  animation-duration: var(--say-dur-2);
+  animation-delay: var(--say-delay-2);
+}
+
+html[data-holo='in'] .say::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  width: 2px;
+  height: 76%;
+  background: var(--acc-2);
+  opacity: 0;
+  animation: say-caret var(--say-dur-1) steps(var(--n), end) var(--say-delay-1) forwards;
+}
+
+html[data-holo='in'] .say[data-line='2']::after {
+  animation-duration: var(--say-dur-2);
+  animation-delay: var(--say-delay-2);
+}
+
+@keyframes say {
+  to {
+    background-size:
+      100% 100%,
+      auto;
+  }
+}
+
+@keyframes say-caret {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  99% {
+    left: 100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* The cue: a mono label and a short line with a spark running down it. */
+.welcome-cue {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: clamp(14px, 3svh, 30px);
+  padding-top: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-wrap: balance;
+  text-transform: uppercase;
+  color: var(--text-2);
+  text-decoration: none;
+  border-radius: var(--r-sm);
+  transition: color var(--dur) var(--ease);
+}
+
+.welcome-cue:hover {
+  color: var(--text);
+}
+
+.welcome-cue i {
+  position: relative;
+  width: 1px;
+  height: clamp(18px, 4svh, 34px);
+  background: var(--hair-2);
+  overflow: hidden;
+}
+
+.welcome-cue i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, var(--acc-2));
+  transform: translateY(-100%);
+  animation: cue-fall 2.4s var(--ease) 3s infinite;
+}
+
+@keyframes cue-fall {
+  0% {
+    transform: translateY(-100%);
+  }
+  60%,
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* No WebGL: there is no face to stand under, so the screen closes up to the
+   greeting and the hero follows at once. */
+html[data-holo='off'] .welcome {
+  height: auto;
+  min-height: 0;
+  padding-top: var(--s-7);
+  padding-bottom: var(--s-5);
+}
+
+html[data-holo='off'] .welcome-face {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No ball, so no empty run for it: the hero follows the greeting. */
+  .welcome {
+    --welcome-run: 0px;
+  }
+
+  html[data-holo] .say {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    animation: none;
+  }
+
+  html[data-holo] .say::after,
+  .welcome-cue i::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* ================================== HERO ================================== */
 .hero {
   position: relative;
   z-index: 1;
   overflow-x: clip;
+  scroll-margin-top: var(--nav-h);
 }
 
 .hero-stage {
