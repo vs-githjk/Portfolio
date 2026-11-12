@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { beamFade } from '../lib/beamFade';
+import { heroOrigin } from '../lib/origin';
 
 /* The vertical light-beam field, on two 2D canvases (no WebGL, no dependency).
 
@@ -166,7 +167,7 @@ export default function BackgroundField({ onReady }) {
     }
 
     const onScroll = () => {
-      const v = beamFade(window.scrollY, window.innerHeight) > 0.01;
+      const v = beamFade(window.scrollY - heroOrigin(), window.innerHeight) > 0.01;
       if (v === visible) return;
       visible = v;
       if (v) start();
@@ -191,7 +192,7 @@ export default function BackgroundField({ onReady }) {
 
     build();
     drawStars();
-    visible = beamFade(window.scrollY, window.innerHeight) > 0.01;
+    visible = beamFade(window.scrollY - heroOrigin(), window.innerHeight) > 0.01;
     onReady?.();
     start();
     window.addEventListener('scroll', onScroll, { passive: true });
