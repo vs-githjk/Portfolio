@@ -16,8 +16,10 @@ import { MONTHS } from '../lib/months';
 
    It is scroll-linked and otherwise still. As the card comes up the screen the
    camera drops from a plan view (the flat graph) to a low angle and the towers
-   rise in a wave from the oldest week to the newest; after that the model
-   turns a few degrees as the page moves past, and a few more under a mouse.
+   rise in a wave from the oldest week to the newest; and the model comes to
+   rest square to the reader (Vidyut, Nov 12: "why is it not straight"). The
+   camera stands far back, so the towers are upright from edge to edge; a mouse
+   still turns it a few degrees.
    A pointer over a tower shows "n contributions on date".
 
    Cost control: the chunk loads only when the section is near (SkyStage), a
@@ -31,8 +33,8 @@ import { MONTHS } from '../lib/months';
 const RAD = Math.PI / 180;
 const PITCH_FLAT = 78; // degrees: the plan view the rise starts from
 const PITCH_LOW = 30; // degrees: the resting camera
-const YAW_IN = 9; // degrees of turn as the card enters...
-const YAW_OUT = -7; // ...and as it leaves
+const YAW_IN = 8; // degrees of turn as the card enters; it comes to rest square to the reader
+const FAR = 7; // camera distance in graph widths: far enough that every tower stands upright
 const YAW_MOUSE = 5;
 const CURVE = 0.4; // height = (count / busiest day) ^ CURVE
 const RANKS = [0.4, 0.7, 0.9]; // share of active days below steps 2, 3 and 4
@@ -65,6 +67,8 @@ export default function Skyline({ days, onReady }) {
     const SIDE = tops.map((c) => str(mix(c, surface, 0.66)));
     const GLOW = tops.map((c) => c.join(','));
     const INK = str(rgb('--text'));
+    const FLOOR = `rgba(${acc.join(',')},0.05)`;
+    const EDGE = `rgba(${acc.join(',')},0.55)`;
     const LABEL_INK = str(rgb('--text-3'));
     const font = `10px ${css.getPropertyValue('--font-mono')}`;
 
@@ -99,7 +103,7 @@ export default function Skyline({ days, onReady }) {
       weeks = phone.matches ? Math.min(26, all) : all;
       const skip = all - weeks;
       unit = (w * 0.95) / weeks;
-      dist = weeks * 2.2;
+      dist = weeks * FAR;
       focal = unit * dist;
       const floor = 7 * unit * Math.sin(PITCH_LOW * RAD);
       top = Math.max(2.5, Math.min(13, (h - LABEL - floor - 14) / (unit * Math.cos(PITCH_LOW * RAD))));
@@ -142,17 +146,16 @@ export default function Skyline({ days, onReady }) {
     function aim() {
       if (rm.matches) {
         goal.pitch = PITCH_LOW;
-        goal.yaw = (YAW_IN + YAW_OUT) / 2 - 3;
+        goal.yaw = 0;
         goal.grow = 1;
         return;
       }
       const r = canvas.getBoundingClientRect();
       const vh = window.innerHeight;
       const p = clamp01((vh - r.top) / (vh * 0.3 + r.height)); // 1 once the stage sits in the lower part of the screen
-      const q = clamp01((vh - r.top) / (vh + r.height)); // 0 entering, 1 leaving
       goal.pitch = lerp(PITCH_FLAT, PITCH_LOW, smooth(p));
       goal.grow = clamp01((p - 0.1) / 0.9);
-      goal.yaw = lerp(YAW_IN, YAW_OUT, q) + mouse * YAW_MOUSE;
+      goal.yaw = lerp(YAW_IN, 0, smooth(clamp01(p * 1.6))) + mouse * YAW_MOUSE;
     }
 
     function draw() {
@@ -195,6 +198,19 @@ export default function Skyline({ days, onReady }) {
         ctx.closePath();
         ctx.fill();
       };
+      // The floor: a faint plate under the year, with a lit front edge.
+      const plate = [];
+      pt(-weeks / 2, 0, -7, plate, 0);
+      pt(weeks / 2, 0, -7, plate, 2);
+      pt(weeks / 2, 0, 0, plate, 4);
+      pt(-weeks / 2, 0, 0, plate, 6);
+      quad(plate, FLOOR);
+      ctx.strokeStyle = EDGE;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(plate[6], plate[7] + 0.5);
+      ctx.lineTo(plate[4], plate[5] + 0.5);
+      ctx.stroke();
       for (const c of cells) {
         // The rise is a wave: the oldest weeks stand first, the newest last.
         const wave = clamp01(pose.grow * 1.7 - (c.wk / weeks) * 0.7);
@@ -235,12 +251,12 @@ export default function Skyline({ days, onReady }) {
         }
         // The busiest days throw a short beam of light.
         if (lv >= 3 && y > 0.5) {
-          const reach = (lv === 4 ? 3.4 : 1.8) * unit * smooth(wave);
+          const reach = (lv === 4 ? 4.6 : 2.2) * unit * smooth(wave);
           const x0 = Math.min(t[0], t[6]);
           const x1 = Math.max(t[2], t[4]);
           const yb = (t[1] + t[5]) / 2;
           const g = ctx.createLinearGradient(0, yb, 0, yb - reach);
-          g.addColorStop(0, `rgba(${GLOW[lv]},${lv === 4 ? 0.34 : 0.22})`);
+          g.addColorStop(0, `rgba(${GLOW[lv]},${lv === 4 ? 0.42 : 0.24})`);
           g.addColorStop(1, `rgba(${GLOW[lv]},0)`);
           ctx.globalCompositeOperation = 'lighter';
           ctx.fillStyle = g;
