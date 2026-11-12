@@ -5,9 +5,11 @@ import BuildCard from './BuildCard';
 import Flagship from './Flagship';
 import ResearchRow from './ResearchRow';
 import CompactRows from './CompactRows';
+import NowBuilding from './NowBuilding';
 
-/* PrismAI flagship, six featured cards, the paper, then the compact grid. The
-   order is Vidyut's, and it is the ring's order. */
+/* Two flagships (Prism, then DuelWise), the featured cards, the paper, the
+   compact grid, then the Now building panel. The order is Vidyut's, and it is
+   the ring's order. */
 export default function Builds() {
   const grid = useRef(null);
   useEqualRows(grid, 7);
@@ -19,7 +21,9 @@ export default function Builds() {
           <h2>{builds.heading}</h2>
           <p>{builds.intro}</p>
         </div>
-        <Flagship item={builds.flagship} />
+        {builds.flagships.map((item) => (
+          <Flagship item={item} key={item.id} />
+        ))}
         <div className="build-grid" ref={grid}>
           {builds.items.map((item, n) => (
             <BuildCard item={item} delay={(n % 2) + 1} key={item.id} />
@@ -27,6 +31,7 @@ export default function Builds() {
         </div>
         <ResearchRow item={builds.research} />
         <CompactRows more={builds.more} />
+        <NowBuilding item={builds.building} />
       </div>
     </section>
   );

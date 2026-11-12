@@ -1257,7 +1257,7 @@
 }
 
 .flag-media .media-frame img {
-  object-position: left top;
+  object-position: center top;
 }
 
 /* Side by side, the story sets the row height and the lead still crops to fit
@@ -1279,15 +1279,6 @@
     container-type: inline-size;
   }
 
-}
-
-/* Above 1100 the frame is wide and short, so a top-anchored crop would end in the
-   middle of the still's footer line. Skip the small top line instead (7.5% of the
-   width is 90 of the source's 1200px), never past the image's own foot. */
-@media (min-width: 1101px) {
-  .flag-media .media-frame img {
-    object-position: left max(-7.5cqw, 100%);
-  }
 }
 
 .flag-now {
@@ -1740,6 +1731,181 @@
   .mini,
   .mini:nth-child(7) {
     grid-column: 1 / -1;
+  }
+}
+
+/* ---- Now building (Master Agents) ------------------------------------------ */
+/* The story beside a small CSS 3D scene: the crew seated on a tilted ring that
+   turns once a minute around the sentence you give it. The ring plane rotates;
+   each badge counter-turns by the same angle, so every face stays square to the
+   reader and only its place on the ring moves. Depth is the ring's own tilt and
+   a fade toward the back, nothing more. */
+.nb {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 32px;
+  margin-top: 40px;
+  padding: 28px;
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 90% at 78% 50%, color-mix(in srgb, var(--acc) 12%, transparent), transparent 62%),
+    var(--surface);
+  border: 1px solid var(--hair-2);
+  box-shadow: var(--elev-2);
+  overflow: hidden;
+}
+
+.nb-body {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.nb-body .kind {
+  margin-top: -4px;
+}
+
+.nb-stage {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.nb-scene {
+  --nb-r: clamp(150px, 17vw, 220px);
+  --nb-spin: 60s;
+  --nb-tilt: 26deg;
+  position: relative;
+  width: 100%;
+  height: calc(var(--nb-r) * 0.9 + 140px);
+  display: grid;
+  place-items: center;
+  perspective: var(--persp);
+}
+
+.nb-core {
+  position: absolute;
+  z-index: 1;
+  padding: 10px 16px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--glass);
+  border: 1px solid var(--acc);
+  box-shadow:
+    0 0 0 6px var(--acc-glow),
+    0 0 48px 8px var(--acc-glow);
+  transform: translateZ(0);
+}
+
+.nb-ring {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(-1 * var(--nb-tilt))) rotateY(0deg);
+  animation: nb-spin var(--nb-spin) linear infinite;
+}
+
+.nb-seat {
+  position: absolute;
+  transform-style: preserve-3d;
+  transform: rotateY(var(--a)) translateZ(var(--nb-r));
+}
+
+.nb-face {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 56px;
+  margin-left: -28px;
+  margin-top: -28px;
+  transform: rotateY(calc(-1 * var(--a))) rotateX(var(--nb-tilt));
+  animation:
+    nb-face var(--nb-spin) linear infinite,
+    nb-fade var(--nb-spin) linear infinite;
+  animation-delay: 0s, calc(var(--k) * var(--nb-spin) * -1);
+}
+
+.nb-face img {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-md);
+  box-shadow: var(--elev-1);
+}
+
+@keyframes nb-spin {
+  from { transform: rotateX(calc(-1 * var(--nb-tilt))) rotateY(0deg); }
+  to { transform: rotateX(calc(-1 * var(--nb-tilt))) rotateY(360deg); }
+}
+
+@keyframes nb-face {
+  from { transform: rotateY(calc(-1 * var(--a))) rotateX(var(--nb-tilt)); }
+  to { transform: rotateY(calc(-1 * var(--a) - 360deg)) rotateX(var(--nb-tilt)); }
+}
+
+/* Front of the ring at 0%, the back at 50%: a badge dims as it passes behind
+   the sentence and brightens as it comes round. --k (the seat's share of the
+   circle) offsets each badge's phase. */
+@keyframes nb-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.28; }
+}
+
+.nb-cap {
+  max-width: 44ch;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  line-height: 1.7;
+  color: var(--text-3);
+}
+
+@media (max-width: 960px) {
+  .nb {
+    grid-template-columns: 1fr;
+  }
+
+  .nb-stage {
+    order: -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .nb {
+    padding: 20px;
+  }
+
+  .nb-scene {
+    --nb-r: 118px;
+  }
+
+  .nb-face {
+    width: 40px;
+    margin-left: -20px;
+    margin-top: -20px;
+  }
+
+  .nb-face img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nb-ring,
+  .nb-face {
+    animation: none;
+  }
+
+  .nb-face {
+    opacity: calc(1 - 0.72 * (0.5 - 0.5 * cos(var(--a))));
   }
 }
 

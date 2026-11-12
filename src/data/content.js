@@ -42,7 +42,7 @@ export const meta = {
   name: 'Vidyut Sriram',
   title: 'Vidyut Sriram | safe, reliable AI systems',
   description:
-    'Vidyut Sriram builds safe, reliable AI systems. Builder of PrismAI, 5× hackathon winner, arXiv first author. Forward-deployed and AI engineer, from Jan 2027.',
+    'Vidyut Sriram builds safe, reliable AI systems. Builder of Prism and DuelWise, 5× hackathon winner, arXiv first author. Forward-deployed and AI engineer.',
   location: 'State College, PA',
 };
 
@@ -62,7 +62,7 @@ export const nav = {
 /* ---------------------------------------------------------------- HERO ---- */
 /* Centre: status row, name, identity, one plain line, credentials, actions.
    Around it: the orbit ring. No figures in the hero except the live-status
-   badge on the PrismAI card, which says what it counts. */
+   badge on the Prism card, which says what it counts. */
 export const hero = {
   status: 'Forward-deployed and AI engineer',
   /* Vidyut's own photo (Oct 2026): his silhouette on a beach at sunset, 180px and
@@ -115,13 +115,26 @@ export const hero = {
     slides: [
       {
         id: 'prismai',
-        title: 'PrismAI',
-        oneLiner: 'Joins your calls and does the follow-up work.',
+        title: 'Prism',
+        oneLiner: 'Knows who promised what on every call.',
         badge: 'Live beta · 14 users',
         badgeKind: 'live',
+        tone: 'light', // pale thumbnail: the ring dims it further at the back
         image: {
           src: '/builds/ring/prismai.webp',
-          alt: 'PrismAI logo and the line "Joins your calls. Does the follow-up. You approve every word." beside its live-meeting view with the meeting health score, decisions and action items',
+          alt: 'Prism’s landing page: "Know who promised what." beside a glass prism on an open notebook',
+        },
+      },
+      {
+        id: 'duelwise',
+        title: 'DuelWise',
+        oneLiner: 'Ten games. Four AI opponents. Beat them.',
+        badge: 'Live · duelwise.app',
+        badgeKind: 'live',
+        tone: 'light',
+        image: {
+          src: '/builds/ring/duelwise.webp',
+          alt: 'DuelWise: "Can you beat my agents?" above its four opponents, Pip, Marlow, Vesper and Sable',
         },
       },
       {
@@ -276,7 +289,7 @@ export const experience = {
 };
 
 /* -------------------------------------------------------------- BUILDS ---- */
-/* Order: PrismAI (flagship); items = BetterBill, MVR, Vytal, Match Day,
+/* Order: Prism and DuelWise (flagships); items = BetterBill, MVR, Vytal, Match Day,
    Yinzone, Terrametric; then the paper (research); then `more` = Quorum,
    FilingWatch, NextRound (same order as the end of the ring), CinemaChat,
    TransitGuard, PaperTrail, AlgoQuest.
@@ -291,76 +304,136 @@ export const builds = {
   eyebrow: "What I've built",
   heading: 'Builds',
   intro:
-    'Eighteen builds, flagship first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+    'Nineteen builds, my two strongest first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
 
-  /* ---- Flagship panel ---------------------------------------------------- */
-  flagship: {
-    id: 'prismai',
-    kind: 'Product · live beta',
-    title: 'PrismAI',
-    descriptor: 'approval-first meeting agent',
-    when: 'Mar 2026 to Present',
-    oneLiner:
-      'Every meeting ends in promises. PrismAI keeps them for you, and asks before it sends a thing.',
-    awards: [],
-    role: 'The idea was mine, I built it from the first commit, and I run it on my own now.',
-    /* Shipped and live. */
-    body: [
-      'I took PrismAI from an empty repo to a **live beta** in about six months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, action items, follow-up emails and Jira or Linear tasks.',
-      'Hybrid search (pgvector plus BM25) answers questions across every past meeting, an MCP connector brings that context into Claude and ChatGPT, and a cross-tenant attack suite blocks CI.',
-      // Vidyut, Oct 28 2026: pitched at the conference with Amazon's CFO in the room, and met him. The photo stays off the site.
-      'I pitched PrismAI at the **Penn State Venture & IP Conference** in front of **Amazon’s CFO**, and met him there.',
-    ],
-    /* In development: always rendered under this label. */
-    now: {
-      label: 'Now building · agency release, Dec 2026',
-      text: 'For agencies and client-services teams, PrismAI checks each client request against the signed agreement, quotes the clause, and drafts a priced change order at the agency’s own rates. **Code computes every dollar, and nothing reaches the client until the owner approves.**',
-    },
-    metrics: [
-      { value: '14', label: 'live beta users\nin isolated workspaces' },
-      { value: '100+', label: 'meetings analyzed\nin the beta' },
-    ],
-    stack:
-      'React · FastAPI · LangGraph · Claude · OpenAI · Supabase/pgvector · BM25/RRF · MCP · Recall.ai · Deepgram · Cartesia',
-    /* Gallery fills the left column (V4 feedback 6): a lead still, then a
-       stack of three. The live-meeting and agents frames are product
-       illustrations from PrismAI's own landing page, not a customer meeting;
-       captions say so. The agency frame is the in-development release. */
-    media: {
-      video: '', // TODO: a screen-recording loop of the new UI
-      lead: {
-        image: '/builds/prismai-agency.webp',
-        alt: 'PrismAI agency release: a client asks for an iPhone app on a weekly call, PrismAI checks it against clause 3.2 of the agreement and drafts change order #3 for approval',
-        badge: '', // the caption and the box below carry the label
-        caption: 'Agency release, in development: a client’s extra ask, checked against the agreement and drafted as a change order you approve.',
+  /* ---- Flagship panels: Prism, then DuelWise ---------------------------- */
+  /* Sources (Nov 12 2026): Prism's live site meetprismai.com, its README on
+     main (Project status: the agency release is live in production since
+     Oct 20; the live private note is built and waits on an accuracy
+     evaluation; free public launch planned Dec 21 2026) and the sample-data
+     dashboard. DuelWise: duelwise.app (home and /ai), the public repo
+     README and git log (solo). The product is now called Prism on its own
+     site; the domain and the Chrome extension keep the PrismAI name. */
+  flagships: [
+    {
+      id: 'prismai',
+      kind: 'Product · live · free while in beta',
+      title: 'Prism',
+      descriptor: 'know who promised what',
+      when: 'Mar 2026 to Present · meetprismai.com',
+      oneLiner:
+        'Every call ends in promises. Prism remembers who promised what and by when, catches the ask that is outside your contract, and drafts the change order for you to approve.',
+      awards: [],
+      role: 'The idea was mine, I built it from the first commit, and I run it on my own now.',
+      body: [
+        'I took Prism from an empty repo to a **live product** in about eight months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, owners, dates and follow-ups, in English, Hindi or Tamil. Approve a task and it goes to Slack, Linear or Jira.',
+        'Since Oct 20 the **agency release is live**: Prism reads the signed agreement, checks every client ask against it, **quotes the clause**, and drafts a change order from the agency’s own rate card. Code computes every dollar, and nothing reaches the client until an owner approves.',
+        // Vidyut, Oct 28 2026: pitched at the conference with Amazon's CFO in the room, and met him. The photo stays off the site.
+        'I pitched Prism at the **Penn State Venture & IP Conference** in front of **Amazon’s CFO**, and met him there.',
+      ],
+      /* Built or in pilot, not switched on for everyone: always under this label. */
+      now: {
+        label: 'Now building · public launch, Dec 21 2026',
+        text: 'A **private note during the call** that flags an out-of-scope ask to your side only (built, and switched on once it passes an accuracy evaluation), and interview notes that point to the **exact moment** a candidate said it (in pilot).',
       },
-      stack: [
-        {
-          image: '/builds/prismai-live-meeting.webp',
-          alt: 'PrismAI live-meeting view with highlighted commitments, a meeting health score, decisions and action items with owners',
-          caption: 'The live-meeting view, from PrismAI’s landing page.',
+      metrics: [
+        { value: '14', label: 'beta users in\nisolated workspaces' },
+        { value: '100+', label: 'meetings analyzed\nin the beta' },
+      ],
+      stack:
+        'React · Vite · FastAPI · LangGraph · Claude · OpenAI · Supabase (Postgres, pgvector, RLS on every table) · MCP · Recall.ai · Deepgram · Chrome extension',
+      media: {
+        video: '',
+        lead: {
+          image: '/builds/prismai-hero.webp',
+          alt: 'Prism’s new landing page: "Know who promised what." beside a glass prism on an open notebook and a quote from the call, "I can have the staging link to you Tuesday."',
+          badge: '',
+          caption: 'The new Prism, live at meetprismai.com.',
         },
+        stack: [
+          {
+            image: '/builds/prismai-home.webp',
+            alt: 'Prism Home in the sample workspace: "11 things need you.", the week’s meetings with their health scores, open actions and decisions',
+            caption: 'Home: what needs you, from every meeting (sample data).',
+          },
+          {
+            image: '/builds/prismai-meeting.webp',
+            alt: 'A Prism meeting after the call: health score 84, a one-line summary, topics, a verdict, and tabs for action items, decisions and follow-ups (sample data)',
+            caption: 'After the call: the summary, owners, decisions and a verdict (sample data).',
+          },
+          {
+            image: '/builds/prismai-scope.webp',
+            alt: 'Prism on a client call: "Could you also add a Spanish version of the site?" marked Outside the agreement, citing clause 2.1, One English-language site',
+            caption: 'Client calls: a new ask, checked against the agreement (from Prism’s landing page).',
+          },
+        ],
+      },
+      links: [
+        { label: 'Live site', href: 'https://www.meetprismai.com/' },
         {
-          image: '/builds/prismai-agents.webp',
-          alt: 'PrismAI after the call: a health score with clarity, participation and outcomes, and action items with owners checked off',
-          caption: 'Twelve agents work through every meeting (from PrismAI’s landing page).',
+          label: 'Chrome extension',
+          href: 'https://chromewebstore.google.com/detail/prismai-notetaker/bmnjdhgofbbjlngcahneegalddlpjkbh',
         },
-        {
-          image: '/builds/prismai-standin.webp',
-          alt: 'PrismAI stand-in tab: open action items, decisions, and notes on what PrismAI should know about you',
-          caption: 'Stand-in: PrismAI covers a meeting you cannot attend.',
-        },
+        { label: 'Source', href: '' }, // private repo
       ],
     },
-    links: [
-      { label: 'Live site', href: 'https://www.meetprismai.com/' },
-      {
-        label: 'Chrome extension',
-        href: 'https://chromewebstore.google.com/detail/prismai-notetaker/bmnjdhgofbbjlngcahneegalddlpjkbh',
+    {
+      id: 'duelwise',
+      kind: 'Product · live · solo',
+      title: 'DuelWise',
+      descriptor: 'can you beat my agents?',
+      when: 'Oct 2026 to Present · duelwise.app',
+      oneLiner:
+        'Ten games, four AI opponents, and not one strength number they have not earned in games actually played. Sable, the champion, has won 192 of its 202 matches against people.',
+      awards: [],
+      role: 'Solo build: the idea, the ten games, the agents and the site are mine.',
+      body: [
+        'Pick a game, from chess and heads-up poker to a 2.5D fighter and a first-person arena shooter, and sit down across from Pip, Marlow, Vesper or Sable. Each opponent is built per game: chess nets trained on public Lichess games, **AlphaZero-style self-play** for Four in a Row, counterfactual-regret strategy for Hold’em, and **reinforcement-learning leagues** for the real-time games, all running in your browser on ONNX Runtime Web.',
+        'A level shows a strength number only once it **beats the level below it** (a 95% lower bound over hundreds of games), and the site re-checks that evidence before it shows one; until then it says In training. The server replays every match from the seed it issued, so a tampered record never gains rating or reaches training.',
+      ],
+      now: {
+        label: 'Now building',
+        text: 'Human matches training **every** learned agent, through the filter and the promote-only-if-it-wins gate Four in a Row already has, plus chess strength anchored to an outside engine.',
       },
-      { label: 'Source', href: '' }, // private repo
-    ],
-  },
+      // Site record on duelwise.app, Nov 12 2026: wins and losses against people, last 30 days (launched Oct 31).
+      metrics: [
+        { value: '192 of 202', label: 'matches against people won by\nSable, the champion (30 days)' },
+        { value: '760', label: 'matches people played against\nthe four agents (30 days)' },
+      ],
+      stack:
+        'TypeScript · TanStack Start · React 19 · Tailwind 4 · ONNX Runtime Web · Web Workers · PyTorch · Drizzle · Postgres (Neon) · Better Auth · Sentry · Vercel',
+      media: {
+        video: '',
+        lead: {
+          image: '/builds/duelwise-hero.webp',
+          alt: 'DuelWise: "Can you beat my agents?" above its four opponents, Pip, Marlow, Vesper and Sable, each with its wins and losses against people',
+          badge: '',
+          caption: 'Four opponents, one per level, in every game. Live at duelwise.app.',
+        },
+        stack: [
+          {
+            image: '/builds/duelwise-games.webp',
+            alt: 'The DuelWise game shelf: chess, Four in a Row and heads-up poker',
+            caption: 'Ten games, from chess to a first-person shooter.',
+          },
+          {
+            image: '/builds/duelwise-play.webp',
+            alt: 'A DuelWise chess match against Pip, the easy level, measured at site Elo 1000',
+            caption: 'Chess against Pip, the easiest of the four.',
+          },
+          {
+            image: '/builds/duelwise-coldstore.webp',
+            alt: 'Coldstore, the DuelWise first-person arena shooter: a 3D arena in the buy phase of round one against Pip',
+            caption: 'Coldstore, the first-person shooter, in its buy phase.',
+          },
+        ],
+      },
+      links: [
+        { label: 'Play it', href: 'https://duelwise.app' },
+        { label: 'Source', href: 'https://github.com/vs-githjk/duelwise' },
+      ],
+    },
+  ],
 
   /* ---- Featured cards (2-column grid), in Vidyut's order ------------------ */
   items: [
@@ -648,6 +721,42 @@ export const builds = {
     ],
   },
 
+  /* ---- Now building: one panel after More builds -------------------------- */
+  /* Master Agents, his private Claude Code crew (repo vs-githjk/master-agents,
+     private, 86 commits since Oct 15 2026). Facts from its README. Listed as
+     work in progress, never as a shipped product. Badge art is the repo's own
+     SVGs, copied to /agents. */
+  building: {
+    eyebrow: 'Now building',
+    title: 'Master Agents',
+    descriptor: 'my own Claude Code crew',
+    when: 'Oct 2026 to Present · private repo',
+    oneLiner:
+      'One sentence in, a reviewed branch out. Twelve specialist agents plan, research, design, build, review and judge, and a second model checks every change.',
+    body: [
+      'Each agent does one job. The Scout researches with live signals, the Strategist plans, the Artist designs, the Engineer builds test first, the Inspector reruns every test and returns **PASS, FIX or STOP**, and the Judge scores the work the way a real hackathon judge would. **OpenAI Codex reviews every change Claude makes**, because two models miss different things.',
+      'A self-improving loop turns every failure into a test case, and an agent change is kept only if it **beats the current version with no regressions**. Nothing pushes, deploys, sends or spends without my go. I use it on every project, this site included.',
+    ],
+    crewLabel: 'The crew',
+    crew: [
+      { name: 'The Artist', job: 'design', icon: '/agents/designer.svg' },
+      { name: 'The Scout', job: 'research', icon: '/agents/finder.svg' },
+      { name: 'The Strategist', job: 'plans', icon: '/agents/planner.svg' },
+      { name: 'The Engineer', job: 'builds', icon: '/agents/builder.svg' },
+      { name: 'The Inspector', job: 'reviews', icon: '/agents/reviewer.svg' },
+      { name: 'The Judge', job: 'judges', icon: '/agents/auditor.svg' },
+      { name: 'The Director', job: 'demo video', icon: '/agents/creator.svg' },
+      { name: 'The Sentinel', job: 'ops and security', icon: '/agents/guardian.svg' },
+      { name: 'The Mentor', job: 'teaches', icon: '/agents/coach.svg' },
+      { name: 'The Wordsmith', job: 'writes', icon: '/agents/writer.svg' },
+      { name: 'The XO', job: 'coordinates', icon: '/agents/xo.svg' },
+      { name: 'The Prospector', job: 'finds leads', icon: '/agents/prospector.svg' },
+      { name: 'Codex', job: 'second model', icon: '/agents/codex.svg' },
+    ],
+    core: 'You: one sentence',
+    stack: 'Claude Code · subagents · skills · workflows · OpenAI Codex · MCP · GitHub',
+  },
+
   /* ---- More builds: same card shape as `items`, smaller in the layout ----- */
   more: {
     readMore: 'Read more',
@@ -692,7 +801,7 @@ export const builds = {
         awards: [],
         role: 'I wrote most of the code.',
         body: [
-          'Quorum joins a live meeting as a participant: it listens in real time, contributes ideas, speaks back, takes actions like filing a GitHub issue on request, and can drive a shared screen. Built over a weekend on Recall.ai, Deepgram, Claude and ElevenLabs, it attacks the same problem I keep working on in PrismAI.',
+          'Quorum joins a live meeting as a participant: it listens in real time, contributes ideas, speaks back, takes actions like filing a GitHub issue on request, and can drive a shared screen. Built over a weekend on Recall.ai, Deepgram, Claude and ElevenLabs, it attacks the same problem I keep working on in Prism.',
         ],
         metrics: [],
         stack: 'Python · FastAPI · Claude · Recall.ai · Deepgram · ElevenLabs',
@@ -869,7 +978,7 @@ export const highlights = {
   eyebrow: 'In one line each',
   items: [
     'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
-    'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months.',
+    'Took Prism from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months, then shipped its agency release.',
     'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
     '**5× hackathon winner** in 2026, with six first places, including **1st overall** at the SF Startup Challenge.',
   ],
@@ -883,7 +992,7 @@ export const principles = {
   items: [
     {
       title: 'The model explains. Code decides.',
-      body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s agency release (in development, Dec 2026) prices change orders the same way. When a number matters, it should never come from a guess.',
+      body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. Prism’s agency release prices change orders the same way: the model estimates the hours, and code computes every dollar. When a number matters, it should never come from a guess.',
     },
     {
       title: 'Something has to be able to say no.',
@@ -910,8 +1019,8 @@ export const value = {
       tag: 'Reliability',
       claim: 'I care most about the gap between a good demo and a system people can depend on.',
       receipts: [
-        'BetterBill’s rules engine does all of its arithmetic in **integer cents**, so a model’s rounding can never reach a dollar figure.',
-        'In PrismAI, a **cross-tenant attack suite blocks CI**, so a data leak between customers fails the build before it can ship.',
+        'In Prism, a **cross-tenant attack suite blocks CI**, so a data leak between customers fails the build before it can ship.',
+        'DuelWise shows **no strength number it has not earned**: a level must beat the one below it over hundreds of games before the site shows one.',
       ],
     },
     {
@@ -926,7 +1035,7 @@ export const value = {
       tag: 'Owner',
       claim: 'I run what I build, from the first commit to the first users.',
       receipts: [
-        'PrismAI: **1,120 of its 1,352 commits are mine**, from an empty repo to a live beta.',
+        'Prism and DuelWise are **live, and I run both**: Prism has beta users in isolated workspaces, and people have played 760 matches against DuelWise’s agents.',
         'Vytal and MVR are **solo builds**: Vytal is live in a controlled beta, MVR is a working proof of concept.',
       ],
     },
