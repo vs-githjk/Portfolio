@@ -58,6 +58,7 @@ Three rules encode the thesis:
 
 | Section | Job |
 |---|---|
+| Welcome | His face drawn in light says hello (two lines and a cue); one scroll or a click plays it into the hero |
 | Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of ten builds |
 | Experience | Where he has worked; every result is a complete statement |
 | Builds | Two flagship panels (PrismAI, then DuelWise), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (19 in all), then the Now building panel (Master Agents, a character select screen with the crew's art) |
@@ -66,7 +67,7 @@ Three rules encode the thesis:
 | Principles | How he thinks about building (2x2 tiles) |
 | Value | What that is worth to you (hairline rows) |
 | Toolkit | The inventory, grouped chips |
-| Contact | The ask: his studio headshot (the one face on the page; the hero is a sunset silhouette), then the email as the hero of the section |
+| Contact | The ask: his studio headshot (the one photograph of his face; the welcome is that face in points of light, the hero a sunset silhouette), then the email as the hero of the section |
 
 Principles and Value are deliberately different shapes (tiles vs hairline rows) so they do
 not read as the same module twice. Keep them visually distinct.
@@ -120,6 +121,40 @@ and the loop stops once the layer is invisible, when the tab is hidden, and unde
 `prefers-reduced-motion` (drawn once, no shimmer, no parallax). Colors come from
 `--beam-a/b/c` and `--star-a/b` in `tokens.css`. No WebGL, no dependency.
 
+### The welcome hologram (`components/Welcome.jsx`, `Hologram.jsx`, `lib/holoScene.js`)
+
+The first screen (Nov 12 2026, Vidyut's idea: "a 3D face of me made of blue light" that greets
+the visitor, then becomes a ball of energy that gives way to the page). `Welcome.jsx` is the
+HTML: an empty box for the face, the greeting, the cue. `Hologram.jsx` draws the face into the
+fixed background stack with plain WebGL (no three.js: the chunk is about 5 KB gzipped).
+
+- The points are baked offline by `scripts/bake-hologram.py` from the studio headshot into
+  `public/holo/face.bin` (about 22,500 points on scan rows, 110 KB; position, depth, brightness).
+  The photo itself is not shipped. Re-run the script by hand if the portrait changes.
+- Scroll is the timeline, counted from the top of the page to the hero (`lib/origin.js`,
+  `heroOrigin()`): the face loosens into a ball of folded light (0.04 to 0.4), the ball has the
+  window to itself over the empty run under the greeting (`--welcome-run`), then bursts (0.56 to
+  0.98) and is gone when the hero sits under the nav. The canvas is fixed, so the light stays in
+  the window while the page leaves. The cue is a real link to `#top`; with scripts it glides
+  there in 2.8s and any wheel, touch or key hands the scroll back.
+- The greeting is prerendered text and is the LCP element. It waits dim (`--say-idle`), and is
+  typed in steps while the face draws (`html[data-holo='in']`; "seen" after, or at once for a
+  visitor who watched it this session; "late" if the hologram says nothing for 3.6s; "off"
+  without WebGL, which closes the screen up to the greeting). Never hide the text to reveal it.
+- Everything that used to count from the top of the page counts from `heroOrigin()`: the beam
+  fade, `--bg-y`, The Deep's fade and its chunk request, so the hero and the ring behave as
+  before. The beams are lit at `--welcome-beams` behind the face and rise to full as the hero
+  arrives (`--bg-open`).
+- Budget: mounted when the page is idle, after first paint; DPR capped at 1.75 (1.5 on a
+  phone); a phone draws 58% of the points; it draws every frame only while the scroll moves or
+  the face is being drawn, about 30 a second otherwise, and not at all past the hero or in a
+  hidden tab. Mobile Lighthouse measured 99 with it (Nov 12).
+- Under `prefers-reduced-motion` it is one still frame that scrolls away with the page: no
+  drawing in, no typing, no ball, no empty run.
+- Tried and dropped: the face inside the ring behind the hero copy (the shield hides it, or it
+  hurts the name) and in the portrait's slot (a 190px thumbnail with no room to transform).
+- No film or show names, logos or assets anywhere near it; it is his own face, in this palette.
+
 ### The Deep (`components/World.jsx`, `lib/worldScene.js`, `components/Vista.jsx`)
 
 Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
@@ -149,7 +184,8 @@ also the stars, and the lit limb of a world that rises under the footer. Every s
   phones get about a third of the points, half the medusae and shards and no antialiasing.
 - Under `prefers-reduced-motion` it draws one still frame and the vistas close. Without WebGL
   `<html data-world="off">` closes the vistas and the page is its plain ground.
-- Do not add a second WebGL canvas; add to this scene instead.
+- Do not add another WebGL canvas. The welcome hologram is the one exception (a second, tiny
+  context that stops drawing before this one starts); anything new below the hero goes in this scene.
 
 In Proof of work, `Skyline.jsx` stands the commit graph up into 3D towers as it scrolls in
 (height is count^0.4, colour ranked within the year; the tooltip keeps the exact count). It turns
