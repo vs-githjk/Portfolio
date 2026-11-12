@@ -3278,6 +3278,15 @@ html[data-world='off'] .vista {
   --cut-line: var(--acc);
 }
 
+@media (max-width: 560px) {
+  .flag,
+  .paper,
+  .pow-card,
+  .hl-slab {
+    --cut: var(--cut-md);
+  }
+}
+
 /* =============================== RESPONSIVE =============================== */
 /* On a narrow laptop the two PrismAI columns are equal, so the story runs shorter and
    the lead still is cropped as little as possible. */

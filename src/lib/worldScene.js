@@ -681,7 +681,7 @@ export function createWorld(canvas, { still }) {
       place(moon, -500, home.moon, w * (phone ? 0.3 : 0.3), -10, mr);
       // The lit limb crosses the horizon spacer; the body runs down under the footer.
       const hr = w * 1.7 + 500;
-      place(horizon, -300, home.foot, 0, hr - 24, hr);
+      place(horizon, -300, home.foot, 0, hr + 4, hr);
     }
   }
 

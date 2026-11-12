@@ -65,7 +65,7 @@ Three rules encode the thesis:
 | Proof of work | GitHub commit graph, the nine wins (each hackathon win with a Devpost page links to it), four verification links |
 | Principles | How he thinks about building (2x2 tiles) |
 | Value | What that is worth to you (hairline rows) |
-| Toolkit | The inventory, grouped chips |
+| Toolkit | The inventory: a label and a line of tools per group |
 | Contact | The ask: his studio headshot (the one face on the page; the hero is a sunset silhouette), then the email as the hero of the section |
 
 Principles and Value are deliberately different shapes (tiles vs hairline rows) so they do
@@ -125,8 +125,8 @@ and the loop stops once the layer is invisible, when the tab is hidden, and unde
 Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
 asked for planets and things flying, and approved three.js for it). One WebGL canvas in the
 fixed stack, drawn with three.js: a ringed gas giant, a moon, a spiral galaxy of points,
-medusae of light that pulse upward, wireframe shards of glass, two comets, marine snow that is
-also the stars, and the lit limb of a world that rises under the footer. Every shader is in
+three large medusae of light that pulse upward, four wireframe shards of glass, one rare comet,
+marine snow that is also the stars, and the lit limb of a world that rises under the footer. Every shader is in
 `worldScene.js`; colours come from `--beam-*`, `--star-*` and the `--world-*` tokens.
 
 - One unit is one CSS pixel on the plane z = 0 and the camera sits at y = -(scroll + half a
@@ -136,6 +136,11 @@ also the stars, and the lit limb of a world that rises under the footer. Every s
   scene reads its place in the document and centres that set piece on it, and lays out again
   whenever the page height changes (a ResizeObserver on the body). The moon sits beside the
   Value heading. Snow, medusae and shards wrap around the camera, so they never run out.
+- Less but more (Vidyut, Nov 12, after a first pass with eight medusae and fourteen shards:
+  "too much random stuff"). The moments are the set pieces. The reading sections (`QUIET` in
+  `worldScene.js`: Experience, Principles, Value, Toolkit) are near-empty: while the middle of
+  the screen is in or near one, the medusae, shards and comet fade out (`uShow`) and only the
+  snow is left (plus the moon by the Value heading). Do not raise the counts; make one better.
 - Text stays readable three ways: the drifting things keep to the margins and the column
   edges (`edge()`), and dim inside the column (`calm()`); every section paints most of the
   ink back behind its column (`.sec::before`, `--world-calm`, feathered so it has no edge);
@@ -146,8 +151,9 @@ also the stars, and the lit limb of a world that rises under the footer. Every s
   a few idle seconds on a desktop, never before the first paint. It draws only while visible
   (not on the first screen, not in a hidden tab), about 30 frames a second when idle and every
   frame while the camera is catching up with a scroll. DPR is capped at 1.75 (1.5 on phones);
-  phones get about a third of the points, half the medusae and shards and no antialiasing.
-- Under `prefers-reduced-motion` it draws one still frame and the vistas close. Without WebGL
+  phones get about a third of the points, two medusae, two shards and no antialiasing.
+- Under `prefers-reduced-motion` it draws one still frame (snow, the giant and the galaxy in
+  the corners, nothing drifting) and the vistas close. Without WebGL
   `<html data-world="off">` closes the vistas and the page is its plain ground.
 - Do not add a second WebGL canvas; add to this scene instead.
 
@@ -157,6 +163,20 @@ in as it rises and comes to rest square to the reader, with the camera far enoug
 every tower stands upright (Vidyut, Nov 12: "why is it not straight"). The flat
 SVG stays as the accessible image. Principles tiles lean a few degrees toward the pointer
 (`useTilt`, mouse only).
+
+## One shape language: cut corners
+
+The panels share the Master Agents edge: a corner is cut, not rounded (the CUT CORNERS block
+near the end of `sections.css`). The flagships, the paper, the Proof of work cards and the
+Highlights slab lose two corners (top left, bottom right, `--cut-lg`, `--cut-md` on a phone);
+featured cards, compact cards and Principles tiles lose one (bottom right). The cut edge is a
+1px diagonal drawn in a background tile, because a border cannot follow a clip-path; a clipped
+panel has no outer shadow. Media frames, buttons and badges keep their soft radius. Value and
+Toolkit stay hairline rows with no boxes.
+
+Reading sections are airy on purpose (Nov 12: "crowded, cramped"): Experience outcomes are a
+plain list behind accent ticks, not pills; Toolkit is a mono label and a line of tools with dot
+separators, not forty chips; rows are padded 36 to 56px.
 
 ## Master Agents (`components/NowBuilding.jsx`, `builds.building`)
 
