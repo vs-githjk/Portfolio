@@ -28,8 +28,9 @@ import { seeded, triple } from './field';
 
    The idea is a galaxy underwater. The hero's beams are the surface light;
    scrolling is a dive. Down there the sea and the sky are one place: a ringed
-   gas giant hangs in the water, medusae of light pulse upward past it, shards of
-   glass tumble in the current, a spiral galaxy turns like a shoal, comets cross,
+   gas giant hangs in the water, a few medusae of light pulse upward past it, a few
+   shards of glass turn in the current, a spiral galaxy turns like a shoal, now and
+   then a comet crosses,
    and the page ends on the lit limb of a world rising under the footer.
 
    One unit is one CSS pixel on the plane z = 0, and the camera sits at
@@ -143,8 +144,8 @@ void main(){
 
 /* The text column is the calm zone: inside it (in device pixels from the middle
    of the screen) the drifting things give only a share of their light. */
-const CALM = /* glsl */ `uniform float uMid, uCol, uCalm;
-float calm(){ return mix(uCalm, 1.0, smoothstep(uCol - 24.0, uCol + 56.0, abs(gl_FragCoord.x - uMid))); }
+const CALM = /* glsl */ `uniform float uMid, uCol, uCalm, uShow;
+float calm(){ return uShow * mix(uCalm, 1.0, smoothstep(uCol - 24.0, uCol + 56.0, abs(gl_FragCoord.x - uMid))); }
 `;
 
 /* ---- Medusae: a pulsing bell, trailing tentacles, short inner arms ---------- */
@@ -362,7 +363,7 @@ export function createWorld(canvas, { still }) {
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 10, 12000);
   const time = { value: 0 };
-  const zone = { uMid: { value: 0 }, uCol: { value: 1e5 }, uCalm: { value: phone ? 0.5 : 0.34 } };
+  const zone = { uMid: { value: 0 }, uCol: { value: 1e5 }, uCalm: { value: phone ? 0.5 : 0.34 }, uShow: { value: 1 } };
   const dpr = { value: 1 };
   const disposables = [];
   const keep = (x) => {
@@ -377,11 +378,11 @@ export function createWorld(canvas, { still }) {
   const view = (z) => (camZ - z) / camZ; // how much more of the world a screen shows at depth z
 
   /* ---- Snow -------------------------------------------------------------- */
-  const nSnow = phone ? 520 : 1700;
+  const nSnow = phone ? 420 : 1300;
   const sp = new Float32Array(nSnow * 3);
   const ss = new Float32Array(nSnow * 3);
   for (let i = 0; i < nSnow; i++) {
-    const near = rnd() < 0.05;
+    const near = rnd() < 0.025;
     sp[i * 3] = rnd() - 0.5;
     sp[i * 3 + 1] = rnd();
     sp[i * 3 + 2] = near ? 200 + rnd() * 500 : -3800 * Math.pow(rnd(), 1.4);
@@ -509,7 +510,7 @@ export function createWorld(canvas, { still }) {
 
   /* ---- Medusae ----------------------------------------------------------- */
   const jellyGeo = keep(jellyGeometry(rnd));
-  const nJelly = phone ? 4 : 8;
+  const nJelly = phone ? 2 : 3;
   const hues = [C.b, C.c, C.a, C.rim];
   const jellies = [];
   for (let i = 0; i < nJelly; i++) {
@@ -517,7 +518,7 @@ export function createWorld(canvas, { still }) {
       new ShaderMaterial({
         vertexShader: JELLY_VERT,
         fragmentShader: JELLY_FRAG,
-        uniforms: { uTime: time, uPhase: { value: rnd() * TAU }, uColor: { value: hues[i % hues.length] }, uGlow: { value: 0.5 + rnd() * 0.35 }, ...zone },
+        uniforms: { uTime: time, uPhase: { value: rnd() * TAU }, uColor: { value: hues[i % hues.length] }, uGlow: { value: 0.7 + rnd() * 0.2 }, ...zone },
         side: DoubleSide,
         ...additive,
       })
@@ -528,34 +529,34 @@ export function createWorld(canvas, { still }) {
     // Mostly in the outer thirds of the screen, where the page has the least text.
     jellies.push({
       mesh,
-      z: -160 - rnd() * 1500,
-      side: i % 2 ? 1 : -1,
-      off: i % 4 === 3 ? -0.5 - rnd() * 0.4 : rnd(),
-      y: rnd(),
-      size: 30 + rnd() * 44,
-      rise: 9 + rnd() * 12,
+      z: -120 - i * 320,
+      side: i % 2 ? -1 : 1,
+      off: 0.25 + rnd() * 0.5,
+      y: (i + rnd() * 0.5) / nJelly,
+      size: phone ? 40 + rnd() * 16 : 62 + rnd() * 30,
+      rise: 5 + rnd() * 4,
       sway: rnd() * TAU,
       lean: (rnd() - 0.5) * 0.5,
     });
   }
 
   /* ---- Shards ------------------------------------------------------------ */
-  const nShard = phone ? 6 : 14;
+  const nShard = phone ? 2 : 4;
   const shardGeo = keep(new OctahedronGeometry(1, 0));
   const tints = new Float32Array(nShard);
   const shardData = [];
   for (let i = 0; i < nShard; i++) {
     tints[i] = rnd();
     shardData.push({
-      z: -80 - rnd() * 1500,
+      z: -80 - rnd() * 900,
       side: i % 2 ? 1 : -1,
-      off: rnd(),
-      y: rnd(),
-      size: 7 + rnd() * 15,
+      off: 0.2 + rnd() * 0.6,
+      y: (i + rnd() * 0.5) / nShard,
+      size: 16 + rnd() * 12,
       long: 1.3 + rnd() * 1.3,
-      spin: new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(0.5),
+      spin: new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(0.28),
       rot: new Vector3(rnd() * TAU, rnd() * TAU, rnd() * TAU),
-      fall: -3 - rnd() * 7,
+      fall: -2 - rnd() * 3,
     });
   }
   shardGeo.setAttribute('aTint', new InstancedBufferAttribute(tints, 1));
@@ -582,13 +583,13 @@ export function createWorld(canvas, { still }) {
   const dummy = new Object3D();
 
   /* ---- Comets ------------------------------------------------------------ */
-  const comets = [0, 1].map((i) => {
+  const comets = [0].map((i) => {
     const mat = keep(new ShaderMaterial({ vertexShader: GLOW_VERT, fragmentShader: COMET_FRAG, uniforms: { uColor: { value: i ? C.c : C.rim }, uAlpha: { value: 0 } }, ...additive }));
     const mesh = new Mesh(plane, mat);
     mesh.frustumCulled = false;
     mesh.visible = false;
     scene.add(mesh);
-    return { mesh, mat, t0: 3 + i * 6.5, dur: 2.6, from: [0, 0], to: [0, 0] };
+    return { mesh, mat, t0: 14, dur: 2.6, from: [0, 0], to: [0, 0] };
   });
   const crnd = seeded(97);
   function aim(c) {
@@ -602,6 +603,19 @@ export function createWorld(canvas, { still }) {
 
   /* ---- Layout: sizes and the set pieces' homes, read from the page --------- */
   const home = { giant: 0, galaxy: 0, moon: 0, foot: 0 };
+  /* Choreography: the reading sections are quiet. While the middle of the screen
+     is in (or near) one of them, the drifting things and the comet are gone and
+     only the snow is left; they belong to the vistas, Builds, Proof and Contact. */
+  const QUIET = ['#work', '#principles', '#value', '#toolkit'];
+  let quiet = [];
+  function show(scroll) {
+    if (reduced) return 0;
+    const c = scroll + h / 2;
+    let d = Infinity;
+    for (const [a, b] of quiet) d = Math.min(d, c < a ? a - c : c > b ? c - b : 0);
+    const t = Math.max(0, Math.min(1, (d - h * 0.3) / (h * 0.5)));
+    return t * t * (3 - 2 * t);
+  }
   const mid = (sel, fallback) => {
     const el = document.querySelector(sel);
     if (!el) return fallback;
@@ -637,6 +651,12 @@ export function createWorld(canvas, { still }) {
     zone.uMid.value = (w / 2) * ratio;
     zone.uCol.value = phone ? 1e5 : colHalf * ratio;
     const H = document.documentElement.scrollHeight;
+    quiet = QUIET.map((sel) => document.querySelector(sel))
+      .filter(Boolean)
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return [r.top + window.scrollY, r.bottom + window.scrollY];
+      });
     home.giant = mid('.vista[data-set="giant"]', H * 0.14);
     home.galaxy = mid('.vista[data-set="galaxy"]', H * 0.7);
     home.moon = mid('#value .sec-head', H * 0.84);
@@ -684,6 +704,7 @@ export function createWorld(canvas, { still }) {
     camera.position.x = px * 16;
     camera.position.y = camY - py * 10;
     snowMat.uniforms.uCamY.value = camY;
+    zone.uShow.value = show(scroll);
 
     giant.userData.body.rotation.y = t * 0.012;
     moon.userData.body.rotation.y = t * 0.02;
@@ -691,7 +712,7 @@ export function createWorld(canvas, { still }) {
 
     for (const j of jellies) {
       const k = view(j.z);
-      const span = h * k * 1.5 + j.size * k * 8;
+      const span = h * k * 3.2 + j.size * k * 8; // long laps: one or two in sight at a time
       const beat = t * 1.15 + j.mesh.material.uniforms.uPhase.value;
       // It rises in strokes: fastest just after the bell closes.
       const y = wrap(j.y * span + t * j.rise + Math.sin(beat - 1.2) * 5, span);
@@ -704,7 +725,7 @@ export function createWorld(canvas, { still }) {
     for (let i = 0; i < shardData.length; i++) {
       const s = shardData[i];
       const k = view(s.z);
-      const span = h * k * 1.4 + 200;
+      const span = h * k * 2.6 + 200;
       dummy.position.set((s.side * edge(s.off) + Math.sin(t * 0.09 + i) * 14) * k, wrap(s.y * span + t * s.fall, span), s.z);
       dummy.rotation.set(s.rot.x + t * s.spin.x, s.rot.y + t * s.spin.y, s.rot.z + t * s.spin.z);
       dummy.scale.set(s.size * k, s.size * k * s.long, s.size * k);
@@ -714,9 +735,9 @@ export function createWorld(canvas, { still }) {
     shards.instanceMatrix.needsUpdate = true;
 
     for (const c of comets) {
-      let u = reduced ? (c === comets[0] ? 0.55 : -1) : (t - c.t0) / c.dur;
+      let u = reduced ? -1 : (t - c.t0) / c.dur;
       if (u > 1) {
-        c.t0 = t + 5 + crnd() * 9;
+        c.t0 = t + 28 + crnd() * 24;
         aim(c);
         u = -1;
       }
@@ -729,7 +750,7 @@ export function createWorld(canvas, { still }) {
       c.mesh.position.set(x, y, z);
       c.mesh.rotation.z = Math.atan2(-(c.to[1] - c.from[1]) * h, (c.to[0] - c.from[0]) * w);
       c.mesh.scale.set(380 * k, 22 * k, 1);
-      c.mat.uniforms.uAlpha.value = Math.sin(Math.PI * u) * 0.9;
+      c.mat.uniforms.uAlpha.value = Math.sin(Math.PI * u) * 0.9 * zone.uShow.value;
     }
 
     renderer.render(scene, camera);
