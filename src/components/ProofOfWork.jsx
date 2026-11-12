@@ -1,5 +1,5 @@
 import { proofOfWork } from '../data/content';
-import Heatmap from './Heatmap';
+import SkyStage from './SkyStage';
 import { StarIcon } from './Icons';
 
 /* The build writes a fresh snapshot to github.local.json (gitignored); the
@@ -82,7 +82,7 @@ export default function ProofOfWork() {
                 <span>{fill(g.stats.month, { month: t.month, day: t.day })}</span>
               </div>
             </div>
-            <Heatmap days={github.days} label={fill(g.graphLabel, { n: fmt(github.total) })} />
+            <SkyStage days={github.days} label={fill(g.graphLabel, { n: fmt(github.total) })} />
             <p className="pow-phone-note">{g.phoneNote}</p>
             <div className="pow-foot">
               <span>

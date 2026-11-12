@@ -1954,7 +1954,40 @@
   background: var(--acc-2);
 }
 
+/* The skyline stage (SkyStage.jsx): the flat graph sits on its floor until the
+   3D canvas has drawn, then fades out under it. The height is reserved here. */
+.sky {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: var(--sky-ratio);
+}
+
+.sky .heat-wrap {
+  transition: opacity var(--dur) var(--ease);
+}
+
+.sky[data-ready] .heat-wrap {
+  opacity: 0;
+}
+
+.sky-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  touch-action: pan-y;
+}
+
+.sky[data-ready] .sky-canvas {
+  opacity: 1;
+}
+
 .heat-tip {
+  z-index: 1;
   position: absolute;
   transform: translate(-50%, calc(-100% - 12px));
   padding: 4px 9px;
@@ -2659,6 +2692,10 @@
     height: 96px;
   }
 
+  .sky {
+    --sky-ratio: 31 / 17;
+  }
+
 }
 
 @media (max-width: 560px) {
@@ -2701,6 +2738,8 @@
   }
 
   .card-link,
+  .sky .heat-wrap,
+  .sky-canvas,
   .bg[data-ready] .bg-static,
   .ctl,
   .nav,

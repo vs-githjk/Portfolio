@@ -132,6 +132,7 @@
   --drift-dim: 0.5; /* thumbnails read as atmosphere, not content */
   --drift-light: 0.45; /* pale thumbnails dimmed to sit with the dark ones */
   --drift-loop: 70s; /* one third of a row per loop */
+  --sky-ratio: 4 / 1; /* the commit skyline's stage; phones override it in sections.css */
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
