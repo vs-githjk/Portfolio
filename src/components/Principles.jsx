@@ -1,8 +1,12 @@
 import { principles } from '../data/content';
+import { useTilt } from '../hooks/useTilt';
 
 /* Four raised tiles in a 2x2 grid. There are no numbers: the four are not a
-   sequence. Deliberately a different shape from Value's hairline rows. */
+   sequence. Deliberately a different shape from Value's hairline rows. Under a
+   mouse each tile leans a few degrees toward the pointer (useTilt). */
 export default function Principles() {
+  useTilt('.p-tile');
+
   return (
     <section className="sec principles" id="principles">
       <div className="wrap">

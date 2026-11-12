@@ -2178,6 +2178,45 @@
   border-radius: var(--r-xs);
 }
 
+/* The lean toward the pointer (useTilt.js): a few degrees on the page's one
+   camera, and the top highlight follows the mouse. data-tilt appears on the
+   first mouse move, so the reveal keeps its own slower transition (.p-grid
+   lifts these rules over .js .reveal.in). */
+.p-tile {
+  position: relative;
+}
+
+.p-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--tilt-mx, 50%) var(--tilt-my, 0%), var(--glass-hi), transparent 55%);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  pointer-events: none;
+}
+
+.p-grid .p-tile[data-tilt] {
+  transform: perspective(var(--persp)) rotateX(calc(var(--tilt-x, 0) * var(--tilt-max)))
+    rotateY(calc(var(--tilt-y, 0) * var(--tilt-max)));
+  transition: transform var(--dur) var(--ease);
+}
+
+.p-grid .p-tile[data-tilt='on'] {
+  transition-duration: 0.12s;
+  box-shadow: var(--elev-2);
+  border-color: var(--hair-2);
+}
+
+.p-tile[data-tilt='on']::after {
+  opacity: 1;
+}
+
+.p-grid .p-tile[data-tilt='off'] {
+  transform: none;
+}
+
 .p-tile h3 {
   font-family: var(--font-display);
   font-size: clamp(26px, 2.4vw, 32px);

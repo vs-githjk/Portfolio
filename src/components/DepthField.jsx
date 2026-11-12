@@ -25,6 +25,7 @@ const FOCAL = 620; // px: a shaft this far away is drawn at its own size
 const DEPTH = 4400; // length of the hall before it repeats
 const NEAR = 240; // a shaft closer than this has left the frame
 const TRAVEL = 0.5; // camera units walked per pixel scrolled
+const AISLE = 0.24; // share of its light a shaft keeps behind the text column
 const STILL = 1300; // the camera position used under reduced motion
 
 export default function DepthField() {
@@ -79,8 +80,8 @@ export default function DepthField() {
       const g = c.getContext('2d');
       const rgb = hue.join(',');
       const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-      r.addColorStop(0, `rgba(${rgb},0.9)`);
-      r.addColorStop(0.35, `rgba(${rgb},0.34)`);
+      r.addColorStop(0, `rgba(${rgb},0.5)`);
+      r.addColorStop(0.35, `rgba(${rgb},0.22)`);
       r.addColorStop(1, `rgba(${rgb},0)`);
       g.fillStyle = r;
       g.fillRect(0, 0, 128, 128);
@@ -126,6 +127,7 @@ export default function DepthField() {
 
     function draw() {
       const hy = h * 0.44; // the horizon
+      const aisle = Math.min(w / 2, 600); // half the text column
       const eye = h * 0.62; // camera height above the floor
       ctx.clearRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'lighter';
@@ -137,7 +139,10 @@ export default function DepthField() {
         const sw = s.w * k * 2.4;
         if (sx + sw < 0 || sx - sw > w) continue;
         const foot = hy + eye * k;
-        ctx.globalAlpha = s.a * fog(d);
+        // The aisle stays dark on screen too: a shaft that stands behind the text
+        // column is drawn at a fraction of its light, so body text keeps AA contrast.
+        const out = (Math.abs(sx - w / 2) - aisle * 0.7) / (aisle * 0.5);
+        ctx.globalAlpha = s.a * fog(d) * (AISLE + (1 - AISLE) * smooth(clamp01(out)));
         ctx.drawImage(sprites[s.hue], sx - sw / 2, -8, sw, foot + 8);
         const pw = sw * 1.5;
         const ph = pw * Math.min(0.5, 0.22 * k + 0.04);
