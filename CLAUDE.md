@@ -11,8 +11,9 @@ think "this person has done a lot, has won things, and is good at the job", then
 easy to email him.
 
 Stack: Vite + React 19, plain CSS with custom properties. No Tailwind, no CSS-in-JS, no
-component library, no router. Single page. Runtime dependencies are react and react-dom
-only. Keep it that way unless there is a real reason not to.
+component library, no router. Single page. Runtime dependencies are react, react-dom and
+three (pinned to an exact version, used only by the world below the hero, in its own lazy
+chunk). Keep it that way unless there is a real reason not to.
 
 ## The thesis: don't undermine it by accident
 
@@ -31,9 +32,11 @@ Three rules encode the thesis:
    see `tokens.css`). One accent, electric blue (`--acc`), means the front ring card, the
    progress line, rules, the primary action and the commit-graph ramp. Gold (`--win`) is
    for awards and nothing else. Mint (`--ok`) means live or available. Coral (`--bad`) is
-   reserved for a defect state and nothing uses it today. The light beams are the only
-   atmosphere; if you are about to add a second glow, a gradient wash or another accent,
-   stop and ask first.
+   reserved for a defect state and nothing uses it today. The atmosphere is two things and
+   no more: the light beams on the first screen and The Deep below it (the 3D world, in the
+   same indigo, blue and violet as the beams). The one place with other colours is the
+   Master Agents crew art, which brings its own. If you are about to add another glow, a
+   gradient wash or another accent, stop and ask first.
 
 2. **Claims come with receipts, and are never fabricated.** Every number traces to a
    source (the paper, the resume, a project repo or doc, Devpost, GitHub, or something
@@ -57,7 +60,7 @@ Three rules encode the thesis:
 |---|---|
 | Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of ten builds |
 | Experience | Where he has worked; every result is a complete statement |
-| Builds | Two flagship panels (PrismAI, then DuelWise), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (19 in all), then the Now building panel (Master Agents, a CSS 3D crew ring) |
+| Builds | Two flagship panels (PrismAI, then DuelWise), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (19 in all), then the Now building panel (Master Agents, a character select screen with the crew's art) |
 | Highlights | Four one-line statements, after the stories they summarize |
 | Proof of work | GitHub commit graph, the nine wins (each hackathon win with a Devpost page links to it), four verification links |
 | Principles | How he thinks about building (2x2 tiles) |
@@ -117,16 +120,61 @@ and the loop stops once the layer is invisible, when the tab is hidden, and unde
 `prefers-reduced-motion` (drawn once, no shimmer, no parallax). Colors come from
 `--beam-a/b/c` and `--star-a/b` in `tokens.css`. No WebGL, no dependency.
 
-Below the hero (Nov 12 2026, Vidyut asked for 3D past the first screen): `DepthField.jsx` is a
-third 2D canvas, a lazy chunk, that stands shafts of beam-coloured light on a floor either side of
-a dark centre aisle and walks the camera forward with scroll. It fades in as the hero beams fade,
-out before Contact, pauses offscreen and when hidden, draws half as much on phones and holds still
-under reduced motion. Do not add a fourth canvas.
+### The Deep (`components/World.jsx`, `lib/worldScene.js`, `components/Vista.jsx`)
+
+Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
+asked for planets and things flying, and approved three.js for it). One WebGL canvas in the
+fixed stack, drawn with three.js: a ringed gas giant, a moon, a spiral galaxy of points,
+medusae of light that pulse upward, wireframe shards of glass, two comets, marine snow that is
+also the stars, and the lit limb of a world that rises under the footer. Every shader is in
+`worldScene.js`; colours come from `--beam-*`, `--star-*` and the `--world-*` tokens.
+
+- One unit is one CSS pixel on the plane z = 0 and the camera sits at y = -(scroll + half a
+  screen), so depth is parallax: deeper things move slower than the page. The camera eases
+  toward the scroll position.
+- A `<Vista set="giant|galaxy|horizon" />` in `App.jsx` is an empty window in the page. The
+  scene reads its place in the document and centres that set piece on it, and lays out again
+  whenever the page height changes (a ResizeObserver on the body). The moon sits beside the
+  Value heading. Snow, medusae and shards wrap around the camera, so they never run out.
+- Text stays readable three ways: the drifting things keep to the margins and the column
+  edges (`edge()`), and dim inside the column (`calm()`); every section paints most of the
+  ink back behind its column (`.sec::before`, `--world-calm`, feathered so it has no edge);
+  and text on bare ground carries a tight ink halo. Measured on Nov 12: no
+  bare text box under AA at 1440 against the 95th percentile of its backdrop, halo not
+  counted. Bright set pieces must stay inside their vistas: re-measure after moving one.
+- Budget: the chunk (about 480 KB, 125 KB gzipped) is requested on the first scroll, or after
+  a few idle seconds on a desktop, never before the first paint. It draws only while visible
+  (not on the first screen, not in a hidden tab), about 30 frames a second when idle and every
+  frame while the camera is catching up with a scroll. DPR is capped at 1.75 (1.5 on phones);
+  phones get about a third of the points, half the medusae and shards and no antialiasing.
+- Under `prefers-reduced-motion` it draws one still frame and the vistas close. Without WebGL
+  `<html data-world="off">` closes the vistas and the page is its plain ground.
+- Do not add a second WebGL canvas; add to this scene instead.
 
 In Proof of work, `Skyline.jsx` stands the commit graph up into 3D towers as it scrolls in
-(height is count^0.4, colour ranked within the year; the tooltip keeps the exact count). The flat
+(height is count^0.4, colour ranked within the year; the tooltip keeps the exact count). It turns
+in as it rises and comes to rest square to the reader, with the camera far enough back that
+every tower stands upright (Vidyut, Nov 12: "why is it not straight"). The flat
 SVG stays as the accessible image. Principles tiles lean a few degrees toward the pointer
 (`useTilt`, mouse only).
+
+## Master Agents (`components/NowBuilding.jsx`, `builds.building`)
+
+The Now building panel is the loudest section on the page on purpose (Vidyut, Nov 12: the old
+one was "bland, one color, rounded-edge AI look"). It is a character select screen: cut
+corners instead of round ones (`--cut-*`; the frame is a 1px gradient the inner panel covers,
+because a border cannot follow a clip-path), the title at `--fs-mega`, the one sentence drawn
+as a prompt that runs through the crew to a reviewed branch, then a stage with one character
+large, lit by a blurred copy of their own art, with the previous and next in the wings. The
+roster of fourteen is a tablist (arrow keys, Home and End; hover and click choose); until
+someone touches it the stage walks the roster while it is on screen, never under reduced
+motion. Below: routing, the council, the loop, then four labelled facts.
+
+Art is `/agents/<id>.webp` (294px) and `-148`, cropped from the crew's roster sheet (the
+source is 300px a portrait, so the large card is a little soft on a retina screen; ask Vidyut
+for larger art before making it bigger). Every claim there was confirmed by Vidyut on Nov 12
+2026. It stays labelled "Now building", has no link (private repo) and never compares the
+crew with anyone else's agents.
 
 ## Proof of work (`components/ProofOfWork.jsx`)
 
@@ -178,7 +226,7 @@ token. If one does not exist, add it to `tokens.css` rather than inlining a hex.
 
 **One camera for the whole page.** Every raised surface shares `--persp`, one top highlight
 and the `--elev-1/2/3` scale; `.reveal` rises out of the same perspective; media frames stay
-flat (the 3D objects are the ring, the depth field, the commit skyline and the Master Agents crew ring). Keep it elegant: depth is a few degrees and a few
+flat (the 3D objects are the ring, The Deep, the commit skyline and the wings of the Master Agents stage). Keep it elegant: depth is a few degrees and a few
 shadows, never a spin.
 
 ## Type
@@ -251,7 +299,7 @@ Don't add these back without asking:
 - GitHub stars or follower counts (zero followers, zero to two stars). Use the commit graph.
 - A proof band of bare numbers under the hero (see rule 3), and any halo or nebula.
 - Alltr (not his project) and TransitGuard's dead demo link.
-- A WebGL layer, and any effect that reads as an effects reel.
+- A second WebGL layer (The Deep is the one), and any effect that reads as an effects reel.
 
 ## Later rounds: layout rules worth keeping
 

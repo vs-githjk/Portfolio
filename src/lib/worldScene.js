@@ -141,6 +141,12 @@ void main(){
   gl_FragColor = vec4(mix(uA, uB, vMix), a * a * vA);
 }`;
 
+/* The text column is the calm zone: inside it (in device pixels from the middle
+   of the screen) the drifting things give only a share of their light. */
+const CALM = /* glsl */ `uniform float uMid, uCol, uCalm;
+float calm(){ return mix(uCalm, 1.0, smoothstep(uCol - 24.0, uCol + 56.0, abs(gl_FragCoord.x - uMid))); }
+`;
+
 /* ---- Medusae: a pulsing bell, trailing tentacles, short inner arms ---------- */
 const JELLY_VERT = /* glsl */ `
 attribute float aPart, aT, aPh;
@@ -171,7 +177,7 @@ void main(){
 const JELLY_FRAG = /* glsl */ `
 uniform vec3 uColor; uniform float uGlow;
 varying float vPart, vT; varying vec3 vN, vV, vO;
-void main(){
+${CALM}void main(){
   float a; vec3 c = uColor;
   if (vPart < 0.5) {
     float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 1.5);
@@ -186,7 +192,7 @@ void main(){
     a = (1.0 - vT) * 0.32;
     c = mix(uColor, vec3(1.0), 0.2);
   }
-  gl_FragColor = vec4(c, a * uGlow);
+  gl_FragColor = vec4(c, a * uGlow * calm());
 }`;
 
 /* ---- Shards of glass: flat facets, a cold edge light ------------------------ */
@@ -205,14 +211,14 @@ void main(){
 const SHARD_FRAG = /* glsl */ `
 uniform vec3 uLight, uNight, uA, uB, uRim;
 varying vec3 vN, vV, vB; varying float vTint;
-void main(){
+${CALM}void main(){
   vec3 n = normalize(vN);
   float line = 1.0 - smoothstep(0.0, 0.07, min(vB.x, min(vB.y, vB.z)));
   float fres = pow(1.0 - abs(dot(n, vV)), 2.0);
   float spec = pow(max(dot(reflect(-uLight, n), vV), 0.0), 18.0);
   float face = 0.5 + 0.5 * dot(n, uLight);
   vec3 col = mix(uA, uB, vTint) * (0.05 + 0.34 * face * face) + uRim * (fres * fres * 0.4 + spec * 0.9 + line * 0.75);
-  gl_FragColor = vec4(col, 0.2 + 0.5 * face * face + 0.5 * line);
+  gl_FragColor = vec4(col, (0.2 + 0.5 * face * face + 0.5 * line) * calm());
 }`;
 
 /* ---- The galaxy: a shoal of stars on two arms -------------------------------- */
@@ -356,6 +362,7 @@ export function createWorld(canvas, { still }) {
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 10, 12000);
   const time = { value: 0 };
+  const zone = { uMid: { value: 0 }, uCol: { value: 1e5 }, uCalm: { value: phone ? 0.5 : 0.34 } };
   const dpr = { value: 1 };
   const disposables = [];
   const keep = (x) => {
@@ -510,7 +517,7 @@ export function createWorld(canvas, { still }) {
       new ShaderMaterial({
         vertexShader: JELLY_VERT,
         fragmentShader: JELLY_FRAG,
-        uniforms: { uTime: time, uPhase: { value: rnd() * TAU }, uColor: { value: hues[i % hues.length] }, uGlow: { value: 0.5 + rnd() * 0.35 } },
+        uniforms: { uTime: time, uPhase: { value: rnd() * TAU }, uColor: { value: hues[i % hues.length] }, uGlow: { value: 0.5 + rnd() * 0.35 }, ...zone },
         side: DoubleSide,
         ...additive,
       })
@@ -521,7 +528,6 @@ export function createWorld(canvas, { still }) {
     // Mostly in the outer thirds of the screen, where the page has the least text.
     jellies.push({
       mesh,
-      glow: mat.uniforms.uGlow.value,
       z: -160 - rnd() * 1500,
       side: i % 2 ? 1 : -1,
       off: i % 4 === 3 ? -0.5 - rnd() * 0.4 : rnd(),
@@ -563,7 +569,7 @@ export function createWorld(canvas, { still }) {
       new ShaderMaterial({
         vertexShader: SHARD_VERT,
         fragmentShader: SHARD_FRAG,
-        uniforms: { uLight: { value: new Vector3(0.5, 0.6, 0.62).normalize() }, uNight: { value: C.night }, uA: { value: C.b }, uB: { value: C.c }, uRim: { value: C.rim } },
+        uniforms: { uLight: { value: new Vector3(0.5, 0.6, 0.62).normalize() }, uNight: { value: C.night }, uA: { value: C.b }, uB: { value: C.c }, uRim: { value: C.rim }, ...zone },
         transparent: true,
         depthWrite: false,
         side: DoubleSide,
@@ -628,26 +634,28 @@ export function createWorld(canvas, { still }) {
 
     const pad = Math.max(16, Math.min(w * 0.05, 72));
     colHalf = Math.min(600, w / 2) - pad;
+    zone.uMid.value = (w / 2) * ratio;
+    zone.uCol.value = phone ? 1e5 : colHalf * ratio;
     const H = document.documentElement.scrollHeight;
     home.giant = mid('.vista[data-set="giant"]', H * 0.14);
     home.galaxy = mid('.vista[data-set="galaxy"]', H * 0.7);
     home.moon = mid('#value .sec-head', H * 0.84);
     home.foot = mid('.vista[data-set="horizon"]', H - 120);
 
-    const gr = Math.max(84, Math.min(w * 0.17, 250));
+    const gr = Math.max(84, Math.min(w * 0.17, 225));
     const mr = Math.max(34, Math.min(w * 0.05, 78));
     const gal = Math.max(170, Math.min(w * 0.32, 480));
     galScale.value = gal / 480;
     if (reduced) {
       // One still: the giant low on the right, the galaxy high on the left.
-      place(giant, -500, h / 2, w * 0.36, h * 0.3, gr);
+      place(giant, -220, h / 2, w * 0.36, h * 0.3, gr);
       place(galaxy, -1400, h / 2, -w * 0.36, -h * 0.26, gal * 0.7);
       moon.visible = false;
       horizon.visible = false;
     } else {
       moon.visible = true;
       horizon.visible = true;
-      place(giant, -500, home.giant + 30, w * (phone ? 0.2 : 0.27), 0, gr);
+      place(giant, -220, home.giant + (phone ? 20 : 70), w * (phone ? 0.2 : 0.27), 0, gr);
       place(galaxy, -1400, home.galaxy, w * (phone ? 0 : 0.08), 0, gal);
       place(moon, -500, home.moon, w * (phone ? 0.3 : 0.3), -10, mr);
       // The lit limb crosses the horizon spacer; the body runs down under the footer.
@@ -656,19 +664,12 @@ export function createWorld(canvas, { still }) {
     }
   }
 
-  /* The text column is the calm zone. The drifting things keep to its edges and
-     the margins outside it: `edge(off)` is a screen x from just inside the column
-     edge (off 0) to the far side of the margin (off 1); a negative off is a place
-     inside the column, where `calm()` turns the light down. */
+  /* The drifting things keep to the margins: `edge(off)` is a screen x from the
+     column edge (off 0) to the window edge (off 1), so on a narrow margin they
+     peek in from the side; a negative off is a place inside the column, where the
+     shader's calm() turns the light down. */
   let colHalf = 600;
-  const edge = (off) => {
-    const margin = Math.max(w / 2 - colHalf, 0);
-    return off < 0 ? colHalf * (1 + off) : colHalf - 36 + off * (margin + 36) * 0.86;
-  };
-  const calm = (sx) => {
-    const t = Math.max(0, Math.min(1, (Math.abs(sx) - colHalf + 70) / 110));
-    return (phone ? 0.5 : 0.4) + (phone ? 0.5 : 0.6) * t * t * (3 - 2 * t);
-  };
+  const edge = (off) => (off < 0 ? colHalf * (1 + off) : colHalf + 16 + off * Math.max(w / 2 - colHalf - 16, 0));
 
   let camY = 0;
   function wrap(y, span) {
@@ -695,7 +696,6 @@ export function createWorld(canvas, { still }) {
       const y = wrap(j.y * span + t * j.rise + Math.sin(beat - 1.2) * 5, span);
       const sx = j.side * edge(j.off) + Math.sin(t * 0.13 + j.sway) * 22;
       j.mesh.position.set(sx * k, y, j.z);
-      j.mesh.material.uniforms.uGlow.value = j.glow * calm(sx);
       j.mesh.scale.setScalar(j.size * k);
       j.mesh.rotation.set(0.18, t * 0.05 + j.sway, j.lean + Math.sin(t * 0.21 + j.sway) * 0.08);
     }
