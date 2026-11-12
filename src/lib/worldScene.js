@@ -627,7 +627,7 @@ export function createWorld(canvas, { still }) {
     snowMat.uniforms.uW.value = w;
 
     const pad = Math.max(16, Math.min(w * 0.05, 72));
-    colHalf = Math.min(600, w / 2 - pad);
+    colHalf = Math.min(600, w / 2) - pad;
     const H = document.documentElement.scrollHeight;
     home.giant = mid('.vista[data-set="giant"]', H * 0.14);
     home.galaxy = mid('.vista[data-set="galaxy"]', H * 0.7);

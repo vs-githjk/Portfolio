@@ -725,38 +725,82 @@ export const builds = {
 
   /* ---- Now building: one panel after More builds -------------------------- */
   /* Master Agents, his private Claude Code crew (repo vs-githjk/master-agents,
-     private, 86 commits since Oct 15 2026). Facts from its README. Listed as
-     work in progress, never as a shipped product. Badge art is the repo's own
-     SVGs, copied to /agents. */
+     private, so no link). Facts confirmed by Vidyut on Nov 12 2026: one sentence
+     runs the playbook to a reviewed branch and stops at his three gates; 12
+     specialist agents plus Codex as a second model; 52 skills; model routing with
+     every run logged; the five-seat council; the self-improving loop; the
+     anti-generic filter. Listed as work in progress, never as a shipped product,
+     and never compared with anyone else's agents. Character art: /agents/<id>.webp
+     (294px) and /agents/<id>-148.webp, cropped from the crew's roster sheet. */
   building: {
     eyebrow: 'Now building',
     title: 'Master Agents',
     descriptor: 'my own Claude Code crew',
     when: 'Oct 2026 to Present · private repo',
-    oneLiner:
-      'One sentence in, a reviewed branch out. Twelve specialist agents plan, research, design, build, review and judge, and a second model checks every change.',
-    body: [
-      'Each agent does one job. The Scout researches with live signals, the Strategist plans, the Artist designs, the Engineer builds test first, the Inspector reruns every test and returns **PASS, FIX or STOP**, and the Judge scores the work the way a real hackathon judge would. **OpenAI Codex reviews every change Claude makes**, because two models miss different things.',
-      'A self-improving loop turns every failure into a test case, and an agent change is kept only if it **beats the current version with no regressions**. Nothing pushes, deploys, sends or spends without my go. I use it on every project, this site included.',
-    ],
-    crewLabel: 'The crew',
+    oneLiner: 'One sentence in. A reviewed branch out.',
+    lead: 'An orchestrator, **twelve specialists** and a second model. They research, plan, design, build test first, review and judge, and they stop only where I told them to.',
+    prompt: {
+      label: 'You',
+      lines: ['I’m at <hackathon>', 'use the master playbook'],
+      or: 'or',
+      stepsLabel: 'The crew',
+      steps: ['plan', 'research', 'design', 'build', 'review', 'judge'],
+      outLabel: 'Out',
+      out: 'a reviewed branch',
+      gatesLabel: 'Stops only at my gates',
+      gates: ['the plan', 'the design direction', 'the overnight build'],
+    },
+    rosterLabel: 'The crew',
+    rosterHint: 'Fourteen characters, one job each. Pick one.',
+    of: 'of',
     crew: [
-      { name: 'The Artist', job: 'design', icon: '/agents/designer.svg' },
-      { name: 'The Scout', job: 'research', icon: '/agents/finder.svg' },
-      { name: 'The Strategist', job: 'plans', icon: '/agents/planner.svg' },
-      { name: 'The Engineer', job: 'builds', icon: '/agents/builder.svg' },
-      { name: 'The Inspector', job: 'reviews', icon: '/agents/reviewer.svg' },
-      { name: 'The Judge', job: 'judges', icon: '/agents/auditor.svg' },
-      { name: 'The Director', job: 'demo video', icon: '/agents/creator.svg' },
-      { name: 'The Sentinel', job: 'ops and security', icon: '/agents/guardian.svg' },
-      { name: 'The Mentor', job: 'teaches', icon: '/agents/coach.svg' },
-      { name: 'The Wordsmith', job: 'writes', icon: '/agents/writer.svg' },
-      { name: 'The XO', job: 'coordinates', icon: '/agents/xo.svg' },
-      { name: 'The Prospector', job: 'finds leads', icon: '/agents/prospector.svg' },
-      { name: 'Codex', job: 'second model', icon: '/agents/codex.svg' },
+      { id: 'orchestrator', name: 'The Orchestrator', job: 'runs the room', does: 'Takes the one sentence, hands every task to the cheapest model that can do it well, and makes the final call.' },
+      { id: 'scout', name: 'The Scout', job: 'research', does: 'Researches with live signals and comes back with sources, numbers and data ready for code.' },
+      { id: 'strategist', name: 'The Strategist', job: 'plans', does: 'Turns a rough idea into ranked options, a spec and an hour-by-hour plan.' },
+      { id: 'judge', name: 'The Judge', job: 'judges', does: 'Scores the work the way a real hackathon judge would, then red-teams it.' },
+      { id: 'artist', name: 'The Artist', job: 'design', does: 'Studies real references, shows the boldest direction first, then ships code in the project’s own stack.' },
+      { id: 'engineer', name: 'The Engineer', job: 'builds', does: 'Builds one task at a time, test first, on its own branch. Never pushes.' },
+      { id: 'codex', name: 'Codex', job: 'second model', does: 'OpenAI’s model reviews every change Claude makes, because two models miss different things.' },
+      { id: 'inspector', name: 'The Inspector', job: 'reviews', does: 'Reruns every test itself and answers in one of three words: PASS, FIX or STOP.' },
+      { id: 'xo', name: 'The XO', job: 'coordinates', does: 'Keeps the shared memory, tracks who is doing what and keeps the loops running overnight.' },
+      { id: 'sentinel', name: 'The Sentinel', job: 'ops and security', does: 'Watches deploys, logs and security. Changes nothing until I say go.' },
+      { id: 'director', name: 'The Director', job: 'demo video', does: 'Cuts raw clips into the demo video: captions, music, titles and the thumbnail.' },
+      { id: 'wordsmith', name: 'The Wordsmith', job: 'writes', does: 'Writes the emails, the write-up and the pitch script.' },
+      { id: 'prospector', name: 'The Prospector', job: 'finds leads', does: 'Finds and researches the people worth reaching. Never sends a thing.' },
+      { id: 'mentor', name: 'The Mentor', job: 'teaches', does: 'Teaches me the field I have not tried yet, then drills the pitch and the judge Q&A.' },
     ],
-    core: 'You: one sentence',
-    stack: 'Claude Code · subagents · skills · workflows · OpenAI Codex · MCP · GitHub',
+    system: [
+      {
+        label: 'Routing',
+        title: 'The right model for each job',
+        rows: [
+          { k: 'Judgement', v: 'Opus' },
+          { k: 'Building', v: 'Sonnet' },
+          { k: 'Watching and polling', v: 'Haiku' },
+          { k: 'Bulk and first passes', v: 'Codex · Gemini · OpenRouter' },
+        ],
+        foot: 'Every run is logged with its tokens and its cost.',
+      },
+      {
+        label: 'The council',
+        title: 'Five model families, one vote',
+        seats: ['Claude', 'OpenAI', 'Gemini', 'DeepSeek', 'Grok'],
+        text: 'For calls that are hard to reverse (a plan pick, a design pick, a risky diff, final judging before a submit), five seats answer the same brief **alone**, read each other once **with the names removed**, then vote. The orchestrator decides.',
+      },
+      {
+        label: 'The loop',
+        title: 'It gets better on its own',
+        text: 'Every failure becomes an eval case, and a change to an agent is kept only if it **beats the current version with no regressions**. Ideas pass an anti-generic filter that throws out anything a default model would suggest.',
+      },
+    ],
+    facts: [
+      { value: '12', label: 'specialist agents,\nplus Codex as a second model' },
+      { value: '52', label: 'skills the crew\nworks from' },
+      { value: '5', label: 'model families seated\non the council' },
+      { value: '0', label: 'pushes, deploys, sends or\nspends without my go' },
+    ],
+    close: 'I use it on every project, this site included.',
+    stack: 'Claude Code · subagents · skills · workflows · OpenAI Codex · Gemini · OpenRouter · MCP · GitHub',
   },
 
   /* ---- More builds: same card shape as `items`, smaller in the layout ----- */

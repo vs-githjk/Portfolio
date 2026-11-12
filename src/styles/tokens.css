@@ -158,6 +158,7 @@
   --fs-metric: clamp(28px, 2.4vw, 34px);
   --fs-card: clamp(28px, 2.4vw, 34px);
   --fs-flag: clamp(36px, 3.4vw, 48px);
+  --fs-mega: clamp(56px, 9vw, 128px); /* the Master Agents title */
   --fs-label: 12px;
   --fs-micro: 11px;
   --tr-display: -0.015em;
@@ -180,6 +181,12 @@
   --r-sm: 6px;
   --r-xs: 2px;
   --r-pill: 999px;
+  /* Cut corners (the Master Agents panel): the length of the chamfer. */
+  --cut-lg: 28px;
+  --cut-md: 18px;
+  --cut-sm: 9px;
+  --nb-pad: clamp(20px, 3.2vw, 40px); /* the panel's side padding */
+  --grid-line: rgba(170, 180, 255, 0.04); /* the faint board lines on that panel */
   --rule: 1px solid var(--hair);
 
   /* ---- MOTION ------------------------------------------------------------ */
