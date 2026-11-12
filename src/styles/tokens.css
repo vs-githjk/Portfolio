@@ -95,6 +95,7 @@
   --sky: linear-gradient(180deg, #0a0c2a 0%, var(--ink) 46%, var(--ink-2) 100%);
   --glow-core: rgba(228, 232, 255, 0.9);
   --glow-mid: rgba(150, 160, 255, 0.5);
+  --depth-dim: 0.62; /* strength of the hall of light behind the later sections */
 
   /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
   --glass: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -102,6 +103,7 @@
   --glass-hi: rgba(190, 200, 255, 0.1);
   --shadow-ink: rgb(0, 0, 20);
   --persp: 1200px;
+  --tilt-max: 3deg; /* how far a tile leans toward the pointer */
   --z-1: 8px;
   --z-2: 20px;
   --z-3: 40px;
@@ -131,6 +133,7 @@
   --drift-dim: 0.5; /* thumbnails read as atmosphere, not content */
   --drift-light: 0.45; /* pale thumbnails dimmed to sit with the dark ones */
   --drift-loop: 70s; /* one third of a row per loop */
+  --sky-ratio: 4 / 1; /* the commit skyline's stage; phones override it in sections.css */
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../hooks/useMediaQuery';
-import { beamFade } from '../lib/beamFade';
+import { beamFade, deepFade } from '../lib/beamFade';
 
 /* One fixed layer stack behind the page: the vertical light-beam field.
 
@@ -11,8 +11,12 @@ import { beamFade } from '../lib/beamFade';
      and mounts after first paint.
    - Scroll sets two custom properties on .bg (--bg-y, --bg-fade); CSS turns
      them into parallax (transform only) and the fade-out after the first
-     screen. Under prefers-reduced-motion there is no parallax and no shimmer. */
+     screen. Under prefers-reduced-motion there is no parallax and no shimmer.
+   - DepthField (a third 2D canvas, its own chunk) is the hall of light behind
+     the sections below the first screen; --bg-deep is its opacity, which rises
+     as the hero beams fade and falls again before the contact section. */
 const BackgroundField = lazy(() => import('./BackgroundField'));
+const DepthField = lazy(() => import('./DepthField'));
 
 export default function Background() {
   const root = useRef(null);
@@ -36,7 +40,10 @@ export default function Background() {
     const update = () => {
       raf = 0;
       const y = window.scrollY;
-      node.style.setProperty('--bg-fade', beamFade(y, window.innerHeight).toFixed(3));
+      const vh = window.innerHeight;
+      const max = document.documentElement.scrollHeight - vh;
+      node.style.setProperty('--bg-fade', beamFade(y, vh).toFixed(3));
+      node.style.setProperty('--bg-deep', deepFade(y, vh, max).toFixed(3));
       node.style.setProperty('--bg-y', reduced ? '0' : y.toFixed(1));
     };
     const onScroll = () => {
@@ -57,6 +64,7 @@ export default function Background() {
       {on && (
         <Suspense fallback={null}>
           <BackgroundField onReady={onReady} />
+          <DepthField />
         </Suspense>
       )}
     </div>

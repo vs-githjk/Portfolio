@@ -92,6 +92,12 @@
   will-change: transform;
 }
 
+/* The hall of light behind the later sections (DepthField.jsx). It is drawn in
+   depth on its own canvas; here it only fades in and out with the scroll. */
+.bg-depth {
+  opacity: calc(var(--bg-deep, 0) * var(--depth-dim));
+}
+
 .page {
   position: relative;
   z-index: 1;
@@ -2114,7 +2120,40 @@
   background: var(--acc-2);
 }
 
+/* The skyline stage (SkyStage.jsx): the flat graph sits on its floor until the
+   3D canvas has drawn, then fades out under it. The height is reserved here. */
+.sky {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: var(--sky-ratio);
+}
+
+.sky .heat-wrap {
+  transition: opacity var(--dur) var(--ease);
+}
+
+.sky[data-ready] .heat-wrap {
+  opacity: 0;
+}
+
+.sky-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  touch-action: pan-y;
+}
+
+.sky[data-ready] .sky-canvas {
+  opacity: 1;
+}
+
 .heat-tip {
+  z-index: 1;
   position: absolute;
   transform: translate(-50%, calc(-100% - 12px));
   padding: 4px 9px;
@@ -2303,6 +2342,45 @@
   height: 2px;
   background: var(--acc);
   border-radius: var(--r-xs);
+}
+
+/* The lean toward the pointer (useTilt.js): a few degrees on the page's one
+   camera, and the top highlight follows the mouse. data-tilt appears on the
+   first mouse move, so the reveal keeps its own slower transition (.p-grid
+   lifts these rules over .js .reveal.in). */
+.p-tile {
+  position: relative;
+}
+
+.p-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--tilt-mx, 50%) var(--tilt-my, 0%), var(--glass-hi), transparent 55%);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  pointer-events: none;
+}
+
+.p-grid .p-tile[data-tilt] {
+  transform: perspective(var(--persp)) rotateX(calc(var(--tilt-x, 0) * var(--tilt-max)))
+    rotateY(calc(var(--tilt-y, 0) * var(--tilt-max)));
+  transition: transform var(--dur) var(--ease);
+}
+
+.p-grid .p-tile[data-tilt='on'] {
+  transition-duration: 0.12s;
+  box-shadow: var(--elev-2);
+  border-color: var(--hair-2);
+}
+
+.p-tile[data-tilt='on']::after {
+  opacity: 1;
+}
+
+.p-grid .p-tile[data-tilt='off'] {
+  transform: none;
 }
 
 .p-tile h3 {
@@ -2819,6 +2897,10 @@
     height: 96px;
   }
 
+  .sky {
+    --sky-ratio: 31 / 17;
+  }
+
 }
 
 @media (max-width: 560px) {
@@ -2861,6 +2943,8 @@
   }
 
   .card-link,
+  .sky .heat-wrap,
+  .sky-canvas,
   .bg[data-ready] .bg-static,
   .ctl,
   .nav,
