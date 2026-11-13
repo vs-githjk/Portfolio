@@ -199,7 +199,7 @@ export const hero = {
       {
         id: 'matchday',
         title: 'Match Day',
-        oneLiner: 'Runs a racket tournament from one screen.',
+        oneLiner: 'Runs a tournament in any sport from one screen.',
         badge: 'Live',
         badgeKind: 'live',
         image: {
@@ -351,8 +351,9 @@ export const builds = {
       awards: [],
       role: 'The idea was mine, I built it from the first commit, and I run it on my own now.',
       body: [
-        'I took PrismAI from an empty repo to a **live product** in about eight months. A Recall.ai bot joins Meet, Zoom or Teams. A deterministic orchestrator fans the transcript out to **two parallel tiers of LangGraph agents**, and decisions, owners, dates and follow-ups stream into the page as each one lands, in English, Hindi or Tamil. Approve a task and it goes to Slack, Linear or Jira.',
-        'Since Oct 20 the **agency release is live**: PrismAI reads the signed agreement, checks every client ask against it and **quotes the clause**, then drafts a change order from the agency’s own rate card. Quality is built in, not hoped for. Every quote is matched against the call, and what you read is the transcript’s own words, never the model’s; a number or a “not” can never be fuzzed, so “send 14” never matches “send 40”, and a quote it cannot find is flagged for review. A borderline ask is marked unclear rather than guessed, the money is integer cents computed by code, and the owner’s approval is a hash of the exact email, so any edit voids it.',
+        'I took PrismAI from an empty repo to a **live product** in about eight months. A bot joins Meet, Zoom or Teams, a team of AI agents works through the call in parallel, and decisions, owners, dates and follow-ups appear on the page as each one finishes, in English, Hindi or Tamil. Approve a task and it goes to Slack, Linear or Jira.',
+        'Since Oct 20 the **agency release is live**: PrismAI reads the signed agreement, checks every client ask against it and **quotes the clause**, then drafts a change order from the agency’s own rates.',
+        '**It shows its receipts.** Every quote is the speaker’s own words, checked against the transcript; it will never mistake “send 14” for “send 40” or drop a “not”, and anything it cannot find goes to a person. A borderline ask is marked unclear instead of guessed, code does the money to the cent, and once the owner approves an email, any edit cancels the approval.',
         // Vidyut, Oct 28 2026: pitched at the conference with Amazon's CFO in the room, and met him. The photo stays off the site.
         'I pitched PrismAI at the **Penn State Venture & IP Conference** in front of **Amazon’s CFO**, and met him there.',
       ],
@@ -416,6 +417,7 @@ export const builds = {
       body: [
         'Pick a game, from chess and heads-up poker to a 2.5D fighter and a first-person arena shooter, and sit down across from Pip, Marlow, Vesper or Sable. Each opponent is built per game: chess nets trained on public Lichess games, **AlphaZero-style self-play** for Four in a Row, counterfactual-regret strategy for Hold’em, and **reinforcement-learning leagues** for the real-time games, all running in your browser on ONNX Runtime Web.',
         'A level shows a strength number only once it **beats the level below it** (a 95% lower bound over hundreds of games), and the site re-checks that evidence before it shows one; until then it says In training. The server replays every match from the seed it issued, so a tampered record never gains rating or reaches training.',
+        'And it is **multiplayer** now: pass one device between you, or challenge a friend by link on two devices and keep a head-to-head record.',
       ],
       now: {
         label: 'Now building',
@@ -558,13 +560,14 @@ export const builds = {
          exact lane and the build dates are not stated, so neither is claimed. */
       kind: 'Product · live · team build',
       title: 'Match Day',
-      descriptor: 'racket tournament platform',
+      descriptor: 'multi-sport tournament platform',
       when: '2026 · live at joinmatchday.com',
       oneLiner:
-        'A whole badminton tournament, run from one system: sign-ups, draws, courts and live scores on every phone.',
+        'A whole tournament, in any sport, run from one system: sign-ups, draws, courts and live scores on every phone, and now a live win probability on every rally.',
       awards: [],
       role: 'Built with a team, badminton-first. We are now talking with badminton coaching centres about hosting their tournaments on it.',
       body: [
+        'New: **Matchday Pulse** gives every player a verified skill rating, puts a live win probability on every rally and turns each match into a story card.',
         'Replaces the spreadsheets, WhatsApp threads, paper check-in sheets and separate scoring tools most tournaments still run on. Players register for singles or doubles, check in, and follow their courts, live scores, rankings and history. Organizers configure categories, manage waitlists, seed players, generate draws, schedule matches, assign staff and handle disputes.',
         'Live scoring runs inside the tournament workflow, with game-state management, score corrections and an **offline scoring queue for unreliable venue internet**. Spectators follow draws, courts and live matches without an account. Scoring, draws, scheduling, rankings and the tournament lifecycle sit in **isolated, testable business logic** behind one repository layer.',
       ],

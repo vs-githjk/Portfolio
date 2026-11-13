@@ -1793,12 +1793,13 @@ html[data-holo='off'] .welcome-face {
 .flag {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto auto 1fr auto auto;
   grid-template-areas:
     'media body'
     'now body'
+    'metrics body'
     'stills stills'
-    'metrics facts';
+    'facts facts';
   column-gap: 32px;
   padding: 28px;
   margin-bottom: 24px;
@@ -1884,6 +1885,7 @@ html[data-holo='off'] .welcome-face {
 
 .flag-metrics {
   grid-area: metrics;
+  align-self: start;
   padding-top: 24px;
 }
 
