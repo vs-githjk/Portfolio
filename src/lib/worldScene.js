@@ -5,6 +5,8 @@ import {
   BufferGeometry,
   DoubleSide,
   Group,
+  InstancedBufferAttribute,
+  InstancedMesh,
   LatheGeometry,
   Mesh,
   PerspectiveCamera,
@@ -24,8 +26,8 @@ import { seeded, triple } from './field';
 
    The idea is a galaxy underwater. The hero's beams are the surface light;
    scrolling is a dive. Down there the sea and the sky are one place: a ringed
-   gas giant hangs in the water, a few medusae of light pulse upward past it, a spiral galaxy turns like a shoal, now and
-   then a comet crosses,
+   gas giant hangs in the water, a manta of light glides past it, a few medusae pulse upward, a spiral galaxy turns like a shoal, a school of light fish circles the last screen and scatters when the page
+   moves, now and then a comet crosses,
    and the page ends on the lit limb of a world rising under the footer.
 
    One unit is one CSS pixel on the plane z = 0, and the camera sits at
@@ -194,16 +196,16 @@ ${CALM}void main(){
 /* ---- The galaxy: a shoal of stars on two arms -------------------------------- */
 const GALAXY_VERT = /* glsl */ `
 attribute vec3 aSeed;
-uniform float uTime, uDpr, uScale;
+uniform float uTime, uDpr, uScale, uSpin, uBoost;
 varying float vA; varying float vMix;
 void main(){
   float r = position.x;
-  float ang = position.z + uTime * 0.05 / (0.22 + r);
+  float ang = position.z + (uTime * 0.05 + uSpin) / (0.22 + r);
   vec3 p = vec3(cos(ang) * r, position.y, sin(ang) * r);
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
   gl_PointSize = max(1.2, aSeed.x * uDpr * uScale);
-  vA = aSeed.y * (0.7 + 0.3 * sin(uTime * (0.4 + aSeed.z) + aSeed.z * 30.0));
+  vA = aSeed.y * uBoost * (0.7 + 0.3 * sin(uTime * (0.4 + aSeed.z) + aSeed.z * 30.0));
   vMix = clamp(r * 1.25, 0.0, 1.0);
 }`;
 const GALAXY_FRAG = /* glsl */ `
@@ -237,6 +239,72 @@ void main(){
   float head = smoothstep(0.03, 0.0, distance(vUv * vec2(18.0, 1.0), vec2(17.6, 0.5)));
   gl_FragColor = vec4(mix(uColor, vec3(1.0), along * 0.6 + head), (across * along + head) * uAlpha);
 }`;
+
+/* ---- A manta of light: one sheet, shaped and flapped in the vertex shader ---- */
+const MANTA_VERT = /* glsl */ `
+attribute vec3 aUV; // u across the wings (-1 to 1), v nose to tail (0 to 1), 1 for the tail strip
+uniform float uTime;
+varying vec3 vUV;
+void main(){
+  float au = abs(aUV.x);
+  float beat = uTime * 1.35;
+  vec3 p;
+  if (aUV.z > 0.5) {
+    // The tail: a thin strip that follows the body's last beat.
+    p = vec3(aUV.x * 0.014, sin(beat - 0.8 - aUV.y * 1.6) * 0.07 * aUV.y, 0.55 + aUV.y * 1.9);
+  } else {
+    float chord = pow(1.0 - au, 0.6) * 1.3 + 0.04;
+    float bulge = (1.0 - au) * (1.0 - 4.0 * (aUV.y - 0.5) * (aUV.y - 0.5));
+    p.x = aUV.x * 1.55;
+    p.z = (aUV.y - 0.36) * chord + au * au * 0.5;
+    p.y = sin(beat - au * 2.1) * 0.5 * au * au + 0.14 * bulge + 0.05 * sin(beat - 0.8) * (1.0 - au);
+  }
+  vUV = aUV;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+}`;
+const MANTA_FRAG = /* glsl */ `
+uniform vec3 uA, uRim; uniform float uGlow;
+varying vec3 vUV;
+void main(){
+  float a; vec3 c;
+  if (vUV.z > 0.5) {
+    a = 0.5 * (1.0 - vUV.y);
+    c = uRim;
+  } else {
+    float au = abs(vUV.x);
+    float rim = 1.0 - smoothstep(0.0, 0.2, min(vUV.y, 1.0 - vUV.y));
+    float tip = smoothstep(0.7, 1.0, au);
+    float ribs = pow(0.5 + 0.5 * sin(au * 30.0), 10.0) * 0.22 * (1.0 - tip);
+    float spine = (1.0 - smoothstep(0.0, 0.05, au)) * 0.3;
+    a = 0.22 + 0.5 * rim + ribs + spine + 0.3 * tip;
+    c = mix(uA, uRim, clamp(rim + tip * 0.6 + spine, 0.0, 1.0));
+  }
+  gl_FragColor = vec4(c, a * uGlow);
+}`;
+
+/* ---- A school of light fish: every fish is one instance on a shared loop ----- */
+const SCHOOL_VERT = /* glsl */ `
+attribute vec3 aSeed;
+uniform float uTime, uScatter, uSize;
+uniform vec3 uHome; uniform vec2 uLoop;
+varying float vA;
+void main(){
+  float ph = uTime * 0.2 - aSeed.x * 0.7;
+  vec2 c = vec2(cos(ph) * uLoop.x, sin(ph) * uLoop.y);
+  vec2 tg = normalize(vec2(-sin(ph) * uLoop.x, cos(ph) * uLoop.y));
+  vec2 off = (aSeed.yz - 0.5) * uSize * 8.0;
+  // A scroll startles them: each one darts away from the middle, then they regroup.
+  off += normalize(aSeed.yz - 0.5 + 0.001) * uScatter * uSize * 30.0 * (0.4 + aSeed.x);
+  vec2 local = position.xy * uSize * (0.7 + 0.6 * aSeed.z);
+  local.y += sin(uTime * 10.0 + aSeed.x * 40.0) * 0.28 * uSize * (0.5 - position.x * 0.5);
+  vec2 q = c + off + local.x * tg + local.y * vec2(-tg.y, tg.x);
+  gl_Position = projectionMatrix * viewMatrix * vec4(uHome.xy + q, uHome.z, 1.0);
+  vA = 0.45 + 0.55 * aSeed.y;
+}`;
+const SCHOOL_FRAG = /* glsl */ `
+uniform vec3 uA, uRim;
+varying float vA;
+void main(){ gl_FragColor = vec4(mix(uA, uRim, vA), 0.8 * vA); }`;
 
 const additive = { transparent: true, depthWrite: false, blending: AdditiveBlending };
 
@@ -456,7 +524,7 @@ export function createWorld(canvas, { still }) {
       new ShaderMaterial({
         vertexShader: GALAXY_VERT,
         fragmentShader: GALAXY_FRAG,
-        uniforms: { uTime: time, uDpr: dpr, uScale: galScale, uCore: { value: C.starA }, uA: { value: C.b }, uB: { value: C.c } },
+        uniforms: { uTime: time, uDpr: dpr, uScale: galScale, uSpin: { value: 0 }, uBoost: { value: 0.8 }, uCore: { value: C.starA }, uA: { value: C.b }, uB: { value: C.c } },
         ...additive,
       })
     )
@@ -476,6 +544,59 @@ export function createWorld(canvas, { still }) {
   tilt.add(haze);
   galaxy.add(tilt, core);
   scene.add(galaxy);
+
+  /* ---- The manta: it glides across the giant's vista as the reader scrolls --- */
+  const MU = 30;
+  const MV = 8;
+  const mUV = [];
+  const mIdx = [];
+  for (let j = 0; j <= MV; j++) for (let i = 0; i <= MU; i++) mUV.push((i / MU) * 2 - 1, j / MV, 0);
+  for (let j = 0; j < MV; j++) {
+    for (let i = 0; i < MU; i++) {
+      const a = j * (MU + 1) + i;
+      mIdx.push(a, a + 1, a + MU + 1, a + 1, a + MU + 2, a + MU + 1);
+    }
+  }
+  const tail0 = mUV.length / 3;
+  for (let j = 0; j <= 12; j++) mUV.push(-1, j / 12, 1, 1, j / 12, 1);
+  for (let j = 0; j < 12; j++) {
+    const a = tail0 + j * 2;
+    mIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+  const mantaGeo = keep(new BufferGeometry());
+  mantaGeo.setAttribute('aUV', new BufferAttribute(new Float32Array(mUV), 3));
+  mantaGeo.setAttribute('position', new BufferAttribute(new Float32Array(mUV.length), 3));
+  mantaGeo.setIndex(mIdx);
+  const mantaBody = new Mesh(
+    mantaGeo,
+    keep(new ShaderMaterial({ vertexShader: MANTA_VERT, fragmentShader: MANTA_FRAG, uniforms: { uTime: time, uA: { value: C.b }, uRim: { value: C.rim }, uGlow: { value: 0.85 } }, side: DoubleSide, ...additive }))
+  );
+  mantaBody.frustumCulled = false;
+  const manta = new Group();
+  manta.rotation.x = 1.1; // seen from above: wings across the screen, nose up, tail down
+  manta.add(mantaBody);
+  scene.add(manta);
+
+  /* ---- The school: light fish that circle the last screen and scatter on a scroll */
+  const nFish = phone ? 34 : 72;
+  const fishGeo = keep(new BufferGeometry());
+  fishGeo.setAttribute('position', new BufferAttribute(new Float32Array([1, 0, 0, -0.3, 0.34, 0, -0.3, -0.34, 0, -0.3, 0, 0, -1, 0.36, 0, -1, -0.36, 0]), 3));
+  fishGeo.setIndex([0, 1, 2, 3, 4, 5]);
+  const fishSeed = new Float32Array(nFish * 3);
+  for (let i = 0; i < nFish * 3; i++) fishSeed[i] = rnd();
+  fishGeo.setAttribute('aSeed', new InstancedBufferAttribute(fishSeed, 3));
+  const schoolMat = keep(
+    new ShaderMaterial({
+      vertexShader: SCHOOL_VERT,
+      fragmentShader: SCHOOL_FRAG,
+      uniforms: { uTime: time, uScatter: { value: 0 }, uSize: { value: 5 }, uHome: { value: new Vector3() }, uLoop: { value: new Vector2(1, 1) }, uA: { value: C.b }, uRim: { value: C.rim } },
+      side: DoubleSide,
+      ...additive,
+    })
+  );
+  const school = new InstancedMesh(fishGeo, schoolMat, nFish);
+  school.frustumCulled = false;
+  scene.add(school);
 
   /* ---- Medusae ----------------------------------------------------------- */
   const jellyGeo = keep(jellyGeometry(rnd));
@@ -530,7 +651,7 @@ export function createWorld(canvas, { still }) {
   comets.forEach(aim);
 
   /* ---- Layout: sizes and the set pieces' homes, read from the page --------- */
-  const home = { giant: 0, galaxy: 0, moon: 0, foot: 0 };
+  const home = { giant: 0, galaxy: 0, moon: 0, foot: 0, contact: 0 };
   /* Choreography: the reading sections are quiet. While the middle of the screen
      is in (or near) one of them, the drifting things and the comet are gone and
      only the snow is left; they belong to the vistas, Builds, Proof and Contact. */
@@ -594,6 +715,16 @@ export function createWorld(canvas, { still }) {
     const mr = Math.max(34, Math.min(w * 0.05, 78));
     const gal = Math.max(170, Math.min(w * 0.32, 480));
     galScale.value = gal / 480;
+    home.contact = mid('#contact', home.foot - h * 0.4);
+    // The school loops round the contact block on a desktop (its text is a narrow
+    // centred column); on a phone it keeps to a flat loop just over the horizon.
+    const fz = -120;
+    const fk = view(fz);
+    schoolMat.uniforms.uSize.value = (phone ? 4.2 : 7) * fk;
+    schoolMat.uniforms.uHome.value.set(0, -(phone ? home.foot - 34 : home.contact + 30), fz);
+    schoolMat.uniforms.uLoop.value.set(w * (phone ? 0.4 : 0.4) * fk, (phone ? 22 : h * 0.33) * fk);
+    school.visible = !reduced;
+    manta.visible = !reduced;
     if (reduced) {
       // One still: the giant in the lower right corner, the galaxy in the upper left,
       // both outside the text column because this frame sits behind the whole page.
@@ -621,6 +752,7 @@ export function createWorld(canvas, { still }) {
   const edge = (off) => (off < 0 ? colHalf * (1 + off) : colHalf + 16 + off * Math.max(w / 2 - colHalf - 16, 0));
 
   let camY = 0;
+  const clock = { t: 0, s: 0, scatter: 0 };
   function wrap(y, span) {
     return camY + ((((y - camY + span / 2) % span) + span) % span) - span / 2;
   }
@@ -633,6 +765,33 @@ export function createWorld(canvas, { still }) {
     camera.position.y = camY - py * 10;
     snowMat.uniforms.uCamY.value = camY;
     zone.uShow.value = show(scroll);
+
+    const dt = Math.min(0.1, Math.max(0, t - clock.t));
+    const speed = Math.abs(scroll - clock.s);
+    clock.t = t;
+    clock.s = scroll;
+    const line = scroll + h / 2;
+
+    // The galaxy wakes as the reader comes to it: it spins up, brightens, and
+    // leans toward the pointer.
+    const near = Math.max(0, 1 - Math.abs(line - home.galaxy) / (h * 1.1));
+    const wake = near * near * (3 - 2 * near);
+    stars.material.uniforms.uSpin.value += dt * (0.34 * wake + Math.min(0.5, speed * 0.004) * near);
+    stars.material.uniforms.uBoost.value = 0.72 + 0.5 * wake;
+    core.material.uniforms.uAlpha.value = 0.38 + 0.5 * wake;
+    tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
+
+    // The manta climbs across the giant's vista, lower right to upper left, as the page goes by.
+    const mu = Math.max(0, Math.min(1, (line - (home.giant - h)) / (h * 2)));
+    const mz = -80;
+    const mk = view(mz);
+    manta.position.set((0.6 - 1.2 * mu) * w * mk, -(home.giant - 20) + Math.sin(t * 0.5) * 14 + (mu - 0.5) * 220, mz);
+    manta.scale.setScalar((phone ? 58 : 125) * mk);
+    manta.rotation.z = 0.95 + Math.sin(t * 0.4) * 0.06; // heading up and to the left
+
+    // The school startles on a scroll and regroups at rest.
+    clock.scatter += (Math.min(1, speed / 36) - clock.scatter) * (speed > 2 ? 0.25 : 0.035);
+    schoolMat.uniforms.uScatter.value = clock.scatter;
 
     giant.userData.body.rotation.y = t * 0.012;
     moon.userData.body.rotation.y = t * 0.02;
