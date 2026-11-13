@@ -321,7 +321,7 @@ export function createHologram(canvas, cloud, colors) {
     gl.uniform1f(u.uNod, s.nod);
     gl.uniform1f(u.uStill, s.still ? 1 : 0);
     gl.uniform1f(u.uGain, s.gain);
-    gl.uniform1f(u.uFlicker, s.flicker);
+    gl.uniform1f(u.uFlicker, s.flicker ?? 1);
     gl.uniform1f(u.uSay, cloud.speaks ? s.say || 0 : 0);
     gl.uniform1f(u.uSayW, (s.sayW || 0) * dpr);
     gl.uniform1f(u.uVoice, s.voice || 0);

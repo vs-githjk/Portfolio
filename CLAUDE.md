@@ -155,11 +155,39 @@ fixed background stack with plain WebGL (no three.js: the chunk is about 5 KB gz
   hurts the name) and in the portrait's slot (a 190px thumbnail with no room to transform).
 - No film or show names, logos or assets anywhere near it; it is his own face, in this palette.
 
+Run 4 (Nov 12 2026, Vidyut's notes while watching it live):
+
+- **A pure first screen.** On load the window shows only the face, the greeting and the cue.
+  The nav is in the DOM but out of sight until the reader is half way through the hand-off
+  (`Nav.jsx` sets `<html data-nav="on">`; CSS hides it only under `html.js`, never when the
+  hologram is off, never while something in it has focus, so the skip link and Tab reach it).
+- **The face is calm and anatomical.** The head turns on the neck (the turn is weighted by
+  height, the axis runs behind the face, the shoulders stay put), about eight degrees each
+  way on one slow sine; the relief is shallow (0.09) so the skull never pushes out; the jaw
+  eases while the greeting types. No row slips, no flicker: he read those as an eye glitch.
+- **The crew at work.** Six Master Agents portraits (`welcome.crew`) sit around the head as
+  tiny cut-corner cards washed to the hologram's blue, bobbing and lighting up in turn.
+  Decoration, inside the aria-hidden face box; they leave with the greeting.
+- **The ball says one line.** Between the ball and the burst every point flies to a letter of
+  `welcome.ball` ("Here is what I have built.", one line on a desktop, two on a phone). The
+  letters are sampled at load from a 2D canvas in the display face (`sampleText`). The cue's
+  glide slows for a beat while the words stand (`BEATS` in `Welcome.jsx`), and
+  `--welcome-run` is 70svh so the hero arrives under them, not over them.
+- **The spark.** About three in a hundred points do not fly: they fall into a small orb that
+  stays with the reader for the whole page. `guideAt()` in `Hologram.jsx` rides it in the right
+  margin, swings it over the giant, drops it into the galaxy's core and rests it on the
+  horizon as the light on the limb. Its targets mirror `worldScene.js` (same depths and
+  lines): move a set piece there and move it here. After the burst a frame draws only the
+  spark's few hundred points. The hologram canvas sits above The Deep (`z-index: 1`).
+
 ### The Deep (`components/World.jsx`, `lib/worldScene.js`, `components/Vista.jsx`)
 
 Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
 asked for planets and things flying, and approved three.js for it). One WebGL canvas in the
-fixed stack, drawn with three.js: a ringed gas giant, a moon, a spiral galaxy of points,
+fixed stack, drawn with three.js: a ringed gas giant with a manta of light climbing past it
+(scroll moves it), a school of light fish that circles the contact block and scatters when the
+page moves, a moon, a spiral galaxy of points that wakes as the reader reaches it (it spins up,
+brightens and leans toward the pointer),
 three large medusae of light that pulse upward, one rare comet (the glass shards were cut, Vidyut Nov 12),
 marine snow that is also the stars, and the lit limb of a world that rises under the footer. Every shader is in
 `worldScene.js`; colours come from `--beam-*`, `--star-*` and the `--world-*` tokens.
