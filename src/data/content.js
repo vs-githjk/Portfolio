@@ -279,8 +279,8 @@ export const experience = {
       logo: '/logos/sherlock.webp',
       role: 'Software Engineering Intern',
       team: '',
-      note: 'Owned the public demo interview flow end to end in Next.js: adaptive interview behavior, in-browser recording and submission. It is the surface prospective customers evaluate before they ever talk to the team. I also prototyped a Google Meet add-on that shows audit logs and checks interview integrity from a sidebar inside the live call, so review happens where the interview already takes place.',
-      wins: ['Owned the public demo prospects evaluate, in Next.js', 'Prototyped a Google Meet add-on for interview integrity'],
+      note: 'At Sherlock, the first thing a prospective customer touches is the demo interview. I owned it end to end in Next.js, then took interview review to where reviewers already are: inside the live call.',
+      wins: ['Shipped the demo interview flow: adaptive questions, in-browser recording, submission', 'Prototyped a Google Meet add-on that shows audit logs and checks interview integrity in a sidebar'],
       when: 'Jun to Aug 2026',
       where: 'Remote',
     },
@@ -289,11 +289,11 @@ export const experience = {
       logo: '/logos/comcast.webp',
       role: 'Software Development Engineer Intern',
       team: 'India Engineering Centre',
-      note: 'I was asked whether low-code agent tooling could work inside engineering teams. I scoped the problem, chose Langflow and shipped the pilot: one place for planning, budget tracking, structured data and team communication, plus a surface that turns a coding question into a generated solution. Then I watched how the team actually used it and added RAG over internal documentation.',
+      note: 'The question was whether low-code agent tooling could survive inside a real engineering team. I scoped it, chose Langflow and shipped a pilot, then watched how the team actually used it before adding anything.',
       wins: [
-        'Adopted across a 40-person engineering team',
+        'One place for planning, budget tracking, structured data and team communication, adopted across a 40-person team',
         'Cut ~40% of the team’s recurring planning and coordination work',
-        'RAG over internal docs: a further ~18% gain in communication efficiency',
+        'Added RAG over internal documentation after watching how the team really used it',
       ],
       when: 'May to Aug 2025',
       where: 'Chennai, India',
@@ -351,8 +351,8 @@ export const builds = {
       awards: [],
       role: 'The idea was mine, I built it from the first commit, and I run it on my own now.',
       body: [
-        'I took PrismAI from an empty repo to a **live product** in about eight months. A Recall.ai bot joins Meet, Zoom or Teams, and **12 LangGraph agents** turn the call into decisions, owners, dates and follow-ups, in English, Hindi or Tamil. Approve a task and it goes to Slack, Linear or Jira.',
-        'Since Oct 20 the **agency release is live**: PrismAI reads the signed agreement, checks every client ask against it, **quotes the clause**, and drafts a change order from the agency’s own rate card. Code computes every dollar, and nothing reaches the client until an owner approves.',
+        'I took PrismAI from an empty repo to a **live product** in about eight months. A Recall.ai bot joins Meet, Zoom or Teams. A deterministic orchestrator fans the transcript out to **two parallel tiers of LangGraph agents**, and decisions, owners, dates and follow-ups stream into the page as each one lands, in English, Hindi or Tamil. Approve a task and it goes to Slack, Linear or Jira.',
+        'Since Oct 20 the **agency release is live**: PrismAI reads the signed agreement, checks every client ask against it and **quotes the clause**, then drafts a change order from the agency’s own rate card. Quality is built in, not hoped for: a quote that does not match the transcript or the agreement word for word is never shown, a borderline ask is marked unclear rather than guessed, the money is integer cents computed by code, and the owner’s approval is a hash of the exact email, so any edit voids it.',
         // Vidyut, Oct 28 2026: pitched at the conference with Amazon's CFO in the room, and met him. The photo stays off the site.
         'I pitched PrismAI at the **Penn State Venture & IP Conference** in front of **Amazon’s CFO**, and met him there.',
       ],
@@ -364,6 +364,7 @@ export const builds = {
       metrics: [
         { value: '14', label: 'beta users in\nisolated workspaces' },
         { value: '100+', label: 'meetings analyzed\nin the beta' },
+        { value: '100%', label: 'of quoted promises checked\nword for word against the call' },
       ],
       stack:
         'React · Vite · FastAPI · LangGraph · Claude · OpenAI · Supabase (Postgres, pgvector, RLS on every table) · MCP · Recall.ai · Deepgram · Chrome extension',
@@ -512,7 +513,7 @@ export const builds = {
       ],
       metrics: [
         { value: '0', label: 'false-certainty claims on\nheld-out synthetic fixtures' },
-        { value: '2,320', label: 'unit tests passing,\nplus 312 tenant-isolation tests' },
+        { value: '312', label: 'tenant-isolation tests\nunder forced row-level security' },
       ],
       stack:
         'FastAPI · React 19 · TypeScript · PostgreSQL (forced RLS) · Temporal · S3 · OIDC · OpenTelemetry',
@@ -529,7 +530,7 @@ export const builds = {
       descriptor: 'coaching platform for fitness coaches',
       when: 'Jul 2026 to Present', // TODO: confirm still active
       oneLiner:
-        'Your coach’s AI never gets the last word: every score explains itself, and nothing happens until a person confirms.',
+        'The AI on a coaching team should be the assistant, not the coach. In Vytal it cannot rewrite a program on its own, because the code has no way to say it.',
       awards: [],
       role: 'Solo build: I designed and wrote all of it.',
       body: [
@@ -538,7 +539,7 @@ export const builds = {
       // 988 passed, 1 skipped: backend pytest run on Oct 20, 2026. Usage stays unquoted (small closed beta).
       metrics: [
         { value: '988', label: 'automated backend tests,\nall passing' },
-        { value: '333', label: 'commits in 12 weeks,\nall mine' },
+        { value: '1', label: 'policy check that every\ntrainee access goes through' },
       ],
       stack:
         'FastAPI · SQLAlchemy · PostgreSQL · React · TypeScript · TanStack Query · Claude Haiku 4.5 · Cloudflare R2 · Render · Vercel',
@@ -593,7 +594,7 @@ export const builds = {
       awards: [], // Not in the published top 3 (Technical.ly, Oct 8 2026). No badge.
       role: 'I built the AI chat: voice, cited answers, what-if reruns of the real scorer, and a guard that drops any sentence with a number that is not in the facts.',
       body: [
-        'Yinzone scores the city’s parcels on indicators drawn from 134 public datasets. Deterministic code decides every score and every legal status. AI explains and advises: a site-fit model rates each housing type with a confidence, and when it is unsure, it flags a human instead of guessing.',
+        'Yinzone scores the city’s parcels on indicators drawn from 134 public datasets. Zoning law is not a vibe, so the legal status of every lot comes from rules, never from a model. The model’s job is judgement where judgement is honest: a site-fit rating for each housing type, with a confidence, and a hand-off to a person when it is unsure.',
       ],
       metrics: [
         { value: '~142,000', label: 'Pittsburgh parcels scored\non 53 indicators' },
@@ -915,12 +916,12 @@ export const builds = {
         descriptor: 'interview readiness, measured',
         when: 'Jul to Sep 2026',
         oneLiner:
-          'Interview prep that diagnoses every miss and never lets a model grade you: every score is computed in code.',
+          'Interview prep that tells you why you missed, from a coach that is not allowed to grade you.',
         awards: [],
-        role: 'I wrote 75 of the 78 commits across its two repos, including the architecture.',
+        role: 'I designed the architecture and wrote nearly all of it; a teammate set up the staging deploy.',
         body: [
-          'I built the working version for my own prep first. It plans each day to a minute budget, picks problems just above my level in each topic, schedules spaced re-solves and runs a mock interview with a voiced interviewer. When a problem goes badly, Claude diagnoses why, but **every rating and the green, amber or red verdict a mentor sees are computed in code**, with the reasons attached.',
-          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**. A teammate set up the staging deploy. The public prototype is a concept demo of that platform, not the working build.',
+          'I built the working version for my own prep first. It plans each day to a minute budget, picks problems just above my level in each topic, schedules spaced re-solves and runs a mock interview with a voiced interviewer. When a problem goes badly, Claude explains why, and the scoreboard stays out of its hands: **ratings and the green, amber or red verdict a mentor sees come from formulas**, with the reasons attached.',
+          'On the multi-user platform I measured cost from the first week. Every model call is logged with its tokens and cost, and live probes showed **prompt caching cut the input cost of a 12-turn mock interview by 73%**. The public prototype is a concept demo of that platform, not the working build.',
         ],
         metrics: [
           { value: '73%', label: 'lower input cost per 12-turn\nmock interview, with prompt caching' },
@@ -1049,7 +1050,7 @@ export const highlights = {
   eyebrow: 'In one line each',
   items: [
     'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
-    'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months, then shipped its agency release.',
+    'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months, and shipped its agency release two months later.',
     'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
     '**5× hackathon winner** in 2026, with six first places, including **1st overall** at the SF Startup Challenge.',
   ],
