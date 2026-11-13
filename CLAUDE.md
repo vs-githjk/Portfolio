@@ -165,14 +165,15 @@ Run 4 (Nov 12 2026, Vidyut's notes while watching it live):
   height, the axis runs behind the face, the shoulders stay put), about eight degrees each
   way on one slow sine; the relief is shallow (0.09) so the skull never pushes out; the jaw
   eases while the greeting types. No row slips, no flicker: he read those as an eye glitch.
-- **He is the hub** (run 5). Out at the sides of the first screen sit six small holographic
-  panels (`welcome.hub`: PrismAI, DuelWise, BetterBill, Terrametric, a Master Agents portrait
-  and the "5× hackathon winner" readout), each tilted toward him and wired to his temple or
-  shoulder by a thin SVG line with a signal running along it. `Welcome.jsx` lays the wires
-  out from the real panel and face positions on every resize; `Hologram.jsx` writes `--head`
-  so the panels drift a few pixels with his turn. A phone keeps four in the corners. An
-  earlier ring of crew cards orbiting his head was cut ("not the best"). Never put a panel
-  over the face or the greeting.
+- **His work comes to him like thoughts** (run 5). At the sides of the first screen, never
+  touching the head, six small soft holograms (`welcome.hub`: PrismAI, DuelWise, BetterBill,
+  Terrametric, a Master Agents portrait and the "5× hackathon winner" readout) take turns:
+  each phases in from a blur with a short shimmer, holds and bobs, and phases out upward as
+  the next appears, two or three in sight at once (`hub-think`, all CSS). `Hologram.jsx`
+  writes `--head` so they drift a few pixels with his turn. A phone keeps four in the corners.
+  Two earlier versions were cut: crew cards orbiting his head ("not the best") and panels
+  wired to his head by lines ("weird"). No lines to his head or body, no panel over the face
+  or the greeting.
 - **The ball speaks.** Once the face is a ball, `welcome.ball` ("Here is what I have built.")
   types as a caption under it while the ball pulses with the words (`--speak`, `--speak-on`,
   `--ball-y`, written by `Hologram.jsx`); then the ball bursts into the hero. The cue's glide

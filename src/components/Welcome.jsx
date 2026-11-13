@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { welcome } from '../data/content';
 import { heroOrigin } from '../lib/origin';
 
@@ -7,14 +7,12 @@ import { heroOrigin } from '../lib/origin';
    greeting, and a quiet cue. Nothing waits on it: the text is in the HTML, the
    nav works, and one scroll or a click on the cue plays the face into the hero.
 
-   He is the hub: out at the sides of the window a few small holographic panels
-   show his work (welcome.hub: four builds, the crew, one fact), each tilted toward
-   him and wired to him by a thin line of light that runs from his temple or
-   shoulder, with a signal travelling along it. The wires are an SVG whose paths
-   this file lays out from the real positions of the panels and of the face box
-   (the same geometry Hologram.jsx uses for the head), again on every resize. The
-   panels drift a few pixels with the head's turn (--head, written by Hologram).
-   Decoration, aria-hidden; a phone keeps four small ones clear of the face.
+   His work comes to him like thoughts: at the sides of the window, never touching
+   the head, small soft holograms (welcome.hub: four builds, the crew, one fact)
+   phase in one after another, hold a moment, bob, and phase out as the next
+   appears, two or three in sight at a time. All CSS; they drift a few pixels with
+   the head's turn (--head, written by Hologram). Decoration, aria-hidden; a phone
+   keeps four small ones in the corners, clear of the face.
 
    When the face has become the ball, the ball speaks: welcome.ball types in a
    caption under it (Hologram.jsx drives it with --speak, --speak-on, --ball-y).
@@ -38,47 +36,7 @@ const BEATS = [
 ];
 const LATE_MS = 3600;
 
-/* Where a wire leaves him, in units of the picture's height from the head's
-   centre (x outward, y down): the temple for the top panels, then two places on
-   the shoulder. */
-const ROOT = { 1: [0.175, -0.01], 2: [0.27, 0.335], 3: [0.36, 0.4] };
-
 export default function Welcome() {
-  const hub = useRef(null);
-
-  useEffect(() => {
-    const node = hub.current;
-    const face = node.parentElement.querySelector('[data-holo-anchor]');
-    const svg = node.querySelector('svg');
-    const lay = () => {
-      const frame = node.getBoundingClientRect();
-      const f = face.getBoundingClientRect();
-      if (!frame.width || !f.height) return;
-      svg.setAttribute('viewBox', `0 0 ${frame.width} ${frame.height}`);
-      const size = Math.min(f.height / 0.84, f.width * 1.3, 760);
-      const cx = f.left + f.width / 2 - frame.left;
-      const cy = f.top + f.height / 2 - 0.1 * size - frame.top;
-      node.querySelectorAll('.hub-panel').forEach((panel) => {
-        const at = panel.dataset.at;
-        const side = at[0] === 'l' ? -1 : 1;
-        const [rx, ry] = ROOT[at[1]];
-        const shown = panel.offsetWidth > 0;
-        // offsetLeft/Top, not the bounding box: the panel is tilted in 3D.
-        const x1 = panel.offsetLeft + (side < 0 ? panel.offsetWidth + 6 : -6);
-        const y1 = panel.offsetTop + panel.offsetHeight * 0.42;
-        const x0 = cx + side * rx * size;
-        const y0 = cy + ry * size;
-        const bend = (x1 - x0) * 0.5;
-        const d = shown ? `M${x0.toFixed(1)} ${y0.toFixed(1)} C${(x0 + bend).toFixed(1)} ${y0.toFixed(1)} ${(x1 - bend).toFixed(1)} ${y1.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}` : '';
-        node.querySelectorAll(`[data-wire="${at}"]`).forEach((path) => path.setAttribute('d', d));
-      });
-    };
-    lay();
-    const ro = new ResizeObserver(lay);
-    ro.observe(node);
-    return () => ro.disconnect();
-  }, []);
-
   useEffect(() => {
     const root = document.documentElement;
     const late = setTimeout(() => {
@@ -117,15 +75,7 @@ export default function Welcome() {
   return (
     <section className="welcome" id="welcome" aria-label={welcome.label}>
       <div className="welcome-face" data-holo-anchor="" aria-hidden="true" />
-      <div className="hub" aria-hidden="true" ref={hub}>
-        <svg className="hub-wires" focusable="false">
-          {welcome.hub.map((item, k) => (
-            <g key={item.at} style={{ '--k': k }}>
-              <path className="hub-wire" data-wire={item.at} pathLength="100" />
-              <path className="hub-pulse" data-wire={item.at} data-back={k % 2 ? '' : undefined} pathLength="100" />
-            </g>
-          ))}
-        </svg>
+      <div className="hub" aria-hidden="true">
         {welcome.hub.map((item, k) => (
           <figure className="hub-panel" data-at={item.at} data-kind={item.kind} style={{ '--k': k }} key={item.at}>
             {item.kind === 'fact' ? (

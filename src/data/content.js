@@ -69,11 +69,11 @@ export const welcome = {
   /* What the ball of light says before it breaks into the page: a line of speech
      that types under it while it pulses. */
   ball: 'Here is what I have built.',
-  /* The panels wired to him on the welcome screen: his work, as small holograms
-     at the sides of the window. `at` is the seat (l1 to l3 down the left, r1 to r3
-     down the right). A build shows its ring thumbnail (/builds/ring/<id>-320.webp),
-     the crew shows one Master Agents portrait, the readout a fact (the same "5×
-     hackathon winner" the hero credential states). Decoration: aria-hidden. */
+  /* His work, as thoughts on the welcome screen: small soft holograms at the sides
+     of the window that phase in and out in this order. `at` is the seat (l1 to l3
+     down the left, r1 to r3 down the right). A build shows its ring thumbnail
+     (/builds/ring/<id>-320.webp), the crew one Master Agents portrait, the fact the
+     same "5× hackathon winner" the hero credential states. Decoration: aria-hidden. */
   hub: [
     { at: 'l1', kind: 'build', id: 'prismai', label: 'PrismAI' },
     { at: 'r1', kind: 'build', id: 'duelwise', label: 'DuelWise' },

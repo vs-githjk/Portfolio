@@ -324,95 +324,62 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
   max-width: 760px;
 }
 
-/* He is the hub. A layer over the first screen holds a few small holographic
-   panels out at the sides (his builds, the crew, one fact), each tilted toward
-   him, and an SVG of thin wires from his temple and shoulders to each panel with
-   a signal travelling along it (Welcome.jsx lays the wires out). A panel is a
-   picture washed to the hologram's blue under scan lines, with a cut corner. They
-   flicker on one after another once the face is drawn, drift a few pixels with the
-   turn of his head (--head) and leave with the greeting (--out). */
+/* His work comes to him like thoughts. A layer over the first screen holds a few
+   small soft holograms at the sides (his builds, the crew, one fact): a picture
+   washed to the hologram's blue under faint scan lines, rounded and translucent.
+   Nothing touches his head and nothing is wired to it. They take turns: each
+   phases in from a blur with a short shimmer, holds and bobs, then phases out
+   upward as the next appears (hub-think; --k staggers them, so two or three are
+   in sight at once). They drift a few pixels with the turn of his head (--head)
+   and leave with the greeting (--out). */
 .hub {
+  --think: 19.2s; /* one full round of the six */
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
   height: calc(100svh - var(--nav-h));
   min-height: var(--welcome-min);
-  perspective: 1100px;
   pointer-events: none;
   opacity: calc(1 - var(--out, 0));
 }
 
-.hub-wires {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  fill: none;
-}
-
-.hub-wire {
-  stroke: var(--acc);
-  stroke-width: 1;
-  opacity: 0.45;
-}
-
-/* The signal: one short bright dash that runs the length of the wire, out from
-   him on some and back to him on the others. */
-.hub-pulse {
-  stroke: var(--acc-2);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-dasharray: 5 95;
-  stroke-dashoffset: 100;
-  animation: hub-signal 3.6s linear infinite;
-  animation-delay: calc(var(--k) * -0.9s);
-}
-
-.hub-pulse[data-back] {
-  animation-direction: reverse;
-}
-
-@keyframes hub-signal {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
 .hub-panel {
-  --cut: 9px;
-  --lean: 22deg;
   --drift: 5px;
   position: absolute;
   width: var(--hub-w);
   display: grid;
-  gap: 7px;
-  transform: translateX(calc(var(--head, 0) * var(--drift))) rotateY(var(--lean));
-  opacity: var(--hub-dim);
+  gap: 8px;
+  justify-items: center;
+  transform: translateX(calc(var(--head, 0) * var(--drift)));
+  opacity: 0;
+  animation: hub-think var(--think) var(--ease) infinite;
+  animation-delay: calc(var(--k) * var(--think) / 6);
 }
 
-.hub-panel[data-at^='r'] {
-  --lean: -22deg;
-}
-
-.hub-panel[data-at='l1'] { left: 9%; top: 9%; --drift: 7px; }
-.hub-panel[data-at='l2'] { left: 4.5%; top: 39%; width: calc(var(--hub-w) * 0.62); --drift: 4px; }
-.hub-panel[data-at='l3'] { left: 11%; top: 66%; --drift: 6px; }
-.hub-panel[data-at='r1'] { right: 9%; top: 11%; --drift: 7px; }
-.hub-panel[data-at='r2'] { right: 5%; top: 41%; width: calc(var(--hub-w) * 0.78); --drift: 4px; }
-.hub-panel[data-at='r3'] { right: 11%; top: 64%; --drift: 6px; }
+.hub-panel[data-at='l1'] { left: 10%; top: 10%; --drift: 7px; }
+.hub-panel[data-at='l2'] { left: 6%; top: 40%; width: calc(var(--hub-w) * 0.66); --drift: 4px; }
+.hub-panel[data-at='l3'] { left: 12%; top: 64%; --drift: 6px; }
+.hub-panel[data-at='r1'] { right: 10%; top: 12%; --drift: 7px; }
+.hub-panel[data-at='r2'] { right: 7%; top: 42%; --drift: 4px; }
+.hub-panel[data-at='r3'] { right: 12%; top: 62%; --drift: 6px; }
 
 .hub-pic {
   position: relative;
   display: block;
+  width: 100%;
   aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--r-lg);
   background: var(--acc);
-  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  box-shadow:
+    0 0 0 1px var(--glass-line),
+    0 0 28px var(--acc-glow);
 }
 
 .hub-panel[data-kind='crew'] .hub-pic {
   aspect-ratio: 1;
+  border-radius: 50%;
 }
 
 .hub-pic img {
@@ -421,23 +388,23 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
   height: 100%;
   object-fit: cover;
   mix-blend-mode: luminosity;
-  filter: contrast(1.1) brightness(0.86);
+  filter: contrast(1.05) brightness(0.8);
 }
 
 .hub-pic::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(0deg, transparent 0 2px, color-mix(in srgb, var(--ink) 50%, transparent) 2px 3px);
-  box-shadow: 0 0 0 1px var(--acc-2) inset;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in srgb, var(--ink) 30%, transparent) 3px 4px);
 }
 
 .hub-panel b {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(34px, 3.6vw, 52px);
+  font-size: clamp(36px, 4vw, 58px);
   line-height: 0.9;
   color: var(--acc-2);
+  text-shadow: 0 0 24px var(--acc-glow);
 }
 
 .hub-panel figcaption {
@@ -445,51 +412,59 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
   font-size: var(--fs-micro);
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
+  text-align: center;
   color: var(--acc-text);
 }
 
-.hub-panel[data-at^='r'] {
-  text-align: right;
+/* One thought: it rises into focus, shimmers once, holds while it bobs, and
+   leaves upward. It is in sight for about two fifths of the round. */
+@keyframes hub-think {
+  0% {
+    opacity: 0;
+    translate: 0 18px;
+    filter: blur(7px) brightness(1);
+  }
+  7% {
+    opacity: var(--hub-dim);
+    translate: 0 0;
+    filter: blur(0) brightness(1.5);
+  }
+  11% {
+    filter: blur(0) brightness(1);
+  }
+  21% {
+    translate: 0 -6px;
+  }
+  31% {
+    opacity: var(--hub-dim);
+    translate: 0 0;
+    filter: blur(0) brightness(1);
+  }
+  40%,
+  100% {
+    opacity: 0;
+    translate: 0 -20px;
+    filter: blur(7px) brightness(1);
+  }
 }
 
-html.js:not([data-holo]) .hub {
+html.js:not([data-holo]) .hub,
+html[data-holo='in'] .hub {
   opacity: 0;
 }
 
-/* They come on one after another, each with a short flicker, wire first. */
-html[data-holo='in'] .hub-panel {
-  animation: hub-on 0.7s steps(1, end) calc(1.5s + var(--k) * 0.22s) backwards;
+/* They wait for the face: the layer comes up once it is drawn. */
+html[data-holo='in'] .hub {
+  animation: hub-in 1s var(--ease) 1.7s forwards;
 }
 
-html[data-holo='in'] .hub-wires g {
-  animation: hub-wire 0.6s var(--ease) calc(1.3s + var(--k) * 0.22s) backwards;
-}
-
-@keyframes hub-on {
-  0% {
-    opacity: 0;
-  }
-  30% {
-    opacity: var(--hub-dim);
-  }
-  45% {
-    opacity: 0.12;
-  }
-  70% {
-    opacity: var(--hub-dim);
-  }
-  82% {
-    opacity: 0.3;
+@keyframes hub-in {
+  to {
+    opacity: 1;
   }
 }
 
-@keyframes hub-wire {
-  from {
-    opacity: 0;
-  }
-}
-
-/* A narrow laptop has less room at the sides: smaller panels, closer to the edge. */
+/* A narrow laptop has less room at the sides. */
 @media (max-width: 1100px) {
   .hub-panel[data-at='l1'],
   .hub-panel[data-at='l3'] {
@@ -720,15 +695,18 @@ html[data-holo='off'] .welcome-face {
     --welcome-run: 0px;
   }
 
-  /* The hub holds still: panels and wires lit, no signal running. */
-  .hub-pulse {
+  /* The thoughts hold still: the first three stay lit, the rest stay away. */
+  .hub-panel {
     animation: none;
-    opacity: 0;
   }
 
-  html[data-holo='in'] .hub-panel,
-  html[data-holo='in'] .hub-wires g {
+  .hub-panel:nth-child(-n + 3) {
+    opacity: var(--hub-dim);
+  }
+
+  html[data-holo='in'] .hub {
     animation: none;
+    opacity: 1;
   }
 
   .welcome-ball {
