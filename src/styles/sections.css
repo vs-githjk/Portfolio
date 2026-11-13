@@ -101,6 +101,7 @@ html:not(.js) .bg {
 
 /* The welcome hologram (Hologram.jsx): his face in light, fixed in the window. */
 .bg-holo {
+  z-index: 1; /* above The Deep: the spark it leaves swims in front of the worlds */
   opacity: 0;
   transition: opacity 0.5s var(--ease);
   will-change: transform;
@@ -227,6 +228,22 @@ html[data-world='off'] .vista {
   border-bottom: 1px solid color-mix(in srgb, var(--hair) 70%, transparent);
 }
 
+/* The welcome is a pure first screen: no bar until the hand-off to the hero is
+   under way (Nav.jsx sets <html data-nav="on">). Only with scripts, never when the
+   hologram is off (the welcome closes up then), and never while something inside
+   the bar has focus, so the skip link and Tab reach it at once. */
+.nav {
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
+  opacity: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
 .nav .wrap {
   height: 100%;
   display: flex;
@@ -303,8 +320,96 @@ html[data-world='off'] .vista {
 }
 
 .welcome-face {
+  position: relative;
   width: 100%;
   max-width: 760px;
+  container-type: size;
+}
+
+/* His crew at work around him: six small holograms, three a side, on an arc from
+   above the ear to the shoulder. Each is a portrait washed to the hologram's blue
+   with scan lines over it; they bob slowly and light up one after another. They
+   come in after the face is drawn and leave with the greeting (--out). */
+.holo-agent {
+  --cut: 7px;
+  --dx: 30cqh;
+  --dy: 20%;
+  --side: 1;
+  position: absolute;
+  left: calc(50% + var(--side) * min(var(--dx), 46cqw) - var(--holo-agent) / 2);
+  top: var(--dy);
+  width: var(--holo-agent);
+  aspect-ratio: 1;
+  background: var(--acc);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  opacity: calc(var(--holo-agent-dim) * (1 - var(--out, 0)));
+  animation:
+    holo-bob 7s ease-in-out infinite alternate,
+    holo-work 9s ease-in-out infinite;
+  animation-delay: calc(var(--k) * -1.3s), calc(var(--k) * 1.5s);
+}
+
+.holo-agent img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: luminosity;
+  filter: contrast(1.15) brightness(1.1);
+}
+
+.holo-agent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 2px, color-mix(in srgb, var(--ink) 55%, transparent) 2px 3px);
+  box-shadow: 0 0 0 1px var(--acc-2) inset;
+}
+
+.holo-agent[data-seat='1'] { --k: 0; --side: -1; --dx: 27cqh; --dy: 6%; }
+.holo-agent[data-seat='2'] { --k: 1; --side: 1; --dx: 28cqh; --dy: 9%; }
+.holo-agent[data-seat='3'] { --k: 2; --side: -1; --dx: 36cqh; --dy: 33%; }
+.holo-agent[data-seat='4'] { --k: 3; --side: 1; --dx: 37cqh; --dy: 36%; }
+.holo-agent[data-seat='5'] { --k: 4; --side: -1; --dx: 44cqh; --dy: 61%; }
+.holo-agent[data-seat='6'] { --k: 5; --side: 1; --dx: 45cqh; --dy: 58%; }
+
+html.js:not([data-holo]) .holo-agent {
+  opacity: 0;
+}
+
+html[data-holo='in'] .holo-agent {
+  animation:
+    holo-in 0.9s var(--ease) calc(1.5s + var(--k) * 0.16s) backwards,
+    holo-bob 7s ease-in-out infinite alternate,
+    holo-work 9s ease-in-out infinite;
+}
+
+@keyframes holo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes holo-bob {
+  from {
+    translate: 0 -5px;
+  }
+  to {
+    translate: 0 6px;
+  }
+}
+
+/* At work: once in a while a card lights up, as if it has just been handed a task. */
+@keyframes holo-work {
+  0%,
+  78%,
+  100% {
+    filter: brightness(1);
+  }
+  86% {
+    filter: brightness(1.9);
+  }
 }
 
 .welcome-say,
@@ -471,6 +576,11 @@ html[data-holo='off'] .welcome-face {
   /* No ball, so no empty run for it: the hero follows the greeting. */
   .welcome {
     --welcome-run: 0px;
+  }
+
+  .holo-agent,
+  html[data-holo='in'] .holo-agent {
+    animation: none;
   }
 
   html[data-holo] .say {

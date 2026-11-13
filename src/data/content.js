@@ -66,6 +66,12 @@ export const welcome = {
   label: 'Welcome',
   lines: ['Hey, I’m Vidyut.', 'Welcome to my portfolio.'],
   cue: 'Scroll or click to see what happens next',
+  /* What the ball of light says before it breaks into the page: its points
+     spell this (one line on a desktop, two on a phone). */
+  ball: ['Here is what', 'I have built.'],
+  /* Six of the Master Agents crew, as small holograms at work around him (ids of
+     /agents/<id>-148.webp; decoration, so no names are read out). */
+  crew: ['orchestrator', 'strategist', 'engineer', 'inspector', 'artist', 'judge'],
 };
 
 /* ---------------------------------------------------------------- HERO ---- */

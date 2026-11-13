@@ -109,9 +109,11 @@
 
   /* ---- THE WELCOME: his face in light, on the screen above the hero ---------- */
   --holo-gain: 1; /* strength of the hologram's light */
+  --holo-agent: clamp(30px, 7cqh, 50px); /* a crew hologram beside the face */
+  --holo-agent-dim: 0.5; /* and how lit it is */
   --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
   --welcome-min: 500px; /* the welcome screen never gets shorter than this */
-  --welcome-run: 30svh; /* empty scroll under the greeting: room for the ball before the hero arrives */
+  --welcome-run: 70svh; /* empty scroll under the greeting: room for the ball before the hero arrives */
   --fs-hello: clamp(40px, 5.4vw, 72px); /* the greeting's first line */
   --say-idle: var(--text-3); /* the greeting before it has been said */
   /* The greeting is typed while the face draws: delay and length of each line.
