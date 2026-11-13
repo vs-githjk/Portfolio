@@ -352,7 +352,7 @@ export const builds = {
       role: 'The idea was mine, I built it from the first commit, and I run it on my own now.',
       body: [
         'I took PrismAI from an empty repo to a **live product** in about eight months. A Recall.ai bot joins Meet, Zoom or Teams. A deterministic orchestrator fans the transcript out to **two parallel tiers of LangGraph agents**, and decisions, owners, dates and follow-ups stream into the page as each one lands, in English, Hindi or Tamil. Approve a task and it goes to Slack, Linear or Jira.',
-        'Since Oct 20 the **agency release is live**: PrismAI reads the signed agreement, checks every client ask against it and **quotes the clause**, then drafts a change order from the agency’s own rate card. Quality is built in, not hoped for: a quote that does not match the transcript or the agreement word for word is never shown, a borderline ask is marked unclear rather than guessed, the money is integer cents computed by code, and the owner’s approval is a hash of the exact email, so any edit voids it.',
+        'Since Oct 20 the **agency release is live**: PrismAI reads the signed agreement, checks every client ask against it and **quotes the clause**, then drafts a change order from the agency’s own rate card. Quality is built in, not hoped for. Every quote is matched against the call, and what you read is the transcript’s own words, never the model’s; a number or a “not” can never be fuzzed, so “send 14” never matches “send 40”, and a quote it cannot find is flagged for review. A borderline ask is marked unclear rather than guessed, the money is integer cents computed by code, and the owner’s approval is a hash of the exact email, so any edit voids it.',
         // Vidyut, Oct 28 2026: pitched at the conference with Amazon's CFO in the room, and met him. The photo stays off the site.
         'I pitched PrismAI at the **Penn State Venture & IP Conference** in front of **Amazon’s CFO**, and met him there.',
       ],
@@ -364,7 +364,7 @@ export const builds = {
       metrics: [
         { value: '14', label: 'beta users in\nisolated workspaces' },
         { value: '100+', label: 'meetings analyzed\nin the beta' },
-        { value: '100%', label: 'of quoted promises checked\nword for word against the call' },
+        { value: '100%', label: 'of quoted promises matched\nagainst the call before they show' },
       ],
       stack:
         'React · Vite · FastAPI · LangGraph · Claude · OpenAI · Supabase (Postgres, pgvector, RLS on every table) · MCP · Recall.ai · Deepgram · Chrome extension',
