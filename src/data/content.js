@@ -66,12 +66,22 @@ export const welcome = {
   label: 'Welcome',
   lines: ['Hey, I’m Vidyut.', 'Welcome to my portfolio.'],
   cue: 'Scroll or click to see what happens next',
-  /* What the ball of light says before it breaks into the page: its points
-     spell this (one line on a desktop, two on a phone). */
-  ball: ['Here is what', 'I have built.'],
-  /* Six of the Master Agents crew, as small holograms at work around him (ids of
-     /agents/<id>-148.webp; decoration, so no names are read out). */
-  crew: ['orchestrator', 'strategist', 'engineer', 'inspector', 'artist', 'judge'],
+  /* What the ball of light says before it breaks into the page: a line of speech
+     that types under it while it pulses. */
+  ball: 'Here is what I have built.',
+  /* The panels wired to him on the welcome screen: his work, as small holograms
+     at the sides of the window. `at` is the seat (l1 to l3 down the left, r1 to r3
+     down the right). A build shows its ring thumbnail (/builds/ring/<id>-320.webp),
+     the crew shows one Master Agents portrait, the readout a fact (the same "5×
+     hackathon winner" the hero credential states). Decoration: aria-hidden. */
+  hub: [
+    { at: 'l1', kind: 'build', id: 'prismai', label: 'PrismAI' },
+    { at: 'r1', kind: 'build', id: 'duelwise', label: 'DuelWise' },
+    { at: 'l2', kind: 'crew', id: 'orchestrator', label: 'Master Agents' },
+    { at: 'r2', kind: 'fact', value: '5×', label: 'hackathon winner' },
+    { at: 'l3', kind: 'build', id: 'betterbill', label: 'BetterBill' },
+    { at: 'r3', kind: 'build', id: 'terrametric', label: 'Terrametric' },
+  ],
 };
 
 /* ---------------------------------------------------------------- HERO ---- */

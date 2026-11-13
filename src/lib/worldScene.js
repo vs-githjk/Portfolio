@@ -247,17 +247,20 @@ uniform float uTime;
 varying vec3 vUV;
 void main(){
   float au = abs(aUV.x);
-  float beat = uTime * 1.35;
+  float beat = uTime * 0.95; // a slow wing beat
   vec3 p;
   if (aUV.z > 0.5) {
     // The tail: a thin strip that follows the body's last beat.
-    p = vec3(aUV.x * 0.014, sin(beat - 0.8 - aUV.y * 1.6) * 0.07 * aUV.y, 0.55 + aUV.y * 1.9);
+    p = vec3(aUV.x * 0.012, sin(beat - 0.9 - aUV.y * 1.6) * 0.05 * aUV.y, 0.52 + aUV.y * 1.7);
   } else {
-    float chord = pow(1.0 - au, 0.6) * 1.3 + 0.04;
-    float bulge = (1.0 - au) * (1.0 - 4.0 * (aUV.y - 0.5) * (aUV.y - 0.5));
-    p.x = aUV.x * 1.55;
-    p.z = (aUV.y - 0.36) * chord + au * au * 0.5;
-    p.y = sin(beat - au * 2.1) * 0.5 * au * au + 0.14 * bulge + 0.05 * sin(beat - 0.8) * (1.0 - au);
+    // A diamond: the leading edge sweeps back to a pointed tip, the trailing edge
+    // curves forward in the middle of the wing, and two short horns lead the head.
+    float lead = -0.42 + 0.95 * pow(au, 1.45) - 0.17 * exp(-pow((au - 0.1) / 0.04, 2.0));
+    float trail = 0.55 - 0.3 * sin(3.14159 * au) * (1.0 - 0.3 * au);
+    p.x = aUV.x * 1.75;
+    p.z = mix(lead, trail, aUV.y);
+    float bulge = (1.0 - smoothstep(0.0, 0.45, au)) * sin(3.14159 * aUV.y);
+    p.y = sin(beat - au * 1.7) * 0.46 * pow(au, 1.6) + 0.13 * bulge;
   }
   vUV = aUV;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
@@ -276,7 +279,7 @@ void main(){
     float tip = smoothstep(0.7, 1.0, au);
     float ribs = pow(0.5 + 0.5 * sin(au * 30.0), 10.0) * 0.22 * (1.0 - tip);
     float spine = (1.0 - smoothstep(0.0, 0.05, au)) * 0.3;
-    a = 0.22 + 0.5 * rim + ribs + spine + 0.3 * tip;
+    a = 0.2 + 0.5 * rim + ribs + spine + 0.25 * tip;
     c = mix(uA, uRim, clamp(rim + tip * 0.6 + spine, 0.0, 1.0));
   }
   gl_FragColor = vec4(c, a * uGlow);
@@ -573,7 +576,7 @@ export function createWorld(canvas, { still }) {
   );
   mantaBody.frustumCulled = false;
   const manta = new Group();
-  manta.rotation.x = 1.1; // seen from above: wings across the screen, nose up, tail down
+  manta.rotation.x = 1.0; // seen from above and a little behind: wings across the screen, nose up, tail down
   manta.add(mantaBody);
   scene.add(manta);
 
@@ -781,13 +784,18 @@ export function createWorld(canvas, { still }) {
     core.material.uniforms.uAlpha.value = 0.38 + 0.5 * wake;
     tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
 
-    // The manta climbs across the giant's vista, lower right to upper left, as the page goes by.
+    // The manta climbs through the giant's vista as the page goes by. It swims well in
+    // front of the planet (nearer the camera than any part of the sphere) and keeps
+    // to the left of its disc, over the ring, so the two never share a pixel.
     const mu = Math.max(0, Math.min(1, (line - (home.giant - h)) / (h * 2)));
-    const mz = -80;
+    const mz = 160;
     const mk = view(mz);
-    manta.position.set((0.6 - 1.2 * mu) * w * mk, -(home.giant - 20) + Math.sin(t * 0.5) * 14 + (mu - 0.5) * 220, mz);
-    manta.scale.setScalar((phone ? 58 : 125) * mk);
-    manta.rotation.z = 0.95 + Math.sin(t * 0.4) * 0.06; // heading up and to the left
+    const span = (phone ? 70 : 108) * 1.75; // half a wingspan on screen
+    const clear = w * (phone ? 0.2 : 0.27) - Math.max(84, Math.min(w * 0.17, 225)) - span - 24;
+    const from = Math.min(clear, w * 0.02);
+    manta.position.set((from - (from + w * 0.5 + span) * mu) * mk, -(home.giant - 10) + Math.sin(t * 0.5) * 12 + (mu - 0.5) * 240, mz);
+    manta.scale.setScalar((phone ? 70 : 108) * mk);
+    manta.rotation.z = 0.7 + Math.sin(t * 0.4) * 0.05; // heading up and to the left
 
     // The school startles on a scroll and regroups at rest.
     clock.scatter += (Math.min(1, speed / 36) - clock.scatter) * (speed > 2 ? 0.25 : 0.035);

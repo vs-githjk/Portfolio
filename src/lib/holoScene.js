@@ -7,38 +7,20 @@
 
      intro  0 to 1   a scan line draws the face from the hair down
      morph  0 to 1   the face loosens and gathers into a ball of folded light
-     say    0 to 1   the ball unfolds into words: every point has a third home
-                     on the letters of one short line (sampleText)
-     burst  0 to 1   the words fly apart, out past the edges of the screen
-     guide  0 to 1   a few hundred points do not fly: they fall into one small
-                     spark, which then goes down the page with the reader
-
-   The spark is the thread through the whole page: the caller moves it (uCenter),
-   sets its radius (uOrb) and gives it a trail (uVel, device pixels: each spark
-   point hangs back along it by its own share). Once the burst is over only the
-   spark's points are drawn.
+     burst  0 to 1   the ball flies apart, out past the edges of the screen
 
    Colours are (r, g, b) triples read from the tokens by the caller. */
 
-/* The share of the points that make the spark (every point has a random number
-   r2; the spark is those under this). parseFace collects the same ones. */
-const SPARK = 0.03;
-
 const VERT = /* glsl */ `
 precision highp float;
-const float SPARK = ${SPARK.toFixed(3)};
 attribute vec3 aFace;   // x, y in units of the picture's height (y up), z toward the viewer
 attribute vec3 aBall;   // the same point's place on a unit sphere
 attribute vec4 aData;   // brightness, two random numbers, scan row (0 at the top, 1 at the foot)
-attribute vec2 aSay;    // the same point's place on the words, in units of the line's width (y up)
 uniform vec2 uRes;      // canvas size in device pixels
 uniform vec2 uCenter;   // where the head's centre sits, device pixels from the top left
 uniform float uSize;    // the picture's height in device pixels
 uniform float uBall;    // the ball's radius in device pixels
 uniform float uDpr, uTime, uIntro, uMorph, uBurst, uTurn, uNod, uVoice, uStill;
-uniform float uSay, uSayW;  // the words: how far they have formed, and the line's width in device pixels
-uniform float uGuide, uOrb; // the spark: how far it has formed, and its radius in device pixels
-uniform vec2 uVel;          // its trail, device pixels
 varying float vGlow;
 varying float vMix;
 
@@ -71,7 +53,7 @@ void main() {
   f.x += (r1 - 0.5) * 0.5 * (1.0 - drawn);
   // A slow bright sweep keeps running down the finished face.
   float sweep = exp(-pow((row - fract(t * 0.11 + 0.3) * 1.6 + 0.3) * 9.0, 2.0)) * (1.0 - uStill);
-  float rows = 0.74 + 0.26 * step(0.5, fract(row * 120.0));
+  float rows = 0.86 + 0.14 * step(0.5, fract(row * 120.0));
   float faceGlow = (0.2 + 0.95 * lum) * rows * drawn + head * 0.9 + sweep * 0.28 * lum;
 
   // ---- the ball --------------------------------------------------------------
@@ -90,41 +72,21 @@ void main() {
   float loose = sin(m * 3.14159);
   p += vec3(sin(r1 * 40.0 + t * 0.9), cos(r2 * 33.0 + t * 1.1), sin(r1 * 17.0 - t)) * uSize * 0.06 * loose;
 
-  // The words: the ball opens and every point goes to its letter. The wide faint
-  // points go dark there, so the letters stay crisp.
-  float sy = clamp(uSay * 1.6 - r1 * 0.6, 0.0, 1.0);
-  sy = sy * sy * (3.0 - 2.0 * sy);
-  vec3 word = vec3(aSay * uSayW, 0.0);
-  word.y += sin(t * 1.1 + aSay.x * 9.0) * uSayW * 0.004;
-  p = mix(p, word, sy);
-  p += vec3(sin(r2 * 51.0 + t), cos(r1 * 47.0 - t), 0.0) * uBall * 0.5 * sin(sy * 3.14159);
-
-  // The spark: the few points that stay when the rest fly.
-  float spark = step(r2, SPARK);
-  float g = uGuide * spark;
-  float halo = step(0.86, fract(r1 * 13.7)); // a few wide faint ones: its glow
-  float lag = fract(r1 * 7.13);
-  vec3 orb = turn(aBall, t * 1.4 + r1 * 6.283, t * 0.9 + r1 * 3.0) * uOrb * (0.2 + 0.8 * sqrt(lag)) * (1.0 + 0.12 * sin(t * 3.1 + r1 * 20.0));
-
   float bu = clamp(uBurst * 1.35 - r2 * 0.35, 0.0, 1.0);
-  float fly = bu * bu * (0.35 + 1.25 * r1) * (1.0 - spark);
+  float fly = bu * bu * (0.35 + 1.25 * r1);
   p += d * fly * max(uRes.x, uRes.y) * 0.62;
-  p = mix(p, orb, g);
 
-  float depth = mix(1.0 / (1.0 - p.z / (uSize * 3.2)), 1.0, g);
-  vec2 px = uCenter + vec2(p.x, -p.y) * depth + uVel * lag * lag * g;
+  float depth = 1.0 / (1.0 - p.z / (uSize * 3.2));
+  vec2 px = uCenter + vec2(p.x, -p.y) * depth;
   gl_Position = vec4(px.x / uRes.x * 2.0 - 1.0, 1.0 - px.y / uRes.y * 2.0, 0.0, 1.0);
 
   // One point in nine is a wide, faint one: together they are the haze around the light.
   float haze = step(0.89, r2);
   float size = mix(1.5 + 0.9 * lum, 1.9 + 1.3 * core, m) * mix(1.0, 5.5, haze);
   size *= 1.0 + bu * 1.6 * max(d.z, 0.0);
-  float base = mix(size * clamp(uSize / (540.0 * uDpr), 0.7, 1.25), 1.7 + bu * 2.0 * r1, sy) * uDpr * depth;
-  float sparkSize = mix(2.1, 0.55 * uOrb / uDpr + 6.0, halo) * uDpr * (1.0 - 0.5 * lag * lag * step(1.0, length(uVel)));
-  gl_PointSize = max(1.0, mix(base, sparkSize, g));
-  float glow = mix(mix(faceGlow, ballGlow, m) * mix(1.0, 0.07, haze), 0.85 * (1.0 - haze), sy) * pow(1.0 - bu * (1.0 - spark), 1.15);
-  vGlow = mix(glow, mix(0.5, 0.06, halo) * (1.0 - 0.6 * lag * lag), g);
-  vMix = mix(mix(mix(lum, 0.35 + 0.65 * fold, m), 0.72 + 0.28 * r1, sy), 0.55 + 0.45 * (1.0 - lag), g);
+  gl_PointSize = max(1.0, size * uDpr * depth * clamp(uSize / (540.0 * uDpr), 0.7, 1.25));
+  vGlow = mix(faceGlow, ballGlow, m) * mix(1.0, 0.07, haze) * pow(1.0 - bu, 1.15);
+  vMix = mix(lum, 0.35 + 0.65 * fold, m);
 }
 `;
 
@@ -144,38 +106,9 @@ void main() {
 
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
 
-/* Where the letters of a few short lines are: the line is drawn once on a 2D
-   canvas in the display face and every other lit pixel becomes a place a point
-   can go. Returns x, y pairs in units of the block's width, centred, y up. */
-export function sampleText(lines, family) {
-  const size = 96;
-  const lead = size * 1.1;
-  const canvas = document.createElement('canvas');
-  const g = canvas.getContext('2d', { willReadFrequently: true });
-  if (!g) return new Float32Array(0);
-  const font = `400 ${size}px ${family}`;
-  g.font = font;
-  const W = Math.ceil(Math.max(...lines.map((l) => g.measureText(l).width))) + 12;
-  const H = Math.ceil(lead * lines.length + size * 0.4);
-  canvas.width = W;
-  canvas.height = H;
-  g.font = font;
-  g.fillStyle = '#fff';
-  g.textAlign = 'center';
-  lines.forEach((l, k) => g.fillText(l, W / 2, size * 0.98 + k * lead));
-  const d = g.getImageData(0, 0, W, H).data;
-  const pts = [];
-  for (let y = 0; y < H; y += 2) {
-    for (let x = 0; x < W; x += 2) {
-      if (d[(y * W + x) * 4 + 3] > 120) pts.push((x - W / 2) / W, (H / 2 - y) / W);
-    }
-  }
-  return new Float32Array(pts);
-}
-
 /* Read the baked file into typed arrays. `share` is the part of the points to
    keep (the file is shuffled, so a prefix is an even sample). */
-export function parseFace(buffer, share = 1, letters = new Float32Array(0)) {
+export function parseFace(buffer, share = 1) {
   const view = new DataView(buffer);
   const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
   if (magic !== 'HOLO') throw new Error('hologram: not a face file');
@@ -198,8 +131,8 @@ export function parseFace(buffer, share = 1, letters = new Float32Array(0)) {
     // The head's centre is the pivot: 0.51 across and 0.327 down the picture.
     face[i * 3] = (view.getUint16(o, true) / 65535 - 0.51) * aspect;
     face[i * 3 + 1] = 0.327 - row;
-    // A shallow relief: enough depth to feel solid in a two degree sway, not enough
-    // to push the head out from the neck.
+    // A shallow relief: enough depth to feel solid in a slow turn, not enough to
+    // push the head out from the neck.
     face[i * 3 + 2] = ((view.getUint8(o + 3) - 128) / 100) * 0.09;
     const y = 1 - ((i + 0.5) / n) * 2;
     const r = Math.sqrt(1 - y * y);
@@ -211,25 +144,7 @@ export function parseFace(buffer, share = 1, letters = new Float32Array(0)) {
     data[i * 4 + 2] = rnd();
     data[i * 4 + 3] = row;
   }
-  // Each point's letter: an even share of the sampled places, in a fixed shuffle.
-  const say = new Float32Array(n * 2);
-  const places = letters.length / 2;
-  for (let i = 0; i < n && places > 0; i += 1) {
-    const j = Math.floor(rnd() * places);
-    say[i * 2] = letters[j * 2] + (rnd() - 0.5) * 0.003;
-    say[i * 2 + 1] = letters[j * 2 + 1] + (rnd() - 0.5) * 0.003;
-  }
-  // The spark's points again, on their own, so that after the burst a frame is a
-  // few hundred points instead of the whole cloud.
-  const keep = [];
-  for (let i = 0; i < n; i += 1) if (data[i * 4 + 2] <= SPARK) keep.push(i);
-  const pick = (from, size) => {
-    const out = new Float32Array(keep.length * size);
-    keep.forEach((i, k) => out.set(from.subarray(i * size, i * size + size), k * size));
-    return out;
-  };
-  const spark = { n: keep.length, face: pick(face, 3), ball: pick(ball, 3), data: pick(data, 4), say: pick(say, 2) };
-  return { n, face, ball, data, say, spark, speaks: places > 0 };
+  return { n, face, ball, data };
 }
 
 function compile(gl, type, source) {
@@ -253,36 +168,22 @@ export function createHologram(canvas, cloud, colors) {
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) || 'hologram: link');
   gl.useProgram(program);
 
-  // Two sets of the same three attributes: the whole cloud, and the spark alone.
   const buffers = [];
-  const SHAPE = [
-    ['aFace', 'face', 3],
-    ['aBall', 'ball', 3],
-    ['aData', 'data', 4],
-    ['aSay', 'say', 2],
-  ];
-  SHAPE.forEach(([name]) => gl.enableVertexAttribArray(gl.getAttribLocation(program, name)));
-  const upload = (set) =>
-    SHAPE.map(([name, key, size]) => {
-      const buffer = gl.createBuffer();
-      buffers.push(buffer);
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.bufferData(gl.ARRAY_BUFFER, set[key], gl.STATIC_DRAW);
-      return { at: gl.getAttribLocation(program, name), buffer, size };
-    });
-  const sets = { all: { n: cloud.n, attrs: upload(cloud) }, spark: { n: cloud.spark.n, attrs: upload(cloud.spark) } };
-  let bound = null;
-  const bind = (set) => {
-    if (bound === set) return;
-    bound = set;
-    for (const a of set.attrs) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, a.buffer);
-      gl.vertexAttribPointer(a.at, a.size, gl.FLOAT, false, 0, 0);
-    }
+  const attribute = (name, array, size) => {
+    const buffer = gl.createBuffer();
+    buffers.push(buffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+    const at = gl.getAttribLocation(program, name);
+    gl.enableVertexAttribArray(at);
+    gl.vertexAttribPointer(at, size, gl.FLOAT, false, 0, 0);
   };
+  attribute('aFace', cloud.face, 3);
+  attribute('aBall', cloud.ball, 3);
+  attribute('aData', cloud.data, 4);
 
   const u = {};
-  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uDpr', 'uTime', 'uIntro', 'uMorph', 'uBurst', 'uTurn', 'uNod', 'uVoice', 'uStill', 'uSay', 'uSayW', 'uDeep', 'uPale', 'uTint', 'uGain', 'uFlicker', 'uGuide', 'uOrb', 'uVel']) {
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uDpr', 'uTime', 'uIntro', 'uMorph', 'uBurst', 'uTurn', 'uNod', 'uVoice', 'uStill', 'uDeep', 'uPale', 'uTint', 'uGain', 'uFlicker']) {
     u[name] = gl.getUniformLocation(program, name);
   }
   gl.uniform3fv(u.uDeep, colors.deep);
@@ -303,8 +204,7 @@ export function createHologram(canvas, cloud, colors) {
   }
 
   /* One frame. Lengths are CSS pixels; `s` is the state:
-     { time, intro, morph, say, sayW, burst, turn, nod, still, gain, flicker, cx, cy, size, ball,
-       guide, orb, vx, vy, alone }; `alone` draws only the spark. */
+     { time, intro, morph, burst, turn, nod, voice, still, gain, flicker, cx, cy, size, ball } */
   function render(s) {
     gl.clear(gl.COLOR_BUFFER_BIT);
     if (s.gain <= 0.002) return;
@@ -319,18 +219,11 @@ export function createHologram(canvas, cloud, colors) {
     gl.uniform1f(u.uBurst, s.burst);
     gl.uniform1f(u.uTurn, s.turn);
     gl.uniform1f(u.uNod, s.nod);
+    gl.uniform1f(u.uVoice, s.voice);
     gl.uniform1f(u.uStill, s.still ? 1 : 0);
     gl.uniform1f(u.uGain, s.gain);
     gl.uniform1f(u.uFlicker, s.flicker ?? 1);
-    gl.uniform1f(u.uSay, cloud.speaks ? s.say || 0 : 0);
-    gl.uniform1f(u.uSayW, (s.sayW || 0) * dpr);
-    gl.uniform1f(u.uVoice, s.voice || 0);
-    gl.uniform1f(u.uGuide, s.guide || 0);
-    gl.uniform1f(u.uOrb, (s.orb || 0) * dpr);
-    gl.uniform2f(u.uVel, (s.vx || 0) * dpr, (s.vy || 0) * dpr);
-    const set = s.alone ? sets.spark : sets.all;
-    bind(set);
-    gl.drawArrays(gl.POINTS, 0, set.n);
+    gl.drawArrays(gl.POINTS, 0, cloud.n);
   }
 
   function dispose() {

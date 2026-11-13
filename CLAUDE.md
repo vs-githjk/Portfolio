@@ -165,27 +165,31 @@ Run 4 (Nov 12 2026, Vidyut's notes while watching it live):
   height, the axis runs behind the face, the shoulders stay put), about eight degrees each
   way on one slow sine; the relief is shallow (0.09) so the skull never pushes out; the jaw
   eases while the greeting types. No row slips, no flicker: he read those as an eye glitch.
-- **The crew at work.** Six Master Agents portraits (`welcome.crew`) sit around the head as
-  tiny cut-corner cards washed to the hologram's blue, bobbing and lighting up in turn.
-  Decoration, inside the aria-hidden face box; they leave with the greeting.
-- **The ball says one line.** Between the ball and the burst every point flies to a letter of
-  `welcome.ball` ("Here is what I have built.", one line on a desktop, two on a phone). The
-  letters are sampled at load from a 2D canvas in the display face (`sampleText`). The cue's
-  glide slows for a beat while the words stand (`BEATS` in `Welcome.jsx`), and
-  `--welcome-run` is 70svh so the hero arrives under them, not over them.
-- **The spark.** About three in a hundred points do not fly: they fall into a small orb that
-  stays with the reader for the whole page. `guideAt()` in `Hologram.jsx` rides it in the right
-  margin, swings it over the giant, drops it into the galaxy's core and rests it on the
-  horizon as the light on the limb. Its targets mirror `worldScene.js` (same depths and
-  lines): move a set piece there and move it here. After the burst a frame draws only the
-  spark's few hundred points. The hologram canvas sits above The Deep (`z-index: 1`).
+- **He is the hub** (run 5). Out at the sides of the first screen sit six small holographic
+  panels (`welcome.hub`: PrismAI, DuelWise, BetterBill, Terrametric, a Master Agents portrait
+  and the "5× hackathon winner" readout), each tilted toward him and wired to his temple or
+  shoulder by a thin SVG line with a signal running along it. `Welcome.jsx` lays the wires
+  out from the real panel and face positions on every resize; `Hologram.jsx` writes `--head`
+  so the panels drift a few pixels with his turn. A phone keeps four in the corners. An
+  earlier ring of crew cards orbiting his head was cut ("not the best"). Never put a panel
+  over the face or the greeting.
+- **The ball speaks.** Once the face is a ball, `welcome.ball` ("Here is what I have built.")
+  types as a caption under it while the ball pulses with the words (`--speak`, `--speak-on`,
+  `--ball-y`, written by `Hologram.jsx`); then the ball bursts into the hero. The cue's glide
+  slows for a beat on the line (`BEATS` in `Welcome.jsx`); `--welcome-run` is 70svh so the
+  hero arrives under it. A version where the ball opened into the words was cut: it must read
+  as speech.
+- **Nothing follows the reader down the page.** A spark that survived the burst and rode the
+  margin was cut in run 5 ("nonsense": it crossed his name and sat on the planet). Do not add
+  a wandering guide back; anything that moves needs a place and a reason.
 
 ### The Deep (`components/World.jsx`, `lib/worldScene.js`, `components/Vista.jsx`)
 
 Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
 asked for planets and things flying, and approved three.js for it). One WebGL canvas in the
 fixed stack, drawn with three.js: a ringed gas giant with a manta of light climbing past it
-(scroll moves it), a school of light fish that circles the contact block and scatters when the
+(scroll moves it; it swims nearer the camera than any part of the planet and keeps left of its
+disc, so the two never intersect), a school of light fish that circles the contact block and scatters when the
 page moves, a moon, a spiral galaxy of points that wakes as the reader reaches it (it spins up,
 brightens and leans toward the pointer),
 three large medusae of light that pulse upward, one rare comet (the glass shards were cut, Vidyut Nov 12),

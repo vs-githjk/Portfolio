@@ -109,8 +109,8 @@
 
   /* ---- THE WELCOME: his face in light, on the screen above the hero ---------- */
   --holo-gain: 1; /* strength of the hologram's light */
-  --holo-agent: clamp(30px, 7cqh, 50px); /* a crew hologram beside the face */
-  --holo-agent-dim: 0.5; /* and how lit it is */
+  --hub-w: clamp(84px, 11.5vw, 172px); /* a panel wired to him on the welcome screen */
+  --hub-dim: 0.72; /* and how lit it is */
   --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
   --welcome-min: 500px; /* the welcome screen never gets shorter than this */
   --welcome-run: 70svh; /* empty scroll under the greeting: room for the ball before the hero arrives */
@@ -170,6 +170,7 @@
   --fs-hero: clamp(60px, 16vw, 72px); /* row mode; ring mode overrides in sections.css */
   --fs-h2: clamp(38px, 4.6vw, 64px);
   --fs-lead: clamp(22px, 2vw, 28px);
+  --fs-speak: clamp(26px, 3.2vw, 42px); /* the ball's line of speech */
   --fs-body: clamp(15px, 1.05vw, 17px);
   --fs-metric: clamp(28px, 2.4vw, 34px);
   --fs-card: clamp(28px, 2.4vw, 34px);
