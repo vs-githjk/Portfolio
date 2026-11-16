@@ -2015,6 +2015,22 @@ html:not([data-world='on']) .pow-roost {
   text-align: center;
 }
 
+/* The credits roll only when asked for. */
+.credits-roll {
+  width: 100%;
+}
+
+.credits-roll > summary {
+  justify-content: center;
+}
+
+.credits-body {
+  display: grid;
+  justify-items: center;
+  gap: clamp(28px, 4vw, 44px);
+  padding-block: clamp(20px, 3vw, 36px) 8px;
+}
+
 .credits-title {
   font-family: var(--font-display);
   font-size: var(--fs-flag);

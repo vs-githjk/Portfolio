@@ -1671,6 +1671,7 @@ export const contact = {
   /* The credits at the foot (Footer.jsx). {Crew} is the size of the crew, counted. */
   credits: {
     label: 'Credits',
+    open: 'Roll the credits',
     cast: 'The crew · {Crew} agents, one job each',
     world: 'In the world',
     faces: {
