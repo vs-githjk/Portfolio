@@ -2879,44 +2879,6 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   color: var(--text-3);
 }
 
-.pow-stats {
-  display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 640px) {
-  .pow-stats {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.pow-stats b {
-  display: block;
-  font-family: var(--font-read);
-  font-weight: 400;
-  font-size: var(--fs-metric);
-  line-height: 1;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-}
-
-.pow-stats b em {
-  font-style: italic;
-  color: var(--text-2);
-}
-
-.pow-stats span {
-  display: block;
-  font-family: var(--font-mono);
-  color: var(--text-3);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-top: 8px;
-}
-
 /* The record (Heatmap.jsx): a ridge of weekly buttes over the day calendar, both
    in the accent ramp from the ground colour up to the brightest light. Each
    level is one <path>; on the day cells a 3px round stroke gives every cell its
@@ -4363,10 +4325,6 @@ a.plaque:hover::after {
 @media (max-width: 640px) {
   .actions .btn:not(.btn-icon) {
     flex: 1 1 auto;
-  }
-
-  .pow-stats {
-    gap: 20px;
   }
 
   .heat {

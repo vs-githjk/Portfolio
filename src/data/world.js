@@ -99,10 +99,8 @@ export const shell = {
 /* What each living thing in the world is, the count it is drawn from, and the
    file the count comes from. Keys are contract.js BINDING ids. Every figure is
    computed here from the data, so a change in the data changes the sentence. */
-const fmt = (n) => n.toLocaleString('en-US');
 const days = github.days ?? [];
 const weeks = days.length ? Math.ceil((new Date(`${days[0].date}T00:00:00Z`).getUTCDay() + days.length) / 7) : 0;
-const contributions = days.reduce((n, d) => n + d.count, 0);
 const scene = (kind) => builds.flagships.find((f) => f.scene?.kind === kind);
 const ring = hero.carousel.slides.length;
 const crew = builds.building.crew.length;
@@ -111,7 +109,7 @@ const SOURCE = { content: 'content.js', github: 'github.json' };
 
 const facts = {
   orrery: () => ({ name: 'The Orrery', fact: `${ring} builds in orbit, one tick each`, source: SOURCE.content }),
-  wyrm: () => ({ name: 'The dragon', fact: `${weeks} weeks, ${fmt(contributions)} contributions`, source: SOURCE.github }),
+  wyrm: () => ({ name: 'The dragon', fact: `one vertebra for each of the last ${weeks} weeks of commits`, source: SOURCE.github }),
   giant: () => ({ name: 'The giant', fact: `${buildCount} builds: ${builds.flagships.length} moons, ${buildCount - builds.flagships.length} ring lights`, source: SOURCE.content }),
   prism: () => {
     const f = scene('prism');
@@ -139,7 +137,7 @@ export function receiptParts(id) {
   return facts[id]?.() ?? null;
 }
 
-/* The same as one sentence: "The dragon · 53 weeks, 1,678 contributions · github.json". */
+/* The same as one sentence: "The dragon · one vertebra for each of the last 53 weeks of commits · github.json". */
 export function receipts(id) {
   const r = receiptParts(id);
   return r ? `${r.name} · ${r.fact} · ${r.source}` : '';

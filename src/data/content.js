@@ -1506,20 +1506,16 @@ export const proofOfWork = {
   heading: 'Verify me in',
   headingEm: 'one click.',
   intro:
-    'Most of what is above leaves a public trail: the graph counts my private-repo work too, and every hackathon win links to its Devpost page.',
+    'Most of what is above leaves a public trail: every hackathon win links to its Devpost page, and the graph under them counts my private-repo work too.',
   github: {
     eyebrow: 'GitHub · last 12 months',
     handle: '@vs-githjk',
     href: 'https://github.com/vs-githjk',
-    graphLabel: '{n} contributions in the last year',
-    stats: {
-      total: 'contributions',
-      streak: 'longest streak',
-      streakUnit: ' days',
-      month: 'contributions, {month} 1 to {day}',
-    },
+    /* No totals, streaks or month counts here (Vidyut, Nov 16: he can make 333
+       commits in three days, so a total says nothing). The graph is the evidence. */
+    graphLabel: 'My GitHub contribution graph for the last 12 months, one column per week',
     note: '',
-    phoneNote: 'The graph shows the latest six months on a phone; the totals cover the whole year.',
+    phoneNote: 'On a phone the graph shows the latest six months.',
     /* The ridge above the calendar: one butte per week. The same record stands on
        the night horizon behind this section (the world scene). */
     ridge: 'Each butte is one week; its height follows that week’s contributions.',
@@ -1679,7 +1675,7 @@ export const contact = {
     faces: {
       label: 'The faces',
       rows: [
-        { where: 'First screen', what: 'My portrait, drawn in light from one photograph' },
+        { where: 'First screen', what: 'My studio photograph in a round window, gathered from points of light and let go into the ball' },
         { where: 'Under my name', what: 'A silhouette on a beach at sunset' },
         { where: 'Contact', what: 'The studio headshot' },
       ],
@@ -1690,7 +1686,7 @@ export const contact = {
      it null rather than quote a number that was not measured that day. */
   colophon: {
     label: 'Colophon',
-    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is about thirty thousand points baked from one photograph.',
+    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph, with points of light baked from it that gather into the picture and let go.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
     measured: 'Lighthouse, phone profile, {date}: performance {performance}, accessibility {accessibility}, best practices {bestPractices}, SEO {seo}.',
     // Measured Nov 15 2026 on the production build (npm run build, npm run preview), Lighthouse 12.2.1,
