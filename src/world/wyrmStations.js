@@ -19,6 +19,8 @@ const sm = (t) => {
   return c * c * (3 - 2 * c);
 };
 const clamp01 = (t) => Math.max(0, Math.min(1, t));
+const GUTTER = 16; // px the creature keeps from a window edge where it is laid out whole
+const TAIL_REACH = 7 * 0.96; // body units the tail runs on past the oldest week at the roost
 
 /* A path through waypoints [x, y, z, size], sampled densely (Catmull-Rom), then
    walked by distance along it in the window plane. Past either end it runs on
@@ -109,7 +111,8 @@ export function createWyrmStations({ live, phone }) {
     st.pass = null;
     if (giant && env.giant) {
       const g = env.giant;
-      const scale = phone ? 6.4 : Math.max(9, Math.min(14.5, w / 100));
+      // A phone's creature is small enough to be seen whole: snout to tail in about two thirds of the window.
+      const scale = phone ? Math.min(4.2, (w * 0.7) / L) : Math.max(9, Math.min(14.5, w / 100));
       const a = g.r * 1.95;
       const b = g.r * 0.66;
       const rot = 0.36;
@@ -121,16 +124,38 @@ export function createWyrmStations({ live, phone }) {
         return [x * cr - y * sr, x * sr + y * cr, -220 + 2.5 * g.r * Math.sin(th), size];
       };
       const left = -w / 2 - g.x - 80;
-      const way = [
-        [left - 200, -g.r * 0.5, 60, 1],
-        [left, -g.r * 0.34, 60, 1],
-      ];
-      for (let th = 0.78 * Math.PI; th > -0.76 * Math.PI; th -= Math.PI / 9) way.push(E(th));
-      way.push(E(-0.78 * Math.PI, 0.92));
-      way.push([Math.min(left * 0.72, -a * 1.25), -g.r * 0.92, -520, 0.7]);
-      way.push([left - 60, -g.r * 1.2, -900, 0.42]);
-      way.push([left - 400, -g.r * 1.32, -1100, 0.36]);
-      const lap = way.length - 3; // the waypoint where the lap ends and the leaving begins
+      let way;
+      let lap; // the waypoint where the lap ends and the leaving begins
+      if (phone) {
+        /* A phone's window is one giant wide: wound round it the creature was a
+           tangle of wing and disc. Here it comes in over the open water left of
+           the giant, whole and side on, then climbs away behind the giant's
+           shoulder (the disc hides it) and is gone. */
+        const r = g.r;
+        way = [
+          [left - 200, r * 0.62, 60, 1],
+          [left, r * 0.56, 60, 1],
+          [-r * 3.3, r * 0.4, 60, 1],
+          [-r * 2.45, r * 0.1, 40, 1],
+          [-r * 1.62, -r * 0.3, 0, 1],
+          [-r * 0.7, -r * 0.92, -160, 0.9],
+          [r * 0.4, -r * 1.05, -420, 0.72],
+          [r * 1.9, -r * 0.86, -760, 0.52],
+          [r * 3.6, -r * 0.8, -1000, 0.4],
+        ];
+        lap = 4;
+      } else {
+        way = [
+          [left - 200, -g.r * 0.5, 60, 1],
+          [left, -g.r * 0.34, 60, 1],
+        ];
+        for (let th = 0.78 * Math.PI; th > -0.76 * Math.PI; th -= Math.PI / 9) way.push(E(th));
+        way.push(E(-0.78 * Math.PI, 0.92));
+        way.push([Math.min(left * 0.72, -a * 1.25), -g.r * 0.92, -520, 0.7]);
+        way.push([left - 60, -g.r * 1.2, -900, 0.42]);
+        way.push([left - 400, -g.r * 1.32, -1100, 0.36]);
+        lap = way.length - 3;
+      }
       const path = makePath(way);
       // Its sky is the whole row the window sits in (a heading may share it: the text
       // there is kept out box by box), up through the clear space over that row.
@@ -141,7 +166,11 @@ export function createWyrmStations({ live, phone }) {
       const top = Math.max(giant.top - env.h * 0.4, Math.min(giant.top, sec ? sec.top + y : giant.top, row ? row.top + y : giant.top));
       const bottom = Math.max(giant.bottom, row ? row.bottom + y : giant.bottom);
       const sky = { el: giant.el, top, bottom, h: bottom - top };
-      st.pass = { rect: sky, scale, path, lapEnd: path.lengthAt(lap), boxes: boxesOf(sky, [top, bottom]), band: [top, bottom] };
+      // The clock. On a phone the row under the window is long (the heading and the
+      // chart stack under it), so the pass is timed on the window itself: it is at
+      // its turn, whole, when the giant is in the middle of the screen.
+      const clock = phone ? [giant.mid - env.h * 0.74, env.h] : [sky.top - env.h * 0.42, sky.h + env.h * 0.84];
+      st.pass = { rect: sky, scale, path, clock, lapEnd: path.lengthAt(lap), boxes: boxesOf(sky, [top, bottom]), band: [top, bottom] };
     }
 
     // 3 The breach: up out of the water through the second waterline, into the dusk.
@@ -149,19 +178,34 @@ export function createWyrmStations({ live, phone }) {
     st.breach = null;
     if (shore && shore.h > 300) {
       const H = shore.h;
-      const scale = phone ? 6 : Math.max(9, Math.min(13.5, w / 112));
+      const scale = phone ? Math.min(4.6, (w * 0.78) / L) : Math.max(9, Math.min(13.5, w / 112));
       // Low and to the left the vista carries its line of text: the climb keeps right of it.
-      const way = [
-        [-w * 0.3, H * 1.5, 40, 1],
-        [-w * 0.16, H * 1.2, 40, 1],
-        [-w * 0.02, H * 0.9, 20, 1],
-        [w * 0.1, H * 0.58, 0, 1],
-        [w * 0.2, H * 0.3, -20, 1],
-        [w * 0.33, H * 0.16, -60, 0.94],
-        [w * 0.5, H * 0.14, -200, 0.8],
-        [w * 0.7, H * 0.17, -500, 0.6],
-        [w * 0.95, H * 0.16, -800, 0.42],
-      ];
+      // On a phone the line stands in the sky at the top of the vista (it is as wide
+      // as the window), and the climb is an S under it: up out of the water on the
+      // left, over the camp, and back across the low sun.
+      const way = phone
+        ? [
+            [-w * 0.8, H * 1.2, 40, 1],
+            [-w * 0.46, H * 1.0, 40, 1],
+            [-w * 0.14, H * 0.82, 20, 1],
+            [w * 0.14, H * 0.64, 0, 1],
+            [w * 0.2, H * 0.47, -10, 1],
+            [w * 0.04, H * 0.37, -30, 1],
+            [-w * 0.3, H * 0.34, -80, 0.94],
+            [-w * 0.78, H * 0.36, -320, 0.74],
+            [-w * 1.3, H * 0.36, -640, 0.5],
+          ]
+        : [
+            [-w * 0.3, H * 1.5, 40, 1],
+            [-w * 0.16, H * 1.2, 40, 1],
+            [-w * 0.02, H * 0.9, 20, 1],
+            [w * 0.1, H * 0.58, 0, 1],
+            [w * 0.2, H * 0.3, -20, 1],
+            [w * 0.33, H * 0.16, -60, 0.94],
+            [w * 0.5, H * 0.14, -200, 0.8],
+            [w * 0.7, H * 0.17, -500, 0.6],
+            [w * 0.95, H * 0.16, -800, 0.42],
+          ];
       st.breach = { rect: shore, scale, path: makePath(way), boxes: boxesOf(shore), band: [shore.top, shore.bottom] };
     }
 
@@ -174,14 +218,30 @@ export function createWyrmStations({ live, phone }) {
       if (cols) {
         // Is there room for the head in front of the newest week, at full size?
         const full = Math.min(cols.pitch, (roost.h - 12) / 6.4);
-        const ahead = w - cols.xs[N - 1] > live.neck * full + 16;
-        const scale = ahead ? full : Math.min(cols.pitch, (roost.h - 12) / 13.2);
+        let fit = false;
+        let ahead = w - cols.xs[N - 1] > live.neck * full + 16;
+        let scale = ahead ? full : Math.min(cols.pitch, (roost.h - 12) / 13.2);
+        /* A window too narrow for a year of columns (a phone, whose graph shows
+           the latest months): laid over them the creature ran off both edges. It
+           is drawn whole here, snout to tail tip inside the gutters, one vertebra
+           a week as ever, each a little nearer the next than the columns are. */
+        const unitsBehind = TAIL_REACH + 1.2;
+        const unitsAhead = live.neck * 0.92 + 0.8;
+        if (cols.xs[0] - unitsBehind * scale < GUTTER || !ahead) {
+          scale = Math.min(full, (w - 2 * GUTTER) / (N - 1 + unitsBehind + unitsAhead));
+          const x0 = GUTTER + unitsBehind * scale;
+          const xs = new Float32Array(N);
+          for (let i = 0; i < N; i++) xs[i] = x0 + i * scale;
+          cols.xs = xs;
+          ahead = true;
+          fit = true;
+        }
         // With the head out in front there is open ground over its shoulders (the note
         // above it stops well short of them): the band rises so a half-raised wing and
         // the lifted head have room. Any text in that taller band is a keep-out box.
         const rise = ahead ? Math.min(124, scale * 8.4) : 0;
         const band = [roost.top - 2 - rise, roost.bottom + 2];
-        st.roost = { rect: roost, cols, scale, ahead, lift: ahead ? scale * 2.5 : 0, ground: roost.bottom - 8, boxes: boxesOf(roost, band), band };
+        st.roost = { rect: roost, cols, scale, ahead, fit, lift: ahead ? scale * 2.5 : 0, ground: roost.bottom - 8, boxes: boxesOf(roost, band), band };
       }
     }
 
@@ -204,12 +264,12 @@ export function createWyrmStations({ live, phone }) {
       // band: in from the left, along the sky just over the limb.
       const way = phone
         ? [
-            [-w / 2 - 220, limb(-w / 2) - 46, 0, 1],
-            [-w / 2 - 20, limb(-w / 2) - 40, 0, 1],
-            [-w * 0.2, limb(-w * 0.2) - 34, -40, 0.9],
-            [sx - w * 0.2, S - 30, -160, 0.66],
-            [sx - 10, S - 16, -260, 0.36],
-            [sx + 6, S - 8, -289, 0.16],
+            [-w / 2 - 220, limb(-w / 2) - 70, 0, 1],
+            [-w / 2 - 20, limb(-w / 2) - 66, 0, 1],
+            [-w * 0.2, limb(-w * 0.2) - 60, -40, 0.96],
+            [sx - w * 0.2, S - 52, -140, 0.8],
+            [sx - 10, S - 34, -240, 0.56],
+            [sx + 6, S - 18, -289, 0.34],
           ]
         : [
             [w * 0.6, S - h * 0.6, 0, 1],
@@ -220,7 +280,8 @@ export function createWyrmStations({ live, phone }) {
             [sx + w * 0.022, S - h * 0.055, -260, 0.42],
             [sx + 5, S - 12, -289, 0.16],
           ];
-      st.flight = { rect: horizon, scale, path: makePath(way), boxes: boxesOf(contact, [top - 40, horizon.bottom]), band: [phone ? horizon.top : top, horizon.bottom] };
+      // On a phone it is gone into the light while it is still whole: wings, not a trailing thread.
+      st.flight = { rect: horizon, scale, gone: phone ? [0.56, 0.16] : [0.86, 0.14], path: makePath(way), boxes: boxesOf(contact, [top - 40, horizon.bottom]), band: [phone ? horizon.top : top, horizon.bottom] };
     }
   }
 
@@ -268,7 +329,7 @@ export function createWyrmStations({ live, phone }) {
         const e = 1 - Math.pow(1 - u, 1.8); // off at once, slower as it nears the sun
         const sHead = e * (s.path.total + L * s.scale * 0.5);
         guard(s, f);
-        draw({ ...base, scale: s.scale, at: follow(s, sHead, f, { oy: -f.line, swim: 0.7 }), beat: 1, show: sm(u / 0.08) * (1 - sm((u - 0.86) / 0.14)), solid: 0.6, air: 1.8 });
+        draw({ ...base, scale: s.scale, at: follow(s, sHead, f, { oy: -f.line, swim: 0.7 }), beat: 1, show: sm(u / 0.08) * (1 - sm((u - s.gone[0]) / s.gone[1])), solid: 0.6, air: 1.8 });
         shown.station = 'flight';
         shown.u = u;
         return 'flight';
@@ -325,7 +386,7 @@ export function createWyrmStations({ live, phone }) {
           }
         };
         guard(s, f);
-        draw({ ...base, scale: sc, at, sleep: 1, fold: s.ahead ? 0.9 : 0.92, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
+        draw({ ...base, scale: sc, at, sleep: 1, fold: s.fit ? 0.6 : s.ahead ? 0.79 : 0.92, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
         shown.station = 'roost';
         return 'roost';
       }
@@ -348,7 +409,7 @@ export function createWyrmStations({ live, phone }) {
     // 2 The pass.
     if (st.pass) {
       const s = st.pass;
-      const u = (f.line - (s.rect.top - h * 0.42)) / (s.rect.h + h * 0.84);
+      const u = (f.line - s.clock[0]) / s.clock[1];
       if (u > 0 && u < 1) {
         const g = env.giant;
         // With the anchor in the middle of the window the body is wound round the

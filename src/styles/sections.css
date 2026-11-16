@@ -178,6 +178,14 @@ html[data-world='on'] .bg-world {
   top: 52%;
 }
 
+/* On a phone the line is as wide as the window, so it stands in the sky at the
+   top of the dusk and the whole climb out of the water happens under it. */
+@media (max-width: 760px) {
+  .vista[data-set='shore'] .vista-line {
+    top: 9%;
+  }
+}
+
 /* Still grounds: before the scene has loaded, without WebGL and under reduced
    motion, every section paints its own world as a flat grade, so the three
    palettes never sit on the galaxy's indigo. With the scene on, these are off. */
