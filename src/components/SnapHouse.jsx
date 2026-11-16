@@ -12,7 +12,7 @@ const S = 26; // one unit of the house, in drawing units
 const CX = S * 0.866;
 const CY = S * 0.5;
 const OX = 192;
-const OY = 368;
+const OY = 354;
 const r1 = (n) => Math.round(n * 10) / 10;
 const iso = (x, y, z = 0) => [r1(OX + (x - y) * CX), r1(OY + (x + y) * CY - z * S)];
 const pts = (...p) => p.map((q) => iso(...q).join(',')).join(' ');
@@ -89,7 +89,7 @@ const wall = (n, x, y, zz) => {
   return [px, r1(py - n * LIFT)];
 };
 const PHOTOS = [
-  { to: wall(2, 0.4, 0, 1.5), k: 30, tone: 'photo-a' },
+  { to: wall(2, 0.4, 0, 1.38), k: 30, tone: 'photo-a' },
   { to: wall(1, 0, 0.3 + PW / CX, 1.6), k: -30, tone: 'photo-b' },
   { to: wall(0, 0.7, 0, 1.6), k: 30, tone: 'photo-c' },
 ];
@@ -104,7 +104,7 @@ export default function SnapHouse({ stage, step }) {
   const ridge = roofZ + 1.9;
   const o = 0.45;
   return (
-    <svg className="sh" viewBox="0 0 400 520" data-open={on(2)} style={{ '--lift': `${LIFT}px` }} aria-hidden="true" focusable="false">
+    <svg className="sh" viewBox="0 0 400 506" data-open={on(2)} style={{ '--lift': `${LIFT}px` }} aria-hidden="true" focusable="false">
       <g className="sh-city">
         <Block at={[-4.6, -6.4]} size={[3.2, 2.6, 2.6]} />
         <Block at={[-0.2, -7.2]} size={[3, 2.4, 3.6]} />

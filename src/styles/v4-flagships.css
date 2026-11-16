@@ -1151,7 +1151,7 @@
   transform: translateY(calc(var(--lift) * -2));
 }
 .sh[data-open] .sh-roof {
-  transform: translateY(calc(var(--lift) * -2 - 78px));
+  transform: translateY(calc(var(--lift) * -2 - 62px));
 }
 
 .sh text {
