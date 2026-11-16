@@ -1462,6 +1462,11 @@ body:has(.receipts-ledger) .foot {
   padding-bottom: 96px;
 }
 
+/* A jump or a Tab never lands a heading under the slip. */
+html:has(.receipts-ledger) {
+  scroll-padding-bottom: 104px;
+}
+
 @media (max-width: 760px) {
   .receipts-ledger li {
     display: block;

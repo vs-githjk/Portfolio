@@ -645,7 +645,9 @@ export default function Orbit({ stageRef, centreRef }) {
     const offBinding = registerBinding({
       id: 'orrery',
       project: () => {
-        if (!ringMode || geo.docY == null) return null;
+        // Below the ring's breakpoint the plate's near rim lies under the drifting rows: the same ticks, the same fact.
+        if (!ringMode) return row.docY == null ? null : { x: row.x, y: row.docY - window.scrollY, side: 'right', visible: row.docY - window.scrollY > 0 && row.docY - window.scrollY < window.innerHeight };
+        if (geo.docY == null) return null;
         const [x, y] = foot(STEP * 1.5, 1 + CFG.rim);
         const at = { x: geo.docX + x, y: geo.docY - window.scrollY + y };
         return { ...at, side: 'right', visible: at.y > 0 && at.y < window.innerHeight };
@@ -678,6 +680,19 @@ export default function Orbit({ stageRef, centreRef }) {
         { threshold: 0.05 }
       );
       io.observe(region);
+    }
+
+    // Where the plate's rim is while the rows stand in for the ring (read on a resize, never per frame).
+    const row = { x: 0, docY: null };
+    function measureRow() {
+      const plate = stage.querySelector('.drift-plate');
+      const box = plate?.getBoundingClientRect();
+      if (!box || box.height < 2) {
+        row.docY = null;
+        return;
+      }
+      row.x = box.left + box.width / 2;
+      row.docY = box.top + window.scrollY + box.height / 2;
     }
 
     function applyMode() {
@@ -743,7 +758,7 @@ export default function Orbit({ stageRef, centreRef }) {
       if (ringMode) {
         measure();
         pose();
-      }
+      } else measureRow();
     });
     ro.observe(stage);
     ro.observe(centre);
