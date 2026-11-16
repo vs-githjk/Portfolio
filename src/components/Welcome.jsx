@@ -27,11 +27,13 @@ import { emit } from '../kit/bus';
    the same beats both ways:
 
      0.00 s  the door presses in; the greeting and the thoughts fade
-     0.25 s  the light lets go: the portrait gathers to the seed, the ringed world
-     1.05 s  it speaks: welcome.ball types under it
-     2.05 s  the ring opens: a plate rim grows out of the ball, past the window's edges
-     2.60 s  the plate comes in from past the window's edges as the ring leaves them
-     2.85 s  inside: the cards land on it, the name sets (Orbit, CSS)
+     0.25 s  the light lets go: for a full second the photograph and its points are
+             both in sight as the portrait gathers to the seed, the ringed world
+             (at 0.65 s it read as a cut from photo to ball)
+     1.45 s  it speaks: welcome.ball types under it
+     2.45 s  the ring opens: a plate rim grows out of the ball, past the window's edges
+     3.00 s  the plate comes in from past the window's edges as the ring leaves them
+     3.25 s  inside: the cards land on it, the name sets (Orbit, CSS)
 
    KNOTS maps that clock onto the scroll (share of the way to the hero); SPANS says
    where on the way each thing happens and mirrors the numbers Hologram.jsx uses
@@ -47,10 +49,10 @@ import { emit } from '../kit/bus';
 const KNOTS = [
   [0, 0],
   [250, 0.04, 'in'],
-  [900, 0.34, 'linear'],
-  [975, 0.4, 'linear'],
-  [1950, 0.585, 'linear'],
-  [2850, 1],
+  [1300, 0.34, 'linear'],
+  [1375, 0.4, 'linear'],
+  [2350, 0.585, 'linear'],
+  [3250, 1],
 ];
 const SPANS = { face: [0.04, 0.34], open: [0.6, 0.98], plate: 0.78, land: 0.8, back: 0.6 };
 const LATE_MS = 3600;
