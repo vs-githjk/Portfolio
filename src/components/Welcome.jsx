@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { welcome } from '../data/content';
 import { heroOrigin } from '../lib/origin';
+import { measureFace } from '../lib/face';
 
 /* The welcome: the first screen. His face in light (Hologram.jsx draws it into
    the fixed background, on the empty box marked data-holo-anchor here), a
@@ -23,7 +24,7 @@ import { heroOrigin } from '../lib/origin';
    up on its own.
 
    The cue is a real link to the hero. With scripts it glides there slowly enough
-   for the face to turn into the ball, the ball to say its line and burst on the way; any wheel, touch or
+   for the face to turn into the ball, the ball to say its line and pour its light onto the builds on the way; any wheel, touch or
    key hands the scroll straight back to the reader. */
 /* The glide, as [share of the time, share of the way]: down to the words, a slow
    beat while they are read, then on into the hero. */
@@ -42,7 +43,15 @@ export default function Welcome() {
     const late = setTimeout(() => {
       if (!root.dataset.holo) root.dataset.holo = 'late';
     }, LATE_MS);
-    return () => clearTimeout(late);
+    // The portrait's box and seed point are published at once (lib/face.js), so the
+    // entry beats can meet the portrait before its points have loaded, or without WebGL.
+    const place = () => measureFace();
+    place();
+    window.addEventListener('resize', place, { passive: true });
+    return () => {
+      clearTimeout(late);
+      window.removeEventListener('resize', place);
+    };
   }, []);
 
   const glide = (e) => {

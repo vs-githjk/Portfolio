@@ -1,48 +1,97 @@
 #!/usr/bin/env python3
-"""Bake the welcome hologram's point cloud from the studio headshot.
+"""Bake the welcome portrait's point cloud from the studio headshot.
 
-Run by hand when the portrait changes (it is not a build step, and the photo
-itself is never shipped):
+Run by hand when the portrait changes (it is not a build step):
 
     python3 scripts/bake-hologram.py <portrait-1200.jpg> [preview.png]
 
-It writes public/holo/face.bin: a 12 byte header ("HOLO", point count, row
-count, aspect as width / height * 1000) and five bytes per point:
+The source is ~/Portfolio-notes/design/portrait-1200.jpg (a 1200 x 1200 crop of
+the studio headshot). It writes two files into public/holo:
 
-    x     uint16  0..65535 across the picture's width
-    row   uint8   the scan row (y = (row + 0.5) / rows)
-    z     uint8   depth toward the viewer, 128 is the picture plane
-    lum   uint8   how bright the point burns
+    face-a.bin      the base tier of points, all a phone downloads (about 18,000)
+    face-b.bin      the fill-in a desktop adds after it (about 24,000 more)
+    face-1024.webp  the picture the window shows at rest (desktop)
+    face-512.webp   the same for a phone
 
-The points sit on horizontal scan rows, so the face is drawn in lines of light.
-They are shuffled, so any prefix of the file is an even sample of the whole (a
-phone draws the first part). Depth is a soft ellipsoid for the head, a set-back
-slab for the shoulders, a bump for the nose and a little of the photo's own
-light. The backdrop is cut by growing its flat grey in from the sides.
+The portrait is a round window of light with him in it, in his own colours
+(Nov 15 2026: every version of his face drawn in blue light, grainy or smooth,
+hooded, engraved or painted, was judged ghostly, and so was his real photo once
+it floated on the dark ground; what read as friendly was his own colouring in a
+lit, framed picture). So each point keeps a colour from the photograph, a real
+depth (Depth Anything V2 Small, Apache-2.0) so the head can turn, and how solid
+it is (the matte, feathered into the photo's own backdrop so the hair has a
+natural edge). And the picture itself: face-1024.webp (desktop) and
+face-512.webp (phone), the square the round window sits in, which the scene
+shows crisp at rest (Nov 16 2026, conductor's decision: the headshot is already
+public at Contact; the points alone were judged friendly but soft). The points
+are used to assemble him and to let his light go.
 
-Needs Pillow, numpy and scipy.
+  depth    Depth Anything V2 Small run on the photo at 1036 px, re-levelled so
+           the cheeks sit on the picture plane and the nose tip stands NOSE in
+           front of them; the body is set back behind the head.
+  colour   the photo, graded a touch brighter and smoothed a little (more on
+           plain skin, so pores and stubble do not come out as speckle).
+  points   weighted Voronoi stippling (Lloyd relaxation on a density map): blue
+           noise, denser on the eyes, brows, mouth and hair. Tier B is relaxed
+           around tier A, so A alone and A + B are both even. Only what lies
+           inside the round window (DISC) is kept.
+
+File format "HOL3": a 28 byte header, then eight bytes per point. face-b.bin
+ends with one more byte for each point of face-a.bin: that point's spacing once
+the fill-in stands between them.
+
+    header  magic "HOL3", point count u32, aspect * 1000 u16,
+            eye line x and y as u16 across the picture,
+            window centre x, y and radius as u16 across the picture's height,
+            the wall's colour behind him (r, g, b), five spare bytes
+    xy      3 bytes  x and y, 12 bits each, across the picture (y down)
+    z       uint8    depth toward the viewer; 128 is the plane of the cheeks,
+                     127 steps are Z_RANGE of the picture's height
+    colour  uint16   5 bits red, 6 green, 5 blue
+    solid   uint8    high seven bits: how solid the point is (it fades only at
+                     the photo's top edge); low bit: 1 if it is him, 0 if it
+                     is the backdrop (the backdrop is painted first)
+    space   uint8    spacing to the neighbours in thirds of a source pixel
+
+Needs Pillow, numpy, scipy, torch and transformers (the depth model downloads
+once into the Hugging Face cache, about 100 MB).
 """
+import hashlib
 import struct
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+from scipy.spatial import cKDTree
 
 SRC = Path(sys.argv[1])
 PREVIEW = Path(sys.argv[2]) if len(sys.argv) > 2 else None
-OUT = Path(__file__).resolve().parent.parent / 'public' / 'holo' / 'face.bin'
+OUT = Path(__file__).resolve().parent.parent / 'public' / 'holo'
 
-ROW = 4.72  # px between scan rows in the 1200px source (254 rows: the row index is one byte)
-STEP = 2.0  # px between points along a row (Nov 15 2026: denser, 22.5k to about 32k points)
+N_A = 18000  # the phone tier
+N_B = 24000  # the desktop fill-in
 SEED = 7
+Z_RANGE = 0.30  # picture heights covered by 127 depth steps
+NOSE = 0.062  # how far the nose tip stands in front of the cheeks, in picture heights
 
-# Where the head sits in the 1200 x 1200 source (measured on the photo).
-HEAD = dict(cx=612.0, cy=392.0, rx=262.0, ry=356.0)
-NOSE = dict(cx=602.0, cy=448.0, r=58.0)
-BUST_FADE = (800.0, 1040.0)  # the shoulders fade out between these rows
-SIDE_FADE = (330.0, 560.0)  # and beyond this distance from the head's centre line
+# Measured on the 1200 x 1200 source (viewer's left and right).
+EYE_L = dict(cx=510.0, cy=380.0, rx=50.0, ry=19.0, rot=-0.10)
+EYE_R = dict(cx=676.0, cy=357.0, rx=54.0, ry=19.0, rot=-0.10)
+BROW_L = [(438, 357), (480, 335), (525, 324), (562, 322)]
+BROW_R = [(612, 306), (660, 298), (715, 303), (765, 322)]
+MOUTH = dict(cx=604.0, cy=532.0, rx=112.0, ry=40.0, rot=-0.06)
+NOSE_TIP = (604, 438)
+CHEEKS = [(492, 452), (722, 432)]
+CHIN = 690.0
+HEAD_CX = 612.0
+# The round window: its centre and radius in source pixels. Its top stands a
+# little above the photo's own top edge, where only the wall is.
+DISC = dict(cx=616.0, cy=470.0, r=505.0)
+FEATHER = 14.0  # px of the photo's own backdrop kept round the figure, fading out
+WALL = (56, 50, 54)  # the photo's backdrop along its top edge (measured): the wall behind the window matches it
 
 
 def smooth(a, lo, hi):
@@ -50,99 +99,270 @@ def smooth(a, lo, hi):
     return t * t * (3 - 2 * t)
 
 
+def ellipse(xx, yy, e, grow=1.0):
+    c, s = np.cos(e['rot']), np.sin(e['rot'])
+    u = (xx - e['cx']) * c + (yy - e['cy']) * s
+    v = -(xx - e['cx']) * s + (yy - e['cy']) * c
+    return np.sqrt((u / (e['rx'] * grow)) ** 2 + (v / (e['ry'] * grow)) ** 2)
+
+
+def near_polyline(xx, yy, pts):
+    """Distance in px from every pixel to a polyline."""
+    best = np.full(xx.shape, 1e9, dtype=np.float32)
+    for (ax, ay), (bx, by) in zip(pts[:-1], pts[1:]):
+        dx, dy = bx - ax, by - ay
+        t = np.clip(((xx - ax) * dx + (yy - ay) * dy) / (dx * dx + dy * dy), 0, 1)
+        best = np.minimum(best, np.hypot(xx - (ax + t * dx), yy - (ay + t * dy)))
+    return best
+
+
 img = np.asarray(Image.open(SRC).convert('RGB')).astype(np.float32)
 H, W = img.shape[:2]
-lum = img @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
-sat = img.max(2) - img.min(2)
+assert (H, W) == (1200, 1200), 'the measurements above are for the 1200 px source'
+rgb = img / 255.0
+lum = rgb @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
+yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 
-# ---- 1. cut the backdrop: flat mid grey, connected to the left or right edge --
-flat = (ndi.gaussian_filter(lum, 3) > 27) & (ndi.gaussian_filter(lum, 3) < 84) & (ndi.gaussian_filter(sat, 3) < 20)
-labels, _ = ndi.label(flat)
-edge = np.unique(np.concatenate([labels[:, 0], labels[:, -1], labels[0, :80], labels[0, -80:]]))
-back = np.isin(labels, edge[edge > 0])
-fore = ndi.binary_fill_holes(~back)
-fore = ndi.binary_opening(fore, iterations=3)
+# ---- 1. depth -----------------------------------------------------------------
+cache = Path(tempfile.gettempdir()) / 'holo-depth-1036.npy'  # the model's output, kept between runs
+if cache.exists() and cache.stat().st_mtime > SRC.stat().st_mtime:
+    near = np.load(cache)
+else:
+    import torch
+    from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+
+    name = 'depth-anything/Depth-Anything-V2-Small-hf'
+    proc = AutoImageProcessor.from_pretrained(name)
+    model = AutoModelForDepthEstimation.from_pretrained(name).eval()
+    with torch.no_grad():
+        d = model(**proc(images=Image.open(SRC).convert('RGB'), return_tensors='pt', size={'height': 1036, 'width': 1036})).predicted_depth
+    near = torch.nn.functional.interpolate(d[None], size=(H, W), mode='bicubic', align_corners=False)[0, 0].numpy()
+    np.save(cache, near)
+
+# ---- 2. the matte: whatever stands in front of the backdrop --------------------
+hist, edges = np.histogram(near, 128)
+mid = (edges[:-1] + edges[1:]) / 2
+w0 = np.cumsum(hist)
+w1 = w0[-1] - w0
+m0 = np.cumsum(hist * mid) / np.maximum(w0, 1)
+m1 = (np.sum(hist * mid) - np.cumsum(hist * mid)) / np.maximum(w1, 1)
+cut = mid[np.argmax(w0 * w1 * (m0 - m1) ** 2)]  # Otsu
+fore = ndi.binary_fill_holes(near > cut)
+fore = ndi.binary_opening(fore, iterations=2)
 labels, n = ndi.label(fore)
 if n > 1:
-    sizes = ndi.sum(fore, labels, range(1, n + 1))
-    fore = labels == (1 + int(np.argmax(sizes)))
-alpha = ndi.gaussian_filter(fore.astype(np.float32), 2.5)
+    fore = labels == (1 + int(np.argmax(ndi.sum(fore, labels, range(1, n + 1)))))
+inside = ndi.distance_transform_edt(fore)
+outside = ndi.distance_transform_edt(~fore)
+# Nothing is cut out. The whole of the photo inside the round window is drawn,
+# its own studio backdrop included, so hair and shoulders end the way they do
+# in the photograph (a cut-out figure on a flat disc was judged sloppy and
+# floating). Only at the photo's top edge, where the window reaches a little
+# past it, do the points fade into the wall, which has the backdrop's colour.
+figure_w = smooth(inside - outside, -FEATHER, 2.0)  # 1 on him, 0 on the backdrop, feathered
+solid = smooth(np.minimum(np.mgrid[0:H, 0:W][0], 60).astype(np.float32), 2.0, 44.0)
+disc_r = np.hypot(xx - DISC['cx'], yy - DISC['cy'])
+window = disc_r < DISC['r'] + 8  # a little past the rim, for the turn of the head
 
-yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-yy_i = yy
-bust = (1 - smooth(yy, *BUST_FADE)) * (1 - smooth(np.abs(xx - HEAD['cx']) - (yy - 700).clip(0) * 0.25, *SIDE_FADE))
-alpha *= bust
+# ---- 3. re-level the depth ------------------------------------------------------
+idx = ndi.distance_transform_edt(~fore, return_distances=False, return_indices=True)
+filled = near[idx[0], idx[1]]
+soft_d = ndi.gaussian_filter(filled, 2.5)
+cheek = float(np.mean([soft_d[y, x] for x, y in CHEEKS]))
+tip = float(soft_d[NOSE_TIP[1] - 6:NOSE_TIP[1] + 7, NOSE_TIP[0] - 6:NOSE_TIP[0] + 7].max())
+z = (soft_d - cheek) / (tip - cheek) * NOSE
+# The body: the model puts the crossed arms nearest of all. Flatten it and set it
+# back, so the head is the thing in front.
+body = smooth(yy, CHIN - 30, CHIN + 110)
+z = z * (1 - body) + (z * 0.3 - 0.11) * body
+z = np.clip(z, -Z_RANGE, Z_RANGE)
+# The backdrop stands on the axis the head turns about (0.13 behind the face),
+# so it stays where it is while he turns.
+z_figure = z
 
-# ---- 2. how bright each point burns ------------------------------------------
-soft = ndi.gaussian_filter(lum, 1.4) / 255.0
-# Local contrast first (the features of a face are small steps in light), then a
-# steep tone curve between the darkest and brightest skin, so eyes, brows, the
-# nose shadow and the mouth read as gaps in the light.
-sharp = soft + 0.9 * (soft - ndi.gaussian_filter(soft, 14))
-skin = fore & (sat > 28) & (yy_i < 720)
-lo, hi = np.percentile(sharp[skin], [4, 97])
-tone = np.clip((sharp - lo) / (hi - lo), 0, 1) ** 1.35
-detail = np.abs(lum - ndi.gaussian_filter(lum, 5)) / 255.0
-# A thin rim of light just inside the outline draws the hair and the shoulders,
-# which are too dark or too flat to draw themselves.
-rim = np.exp(-ndi.distance_transform_edt(fore) / 9.0)
-glow = 0.07 + 0.93 * tone + 1.8 * detail + 0.5 * rim
-glow *= 1 - 0.5 * smooth(yy_i.astype(np.float32), 700, 820)  # the shirt sits back
-glow = np.clip(glow, 0, 1) * alpha
+# ---- 4. where the features are ---------------------------------------------------
+soft = ndi.gaussian_filter(lum, 1.3)
+eyes = np.minimum(ellipse(xx, yy, EYE_L), ellipse(xx, yy, EYE_R))
+mouth = ellipse(xx, yy, MOUTH)
+brows = np.minimum(near_polyline(xx, yy, BROW_L), near_polyline(xx, yy, BROW_R))
+warm = ndi.gaussian_filter(img[..., 0] - img[..., 2], 2.0) > 10
+shirt = (fore & (yy > CHIN - 40) & ~warm) | (fore & (yy > 900))
+shirt = ndi.gaussian_filter(ndi.binary_closing(ndi.binary_opening(shirt, iterations=2), iterations=4).astype(np.float32), 2.0)
+hair = fore & (soft < 0.2) & (yy < CHIN - 60) & ((yy < 300) | (np.abs(xx - HEAD_CX + 5) > 185)) & (brows > 26) & (eyes > 1.5)
+hair_soft = ndi.gaussian_filter(ndi.binary_fill_holes(ndi.binary_closing(hair, iterations=6)).astype(np.float32), 3)
+near_feature = np.maximum.reduce([
+    1 - smooth(eyes, 1.0, 2.0),
+    1 - smooth(brows, 12, 28),
+    1 - smooth(mouth, 0.9, 1.4),
+    np.exp(-(((xx - NOSE_TIP[0]) / 70) ** 2 + ((yy - NOSE_TIP[1] - 18) / 42) ** 2)),
+])
 
-# ---- 3. depth -----------------------------------------------------------------
-dx = (xx - HEAD['cx']) / HEAD['rx']
-dy = (yy - HEAD['cy']) / HEAD['ry']
-dome = np.sqrt(np.clip(1 - dx * dx - dy * dy, 0, 1))
-slab = -0.42 + 0.36 * np.sqrt(np.clip(1 - ((xx - HEAD['cx']) / 640) ** 2, 0, 1))
-neck = smooth(yy, 640, 800)
-depth = dome * (1 - neck) + slab * neck
-depth = np.maximum(depth, slab * 0.6 - 0.1)
-nose = np.exp(-(((xx - NOSE['cx']) / NOSE['r']) ** 2 + ((yy - NOSE['cy']) / (NOSE['r'] * 1.25)) ** 2))
-relief = ndi.gaussian_filter(lum, 6) / 255.0 - 0.5
-depth = depth + 0.16 * nose + 0.07 * relief * dome
-depth = ndi.gaussian_filter(depth, 4)
+# ---- 5. colour: his own, a touch brighter, without the speckle -------------------
+graded = np.clip(rgb * 1.06, 0, 1) ** 0.96
+crisp = np.stack([ndi.gaussian_filter(graded[..., c], 1.0) for c in range(3)], 2)
+calm = np.stack([ndi.gaussian_filter(graded[..., c], 2.4) for c in range(3)], 2)
+# Plain skin and cloth come from the calmer picture; eyes, brows, mouth and hair
+# keep their detail.
+keep = np.clip(np.maximum(near_feature, hair_soft), 0, 1)[..., None]
+colour = crisp * keep + calm * (1 - keep)
 
-# ---- 4. sample along scan rows ------------------------------------------------
+# ---- 6. where the points go ------------------------------------------------------
+edge_l = ndi.gaussian_gradient_magnitude(soft, 1.6)
+edge_l = np.clip(edge_l / np.percentile(edge_l[fore], 98), 0, 1)
+feature = (
+    0.95 * (1 - smooth(eyes, 0.7, 1.5))
+    + 0.5 * (1 - smooth(brows, 9, 24))
+    + 0.7 * (1 - smooth(mouth, 0.8, 1.35))
+    + 0.35 * np.exp(-(((xx - NOSE_TIP[0]) / 75) ** 2 + ((yy - NOSE_TIP[1] - 18) / 45) ** 2))
+)
+z = z_figure * figure_w + (-0.13) * (1 - figure_w)
+figure = fore.astype(np.float32)
+face_zone = figure * (1 - shirt) * (1 - hair_soft)
+density = (
+    face_zone * (1.0 + 1.3 * feature + 1.0 * edge_l)
+    + figure * hair_soft * (1 - shirt) * (0.55 + 0.8 * edge_l)
+    + figure * shirt * (0.3 + 1.1 * edge_l)
+    + (1 - figure) * (0.09 + 0.55 * smooth(inside - outside, -10.0, 0.0))  # the backdrop: plain, so a few wide points; denser at his edge
+)
+density = ndi.gaussian_filter(density, 1.0)
+density[~window] = 0
+
+
+def stipple(n_new, fixed, rng, rounds=14):
+    """Weighted Voronoi stippling: n_new sites relaxed over the density map,
+    around the sites already fixed. Returns (n_new, 2) x, y in source pixels."""
+    ys, xs = np.nonzero(density > 0)
+    wts = density[ys, xs].astype(np.float64)
+    # Four sub-samples a pixel, so a small cell still has something to average.
+    sub = np.array([(0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75)])
+    px = np.concatenate([xs + dx for dx, _ in sub])
+    py = np.concatenate([ys + dy for _, dy in sub])
+    pw = np.tile(wts, 4)
+    pick = rng.choice(len(pw), size=n_new, replace=False, p=pw / pw.sum())
+    sites = np.stack([px[pick], py[pick]], 1) + rng.uniform(-0.2, 0.2, (n_new, 2))
+    samples = np.stack([px, py], 1)
+    nf = len(fixed)
+    for _ in range(rounds):
+        every = np.concatenate([fixed, sites]) if nf else sites
+        _, owner = cKDTree(every).query(samples, workers=-1)
+        mass = np.bincount(owner, weights=pw, minlength=len(every))[nf:]
+        sx = np.bincount(owner, weights=pw * px, minlength=len(every))[nf:]
+        sy = np.bincount(owner, weights=pw * py, minlength=len(every))[nf:]
+        ok = mass > 0
+        sites[ok] = np.stack([sx[ok] / mass[ok], sy[ok] / mass[ok]], 1)
+    return sites
+
+
 rng = np.random.default_rng(SEED)
-rows = int(H / ROW)
-pts = []
-for r in range(rows):
-    y = (r + 0.5) * ROW
-    xs = np.arange((r % 2) * STEP / 2, W, STEP) + rng.uniform(-0.6, 0.6, int(np.ceil((W - (r % 2) * STEP / 2) / STEP)))
-    xs = xs[(xs >= 0) & (xs < W - 1)]
-    yi = int(y)
-    xi = xs.astype(int)
-    a = alpha[yi, xi]
-    g = glow[yi, xi]
-    # Dim places (hair, the fading shoulders) keep fewer points, so they thin out
-    # instead of turning into a grey sheet.
-    keep = rng.uniform(0, 1, len(xs)) < np.clip(0.2 + 1.1 * g, 0, 1) * (a > 0.06)
-    for x, gv, zv in zip(xs[keep], g[keep], depth[yi, xi][keep]):
-        pts.append((x / W, r, zv, gv))
+stamp = hashlib.sha1(np.round(density, 3).tobytes() + bytes(str((N_A, N_B, SEED)), 'ascii')).hexdigest()[:12]
+kept = Path(tempfile.gettempdir()) / f'holo-stipple-{stamp}.npy'  # the relaxation is the slow part
+if kept.exists():
+    pts_a, pts_b = np.split(np.load(kept), [N_A])
+else:
+    pts_a = stipple(N_A, np.zeros((0, 2)), rng)
+    pts_b = stipple(N_B, pts_a, rng)
+    np.save(kept, np.concatenate([pts_a, pts_b]))
+every = np.concatenate([pts_a, pts_b])
+# The spacing to the neighbours sets the splat's size: the mean distance to the
+# nearest six, so a splat reaches across the widest gap beside it and no hole
+# is left. Tier A is measured twice: on its own (what a phone draws) and in the
+# full set (what a desktop draws; those values ride at the end of tier B).
+dist, _ = cKDTree(pts_a).query(pts_a, k=7)
+space_a = dist[:, 1:].mean(1)
+dist, _ = cKDTree(every).query(every, k=7)
+spacing = dist[:, 1:].mean(1)
+space_b = spacing[N_A:]
 
-pts = np.array(pts, dtype=np.float32)
-rng.shuffle(pts)
-n = len(pts)
-x16 = np.clip(pts[:, 0] * 65535, 0, 65535).astype('<u2')
-row8 = pts[:, 1].astype(np.uint8)
-z8 = np.clip(128 + pts[:, 2] * 100, 0, 255).astype(np.uint8)
-l8 = np.clip(pts[:, 3] * 255, 0, 255).astype(np.uint8)
-assert rows < 256, 'row index must fit one byte'
 
-OUT.parent.mkdir(parents=True, exist_ok=True)
-body = np.zeros(n, dtype=[('x', '<u2'), ('r', 'u1'), ('z', 'u1'), ('l', 'u1')])
-body['x'], body['r'], body['z'], body['l'] = x16, row8, z8, l8
-OUT.write_bytes(b'HOLO' + struct.pack('<IHH', n, rows, int(W / H * 1000)) + body.tobytes())
-print(f'{n} points, {rows} rows, {OUT.stat().st_size / 1024:.1f} KB -> {OUT}')
+def pack(pts, space, path, tail=None):
+    xi = np.clip(pts[:, 0].astype(int), 0, W - 1)
+    yi = np.clip(pts[:, 1].astype(int), 0, H - 1)
+    order = rng.permutation(len(pts))  # any prefix is still an even sample
+    x12 = np.clip(pts[:, 0] / W * 4095, 0, 4095).astype(np.uint32)
+    y12 = np.clip(pts[:, 1] / H * 4095, 0, 4095).astype(np.uint32)
+    xy = (x12 << 12) | y12
+    c = colour[yi, xi]
+    c565 = (np.clip(np.round(c[:, 0] * 31), 0, 31).astype(np.uint16) << 11) | (np.clip(np.round(c[:, 1] * 63), 0, 63).astype(np.uint16) << 5) | np.clip(np.round(c[:, 2] * 31), 0, 31).astype(np.uint16)
+    out = np.zeros((len(pts), 8), dtype=np.uint8)
+    out[:, 0] = xy >> 16
+    out[:, 1] = (xy >> 8) & 255
+    out[:, 2] = xy & 255
+    out[:, 3] = np.clip(128 + z[yi, xi] / Z_RANGE * 127, 0, 255)
+    out[:, 4] = c565 & 255
+    out[:, 5] = c565 >> 8
+    # seven bits of how solid it is, and one that says it is him and not the backdrop
+    out[:, 6] = (np.clip(solid[yi, xi] * 127, 0, 127).astype(np.uint8) << 1) | (figure_w[yi, xi] > 0.5)
+    out[:, 7] = np.clip(np.round(space * 3), 1, 255)
+    out = out[order]
+    eye_x = (EYE_L['cx'] + EYE_R['cx']) / 2 / W
+    eye_y = (EYE_L['cy'] + EYE_R['cy']) / 2 / H
+    head = b'HOL3' + struct.pack(
+        '<IHHHHHHBBBBBBBB',
+        len(pts), int(W / H * 1000), int(eye_x * 65535), int(eye_y * 65535),
+        int(DISC['cx'] / H * 65535 / 2), int(DISC['cy'] / H * 65535 / 2), int(DISC['r'] / H * 65535 / 2),
+        WALL[0], WALL[1], WALL[2], 0, 0, 0, 0, 0,
+    )
+    assert len(head) == 28
+    more = b'' if tail is None else np.clip(np.round(tail[order_a] * 3), 1, 255).astype(np.uint8).tobytes()
+    path.write_bytes(head + out.tobytes() + more)
+    print(f'{len(pts)} points, {path.stat().st_size / 1024:.1f} KB -> {path}')
+    return order
+
+
+OUT.mkdir(parents=True, exist_ok=True)
+
+# ---- 7. the picture itself ----------------------------------------------------------
+# At rest the window shows the photograph, crisp: the square the round window
+# sits in, in the same grade as the points' colours, so the points can take over
+# from it without a change of colour. Where the window reaches past the photo's
+# top edge the backdrop is carried on (its top rows, blurred sideways).
+x0, y0, side = int(round(DISC['cx'] - DISC['r'])), int(round(DISC['cy'] - DISC['r'])), int(round(2 * DISC['r']))
+canvas = np.zeros((side, side, 3), dtype=np.float32)
+top = max(0, -y0)
+canvas[top:, :, :] = graded[max(0, y0):y0 + side, x0:x0 + side, :]
+if top:
+    lead = np.stack([ndi.gaussian_filter1d(graded[:6, x0:x0 + side, c].mean(0), 40) for c in range(3)], 1)
+    canvas[:top] = lead[None]
+    blend = min(40, side - top)  # and the first rows of the photo ease into it, so no line shows
+    k = np.linspace(0, 1, blend)[:, None, None]
+    canvas[top:top + blend] = lead[None] * (1 - k) + canvas[top:top + blend] * k
+picture = Image.fromarray((np.clip(canvas, 0, 1) * 255).astype(np.uint8))
+for size, quality in ((1024, 82), (512, 80)):
+    out_path = OUT / f'face-{size}.webp'
+    picture.resize((size, size), Image.LANCZOS).save(out_path, 'WEBP', quality=quality, method=6)
+    print(f'{size}px picture, {out_path.stat().st_size / 1024:.1f} KB -> {out_path}')
+
+order_a = pack(pts_a, space_a, OUT / 'face-a.bin')
+pack(pts_b, space_b, OUT / 'face-b.bin', tail=spacing[:N_A])
 
 if PREVIEW:
+    # A rough picture of what the shader draws at rest: the points as soft
+    # splats, composited over the wall inside the round window.
     S = 900
-    canvas = np.zeros((S, S), dtype=np.float32)
-    px = (pts[:, 0] * S).astype(int).clip(0, S - 1)
-    py = ((pts[:, 1] + 0.5) / rows * S).astype(int).clip(0, S - 1)
-    np.add.at(canvas, (py, px), pts[:, 3])
-    canvas = ndi.gaussian_filter(canvas, 0.8) * 3.2
-    rgb = np.stack([canvas * 0.45, canvas * 0.62, canvas], 2)
-    Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).save(PREVIEW)
-    Image.fromarray((np.clip(alpha, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + '-mask.png'))
+    k = S / H
+    for tag, pts, space in [('', every, spacing), ('-a', pts_a, space_a)]:
+        acc = np.zeros((S, S, 3), dtype=np.float32)
+        wgt = np.zeros((S, S), dtype=np.float32)
+        xi = np.clip(pts[:, 0].astype(int), 0, W - 1)
+        yi = np.clip(pts[:, 1].astype(int), 0, H - 1)
+        for lo, hi in [(0, 2.5), (2.5, 4), (4, 6), (6, 9), (9, 99)]:
+            sel = (space >= lo) & (space < hi)
+            if not sel.any():
+                continue
+            layer = np.zeros((S, S, 4), dtype=np.float32)
+            a = solid[yi[sel], xi[sel]] * space[sel] ** 2
+            py, px = (pts[sel, 1] * k).astype(int).clip(0, S - 1), (pts[sel, 0] * k).astype(int).clip(0, S - 1)
+            for c in range(3):
+                np.add.at(layer[..., c], (py, px), colour[yi[sel], xi[sel], c] * a)
+            np.add.at(layer[..., 3], (py, px), a)
+            sig = max(0.6, space[sel].mean() * 0.75 * k)
+            acc += np.stack([ndi.gaussian_filter(layer[..., c], sig) for c in range(3)], 2)
+            wgt += ndi.gaussian_filter(layer[..., 3], sig)
+        cover = 1 - np.exp(-wgt * 2.2)
+        col = acc / np.maximum(wgt, 1e-6)[..., None]
+        ys_, xs_ = np.mgrid[0:S, 0:S]
+        r = np.hypot(xs_ - DISC['cx'] * k, ys_ - DISC['cy'] * k)
+        wall = np.array(WALL, dtype=np.float32) / 255.0
+        pic = wall[None, None] * (1 - cover[..., None]) + col * cover[..., None]
+        pic = np.where((r < DISC['r'] * k)[..., None], pic, np.array([7, 9, 26], dtype=np.float32)[None, None] / 255.0)
+        Image.fromarray((np.clip(pic, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + tag + '.png'))
