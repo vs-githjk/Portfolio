@@ -225,6 +225,18 @@ html[data-world='on'] .builds::before {
   min-height: 240px;
 }
 
+/* The window is there for the giant. Where the world is still or off the giant is
+   not behind it, so it closes (the vistas do the same). */
+html:is([data-world='off'], [data-world='still']) .deep-window {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deep-window {
+    display: none;
+  }
+}
+
 /* The depth chart: every build as a dot on one line, in page order, in its
    group. A dot is a real link (44px), its name appears on hover and focus. */
 .depths {
