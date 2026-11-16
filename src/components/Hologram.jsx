@@ -72,7 +72,7 @@ export default function Hologram() {
     let last = 0;
     let box = null; // the anchor's place in the page
     const drift = document.querySelector('.drift'); // where the light lands on a phone
-    const land = { on: false, x: 0, y: 0, rx: 1, rz: 1, sinT: 0, cosT: 1, persp: 1500, theta: 0, cardW: 1, cardH: 1, front: 0, side: 0 };
+    const land = { on: false, x: 0, y: 0, rx: 1, rz: 1, sinT: 0, cosT: 1, persp: 1500, theta: 0, cardW: 1, cardH: 1, front: 0, side: 0, yaw: 0, lean: 0 };
     let faded = ''; // how far the greeting has faded (written to the welcome as --out)
     let spoke = ''; // the last state written for the ball's line
     let turned = ''; // the last head turn written (--head, -1 to 1)

@@ -15,6 +15,8 @@ export const ring = {
   cardW: 248,
   cardH: 240,
   front: 0,
-  side: 0,
+  side: 0, // how much a card at the side of the ring shrinks
+  yaw: 0, // degrees a card at the side turns toward the centre
+  lean: 0, // and leans
   theta: 0, // how far the ring has turned
 };

@@ -47,6 +47,7 @@ uniform float uBall;    // the planet's radius in device pixels
 uniform vec4 uRingA;    // ring centre x, y (device pixels), radius across, radius deep
 uniform vec4 uRingB;    // sin and cos of the tilt, perspective, how far the ring has turned
 uniform vec4 uRingC;    // card width and height, front lift, side shrink
+uniform vec2 uRingD;    // degrees a side card turns and leans
 uniform float uRingOn;  // 1 the orbit ring, 0 two level rows (a phone)
 uniform float uTime, uIntro, uMorph, uFlow, uTurn, uNod, uVoice, uSpeak, uStill;
 uniform float uBallGap; // spacing of the points on the planet, in radii
@@ -193,8 +194,14 @@ void main() {
       : vec2(-box.x, 4.0 * box.x + 3.0 * box.y - along);
     edge *= 1.0 + 0.09 * (down + 0.5);
     vec2 on = (edge + vec2(0.0, -0.5 * uRingC.y + box.y)) * shrink;
-    float ps = uRingB.z / (uRingB.z - rp.z);
-    land = uRingA.xy + (rp.xy + on) * ps;
+    // The card's own turn, as Orbit.jsx poses it: it leans, then turns toward
+    // the centre, so its outer edge swings nearer the camera. With these two
+    // the corners land within a pixel of the real card (measured at 1600, 1440
+    // and 1199); without them the side cards were up to 17 pixels out.
+    float lean = radians(uRingD.y * sw), yaw = radians(-uRingD.x * sw);
+    on = vec2(on.x * cos(lean) - on.y * sin(lean), on.x * sin(lean) + on.y * cos(lean));
+    float ps = uRingB.z / (uRingB.z - rp.z + on.x * sin(yaw));
+    land = uRingA.xy + (rp.xy + vec2(on.x * cos(yaw), on.y)) * ps;
     // Cards at the back of the ring are dark and small: so is their light.
     plate = 0.6 * smoothstep(-0.25, 0.8, cw);
     plateSize = uRingC.x * 0.03 * ps * shrink;
@@ -408,7 +415,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   const quadAt = gl.getAttribLocation(blur, 'aPos');
 
   const u = {};
-  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingOn', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uFocus', 'uPass', 'uDeep', 'uPale', 'uHot', 'uGain']) {
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingD', 'uRingOn', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uFocus', 'uPass', 'uDeep', 'uPale', 'uHot', 'uGain']) {
     u[name] = gl.getUniformLocation(program, name);
   }
   const ub = { uTex: gl.getUniformLocation(blur, 'uTex'), uStep: gl.getUniformLocation(blur, 'uStep'), uGain: gl.getUniformLocation(blur, 'uGain') };
@@ -468,6 +475,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     gl.uniform4f(u.uRingA, r.x * k, r.y * k, r.rx * k, r.rz * k);
     gl.uniform4f(u.uRingB, r.sinT, r.cosT, r.persp * k, r.theta);
     gl.uniform4f(u.uRingC, r.cardW * k, r.cardH * k, r.front * k, r.side);
+    gl.uniform2f(u.uRingD, r.yaw || 0, r.lean || 0);
     gl.uniform1f(u.uRingOn, r.on ? 1 : 0);
     gl.uniform1f(u.uPass, pass);
     gl.uniform1f(u.uTime, s.time);
@@ -506,7 +514,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
 
   /* One frame. Lengths are CSS pixels; `s` is the state:
      { time, intro, morph, flow, turn, nod, voice, speak, still, gain, glow, cx, cy, size, ball,
-       ring: { on, x, y, rx, rz, sinT, cosT, persp, theta, cardW, cardH, front, side } } */
+       ring: { on, x, y, rx, rz, sinT, cosT, persp, theta, cardW, cardH, front, side, yaw, lean } } */
   function render(s) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);

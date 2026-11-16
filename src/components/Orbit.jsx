@@ -185,7 +185,7 @@ export default function Orbit({ stageRef, centreRef }) {
       while (geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
       stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
       // The welcome hologram lands its light on this ring (lib/ring.js).
-      Object.assign(ring, { el: scene, n: N, oy: O, rx: geo.rx, rz: geo.rz, sinT: geo.sinT, cosT: geo.cosT, persp: CFG.persp, cardW: geo.cardW, cardH, front: geo.front, side: CFG.side });
+      Object.assign(ring, { el: scene, n: N, oy: O, rx: geo.rx, rz: geo.rz, sinT: geo.sinT, cosT: geo.cosT, persp: CFG.persp, cardW: geo.cardW, cardH, front: geo.front, side: CFG.side, yaw: CFG.yaw, lean: CFG.lean });
     }
 
     function pose() {
