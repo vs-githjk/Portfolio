@@ -976,7 +976,12 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     stage.uColHalf.value = phone ? 1e5 : colHalf;
     vistas = [...document.querySelectorAll('.vista')].map((el) => {
       const r = el.getBoundingClientRect();
-      return [r.top + window.scrollY, r.top + window.scrollY + r.height];
+      /* A section that brings its own ground (an opaque panel) sets no text on the
+         open world above that panel, so the vista runs on down to the panel: the
+         hush would otherwise lie across the set piece like a smudge. */
+      const own = el.nextElementSibling?.querySelector('[data-own-ground]');
+      const foot = own ? Math.max(r.bottom, own.getBoundingClientRect().top + 48) : r.bottom;
+      return [r.top + window.scrollY, foot + window.scrollY];
     });
     const H = document.documentElement.scrollHeight;
     quiet = QUIET.map((sel) => rect(sel))

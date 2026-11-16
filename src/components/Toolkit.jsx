@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { builds, toolkit } from '../data/content';
 import { EV } from '../kit/contract';
-import PlaceName from './PlaceName';
 
 /* A reverse index, not an inventory. Every tool that a build on this page lists
    in its stack line is a toggle; picking one makes those builds answer in a
@@ -51,7 +50,6 @@ export default function Toolkit() {
         <div className="sec-head reveal">
           <span className="eyebrow">
             {toolkit.eyebrow}
-            <PlaceName section="toolkit" />
           </span>
           <h2>
             {toolkit.heading} <em>{toolkit.headingEm}</em>

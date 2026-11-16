@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { contact } from '../data/content';
 import { EV } from '../kit/contract';
 import CopyEmail from './CopyEmail';
-import PlaceName from './PlaceName';
 
 const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(contact.mail.subject)}&body=${encodeURIComponent(contact.mail.body)}`;
 
@@ -41,7 +40,6 @@ export default function Contact() {
           <div>
             <span className="eyebrow">
               {contact.eyebrow}
-              <PlaceName section="contact" />
             </span>
             <p className="c-avail">
               <i aria-hidden="true" />

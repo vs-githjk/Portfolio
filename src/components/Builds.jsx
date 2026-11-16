@@ -5,7 +5,6 @@ import BuildCard from './BuildCard';
 import CompactRows from './CompactRows';
 import Flagship from './Flagship';
 import NowBuilding from './NowBuilding';
-import PlaceName from './PlaceName';
 import ResearchRow from './ResearchRow';
 import Vista from './Vista';
 import { allBuilds, fill, total } from './counts';
@@ -50,7 +49,6 @@ export default function Builds() {
             <div className="deep-head reveal">
               <span className="eyebrow">
                 {builds.eyebrow}
-                <PlaceName section="builds" />
               </span>
               <h2>{builds.heading}</h2>
               <p>{fill(builds.intro, { total, flagships })}</p>

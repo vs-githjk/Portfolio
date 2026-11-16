@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { principles } from '../data/content';
-import PlaceName from './PlaceName';
 
 /* Four principles, each run once as a tiny machine: code overrules the model's
    figure, a check says no, a claim inks in after its count, a wire lights end to
@@ -144,7 +143,6 @@ export default function Principles() {
         <div className="sec-head reveal">
           <span className="eyebrow">
             {principles.eyebrow}
-            <PlaceName section="principles" />
           </span>
           <h2>{principles.heading}</h2>
         </div>
