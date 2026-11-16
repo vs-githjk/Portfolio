@@ -1,0 +1,398 @@
+import { anchorRect, columnsOf } from './anchors';
+import { neighbourText } from './piece';
+
+/* Where the wyrm is, and what it is doing there. It has five stations and is
+   nowhere else: a glimpse far under the first waterline, one pass round the
+   giant, the breach at the shore, the roost over the commit graph (one vertebra
+   over each week's column), and the flight into the dawn. Inside a station the
+   scroll is the clock (the flight alone runs on time, once, when the dawn is
+   asked for). Between stations it is not drawn.
+
+   Every pose is written in window px (x and y from the middle of the window, y
+   down) so it can be reasoned about against the page: each station is tied to an
+   anchor in the document, the light is held inside that anchor's band, and the
+   text boxes inside it are keep-out boxes. A station whose anchor is missing is
+   off. */
+
+const sm = (t) => {
+  const c = Math.max(0, Math.min(1, t));
+  return c * c * (3 - 2 * c);
+};
+const clamp01 = (t) => Math.max(0, Math.min(1, t));
+
+/* A path through waypoints [x, y, z, size], sampled densely (Catmull-Rom), then
+   walked by distance along it in the window plane. Past either end it runs on
+   straight, so a body can trail in from off screen and leave the same way. */
+function makePath(way, per = 14) {
+  const pts = [];
+  const n = way.length;
+  const get = (i) => way[Math.max(0, Math.min(n - 1, i))];
+  for (let i = 0; i < n - 1; i++) {
+    const [p0, p1, p2, p3] = [get(i - 1), get(i), get(i + 1), get(i + 2)];
+    for (let j = 0; j < per; j++) {
+      const t = j / per;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      pts.push([0, 1, 2, 3].map((c) => 0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3)));
+    }
+  }
+  pts.push(way[n - 1].slice());
+  const len = new Float32Array(pts.length);
+  for (let i = 1; i < pts.length; i++) len[i] = len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+  const total = len[pts.length - 1];
+  let hint = 1;
+  /* out = [x, y, z, size], tan = [tx, ty] (unit, in the window plane) */
+  function at(s, out, tan) {
+    const last = pts.length - 1;
+    if (s <= 0 || s >= total) {
+      const [a, b] = s <= 0 ? [pts[0], pts[1]] : [pts[last - 1], pts[last]];
+      const d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      const tx = (b[0] - a[0]) / d;
+      const ty = (b[1] - a[1]) / d;
+      const from = s <= 0 ? pts[0] : pts[last];
+      const run = s <= 0 ? s : s - total;
+      out[0] = from[0] + tx * run;
+      out[1] = from[1] + ty * run;
+      out[2] = from[2];
+      out[3] = from[3];
+      tan[0] = tx;
+      tan[1] = ty;
+      return;
+    }
+    if (hint > last) hint = last;
+    while (hint > 1 && len[hint - 1] > s) hint--;
+    while (hint < last && len[hint] < s) hint++;
+    const a = pts[hint - 1];
+    const b = pts[hint];
+    const seg = len[hint] - len[hint - 1] || 1;
+    const t = (s - len[hint - 1]) / seg;
+    for (let c = 0; c < 4; c++) out[c] = a[c] + (b[c] - a[c]) * t;
+    tan[0] = (b[0] - a[0]) / seg;
+    tan[1] = (b[1] - a[1]) / seg;
+  }
+  return { at, total, lengthAt: (wayIndex) => len[Math.min(pts.length - 1, wayIndex * per)] };
+}
+
+export function createWyrmStations({ live, phone }) {
+  const L = live.length; // body units, snout to tail tip
+  const head = live.head; // how many nodes are head
+  const N = live.count();
+  const env = { w: 1, h: 1 };
+  const st = { glimpse: null, pass: null, breach: null, roost: null, flight: null };
+  const out4 = [0, 0, 0, 1];
+  const tan = [1, 0];
+  const cam = { x: 0, y: 0, z: 1 };
+  const shown = { station: '', u: 0 };
+  let flightAt = -1; // seconds, when the dawn was asked for
+  let flown = false;
+
+  // Every text box in the station's band: inside the anchor, and beside it in its row.
+  const boxesOf = (rect, band) => (rect ? neighbourText(rect.el, band ?? [rect.top - 40, rect.bottom + 40]) : []);
+
+  /* Read the page. `env` is { w, h, camZ, giant: { x, doc, r, k }, surf (the first
+     waterline, document px), sun: { x, doc } }. */
+  function layout(e) {
+    Object.assign(env, e);
+    const { w } = env;
+
+    // 1 The glimpse: under the first waterline, inside the surface anchor.
+    const surface = anchorRect('surface');
+    st.glimpse = null;
+    if (surface && surface.bottom - env.surf > 110) {
+      const room = surface.bottom - env.surf;
+      const scale = Math.min(phone ? 3.4 : 5, room / 44);
+      st.glimpse = { rect: surface, scale, boxes: boxesOf(surface), y: env.surf + room * 0.56, band: [env.surf + 14, surface.bottom] };
+    }
+
+    // 2 The pass: once round the giant, in the plane of its ring, behind it over the top.
+    const giant = anchorRect('giant');
+    st.pass = null;
+    if (giant && env.giant) {
+      const g = env.giant;
+      const scale = phone ? 6.4 : Math.max(9, Math.min(14.5, w / 100));
+      const a = g.r * 1.95;
+      const b = g.r * 0.66;
+      const rot = 0.36;
+      const cr = Math.cos(rot);
+      const sr = Math.sin(rot);
+      const E = (th, size = 1) => {
+        const x = a * Math.cos(th);
+        const y = b * Math.sin(th);
+        return [x * cr - y * sr, x * sr + y * cr, -220 + 2.5 * g.r * Math.sin(th), size];
+      };
+      const left = -w / 2 - g.x - 80;
+      const way = [
+        [left - 200, -g.r * 0.5, 60, 1],
+        [left, -g.r * 0.34, 60, 1],
+      ];
+      for (let th = 0.78 * Math.PI; th > -0.76 * Math.PI; th -= Math.PI / 9) way.push(E(th));
+      way.push(E(-0.78 * Math.PI, 0.92));
+      way.push([Math.min(left * 0.72, -a * 1.25), -g.r * 0.92, -520, 0.7]);
+      way.push([left - 60, -g.r * 1.2, -900, 0.42]);
+      way.push([left - 400, -g.r * 1.32, -1100, 0.36]);
+      const lap = way.length - 3; // the waypoint where the lap ends and the leaving begins
+      const path = makePath(way);
+      // Its sky is the whole row the window sits in (a heading may share it: the text
+      // there is kept out box by box), up through the clear space over that row.
+      const up = giant.el.parentElement;
+      const row = up && !up.matches('main, body, .page') ? up.getBoundingClientRect() : null;
+      const sec = giant.el.closest('section')?.getBoundingClientRect();
+      const y = window.scrollY;
+      const top = Math.max(giant.top - env.h * 0.4, Math.min(giant.top, sec ? sec.top + y : giant.top, row ? row.top + y : giant.top));
+      const bottom = Math.max(giant.bottom, row ? row.bottom + y : giant.bottom);
+      const sky = { el: giant.el, top, bottom, h: bottom - top };
+      st.pass = { rect: sky, scale, path, lapEnd: path.lengthAt(lap), boxes: boxesOf(sky, [top, bottom]), band: [top, bottom] };
+    }
+
+    // 3 The breach: up out of the water through the second waterline, into the dusk.
+    const shore = anchorRect('shore');
+    st.breach = null;
+    if (shore && shore.h > 300) {
+      const H = shore.h;
+      const scale = phone ? 6 : Math.max(9, Math.min(13.5, w / 112));
+      // Low and to the left the vista carries its line of text: the climb keeps right of it.
+      const way = [
+        [-w * 0.3, H * 1.5, 40, 1],
+        [-w * 0.16, H * 1.2, 40, 1],
+        [-w * 0.02, H * 0.9, 20, 1],
+        [w * 0.1, H * 0.58, 0, 1],
+        [w * 0.2, H * 0.3, -20, 1],
+        [w * 0.33, H * 0.16, -60, 0.94],
+        [w * 0.5, H * 0.14, -200, 0.8],
+        [w * 0.7, H * 0.17, -500, 0.6],
+        [w * 0.95, H * 0.16, -800, 0.42],
+      ];
+      st.breach = { rect: shore, scale, path: makePath(way), boxes: boxesOf(shore), band: [shore.top, shore.bottom] };
+    }
+
+    // 4 The roost: asleep over the graph, one vertebra over each week's column.
+    const roost = anchorRect('roost');
+    const graph = anchorRect('graph');
+    st.roost = null;
+    if (roost && graph) {
+      const cols = columnsOf(graph.el, N);
+      if (cols) {
+        // Is there room for the head in front of the newest week, at full size?
+        const full = Math.min(cols.pitch, (roost.h - 12) / 6.4);
+        const ahead = w - cols.xs[N - 1] > live.neck * full + 16;
+        const scale = ahead ? full : Math.min(cols.pitch, (roost.h - 12) / 13.2);
+        st.roost = { rect: roost, cols, scale, ahead, ground: roost.bottom - 8, boxes: boxesOf(roost), band: [roost.top - 2, roost.bottom + 2] };
+      }
+    }
+
+    // 5 The flight: off into the dawn along the limb, inside the horizon's band.
+    const horizon = anchorRect('horizon');
+    st.flight = null;
+    if (horizon && env.sun) {
+      const contact = anchorRect('contact');
+      const scale = phone ? 4.6 : Math.max(6.5, Math.min(9.5, w / 150));
+      // The whole section the contact anchor sits in is the flight's sky.
+      const sec = contact?.el.closest('section')?.getBoundingClientRect();
+      const top = sec ? sec.top + window.scrollY : contact ? contact.top : horizon.top;
+      const h = env.h;
+      const sx = env.sun.x;
+      const S = env.sun.doc; // the sun's place on the limb, document px
+      // The limb is highest in the middle of the window and falls away to the sides.
+      const limb = (x) => S - (sx * sx - x * x) / (2 * env.sun.r);
+      // With margins it comes down out of the night on the right, where the section
+      // has no text, and dives into the sun. On a phone it keeps to the horizon's own
+      // band: in from the left, along the sky just over the limb.
+      const way = phone
+        ? [
+            [-w / 2 - 220, limb(-w / 2) - 46, 0, 1],
+            [-w / 2 - 20, limb(-w / 2) - 40, 0, 1],
+            [-w * 0.2, limb(-w * 0.2) - 34, -40, 0.9],
+            [sx - w * 0.2, S - 30, -160, 0.66],
+            [sx - 10, S - 16, -260, 0.36],
+            [sx + 6, S - 8, -289, 0.16],
+          ]
+        : [
+            [w * 0.6, S - h * 0.6, 0, 1],
+            [w * 0.51, S - h * 0.555, 0, 1],
+            [w * 0.38, S - h * 0.43, -40, 1],
+            [w * 0.28, S - h * 0.27, -110, 0.9],
+            [w * 0.225, S - h * 0.14, -200, 0.68],
+            [sx + w * 0.022, S - h * 0.055, -260, 0.42],
+            [sx + 5, S - 12, -289, 0.16],
+          ];
+      st.flight = { rect: horizon, scale, path: makePath(way), boxes: boxesOf(contact, [top - 40, horizon.bottom]), band: [phone ? horizon.top : top, horizon.bottom] };
+    }
+  }
+
+  function guard(s, f) {
+    live.guard(
+      s.boxes.map((b) => [b[0], b[1] - f.scroll, b[2], b[3] - f.scroll]),
+      [s.band[0] - f.scroll, s.band[1] - f.scroll]
+    );
+    live.water(f.top, f.exit);
+  }
+
+  // A body following a path: the snout at `sHead`, every node behind it along the
+  // path, swimming (a wave that grows toward the tail, across the path).
+  function follow(s, sHead, f, { oy = 0, swim = 1, x0 = 0 } = {}) {
+    return (k, d, out) => {
+      s.path.at(sHead - d * s.scale, out4, tan);
+      const u = d / L;
+      const wave = Math.sin(f.t * 1.5 - d * 0.24) * (0.25 + 2.3 * u) * s.scale * swim * out4[3];
+      out[0] = x0 + out4[0] - tan[1] * wave;
+      out[1] = oy + out4[1] + tan[0] * wave;
+      out[2] = out4[2];
+      out[3] = out4[3];
+    };
+  }
+
+  /* f: { t, scroll, line, cam: { x, y, z }, top, exit, rise, dawn, dpr, resY }.
+     Returns the name of the station drawn, or ''. */
+  function update(f, still = false) {
+    const h = env.h;
+    cam.x = f.cam.x;
+    cam.y = f.cam.y;
+    cam.z = f.cam.z;
+    const base = { t: still ? 0 : f.t, cam, dpr: f.dpr, resY: f.resY };
+    const draw = still ? live.still : live.update;
+    shown.station = '';
+
+    // 5 first: once the dawn is asked for, the flight owns the creature for its length.
+    if (st.flight && flightAt >= 0 && !flown) {
+      const s = st.flight;
+      const T = 6.2;
+      const u = still ? 0.82 : clamp01((f.t - flightAt) / T);
+      if (u >= 1) flown = true;
+      const on = s.rect.top - f.scroll < h + 200 && s.rect.bottom - f.scroll > -200;
+      if (on && !flown) {
+        const e = 1 - Math.pow(1 - u, 1.8); // off at once, slower as it nears the sun
+        const sHead = e * (s.path.total + L * s.scale * 0.5);
+        guard(s, f);
+        draw({ ...base, scale: s.scale, at: follow(s, sHead, f, { oy: -f.line, swim: 0.7 }), beat: 1, show: sm(u / 0.08) * (1 - sm((u - 0.86) / 0.14)), solid: 0.6, air: 1.8 });
+        shown.station = 'flight';
+        shown.u = u;
+        return 'flight';
+      }
+    }
+
+    // 4 The roost.
+    if (st.roost && !(flightAt >= 0 && !still)) {
+      const s = st.roost;
+      const top = s.rect.top - f.scroll;
+      if (top < h + 60 && s.rect.bottom - f.scroll > -60) {
+        const sc = s.scale;
+        const xs = s.cols.xs;
+        const hw = env.w / 2;
+        const ground = s.ground - f.line;
+        const xLast = xs[N - 1] - hw;
+        // With room past the newest week the head lies out in front, chin on the
+        // ground. Without it (a phone) the neck curls up and back and the head rests
+        // on its own back.
+        const R = 3.3 * sc;
+        const neck = live.neck;
+        const yc = ground - live.radius(head) * sc;
+        const at = (k, d, out) => {
+          const wk = live.weekOf(k);
+          out[3] = 1;
+          out[2] = 0;
+          if (wk >= 0) {
+            out[0] = xs[wk] - hw;
+            out[1] = ground - live.radius(k) * sc;
+          } else if (k < head) {
+            const q = (neck - d) * sc; // px from the newest vertebra toward the snout
+            if (s.ahead) {
+              out[0] = xLast + q;
+              out[1] = ground - live.radius(k) * sc;
+            } else if (q < Math.PI * R) {
+              const a = q / R;
+              out[0] = xLast + Math.sin(a) * R * 0.4;
+              out[1] = yc - (1 - Math.cos(a)) * R;
+              out[2] = 30;
+            } else {
+              out[0] = xLast - (q - Math.PI * R);
+              out[1] = yc - 2 * R + (q - Math.PI * R) * 0.2;
+              out[2] = 30;
+            }
+          } else {
+            // The tail runs on past the oldest week and curls up at its tip.
+            const i = k - head - N + 1;
+            out[0] = xs[0] - hw - i * sc * 0.96;
+            out[1] = ground - live.radius(k) * sc - i * i * sc * 0.07;
+          }
+        };
+        guard(s, f);
+        draw({ ...base, scale: sc, at, sleep: 1, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
+        shown.station = 'roost';
+        return 'roost';
+      }
+    }
+
+    // 3 The breach.
+    if (st.breach) {
+      const s = st.breach;
+      const u = (f.scroll - (s.rect.top - h * 0.82)) / (s.rect.h * 0.62 + h * 0.82);
+      if (u > 0 && u < 1) {
+        const sHead = u * (s.path.total + L * s.scale * 0.9);
+        guard(s, f);
+        draw({ ...base, scale: s.scale, at: follow(s, sHead, f, { oy: s.rect.top - f.line, swim: 0.8 }), beat: 0.3 + 0.7 * f.rise, show: sm(u / 0.05) * (1 - sm((u - 0.9) / 0.1)), solid: 0.9, air: 2.2 });
+        shown.station = 'breach';
+        shown.u = u;
+        return 'breach';
+      }
+    }
+
+    // 2 The pass.
+    if (st.pass) {
+      const s = st.pass;
+      const u = (f.line - (s.rect.top - h * 0.42)) / (s.rect.h + h * 0.84);
+      if (u > 0 && u < 1) {
+        const g = env.giant;
+        // With the anchor in the middle of the window the body is wound round the
+        // giant: the head coming out from behind it, the tail still in front.
+        const wound = s.lapEnd - 60;
+        const end = s.path.total + L * s.scale * 0.6;
+        const sHead = u < 0.56 ? wound * clamp01((u - 0.1) / 0.46) : wound + (end - wound) * ((u - 0.56) / 0.4);
+        guard(s, f);
+        draw({ ...base, scale: s.scale, at: follow(s, sHead, f, { x0: g.x, oy: (g.doc - f.line) / g.k, swim: 0.9 }), beat: 0.36, show: sm((u - 0.08) / 0.05) * (1 - sm((u - 0.9) / 0.07)), solid: 0 });
+        shown.station = 'pass';
+        shown.u = u;
+        return 'pass';
+      }
+    }
+
+    // 1 The glimpse.
+    if (st.glimpse) {
+      const s = st.glimpse;
+      const lineY = env.surf - f.scroll; // where the waterline is in the window
+      const u = (h * 0.78 - lineY) / (h * 0.7);
+      if (u > 0 && u < 1) {
+        const span = env.w + L * s.scale + 120;
+        const x = env.w / 2 + 60 - u * span;
+        const at = (k, d, out) => {
+          const q = d / L;
+          out[0] = x + d * s.scale;
+          out[1] = s.y - f.line + Math.sin(d * 0.2 - f.t * 1.2) * (0.6 + 2.6 * q) * s.scale + Math.sin(u * 5 + d * 0.05) * 10;
+          out[2] = -700;
+          out[3] = 1;
+        };
+        guard(s, f);
+        draw({ ...base, scale: s.scale, at, beat: 0.3, show: 0.5 * sm(u / 0.12) * (1 - sm((u - 0.85) / 0.15)), solid: 0 });
+        shown.station = 'glimpse';
+        shown.u = u;
+        return 'glimpse';
+      }
+    }
+
+    live.update({ ...base, scale: 1, at: () => {}, show: 0 });
+    return '';
+  }
+
+  return {
+    layout,
+    update,
+    still: (f) => update(f, true),
+    shown,
+    /** The dawn was asked for at time t (seconds): the flight plays once. */
+    fly(t) {
+      if (flightAt < 0) flightAt = t;
+    },
+    get stations() {
+      return st;
+    },
+  };
+}

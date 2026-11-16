@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { worldFade } from '../lib/beamFade';
 import { heroOrigin } from '../lib/origin';
 import { createWorld } from '../lib/worldScene';
+import { builds, proofOfWork } from '../data/content';
+import { EV } from '../kit/contract';
 
 /* The three worlds: the 3D scene behind every section below the hero (three.js, its own
    lazy chunk; the scene itself is lib/worldScene.js).
@@ -22,10 +24,17 @@ import { createWorld } from '../lib/worldScene';
      step it down (fewer pixels, then no fine detail), a long run of fast ones
      steps it back up, and a level that had to be left twice is not tried again.
 
-   The page talks to the world through three things:
-   - window CustomEvent 'world:week' { detail: { index } }: light that week's
-     butte (the column index of the commit graph); any other index puts it out.
-   - window CustomEvent 'world:dawn': the sun comes over the limb at the foot.
+   The page talks to the world through the kit's events (src/kit/contract.js):
+   - 'world:week' { index }: light that week's vertebra of the wyrm (the column
+     index of the commit graph); any other index puts it out.
+   - 'world:dawn': the sun comes over the limb at the foot and the wyrm flies.
+   - 'world:focus' { kind, id }: a win's star flares, a build's piece answers.
+   - 'world:run' { state, step, gate }: the camp's lamp follows the run.
+   - 'world:travel' { dir, phase }: the snow streaks along a hop.
+   - 'world:receipts' { on }: while on, the world says where each piece is
+     ('world:bindings', at most ten times a second).
+   It says 'world:loaded' { stage: 'chunk' } when this file runs and
+   { stage: 'compiled' } when every program is built.
    - the crew's lamp takes the chosen character's colour, from a `--agent-hue`
      custom property on .crew or the root (a hue in degrees, or any CSS colour),
      or from a 'world:agent' event with { detail: { hue } }. */
@@ -46,12 +55,35 @@ export default function World() {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     let world;
     try {
-      world = createWorld(canvas, { days: github?.days });
+      if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fixture')) {
+        import('../world/fixture').then((m) => {
+          m.mountFixture();
+          relayout();
+        });
+      }
+      // Dev: ?weeks=n&crew=n&wins=n&cells=n change the data, to prove the scene follows it.
+      const q = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
+      const cut = (list, key) => (q?.has(key) ? list.slice(0, Number(q.get(key))) : list);
+      const scenesOf = Object.fromEntries(builds.flagships.filter((f) => f.scene).map((f) => [f.id, q?.has('cells') && f.scene.cells ? { ...f.scene, cells: Number(q.get('cells')) } : f.scene]));
+      world = createWorld(canvas, {
+        days: q?.has('weeks') ? github?.days.slice(-7 * Number(q.get('weeks'))) : github?.days,
+        solo: import.meta.env.DEV ? (new URLSearchParams(window.location.search).get('solo') ?? '') : '',
+        // Every count in the scene comes from the page's own data.
+        scenes: scenesOf,
+        counts: {
+          flagships: builds.flagships.map((f) => f.id),
+          rest: [...builds.items, ...(builds.research ? [builds.research] : []), ...builds.more.items].map((b) => b.id),
+          crew: cut(builds.building.crew, 'crew').map((c) => c.id),
+          winIds: cut(proofOfWork.wins.items, 'wins').map((x) => x.project),
+        },
+      });
     } catch {
       root.dataset.world = 'off';
       return undefined;
     }
 
+    window.dispatchEvent(new CustomEvent(EV.loaded, { detail: { stage: 'chunk' } }));
+    if (import.meta.env.DEV) window.__world = world;
     let raf = 0;
     let cam = window.scrollY;
     let last = 0;
@@ -100,7 +132,7 @@ export default function World() {
     function readHue(now) {
       if (now - hueAt < 400) return;
       hueAt = now;
-      const crew = document.querySelector('.crew');
+      const crew = document.querySelector('[data-world-anchor="camp"]') ?? document.querySelector('.crew');
       if (!crew) return;
       const r = crew.getBoundingClientRect();
       if (r.bottom < -window.innerHeight || r.top > window.innerHeight * 2) return;
@@ -130,7 +162,9 @@ export default function World() {
       const every = moving || now < busy;
       if (every || now - last >= IDLE_MS - 2) {
         readHue(now);
+        const t0 = import.meta.env.DEV ? performance.now() : 0;
         world.render(now / 1000, cam, eye.x, eye.y);
+        if (import.meta.env.DEV) (window.__worldMs ??= []).push(performance.now() - t0);
         if (every && ran && now - last < 120) measure(now, now - last);
         ran = every;
         last = now;
@@ -158,7 +192,13 @@ export default function World() {
     };
     const ro = new ResizeObserver(relayout);
     ro.observe(document.body);
+    let lamp = false;
     const onPointer = (e) => {
+      // The lamp lights with the first move: before it there is no pointer to stand at.
+      if (!lamp) {
+        lamp = true;
+        world.setLamp(true);
+      }
       want.x = (e.clientX / window.innerWidth) * 2 - 1;
       want.y = (e.clientY / window.innerHeight) * 2 - 1;
     };
@@ -176,10 +216,35 @@ export default function World() {
     };
     const onAgent = (e) => {
       setHue(e.detail?.hue ?? e.detail?.color);
+      world.setAgent(e.detail?.id ?? null);
+      hurry();
+    };
+    const onFocus = (e) => {
+      world.setFocus(e.detail?.kind, e.detail?.id ?? null, e.detail?.builds);
+      hurry();
+    };
+    const onTravel = (e) => {
+      if (e.detail?.phase !== 'in') world.setTravel(e.detail?.dir ?? 1);
+      hurry();
+    };
+    // Receipts: while on, say where each piece is, ten times a second at most.
+    let tell = 0;
+    const onReceipts = (e) => {
+      clearInterval(tell);
+      tell = 0;
+      if (e.detail?.on) {
+        tell = window.setInterval(() => {
+          if (!document.hidden && drawn) window.dispatchEvent(new CustomEvent(EV.bindings, { detail: world.bindings() }));
+        }, 100);
+      }
+    };
+    const onRun = (e) => {
+      world.setRun(e.detail?.state);
       hurry();
     };
     // Compile the programs once the page is idle, in a task of its own.
-    const warm = 'requestIdleCallback' in window ? window.requestIdleCallback(() => world.prewarm(), { timeout: 1500 }) : setTimeout(() => world.prewarm(), 300);
+    const prewarm = () => world.prewarm().then(() => window.dispatchEvent(new CustomEvent(EV.loaded, { detail: { stage: 'compiled' } })));
+    const warm = 'requestIdleCallback' in window ? window.requestIdleCallback(prewarm, { timeout: 1500 }) : setTimeout(prewarm, 300);
     const onLost = (e) => {
       e.preventDefault();
       cancelAnimationFrame(raf);
@@ -192,9 +257,13 @@ export default function World() {
     canvas.addEventListener('webglcontextlost', onLost);
     rm.addEventListener('change', relayout);
     if (fine) window.addEventListener('pointermove', onPointer, { passive: true });
-    window.addEventListener('world:week', onWeek);
-    window.addEventListener('world:dawn', onDawn);
-    window.addEventListener('world:agent', onAgent);
+    window.addEventListener(EV.week, onWeek);
+    window.addEventListener(EV.dawn, onDawn);
+    window.addEventListener(EV.agent, onAgent);
+    window.addEventListener(EV.focus, onFocus);
+    window.addEventListener(EV.run, onRun);
+    window.addEventListener(EV.travel, onTravel);
+    window.addEventListener(EV.receipts, onReceipts);
     kick();
 
     return () => {
@@ -207,9 +276,14 @@ export default function World() {
       canvas.removeEventListener('webglcontextlost', onLost);
       rm.removeEventListener('change', relayout);
       window.removeEventListener('pointermove', onPointer);
-      window.removeEventListener('world:week', onWeek);
-      window.removeEventListener('world:dawn', onDawn);
-      window.removeEventListener('world:agent', onAgent);
+      window.removeEventListener(EV.week, onWeek);
+      window.removeEventListener(EV.dawn, onDawn);
+      window.removeEventListener(EV.agent, onAgent);
+      window.removeEventListener(EV.focus, onFocus);
+      window.removeEventListener(EV.run, onRun);
+      window.removeEventListener(EV.travel, onTravel);
+      window.removeEventListener(EV.receipts, onReceipts);
+      clearInterval(tell);
       if ('cancelIdleCallback' in window) window.cancelIdleCallback(warm);
       else clearTimeout(warm);
       probe.remove();

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>World kit demo: one piece, another theme</title>
+    <style>
+      /* A theme that is not the site's: other tokens, other data, same piece. */
+      :root {
+        --demo-ground: #0d0f14;
+        --demo-ink: #d8dde6;
+        --wyrm-sea-lo: 34, 78, 60;
+        --wyrm-sea: 96, 214, 150;
+        --wyrm-sea-hi: 214, 255, 226;
+        --wyrm-air-lo: 96, 44, 84;
+        --wyrm-air: 236, 120, 190;
+        --wyrm-air-hi: 255, 214, 236;
+      }
+      html[data-theme='mono'] {
+        --wyrm-sea-lo: 70, 70, 70;
+        --wyrm-sea: 190, 190, 190;
+        --wyrm-sea-hi: 255, 255, 255;
+        --wyrm-air-lo: 70, 70, 70;
+        --wyrm-air: 190, 190, 190;
+        --wyrm-air-hi: 255, 255, 255;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--demo-ground);
+        color: var(--demo-ink);
+        font: 13px/1.5 ui-monospace, Menlo, monospace;
+      }
+      canvas {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      p {
+        position: fixed;
+        left: 16px;
+        bottom: 12px;
+        margin: 0;
+        opacity: 0.7;
+      }
+      html[data-bare] p {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <p id="label"></p>
+    <script type="module" src="/src/world/demo.js"></script>
+  </body>
+</html>
