@@ -237,8 +237,8 @@ html[data-world='on'] .sec::before {
   /* The fall-off is long and eased (five stops of a smooth step), and the corners
      round off because the two ramps multiply: on bright water a short linear ramp
      read as a dark box with soft edges. */
-  --feather: max(calc(var(--calm-bleed) * 2), 220px);
-  --feather-y: 200px;
+  --feather: max(calc(var(--calm-bleed) * 2), 320px);
+  --feather-y: 300px;
   --calm-x: linear-gradient(to right, transparent, rgb(0 0 0 / 0.1) calc(var(--feather) * 0.25), rgb(0 0 0 / 0.5) calc(var(--feather) * 0.5), rgb(0 0 0 / 0.9) calc(var(--feather) * 0.75), #000 var(--feather), #000 calc(100% - var(--feather)), rgb(0 0 0 / 0.9) calc(100% - var(--feather) * 0.75), rgb(0 0 0 / 0.5) calc(100% - var(--feather) * 0.5), rgb(0 0 0 / 0.1) calc(100% - var(--feather) * 0.25), transparent);
   --calm-y: linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.1) calc(var(--feather-y) * 0.25), rgb(0 0 0 / 0.5) calc(var(--feather-y) * 0.5), rgb(0 0 0 / 0.9) calc(var(--feather-y) * 0.75), #000 var(--feather-y), #000 calc(100% - var(--feather-y)), rgb(0 0 0 / 0.9) calc(100% - var(--feather-y) * 0.75), rgb(0 0 0 / 0.5) calc(100% - var(--feather-y) * 0.5), rgb(0 0 0 / 0.1) calc(100% - var(--feather-y) * 0.25), transparent);
   top: calc(var(--pad-top) - 56px - var(--feather-y) * 0.5);
@@ -282,7 +282,10 @@ html[data-world='on'] .sec {
 
 /* The page ends on the limb of a world; the footer lets its night side through. */
 html[data-world='on'] .foot {
-  background: color-mix(in srgb, var(--ink-2) 72%, transparent);
+  /* No line and no step where the world ends: its night side fades into the footer's ground. */
+  border-top: 0;
+  padding-top: 112px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ink-2) 72%, transparent) 150px);
 }
 
 html:is([data-world='off'], [data-world='still']) .vista:not([data-set='surface'], [data-set='shore']) {
