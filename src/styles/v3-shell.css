@@ -1,1 +1,1416 @@
-/* v3-shell: v3 partial (see scratchpad v3 spec). */
+/* v3 shell (lane A): the door, the Orrery, the Chart and everything that sits
+   over the page and the world. Loaded after sections.css, so a rule here wins a
+   tie with an older one. tokens.css is frozen for the night, so the tokens this
+   file needs are declared here, on :root, each one built from an existing token:
+
+     --plate-rim     how much wider the plate's outer rim is than the ring (a ratio)
+     --plate-pad     half the length of a station's pad on the inner rim, in steps of the ring
+     --plate-line    the plate's engraved hairline
+     --plate-lit     the lit tick under the front card
+     --plate-from    the scale the plate settles from when the reader arrives
+     --sill-h        how much of the Sill shows over the foot of the first screen
+     --sill-w        how wide the Sill is (it leaves the corners to Skip and the load line)
+     --edge-row      the height of the first screen's corner row (Skip, the load line)
+     --land-dur      how long one thing takes to arrive in the hero
+     --land-step     the gap between one row arriving and the next
+     --light         the colour of drawn light (the seed, the ring that opens)
+     --ring-lie      how flat the opening ring lies (its height over its width, the plate's own)
+*/
+:root {
+  --plate-rim: 0.06;
+  --plate-pad: 0.44;
+  --plate-line: color-mix(in srgb, var(--acc-2) 42%, var(--hair-2));
+  --plate-lit: var(--acc);
+  --plate-from: 1.7;
+  --sill-h: clamp(52px, 8.5svh, 80px);
+  --sill-w: min(74%, 1080px);
+  --edge-row: 0px;
+  --land-dur: 0.42s;
+  --land-step: 60ms;
+  --light: rgb(var(--holo-pale));
+  --ring-lie: 0.29;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --sill-w: 100%;
+    --edge-row: 44px;
+  }
+}
+
+/* =============================== THE THRESHOLD ============================ */
+/* The first screen's foot: the door (Enter, standing on the crest of the Sill),
+   the Sill itself, and the corner row (the load line bottom left, Skip intro
+   bottom right). They leave with the greeting (--out, written by Hologram.jsx). */
+.welcome {
+  padding-bottom: calc(var(--sill-h) + var(--edge-row) + var(--welcome-run));
+}
+
+.door {
+  position: relative;
+  display: inline-flex;
+  margin-top: clamp(10px, 2.2svh, 22px);
+  opacity: calc(1 - var(--out, 0));
+}
+
+.door-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 22px 0 24px;
+  border: 1px solid var(--plate-line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--ink) 60%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text);
+  transition:
+    border-color 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    transform 0.12s var(--ease);
+}
+
+.door-enter:hover {
+  border-color: var(--acc);
+  background: color-mix(in srgb, var(--acc-fill) 26%, var(--ink));
+}
+
+/* The press: 2px in, 120 ms. */
+.door-enter:active {
+  transform: translateY(2px);
+}
+
+.door-enter svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: door-nod 2.6s var(--ease) 3.2s infinite;
+}
+
+@keyframes door-nod {
+  0%,
+  55%,
+  100% {
+    transform: none;
+  }
+
+  28% {
+    transform: translateY(3px);
+  }
+}
+
+.door-hint {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-left: 14px;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+.threshold {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100svh - var(--nav-h));
+  min-height: var(--welcome-min);
+  pointer-events: none;
+  opacity: calc(1 - var(--out, 0));
+}
+
+/* The Sill: the far edge of the plate below, showing over the horizon. Same
+   drawing as the plate: two rims and a tick per ring build. */
+.sill {
+  position: absolute;
+  left: 50%;
+  bottom: var(--edge-row);
+  width: var(--sill-w);
+  height: var(--sill-h);
+  transform: translateX(-50%);
+  fill: none;
+  overflow: hidden;
+}
+
+/* A phone has no ring, so the near edge of the same plate lies under the drift:
+   the ring the reader came through, now underfoot. */
+.drift-plate {
+  display: block;
+  position: relative;
+  width: min(100%, 520px);
+  height: clamp(40px, 12vw, 56px);
+  margin: -52px auto 0;
+  fill: none;
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur-slow) var(--ease);
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .drift-plate {
+    display: none;
+  }
+}
+
+html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .drift-plate {
+  opacity: 0;
+  transform: scale(var(--plate-from));
+  transition-duration: 0.15s;
+}
+
+.plate-arc-rim,
+.plate-arc-tick {
+  stroke: var(--plate-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.plate-arc-rim[data-rim='outer'] {
+  opacity: 0.6;
+}
+
+/* The Sill counts its ticks in, one per ring build, left to right, as the
+   greeting is said; and its crest lights while the pointer is on the door. */
+html.js .sill .plate-arc-tick {
+  animation: sill-count 0.5s var(--ease) both;
+  animation-delay: calc(1.3s + var(--k) * 70ms);
+}
+
+@keyframes sill-count {
+  from {
+    opacity: 0;
+  }
+}
+
+.plate-arc-rim {
+  transition: stroke 0.25s var(--ease);
+}
+
+.door:hover ~ .threshold .plate-arc-rim,
+.door:focus-within ~ .threshold .plate-arc-rim {
+  stroke: var(--acc);
+}
+
+.door-skip,
+.load-line {
+  position: absolute;
+  bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+.door-skip {
+  right: max(var(--pad), env(safe-area-inset-right, 0px));
+  padding-left: 12px;
+  pointer-events: auto;
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+.door-skip:hover {
+  color: var(--text);
+}
+
+/* The load line: a small light and one sentence about what is arriving. */
+.load-line {
+  left: max(var(--pad), env(safe-area-inset-left, 0px));
+  gap: 10px;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.load-line[data-stage]:not([data-stage='done']) {
+  opacity: 1;
+}
+
+.load-line i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--acc);
+  animation: load-pulse 1.2s var(--ease) infinite alternate;
+}
+
+.load-line span {
+  animation: load-in 0.3s var(--ease);
+}
+
+@keyframes load-pulse {
+  to {
+    opacity: 0.3;
+  }
+}
+
+@keyframes load-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* On Enter the first beat is on a clock, not on the scroll: the greeting, the
+   thoughts, the door and the corner row are gone in a quarter of a second. */
+.welcome[data-run] .welcome-say,
+.welcome[data-run] .hub,
+.welcome[data-run] .door,
+.welcome[data-run] .threshold {
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+
+/* No portrait to stand under (no WebGL): the screen closes up, the door stays. */
+html[data-holo='off'] .threshold {
+  position: relative;
+  height: calc(var(--sill-h) + var(--edge-row));
+  min-height: 0;
+  margin: 0 calc(var(--pad) * -1);
+  width: auto;
+  justify-self: stretch;
+}
+
+html[data-holo='off'] .welcome {
+  padding-bottom: 0;
+}
+
+/* With no face there is nobody for the thoughts to come to, and no intro to skip. */
+html[data-holo='off'] .hub,
+html[data-holo='off'] .door-skip {
+  display: none;
+}
+
+/* The ball's line stays on one line at any width, so it types left to right: the
+   type steps down until --n letters of the display face (about 0.6em each) fit
+   between the gutters. */
+.welcome-ball {
+  font-size: min(var(--fs-speak), calc((100vw - 2 * var(--pad)) / (var(--n, 26) * 0.62)));
+  white-space: nowrap;
+}
+
+/* The ball's line is typed in whole letters (--n of them), not wiped. */
+@supports (width: round(down, 1px, 1px)) {
+  .welcome-ball span {
+    clip-path: inset(-10% calc(100% - round(down, var(--speak, 0) * 100%, 100% / var(--n, 24))) -10% -2%);
+  }
+}
+
+/* ---- The seed and the ring that opens ------------------------------------ */
+/* A point fixed in the window on the ball's centre: Hologram.jsx writes where the
+   ball's line of speech sits (--ball-y) and shell/entry.js how far above it the
+   centre is (--seed-up). Its ring is the plate's drawing, 100 units in radius: it
+   appears just off the ball's limb, flat, and widens past the window's edges
+   (--ring-on, --ring-s). The globe is drawn only for a portrait with no dissolve
+   of its own (data-face="css"): the canvas shrinks into it and it stands in for
+   the ball. */
+.seed {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: calc(var(--ball-y, 60svh) - var(--seed-up, 20svh));
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+}
+
+html:not(.js) .seed,
+html[data-holo='off'] .seed,
+html[data-plain] .seed {
+  display: none;
+}
+
+.seed-ring {
+  opacity: var(--ring-on, 0);
+  transform: scale(var(--ring-s, 1), calc(var(--ring-s, 1) * var(--ring-lie)));
+}
+
+.seed-rim,
+.seed-tick,
+.seed-line,
+.seed-globe {
+  stroke: var(--light);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.seed-rim[data-rim='outer'],
+.seed-line {
+  opacity: 0.55;
+}
+
+.seed-ball {
+  display: none;
+}
+
+html[data-face='css'] .seed-ball {
+  display: block;
+  opacity: calc(var(--face-out, 0) * var(--face-out, 0) * (1 - var(--ring-open, 0)));
+  transform: scale(var(--seed-s, 1));
+}
+
+.seed-core {
+  fill: rgb(var(--holo-hot));
+}
+
+/* The fallback of the portrait contract: the canvas gathers to the seed. */
+html[data-face='css'] .bg-holo {
+  transform-origin: 50% 42%;
+  transform: scale(calc(1 - 0.8 * var(--face-out, 0)));
+  filter: blur(calc(12px * var(--face-out, 0)));
+  opacity: calc(1 - var(--face-out, 0) * var(--face-out, 0));
+  transition: none;
+}
+
+/* After a skip the portrait's canvas stays dark until the reader scrolls back. */
+html[data-cut] .bg-holo {
+  opacity: 0;
+  transition: none;
+}
+
+/* ================================= ARRIVAL ================================ */
+/* While the first screen is up (data-entry="pre") the hero waits unlit; when the
+   reader comes through (data-entry="land") the name sets, wide to true, and the
+   rows under it follow one step apart. Without scripts, at rest and after a skip
+   there is no attribute and everything simply stands. */
+.hero .portrait,
+.hero .who-text,
+.hero .hero-name,
+.hero .identity,
+.hero .identity-sub,
+.hero .cred,
+.hero .actions,
+.hero .orbit-bar,
+.hero .drift {
+  transition:
+    opacity var(--land-dur) var(--ease) calc(var(--land-i, 0) * var(--land-step)),
+    transform var(--land-dur) var(--ease) calc(var(--land-i, 0) * var(--land-step));
+}
+
+.hero .who-text { --land-i: 1; }
+.hero .identity { --land-i: 2; }
+.hero .identity-sub { --land-i: 3; }
+.hero .cred { --land-i: 4; }
+.hero .actions { --land-i: 5; }
+.hero .orbit-bar,
+.hero .drift { --land-i: 6; }
+
+html[data-entry='pre']:not([data-holo='off']) .hero .portrait,
+html[data-entry='pre']:not([data-holo='off']) .hero .who-text,
+html[data-entry='pre']:not([data-holo='off']) .hero .hero-name,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity-sub,
+html[data-entry='pre']:not([data-holo='off']) .hero .cred,
+html[data-entry='pre']:not([data-holo='off']) .hero .actions,
+html[data-entry='pre']:not([data-holo='off']) .hero .orbit-bar,
+html[data-entry='pre']:not([data-holo='off']) .hero .drift {
+  opacity: 0;
+  transition-duration: 0.15s;
+  transition-delay: 0s;
+}
+
+html[data-entry='pre']:not([data-holo='off']) .hero .who-text,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity-sub,
+html[data-entry='pre']:not([data-holo='off']) .hero .cred,
+html[data-entry='pre']:not([data-holo='off']) .hero .actions {
+  transform: translateY(8px);
+}
+
+/* The name sets: it arrives a little wide and closes to its true measure. A
+   transform, so the block it sits in never moves while it does. */
+.hero .hero-name {
+  transform-origin: 0 50%;
+}
+
+html[data-entry='pre']:not([data-holo='off']) .hero .hero-name {
+  transform: scaleX(1.045);
+}
+
+html[data-entry='pre']:not([data-holo='off']) .hero .portrait {
+  transform: scale(0.92);
+}
+
+html[data-skip] .hero *,
+html[data-skip] .nav {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door-enter svg,
+  .load-line i,
+  .load-line span,
+  html.js .sill .plate-arc-tick {
+    animation: none;
+  }
+
+  .seed,
+  .door-skip {
+    display: none;
+  }
+}
+
+/* ================================ THE ORRERY ============================== */
+/* The plate the ring cards stand on: two engraved rims and one tick per build,
+   drawn by Orbit.jsx from the projection that poses the cards. The SVG is a point
+   at the ring centre; everything in it is in px from there. */
+.plate,
+.readout-name {
+  display: none;
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .track {
+    display: none;
+  }
+
+  .plate {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: var(--oy);
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    pointer-events: none;
+    fill: none;
+    opacity: 0;
+    transform: scale(var(--plate-from));
+    transition:
+      opacity var(--dur) var(--ease),
+      transform var(--dur-slow) var(--ease);
+  }
+
+  .orbit[data-ready] .plate {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* While the first screen is up the plate waits out past the window's edges; it
+     comes in as the ring that opened leaves them (data-plate, shell/entry.js). */
+  html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .orbit .plate {
+    opacity: 0;
+    transform: scale(var(--plate-from));
+    transition-duration: 0.15s;
+  }
+
+  .plate-rim {
+    stroke: url(#plate-fade);
+    stroke-width: 1;
+    opacity: 0.6;
+  }
+
+  .plate-stop {
+    stop-color: var(--plate-line);
+  }
+
+  .plate-stop[data-end='far'] {
+    stop-opacity: 0;
+  }
+
+  /* One pad per build on the inner rim: the seat its card stands on. */
+  .plate-pad {
+    stroke: var(--plate-line);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    transition: stroke 0.2s var(--ease);
+  }
+
+  .plate-pad[data-lit='near'] {
+    stroke: var(--text);
+  }
+
+  .plate-pad[data-lit='front'] {
+    stroke: var(--plate-lit);
+  }
+
+  .plate-tick {
+    stroke: var(--plate-line);
+    stroke-width: 1;
+    stroke-linecap: round;
+    transition:
+      stroke 0.2s var(--ease),
+      stroke-width 0.2s var(--ease);
+  }
+
+  .plate-tick[data-lit='near'] {
+    stroke: var(--text);
+  }
+
+  .plate-tick[data-lit='front'] {
+    stroke: var(--plate-lit);
+    stroke-width: 2;
+  }
+
+  /* A card that is landing fades in with its scale (--land, written per frame). */
+  .orbit[data-ready] .card {
+    opacity: calc(var(--vis, 1) * var(--land, 1));
+  }
+
+  /* One height for every card (--card-h, the tallest, set by Orbit.jsx): the
+     caption panel takes up the difference, so every foot stands on the plate. */
+  .orbit-scene .card {
+    height: var(--card-h, auto);
+  }
+
+  .orbit-scene .card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .orbit-scene .card-cap {
+    flex: 1;
+  }
+
+  /* In the hand: the ring is being turned, so nothing eases and nothing selects. */
+  .orbit-scene .card {
+    touch-action: pan-y;
+  }
+
+  .orbit[data-hand] .card {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  /* A card touches the plate: a soft contact shadow under its foot, gone with the
+     caption when the card is only a thumbnail at the sides. */
+  .orbit-scene .card::after {
+    content: '';
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: calc(100% - 7px);
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ink-2) 92%, transparent), transparent);
+    opacity: var(--cap, 1);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* The station number lives in one place, under the lit tick; the cards do not repeat it. */
+  .orbit-scene .card-idx {
+    display: none;
+  }
+
+  /* The front readout. The counter sits on the ring's centre line, straight under
+     the lit tick, with the step buttons at its sides; the label and Pause to the
+     left, the name of the build standing there to the right. */
+  .orbit-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2px;
+    width: min(100%, 760px);
+  }
+
+  .orbit-side {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .orbit-side[data-side='left'] {
+    justify-content: flex-end;
+  }
+
+  .orbit-side .eyebrow {
+    margin-right: 14px;
+    white-space: nowrap;
+  }
+
+  .orbit .counter {
+    min-width: 0;
+    padding: 0 4px;
+    text-align: center;
+    color: var(--text);
+  }
+
+  .readout-name {
+    display: block;
+    margin-left: 14px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 500;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+}
+
+/* ================================ THE BAR ================================= */
+/* Two palettes cut at the waterline. The copy of the bar's face is opaque in its
+   own realm's ink and clipped to its side of the line: below the first waterline
+   (the sea coming up), above the second (the sky coming down). A hairline of
+   that realm's light rides the cut. */
+.nav-split {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--ink);
+  border-bottom: 1px solid var(--hair);
+}
+
+.nav-split::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--acc-2);
+  opacity: 0.7;
+}
+
+html[data-split='line'] .nav-split[data-side='line'] {
+  display: block;
+  clip-path: inset(calc(var(--w-line) * 1px) 0 0 0);
+}
+
+html[data-split='line'] .nav-split[data-side='line']::before {
+  top: calc(var(--w-line) * 1px);
+}
+
+html[data-split='shore'] .nav-split[data-side='shore'] {
+  display: block;
+  clip-path: inset(0 0 calc(100% - var(--w-shore) * 1px) 0);
+}
+
+html[data-split='shore'] .nav-split[data-side='shore']::before {
+  top: calc(var(--w-shore) * 1px - 1px);
+}
+
+/* ================================= TRAVEL ================================= */
+/* A far jump is a hop (kit/travel.js): the page and the world dip, the scroll
+   lands in one step, and both come back on a fresh frame. The bar stays. */
+html[data-travel='out'] main,
+html[data-travel='out'] .foot,
+html[data-travel='out'] .bg-world {
+  opacity: 0;
+  transition: opacity 0.13s linear;
+}
+
+html[data-travel='in'] main,
+html[data-travel='in'] .foot,
+html[data-travel='in'] .bg-world {
+  transition: opacity 0.2s var(--ease);
+}
+
+/* The place that was reached: a hairline draws under its heading and goes. */
+[data-arrive='line'] {
+  background-image: linear-gradient(var(--acc), var(--acc));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  animation: arrive-line 1s var(--ease) both;
+}
+
+@keyframes arrive-line {
+  35%,
+  70% {
+    background-size: 100% 1px;
+  }
+
+  100% {
+    background-size: 100% 1px;
+    background-image: linear-gradient(transparent, transparent);
+  }
+}
+
+/* A build reached from the ring: a ring of light round its title, for a second. */
+[data-arrive='ring'] {
+  border-radius: var(--r-sm);
+  outline: 1px solid transparent;
+  animation: arrive-ring 1s var(--ease) both;
+}
+
+@keyframes arrive-ring {
+  0% {
+    outline-color: transparent;
+    outline-offset: 0;
+  }
+
+  30% {
+    outline-color: var(--acc);
+    outline-offset: 8px;
+  }
+
+  100% {
+    outline-color: transparent;
+    outline-offset: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-arrive='line'] {
+    animation: none;
+    background-size: 100% 1px;
+  }
+
+  [data-arrive='ring'] {
+    animation: none;
+    outline-color: var(--acc);
+    outline-offset: 8px;
+  }
+}
+
+/* ---- The bar's tools: the compass (Chart), Receipts, Sound ---------------- */
+.nav .wrap {
+  justify-content: flex-start;
+}
+
+.nav-links {
+  margin: 0 auto;
+}
+
+.nav-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 8px;
+}
+
+.nav-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-2);
+  transition: color 0.2s var(--ease);
+}
+
+.nav-tool:hover,
+.nav-tool[aria-pressed='true'] {
+  color: var(--text);
+}
+
+.nav-tool svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.nav-tool .nav-needle {
+  fill: currentColor;
+}
+
+/* Receipts and Sound are lit in the realm's accent while they are on. */
+.nav-tool[aria-pressed='true'] svg {
+  stroke: var(--acc-text);
+}
+
+/* Sound's label changes ("off" to "on"); the button keeps one width. */
+.nav-tool[data-tool='sound'] .nav-tool-label {
+  min-width: 10.5ch;
+  text-align: left;
+}
+
+@media (max-width: 1100px) {
+  .nav-tool[data-tool='sound'],
+  .nav-tool[data-tool='chart'] .nav-tool-label {
+    display: none;
+  }
+
+  .nav-tool[data-tool='chart'] {
+    justify-content: center;
+    padding: 0;
+  }
+}
+
+@media (max-width: 959.98px) {
+  .nav-links {
+    margin: 0;
+  }
+
+  .nav-tools {
+    margin-left: auto;
+  }
+
+  .nav-tool[data-tool='receipts'] {
+    display: none;
+  }
+}
+
+/* ================================ THE CHART =============================== */
+/* A native dialog: a sheet from the right on a wide window, the whole screen on a
+   phone. Hairlines only: the cross-section is drawn to scale. */
+.chart {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(100%, 560px);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--hair-2);
+  background: var(--ink);
+  color: var(--text);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.chart::backdrop {
+  background: color-mix(in srgb, var(--ink-2) 72%, transparent);
+}
+
+.chart[open] {
+  animation: chart-in 0.28s var(--ease);
+}
+
+@keyframes chart-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+.chart-body {
+  display: grid;
+  gap: 28px;
+  padding: 20px max(24px, env(safe-area-inset-right, 0px)) 32px 24px;
+}
+
+.chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: var(--rule);
+}
+
+.chart-head h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.chart-head p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.chart-close {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -8px -10px 0 0;
+  border-radius: 50%;
+  color: var(--text-2);
+  transition: color 0.2s var(--ease);
+}
+
+.chart-close:hover {
+  color: var(--text);
+}
+
+.chart-close svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.chart h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.chart-count {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The descent: the scale on the left, the places on the right, 44px a row. */
+.chart-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  height: calc(var(--rows) * 44px);
+}
+
+.chart-scale {
+  grid-column: 1;
+  width: 100%;
+  height: calc(var(--rows) * 44px);
+  overflow: visible;
+  fill: none;
+}
+
+.chart-rod,
+.chart-lead,
+.chart-water {
+  stroke: var(--hair-2);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-lead[data-here] {
+  stroke: var(--text);
+}
+
+.chart-band {
+  fill: color-mix(in srgb, var(--acc) 16%, transparent);
+}
+
+.chart-band[data-realm='space'] {
+  fill: color-mix(in srgb, var(--acc) 9%, transparent);
+}
+
+.chart-water {
+  stroke: var(--acc-2);
+}
+
+.chart-line-name {
+  position: absolute;
+  left: 0;
+  width: 34px;
+  transform: translateY(-120%);
+  overflow: visible;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--acc-text);
+  pointer-events: none;
+}
+
+/* You are here: a mark across the rod at the reader's depth. */
+.chart-here {
+  position: absolute;
+  left: -6px;
+  width: 50px;
+  height: 0;
+  pointer-events: none;
+}
+
+.chart-here i {
+  position: absolute;
+  inset: -1px 0 auto 0;
+  height: 2px;
+  background: var(--text);
+}
+
+.chart-here i::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text);
+}
+
+.chart ol,
+.chart ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart-places {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-auto-rows: 44px;
+}
+
+.chart-places a {
+  display: grid;
+  grid-template-columns: 26px minmax(0, auto) minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 10px;
+  height: 44px;
+  padding: 0 10px;
+  align-content: center;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  transition: background-color 0.2s var(--ease);
+}
+
+.chart-places a:hover {
+  background: color-mix(in srgb, var(--acc) 12%, transparent);
+}
+
+.chart-places a[aria-current] {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.chart-n,
+.chart-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.chart-name {
+  font-family: var(--font-read);
+  font-size: 18px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+/* Every build, a dot in its group; each dot is a 44px link. */
+.chart-group {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+}
+
+.chart-group-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.chart-group ul {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chart-group a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.chart-group a i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--acc-text);
+  transition:
+    background-color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+.chart-group a:hover i,
+.chart-group a:focus-visible i {
+  background: var(--acc);
+  transform: scale(1.5);
+}
+
+.chart-pick {
+  display: flex;
+  gap: 12px;
+  min-height: 22px;
+  margin: 6px 0 0 112px;
+  padding-left: 12px;
+  font-family: var(--font-read);
+  font-size: 16px;
+  color: var(--text);
+}
+
+.chart-pick span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 22px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The switches: a row each, the whole row is the control. */
+.chart-switches button {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 0;
+  border-top: var(--rule);
+  text-align: left;
+}
+
+.chart-sw-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.chart-sw-hint {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-2);
+}
+
+.chart-switches i {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  margin-left: 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hair-2);
+  transition:
+    background-color 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+
+.chart-switches i::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-3);
+  transition:
+    transform 0.18s var(--ease),
+    background-color 0.18s var(--ease);
+}
+
+.chart-switches [aria-checked='true'] i {
+  background: var(--acc-fill);
+  border-color: var(--acc);
+}
+
+.chart-switches [aria-checked='true'] i::after {
+  transform: translateX(16px);
+  background: var(--acc-ink);
+}
+
+@media (max-width: 560px) {
+  .chart {
+    width: 100%;
+    border-left: 0;
+  }
+
+  .chart-body {
+    padding: 14px 16px 28px;
+  }
+
+  .chart-map,
+  .chart-group,
+  .chart-switches button {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .chart-switches button {
+    grid-template-columns: 76px minmax(0, 1fr) auto;
+  }
+
+  .chart-group {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chart-pick {
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .chart-label {
+    display: none;
+  }
+
+  .chart-places a {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+}
+
+/* ============================== THE DEPTH RAIL ============================ */
+.rail {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .rail {
+    display: block;
+    position: fixed;
+    z-index: 40;
+    right: 10px;
+    top: calc(var(--nav-h) + 28px);
+    bottom: 28px;
+    width: 12px;
+    border-right: 1px solid var(--hair-2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease);
+  }
+
+  html[data-nav='on'] .rail {
+    opacity: 1;
+  }
+
+  .rail-tick {
+    position: absolute;
+    right: 0;
+    width: 7px;
+    height: 1px;
+    background: var(--text-3);
+  }
+
+  .rail-mark {
+    position: absolute;
+    right: -1px;
+    top: calc(var(--w-depth, 0) * 100%);
+    width: 12px;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--text);
+  }
+}
+
+/* ================================ RECEIPTS ================================ */
+/* Labels over the world while the switch is on. Mono, hairline, never on the text. */
+.receipts-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+}
+
+.receipts-leads {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: var(--text-2);
+  stroke-width: 1;
+}
+
+.receipt-tag {
+  position: absolute;
+  display: grid;
+  gap: 2px;
+  padding: 7px 0 0 9px;
+  border-top: 1px solid var(--text-2);
+  border-left: 1px solid var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+  text-shadow: 0 0 6px var(--ink), 0 0 2px var(--ink);
+  animation: receipt-in 0.3s var(--ease);
+}
+
+.receipt-tag[data-side='left'] {
+  padding: 7px 9px 0 0;
+  border-left: 0;
+  border-right: 1px solid var(--text-2);
+  text-align: right;
+}
+
+.receipt-tag b,
+.receipts-ledger b {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tr-label);
+  color: var(--text);
+}
+
+.receipt-tag i,
+.receipts-ledger i {
+  font-style: normal;
+  color: var(--text-3);
+}
+
+@keyframes receipt-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.receipts-ledger {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  gap: 4px;
+  padding: 10px max(var(--pad), env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--hair-2);
+  background: color-mix(in srgb, var(--ink-2) 94%, transparent);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+
+.receipts-ledger li {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+}
+
+.receipts-ledger-title {
+  text-transform: uppercase;
+  letter-spacing: var(--tr-label);
+  color: var(--text-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart[open],
+  .receipt-tag {
+    animation: none;
+  }
+}

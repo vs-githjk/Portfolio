@@ -2,6 +2,9 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '../hooks/useMediaQuery';
 import { beamFade, worldFade } from '../lib/beamFade';
 import { heroOrigin } from '../lib/origin';
+import { EV } from '../kit/contract';
+import { emit } from '../kit/bus';
+import { useSwitch } from '../shell/switches';
 
 /* One fixed layer stack behind the page: the vertical light-beam field.
 
@@ -10,8 +13,8 @@ import { heroOrigin } from '../lib/origin';
      any failure. Nothing flashes when the canvas fades in over them.
    - BackgroundField (a 2D canvas with beams and stars) lives in its own chunk
      and mounts after first paint.
-   - The same scroll handler marks <html data-at="sea|earth"> with the world under
-     the nav, so the bar wears that world's palette.
+   - <html data-at="sea|earth">, the world under the nav, is written by the kit's
+     signals (kit/signals.js) from cached section offsets.
    - Scroll sets two custom properties on .bg (--bg-y, --bg-fade); CSS turns
      them into parallax (transform only) and the fade-out after the first
      screen. Under prefers-reduced-motion there is no parallax and no shimmer.
@@ -21,9 +24,15 @@ import { heroOrigin } from '../lib/origin';
      so the chunk is requested on the first scroll past the welcome (and, on a
      desktop, after the page has been idle for a moment, so it is ready first).
    - Hologram (plain WebGL, a small chunk) is the face of light on the welcome
-     screen above the hero. It mounts with the beams, after first paint. */
+     screen above the hero. It mounts with the beams, after first paint.
+   - In plain view (shell/switches.js) none of the three canvases is mounted. */
 const BackgroundField = lazy(() => import('./BackgroundField'));
-const World = lazy(() => import('./World'));
+const World = lazy(() =>
+  import('./World').then((m) => {
+    emit(EV.loaded, { stage: 'chunk' });
+    return m;
+  })
+);
 const Hologram = lazy(() => import('./Hologram'));
 
 export default function Background() {
@@ -32,7 +41,44 @@ export default function Background() {
   const [ready, setReady] = useState(false);
   const [deep, setDeep] = useState(false);
   const reduced = useReducedMotion();
-  const onReady = useCallback(() => setReady(true), []);
+  // Plain view (the World switch, or ?plain): the page alone. No canvas is mounted
+  // and neither scene chunk is requested; the page says so the way it does when
+  // WebGL is missing, so the welcome closes up and the vistas collapse.
+  const plain = useSwitch('plain');
+  useEffect(() => {
+    if (!plain) return undefined;
+    const html = document.documentElement;
+    html.dataset.holo = 'off';
+    html.dataset.world = 'off';
+    return () => {
+      delete html.dataset.holo;
+      delete html.dataset.world;
+    };
+  }, [plain]);
+  const onReady = useCallback(() => {
+    setReady(true);
+    emit(EV.loaded, { stage: 'beams' });
+  }, []);
+
+  // The load line follows the world's own state: its first drawn frame, or its absence.
+  useEffect(() => {
+    const html = document.documentElement;
+    const said = { on: false, off: false };
+    const read = () => {
+      const world = html.dataset.world;
+      if (world === 'on' && !said.on) {
+        said.on = true;
+        emit(EV.loaded, { stage: 'compiled' });
+      } else if (world === 'off' && !said.off) {
+        said.off = true;
+        emit(EV.loaded, { stage: 'plain' });
+      }
+    };
+    const mo = new MutationObserver(read);
+    mo.observe(html, { attributes: true, attributeFilter: ['data-world'] });
+    read();
+    return () => mo.disconnect();
+  }, []);
 
   useEffect(() => {
     if ('requestIdleCallback' in window) {
@@ -78,20 +124,7 @@ export default function Background() {
       node.style.setProperty('--bg-fade', beamFade(y, vh).toFixed(3));
       node.style.setProperty('--bg-deep', worldFade(y, vh).toFixed(3));
       node.style.setProperty('--bg-y', reduced ? '0' : Math.max(0, y).toFixed(1));
-      // Which world is under the nav: the bar takes that world's palette (tokens.css).
-      let at = '';
-      for (const el of realms) {
-        const r = el.getBoundingClientRect();
-        if (r.height > 0 && r.top <= 64) at = el.dataset.realm; // the last one the bar has reached
-      }
-      if (at !== was) {
-        was = at;
-        if (at) document.documentElement.dataset.at = at;
-        else delete document.documentElement.dataset.at;
-      }
     };
-    const realms = document.querySelectorAll('[data-realm]');
-    let was = null;
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
@@ -107,17 +140,17 @@ export default function Background() {
     <div className="bg" aria-hidden="true" data-ready={ready ? '' : undefined} ref={root}>
       <div className="bg-glow" />
       <div className="bg-static" />
-      {on && (
+      {on && !plain && (
         <Suspense fallback={null}>
           <BackgroundField onReady={onReady} />
         </Suspense>
       )}
-      {on && (
+      {on && !plain && (
         <Suspense fallback={null}>
           <Hologram />
         </Suspense>
       )}
-      {deep && (
+      {deep && !plain && (
         <Suspense fallback={null}>
           <World />
         </Suspense>

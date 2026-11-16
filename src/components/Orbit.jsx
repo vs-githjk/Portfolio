@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { hero } from '../data/content';
 import { useReducedMotion } from '../hooks/useMediaQuery';
-import { ring } from '../lib/ring';
 import Badge from './Badge';
 import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from './Icons';
+import { entryState, onEntry } from '../shell/entryState';
+import { registerBinding } from '../kit/bindings';
+import { ring } from '../lib/ring';
 
 /* "What I've built": the orbit ring. Eleven glass cards on an elliptical CSS 3D
    ring around the name. The front card is large and readable, the rest recede
@@ -21,7 +23,19 @@ import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from './Icons'
    - below 960px wide or 640px tall the ring becomes a swipeable snap row.
 
    Geometry comes from the --orbit-* tokens; measure() fits the radius to the
-   scene width and the ring centre to the hero copy above it. */
+   scene width and the ring centre to the hero copy above it.
+
+   The Orrery (v3). The cards stand on an engraved plate: two hairline rims and
+   one tick per build, drawn in the scene's own SVG from the same projection that
+   poses the cards (foot()), so a resting card's foot sits on its tick by
+   construction. The inner rim is cut into one pad per build, so the plate itself
+   counts them. Pads and ticks are stations and do not turn; the front one is lit,
+   and the counter under it reads which build stands there.
+   The ring can be thrown: a drag on a card turns it under the hand, and on
+   release it keeps its speed, slows, and settles on the nearest station. When
+   the reader arrives from the welcome (shell/entryState.js) the plate settles
+   and the cards land on their ticks front first, 40 ms apart; the ring then
+   holds for 600 ms before it turns. */
 
 const { carousel } = hero;
 const slides = carousel.slides;
@@ -31,6 +45,8 @@ const RING_MQ = '(min-width: 960px) and (min-height: 640px)';
 
 const pad2 = (k) => String(k).padStart(2, '0');
 const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+const LAND = { gap: 40, dur: 420, hold: 600, from: 0.6 };
+const NAME_CH = Math.max(...slides.map((s) => s.title.length));
 
 /* Two widths per ring card: 320 for the desktop ring (cards are about 220px wide),
    640 for a phone's row (cards up to 320px wide at 2x or more). */
@@ -56,6 +72,7 @@ export default function Orbit({ stageRef, centreRef }) {
   const regionRef = useRef(null);
   const sceneRef = useRef(null);
   const counterRef = useRef(null);
+  const nameRef = useRef(null);
   const api = useRef({ step: () => {}, toggle: () => {} });
   const [userPaused, setUserPaused] = useState(false);
   const [hovering, setHovering] = useState(false);
@@ -68,6 +85,12 @@ export default function Orbit({ stageRef, centreRef }) {
     const stage = stageRef.current;
     const centre = centreRef.current;
     const counter = counterRef.current;
+    const nameOut = nameRef.current;
+    const plate = scene.querySelector('.plate');
+    const rim = plate.querySelector('.plate-rim');
+    const pads = [...plate.querySelectorAll('.plate-pad')];
+    const ticks = [...plate.querySelectorAll('.plate-tick')];
+    const fade = plate.querySelector('linearGradient');
     const cards = [...scene.querySelectorAll('.card')];
     const links = cards.map((c) => c.querySelector('.card-link'));
     const shades = cards.map((c) => [...c.querySelectorAll('.card-shade')]);
@@ -100,9 +123,11 @@ export default function Orbit({ stageRef, centreRef }) {
       side: num('--orbit-side', 0.1),
       stepMs: num('--orbit-step-ms', 5200),
       linger: num('--orbit-linger', 0.85),
+      rim: num('--plate-rim', 0.06),
+      pad: num('--plate-pad', 0.44),
     };
-    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, copyL: -340, copyR: 340, front: CFG.front };
-    const reasons = { user: false, hover: false, hidden: document.hidden, offscreen: false };
+    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, cardH: 240, copyL: -340, copyR: 340, front: CFG.front };
+    const reasons = { user: false, hover: false, hidden: document.hidden, offscreen: false, landing: false, drag: false };
     const hov = cards.map(() => 0);
     const hovT = cards.map(() => 0);
 
@@ -116,8 +141,14 @@ export default function Orbit({ stageRef, centreRef }) {
     let ringMode = false;
     let focusAfter = false;
     let liveT = 0;
+    let free = null; // the ring's angle while a hand or a throw has it; null when the clock does
+    let spin = null; // a throw settling: { from, to, t0, dur }
+    let landAt = entryState() === 'pre' ? Infinity : -1; // when the cards began to land; -1 when they stand
+    let landT = 0;
+    const landed = cards.map(() => -1);
+    const lit = cards.map(() => null);
 
-    const paused = () => reasons.user || reasons.hover || reasons.hidden || reasons.offscreen;
+    const paused = () => reasons.user || reasons.hover || reasons.hidden || reasons.offscreen || reasons.landing || reasons.drag;
 
     // One card per step: ease in, linger on the front card, ease out.
     function theta(t) {
@@ -138,9 +169,62 @@ export default function Orbit({ stageRef, centreRef }) {
       return (rx * s + half * Math.cos(a)) * (CFG.persp / (CFG.persp - z)) + 4;
     }
 
+    // Where the foot of a card resting at ring angle w lands on screen, relative to
+    // the ring centre: the card's own transform (pose) applied to its bottom centre,
+    // then the perspective. `grow` widens the ring: the plate's outer rim.
+    function foot(w, grow = 1) {
+      const s = Math.sin(w);
+      const c = Math.cos(w);
+      const half = (geo.cardH / 2) * (1 - CFG.side * s * s);
+      const lean = (CFG.lean * s * Math.PI) / 180;
+      const yaw = (-CFG.yaw * s * Math.PI) / 180;
+      const lx = -Math.sin(lean) * half;
+      const lead = Math.pow(Math.max(0, (c - 0.7) / 0.3), 2);
+      const z = geo.rz * geo.cosT * (grow * c - 1) + geo.front * lead - lx * Math.sin(yaw);
+      const ps = CFG.persp / (CFG.persp - z);
+      return [(geo.rx * grow * s + lx * Math.cos(yaw)) * ps, (geo.rz * grow * c * geo.sinT + Math.cos(lean) * half) * ps];
+    }
+
+    // The plate: the outer rim as one closed path; the inner rim as one pad per
+    // station (the seat a card stands on, so the rim itself counts the builds),
+    // and a tick from each pad to the outer rim. It fades out toward the back,
+    // where it would run behind the hero copy.
+    function drawPlate() {
+      const arc = (from, to, steps, grow) => {
+        let d = '';
+        for (let i = 0; i <= steps; i++) {
+          const [x, y] = foot(from + ((to - from) * i) / steps, grow);
+          d += `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+        }
+        return d;
+      };
+      rim.setAttribute('d', `${arc(0, 2 * Math.PI, 240, 1 + CFG.rim)}Z`);
+      const y1 = foot(Math.PI * 0.62)[1];
+      const y2 = foot(Math.PI * 0.36)[1];
+      fade.setAttribute('y1', y1.toFixed(1));
+      fade.setAttribute('y2', y2.toFixed(1));
+      pads.forEach((pad, k) => {
+        pad.setAttribute('d', arc((k - CFG.pad) * STEP, (k + CFG.pad) * STEP, 14, 1));
+        pad.style.opacity = Math.max(0, Math.min(1, (foot(k * STEP)[1] - y1) / (y2 - y1))).toFixed(2);
+      });
+      ticks.forEach((tick, k) => {
+        const a = foot(k * STEP);
+        const b = foot(k * STEP, 1 + CFG.rim);
+        tick.setAttribute('x1', a[0].toFixed(1));
+        tick.setAttribute('y1', a[1].toFixed(1));
+        tick.setAttribute('x2', b[0].toFixed(1));
+        tick.setAttribute('y2', b[1].toFixed(1));
+        tick.style.opacity = Math.max(0, Math.min(1, (a[1] - y1) / (y2 - y1))).toFixed(2);
+      });
+    }
+
     function measure() {
       // Layout size, never getBoundingClientRect: that one includes the ring's own transforms.
       geo.cardW = cards[0].offsetWidth || 248;
+      // Every card is as tall as the tallest, so every foot stands on the plate.
+      scene.style.removeProperty('--card-h');
+      geo.cardH = Math.max(...cards.map((c) => c.offsetHeight)) || 240;
+      scene.style.setProperty('--card-h', `${geo.cardH}px`);
       // Where the hero copy really stands, relative to the ring centre: the portrait's
       // left edge and the right end of the name block (the credential line). The block
       // is centred on the stage, and its portrait side is wider than its text side.
@@ -166,7 +250,7 @@ export default function Orbit({ stageRef, centreRef }) {
       geo.rx = rx;
       scene.style.setProperty('--rx', geo.rx.toFixed(0));
       scene.style.setProperty('--rz', geo.rz.toFixed(0));
-      const cardH = cards[0].offsetHeight || 240;
+      const cardH = geo.cardH;
       const frontTop = geo.rz * geo.sinT - cardH / 2; // front card top, relative to the ring centre
       // The ring centre sits at 47% of the stage, but never so high that the
       // centre block (which ends 18px above the front card) touches the nav.
@@ -185,12 +269,19 @@ export default function Orbit({ stageRef, centreRef }) {
       while (geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
       stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
       // The welcome hologram lands its light on this ring (lib/ring.js).
-      Object.assign(ring, { el: scene, n: N, oy: O, rx: geo.rx, rz: geo.rz, sinT: geo.sinT, cosT: geo.cosT, persp: CFG.persp, cardW: geo.cardW, cardH, front: geo.front, side: CFG.side, yaw: CFG.yaw, lean: CFG.lean });
+      Object.assign(ring, { el: scene, n: N, oy: O, rx: geo.rx, rz: geo.rz, sinT: geo.sinT, cosT: geo.cosT, persp: CFG.persp, cardW: geo.cardW, cardH: geo.cardH, front: geo.front, side: CFG.side, yaw: CFG.yaw, lean: CFG.lean });
+      drawPlate();
+      // Where the plate is in the document, for its receipt (kit/bindings.js).
+      const box = stage.getBoundingClientRect();
+      geo.docX = box.left + box.width / 2;
+      geo.docY = box.top + window.scrollY + O;
     }
 
-    function pose() {
-      const th = theta(vt);
+    function pose(now = performance.now()) {
+      const th = free ?? theta(vt);
       ring.theta = th;
+      const f0 = ((Math.round(-th / STEP) % N) + N) % N;
+      const want = cards.map(() => '');
       const ranks = [];
       for (let k = 0; k < N; k++) {
         const w = k * STEP + th;
@@ -200,8 +291,28 @@ export default function Orbit({ stageRef, centreRef }) {
         const y = geo.rz * c * geo.sinT;
         // The front card is pushed toward the camera so it clearly leads the ring.
         const lead = Math.pow(Math.max(0, (c - 0.7) / 0.3), 2);
-        const z = geo.rz * geo.cosT * (c - 1) + hov[k] * 14 + geo.front * lead;
-        cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg) scale(${(1 - CFG.side * s * s).toFixed(3)})`;
+        const z = geo.rz * geo.cosT * (c - 1) + (k === f0 ? 0 : hov[k] * 14) + geo.front * lead;
+        // Landing: front first, then outward both ways, each card growing onto its tick.
+        let land = 1;
+        if (landAt >= 0) {
+          const d = (k - f0 + N) % N;
+          const rank = d === 0 ? 0 : d <= N / 2 ? d * 2 - 1 : (N - d) * 2;
+          land = easeOut(Math.max(0, Math.min(1, (now - landAt - rank * LAND.gap) / LAND.dur)));
+        }
+        if (Math.abs(land - landed[k]) > 0.002) {
+          landed[k] = land;
+          cards[k].style.setProperty('--land', land.toFixed(3));
+        }
+        const grow = (1 - CFG.side * s * s) * (LAND.from + (1 - LAND.from) * land);
+        // A card under the pointer lifts 6px off the plate.
+        cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${(y - hov[k] * 6).toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg) scale(${grow.toFixed(3)})`;
+        // The tick under the front card is lit; the one under a lifted card brightens.
+        // Stations do not turn: a card's station is where it rests when the ring is still.
+        // The one under the front card is lit; one under a lifted card, or one a card is
+        // landing on, brightens.
+        const st = (((k + Math.round(th / STEP)) % N) + N) % N;
+        if (k === f0) want[st] = 'front';
+        else if (!want[st] && (hovT[k] || (land > 0.02 && land < 0.98))) want[st] = 'near';
         // Dim with depth. A back card that sits behind the hero copy goes almost
         // fully dark, so nothing on it competes with the text in front.
         // The caption is either shown or gone, never half there: the side cards of the ring
@@ -253,6 +364,12 @@ export default function Orbit({ stageRef, centreRef }) {
         }
         ranks.push([c, k]);
       }
+      for (let st = 0; st < N; st++) {
+        if (want[st] === lit[st]) continue;
+        lit[st] = want[st];
+        ticks[st].dataset.lit = want[st];
+        pads[st].dataset.lit = want[st];
+      }
       ranks.sort((a, b) => b[0] - a[0]);
       const key = ranks.map((r) => r[1]).join();
       if (key !== order) {
@@ -261,7 +378,7 @@ export default function Orbit({ stageRef, centreRef }) {
           cards[r[1]].style.zIndex = N - i;
         });
       }
-      const f = ((Math.round(-th / STEP) % N) + N) % N;
+      const f = f0;
       if (f !== front) {
         front = f;
         links.forEach((l, i) => {
@@ -269,14 +386,15 @@ export default function Orbit({ stageRef, centreRef }) {
         });
         cards.forEach((c, i) => c.classList.toggle('is-front', i === f));
         counter.textContent = `${pad2(f + 1)} / ${pad2(N)}`;
+        nameOut.textContent = slides[f].title;
       }
       // Thin electric-blue progress line on the front card: time until the ring moves on.
       const p = vt / CFG.stepMs - Math.floor(vt / CFG.stepMs);
-      parts[f].bar.style.transform = `scaleX(${(paused() && !anim ? 0 : p).toFixed(3)})`;
+      parts[f].bar.style.transform = `scaleX(${((paused() && !anim) || free != null ? 0 : p).toFixed(3)})`;
     }
 
     function needsFrames() {
-      if (anim) return true;
+      if (anim || spin || (landAt >= 0 && landAt !== Infinity)) return true;
       if (!paused() || speed > 0.001) return true;
       return hov.some((v, i) => Math.abs(v - hovT[i]) > 0.002);
     }
@@ -285,7 +403,20 @@ export default function Orbit({ stageRef, centreRef }) {
       raf = 0;
       const dt = Math.min(50, t - (last || t));
       last = t;
-      if (anim) {
+      if (landAt >= 0 && landAt !== Infinity && t - landAt > (N - 1) * LAND.gap + LAND.dur) landAt = -1;
+      if (spin) {
+        // A throw: the ring runs on at the speed it was let go with and settles on a station.
+        const p = Math.min(1, (t - spin.t0) / spin.dur);
+        free = spin.from + (spin.to - spin.from) * (1 - Math.pow(1 - p, 4));
+        if (p >= 1) {
+          vt = Math.round(-spin.to / STEP) * CFG.stepMs;
+          spin = null;
+          free = null;
+          speed = 0;
+        }
+      } else if (free != null) {
+        speed = 0; // under the hand: the pointer writes the angle
+      } else if (anim) {
         const p = Math.min(1, (t - anim.t0) / anim.dur);
         vt = anim.from + (anim.to - anim.from) * easeOut(p);
         if (p >= 1) {
@@ -299,7 +430,7 @@ export default function Orbit({ stageRef, centreRef }) {
         vt += dt * speed;
       }
       for (let k = 0; k < N; k++) hov[k] += (hovT[k] - hov[k]) * (1 - Math.exp(-dt / 90));
-      pose();
+      pose(t);
       if (focusAfter) {
         focusAfter = false;
         links[front].focus({ preventScroll: true });
@@ -315,7 +446,15 @@ export default function Orbit({ stageRef, centreRef }) {
       }
     }
 
+    function settle() {
+      if (free == null) return;
+      vt = Math.round(-free / STEP) * CFG.stepMs;
+      free = null;
+      spin = null;
+    }
+
     function step(dir) {
+      settle();
       // Step relative to the card that is visibly in front (the front flips at
       // the half step), so Next always moves on and Prev always moves back.
       const to = (Math.round(vt / CFG.stepMs) + dir) * CFG.stepMs;
@@ -338,6 +477,7 @@ export default function Orbit({ stageRef, centreRef }) {
 
     function jump(k) {
       if (!ringMode) return;
+      settle();
       const to = k * CFG.stepMs;
       if (reduced()) {
         vt = to;
@@ -390,7 +530,7 @@ export default function Orbit({ stageRef, centreRef }) {
     };
     const cardHandlers = cards.map((c, k) => {
       const enter = () => {
-        hovT[k] = k === front ? 0 : 1;
+        hovT[k] = 1;
         kick();
       };
       const leave = () => {
@@ -401,6 +541,114 @@ export default function Orbit({ stageRef, centreRef }) {
       c.addEventListener('mouseleave', leave);
       return [enter, leave];
     });
+    /* The throw. A press on a card that travels more than 6px sideways takes the ring
+       in hand: the front arc follows the pointer. On release it keeps the speed of
+       the last 80 ms, slows, and settles on the nearest station. The click that
+       would follow a drag is swallowed, so a throw never opens a build. */
+    const hand = { id: -1, x0: 0, th0: 0, on: false, trail: [], moved: false };
+    const onMove = (e) => {
+      if (e.pointerId !== hand.id) return;
+      if (!hand.on) {
+        if (Math.abs(e.clientX - hand.x0) < 6) return;
+        hand.on = true;
+        hand.moved = true;
+        hand.x0 = e.clientX;
+        hand.th0 = free ?? theta(vt);
+        hand.trail = [];
+        anim = null;
+        spin = null;
+        reasons.drag = true;
+        region.dataset.hand = '';
+      }
+      free = hand.th0 + (e.clientX - hand.x0) / geo.rx;
+      hand.trail.push([e.timeStamp, free]);
+      if (hand.trail.length > 8) hand.trail.shift();
+      kick();
+    };
+    const onUp = (e) => {
+      if (e.pointerId !== hand.id) return;
+      hand.id = -1;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      if (!hand.on) return;
+      hand.on = false;
+      reasons.drag = false;
+      delete region.dataset.hand;
+      const first = hand.trail.find((p) => e.timeStamp - p[0] <= 80) ?? hand.trail[hand.trail.length - 1];
+      const dt = Math.max(1, e.timeStamp - first[0]);
+      const v = Math.max(-0.012, Math.min(0.012, (free - first[1]) / dt)); // rad per ms
+      // Where it would coast to with a 320 ms time constant, on the nearest station.
+      const to = Math.round((free + v * 320) / STEP) * STEP;
+      spin = { from: free, to, t0: performance.now(), dur: Math.min(1400, 520 + Math.abs(to - free) * 520) };
+      kick();
+    };
+    const onDown = (e) => {
+      if (!ringMode || reduced() || e.button > 0 || !e.target.closest('.card')) return;
+      hand.id = e.pointerId;
+      hand.x0 = e.clientX;
+      hand.on = false;
+      hand.moved = false;
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    };
+    const onClickCapture = (e) => {
+      if (!hand.moved) return;
+      hand.moved = false;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const noDrag = (e) => e.preventDefault();
+    scene.addEventListener('pointerdown', onDown);
+    scene.addEventListener('click', onClickCapture, true);
+    scene.addEventListener('dragstart', noDrag);
+
+    // The arrival: the cards wait unlit while the welcome is up, then land.
+    const land = (state) => {
+      clearTimeout(landT);
+      if (state === 'pre') {
+        landAt = Infinity;
+        reasons.landing = true;
+        settle();
+        vt = 0;
+        anim = null;
+        delete region.dataset.land;
+      } else if (state === 'land' && ringMode && !reduced()) {
+        landAt = performance.now();
+        reasons.landing = true;
+        region.dataset.land = '';
+        landT = setTimeout(
+          () => {
+            reasons.landing = false;
+            kick();
+          },
+          (N - 1) * LAND.gap + LAND.dur + LAND.hold
+        );
+      } else {
+        landAt = -1;
+        reasons.landing = false;
+        region.dataset.land = '';
+      }
+      if (ringMode) {
+        pose();
+        kick();
+      }
+    };
+    // The plate's receipt hangs off its outer rim, a step and a half round from the front.
+    const offBinding = registerBinding({
+      id: 'orrery',
+      project: () => {
+        if (!ringMode || geo.docY == null) return null;
+        const [x, y] = foot(STEP * 1.5, 1 + CFG.rim);
+        const at = { x: geo.docX + x, y: geo.docY - window.scrollY + y };
+        return { ...at, side: 'right', visible: at.y > 0 && at.y < window.innerHeight };
+      },
+    });
+    const offEntry = onEntry(land);
+    if (entryState() === 'pre') reasons.landing = true;
+    else region.dataset.land = '';
+
     const onVis = () => {
       reasons.hidden = document.hidden;
       kick();
@@ -446,6 +694,8 @@ export default function Orbit({ stageRef, centreRef }) {
         lastCap.fill(-1);
         lastNear.fill(-1);
         lastVis.fill(-1);
+        landed.fill(-1);
+        cards.forEach((c) => c.style.removeProperty('--land'));
         cards.forEach((c) => {
           c.style.removeProperty('--vis');
           c.style.removeProperty('--cap');
@@ -459,6 +709,7 @@ export default function Orbit({ stageRef, centreRef }) {
           l.tabIndex = 0;
         });
         stage.style.removeProperty('--oy');
+        scene.style.removeProperty('--card-h');
         front = -1;
         clearTimeout(liveT);
         delete region.dataset.live;
@@ -509,6 +760,15 @@ export default function Orbit({ stageRef, centreRef }) {
     return () => {
       if (raf) cancelAnimationFrame(raf);
       clearTimeout(liveT);
+      clearTimeout(landT);
+      offEntry();
+      offBinding();
+      scene.removeEventListener('pointerdown', onDown);
+      scene.removeEventListener('click', onClickCapture, true);
+      scene.removeEventListener('dragstart', noDrag);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
       ro.disconnect();
       io?.disconnect();
       region.removeEventListener('keydown', onKey);
@@ -535,8 +795,22 @@ export default function Orbit({ stageRef, centreRef }) {
       data-state={state}
     >
       <div className="orbit-scene" ref={sceneRef}>
+        <svg className="plate" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="plate-fade" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="-60" y2="60">
+              <stop offset="0" className="plate-stop" data-end="far" />
+              <stop offset="1" className="plate-stop" />
+            </linearGradient>
+          </defs>
+          <path className="plate-rim" />
+          {slides.map((s) => (
+            <path className="plate-pad" key={s.id} />
+          ))}
+          {slides.map((s) => (
+            <line className="plate-tick" key={s.id} />
+          ))}
+        </svg>
         <div className="cards">
-          <div className="track" aria-hidden="true" />
           {slides.map((s, k) => (
             <div
               key={s.id}
@@ -577,8 +851,8 @@ export default function Orbit({ stageRef, centreRef }) {
         </div>
       </div>
       <div className="orbit-bar">
-        <span className="eyebrow">{carousel.label}</span>
-        <div className="orbit-controls">
+        <div className="orbit-side" data-side="left">
+          <span className="eyebrow">{carousel.label}</span>
           <button
             className="ctl ctl-pause"
             type="button"
@@ -590,11 +864,16 @@ export default function Orbit({ stageRef, centreRef }) {
           <button className="ctl" type="button" aria-label={carousel.controls.prev} onClick={() => api.current.step(-1)}>
             <ChevronLeftIcon />
           </button>
+        </div>
+        <span className="counter" ref={counterRef} aria-live="off">
+          {pad2(1)} / {pad2(N)}
+        </span>
+        <div className="orbit-side" data-side="right">
           <button className="ctl" type="button" aria-label={carousel.controls.next} onClick={() => api.current.step(1)}>
             <ChevronRightIcon />
           </button>
-          <span className="counter" ref={counterRef} aria-live="off">
-            {pad2(1)} / {pad2(N)}
+          <span className="readout-name" ref={nameRef} aria-hidden="true" style={{ '--name-ch': NAME_CH }}>
+            {slides[0].title}
           </span>
         </div>
       </div>

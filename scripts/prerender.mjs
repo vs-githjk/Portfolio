@@ -7,11 +7,28 @@
 //      JavaScript. The client then hydrates the same markup (its script is
 //      requested after the first paint so the first image and the fonts go first).
 //
-// It rewrites dist/index.html and writes dist/llms.txt (the page as plain text,
+// It first runs the data checks that exist in scripts/ (see below), then
+// rewrites dist/index.html and writes dist/llms.txt (the page as plain text,
 // generated from content.js). If anything is off it exits non-zero, so a
 // broken prerender fails the build instead of shipping an empty page.
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+// The data checks ride the build (package.json is frozen, so they are run from
+// here): a check that exists is run, and a check that fails stops the build
+// before anything is written. scripts/check-scenes.mjs holds every number the
+// world draws to a number the page states.
+for (const name of ['check-scenes.mjs']) {
+  const file = fileURLToPath(new URL(name, import.meta.url));
+  if (!existsSync(file)) continue;
+  const ran = spawnSync(process.execPath, [file], { stdio: 'inherit' });
+  if (ran.status !== 0) {
+    console.error(`prerender: ${name} failed, the build stops here`);
+    process.exit(1);
+  }
+}
 
 const dist = new URL('../dist/', import.meta.url);
 const ssr = new URL('../dist-ssr/entry-server.js', import.meta.url);
