@@ -21,7 +21,8 @@ import { createHologram, parseFace } from '../lib/holoScene';
    - It draws only while some of it is on screen and the tab is visible: every
      frame while the scroll is moving or the face is being drawn, about 30 a
      second while it only breathes. DPR is capped (1.75, 1.5 on a phone) and a
-     phone draws six tenths of the points. The glow is a bloom pass in a third-size buffer.
+     phone draws half the points. The glow is a bloom pass in a third-size buffer
+     (desktop only; a phone gets one wide faint point in ten instead).
    - On a desktop he also looks a little toward the pointer (eased, a few degrees).
    - Under prefers-reduced-motion it is one still frame of the face that scrolls
      away with the page: no drawing in, no turn, no ball. */
@@ -235,7 +236,12 @@ export default function Hologram() {
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))))
       .then((buffer) => {
         if (dead) return;
-        const cloud = parseFace(buffer, phone ? 0.6 : 1);
+        const cloud = parseFace(buffer, phone ? 0.5 : 1);
+        // Parsing and compiling are two tasks, not one long one.
+        return new Promise((resolve) => setTimeout(() => resolve(cloud), 0));
+      })
+      .then((cloud) => {
+        if (dead) return;
         scene = createHologram(
           canvas,
           cloud,
@@ -245,7 +251,8 @@ export default function Hologram() {
             tint: triple(style, '--holo-deep'),
             hot: triple(style, '--holo-hot'),
           },
-          Number(style.getPropertyValue('--holo-bloom')) || 0
+          // The bloom is a desktop pass; a phone gets the cheap haze instead.
+          phone ? 0 : Number(style.getPropertyValue('--holo-bloom')) || 0
         );
         measure();
         seenAtStart = seen || rm.matches || window.scrollY > 40;

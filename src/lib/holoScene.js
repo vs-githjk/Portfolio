@@ -32,7 +32,7 @@ uniform vec2 uRes;      // target size in device pixels
 uniform vec2 uCenter;   // where the head's centre sits, device pixels from the top left
 uniform float uSize;    // the picture's height in device pixels
 uniform float uBall;    // the globe's radius in device pixels
-uniform float uDpr, uTime, uIntro, uMorph, uBurst, uTurn, uNod, uVoice, uSpeak, uStill, uWide;
+uniform float uDpr, uTime, uIntro, uMorph, uBurst, uTurn, uNod, uVoice, uSpeak, uStill, uWide, uHaze;
 varying float vGlow;
 varying float vMix;
 varying float vHot;
@@ -141,8 +141,11 @@ void main() {
   size *= 1.0 + bu * 1.4 * max(dir.z, 0.0);
   // Nearer points are a little larger: the cloud has a front and a back.
   size *= depth * clamp(uSize / (540.0 * uDpr), 0.7, 1.25);
-  gl_PointSize = max(1.0, size * uDpr * uWide);
-  vGlow = mix(faceGlow, ballGlow, m) * pow(1.0 - bu, 1.15);
+  // Without the bloom pass (a phone), one point in ten is a wide, faint one:
+  // together they are the air around the light, for the price of nothing.
+  float haze = uHaze * step(0.9, r1);
+  gl_PointSize = max(1.0, size * uDpr * uWide * mix(1.0, 6.0, haze));
+  vGlow = mix(faceGlow, ballGlow, m) * pow(1.0 - bu, 1.15) * mix(1.0, 0.06, haze);
   vHot = mix(faceHot, ballHot, m);
   vMix = mix(lum * (0.6 + 0.4 * home), 0.3 + 0.7 * ballGlow, m);
 }
@@ -290,7 +293,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   const quadAt = gl.getAttribLocation(blur, 'aPos');
 
   const u = {};
-  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uDpr', 'uTime', 'uIntro', 'uMorph', 'uBurst', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uWide', 'uDeep', 'uPale', 'uTint', 'uHot', 'uGain']) {
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uDpr', 'uTime', 'uIntro', 'uMorph', 'uBurst', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uWide', 'uHaze', 'uDeep', 'uPale', 'uTint', 'uHot', 'uGain']) {
     u[name] = gl.getUniformLocation(program, name);
   }
   const ub = { uTex: gl.getUniformLocation(blur, 'uTex'), uStep: gl.getUniformLocation(blur, 'uStep'), uGain: gl.getUniformLocation(blur, 'uGain') };
@@ -299,6 +302,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   gl.uniform3fv(u.uPale, colors.pale);
   gl.uniform3fv(u.uTint, colors.tint);
   gl.uniform3fv(u.uHot, colors.hot);
+  gl.uniform1f(u.uHaze, bloom > 0 ? 0 : 1);
 
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
