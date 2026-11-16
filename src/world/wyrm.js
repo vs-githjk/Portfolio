@@ -189,16 +189,16 @@ void main(){
 
 /* Anatomy, in body units (one unit is the gap between two vertebrae). */
 const HEAD = [
-  [0, 0.66],
-  [0.8, 0.92],
-  [1.8, 1.1],
-  [2.9, 1.3],
-  [3.9, 1.7],
-  [4.9, 2.25],
-  [5.9, 2.5],
-  [7.0, 2.2],
-  [8.0, 1.8],
-]; // distance from the snout tip, radius: a short blunt muzzle, a heavy brow, a neck
+  [0, 0.95],
+  [0.7, 1.3],
+  [1.5, 1.18],
+  [2.4, 1.35],
+  [3.3, 1.8],
+  [4.2, 2.35],
+  [5.2, 2.5],
+  [6.6, 2.0],
+  [8.0, 1.7],
+]; // distance from the snout tip, radius: a blunt muzzle with a nostril bump, a heavy brow, a neck (a long even taper read as a horse's or a bird's skull)
 const SKULL = 6; // the widest head node: the eye and the horns sit here
 const NECK = 9.1; // where the newest vertebra sits
 const BROW = [0, 1.75, -1.75]; // lantern ribs along the head: over the brow and down each cheek (rad from the back)
@@ -558,6 +558,7 @@ export const wyrm = definePiece({
          beat       0 to 1: how hard the fins work (water about 0.35, air 1)
          sleep      0 to 1: folded and breathing slowly
          fold       0 to 1: how far the wings are folded (default: as asleep as it is)
+         wings      optional [near, far]: { sweep, len, fan } holds each wing in a set pose
          show       0 to 1
          solid      0 pure light, 1 paints over what is behind it (in the air only)
          air        how much fuller it is drawn in the air (1 as in water)
@@ -791,12 +792,13 @@ export const wyrm = definePiece({
       // The wings.
       at = wing0;
       for (const side of WINGS) {
+        const held = q.wings ? q.wings[side > 0 ? 0 : 1] : null; // a pose may hold each wing its own way
         const f = nodeAt(wingAt);
         const k = Math.min(M - 1, Math.round(f));
         const s0 = sc[k];
         const flap = Math.sin(t * (1.1 + 1.5 * beat)) * (0.12 + 0.6 * beat);
         const spread = 0.62 + flap - 0.1 * wingFold;
-        const sweep = 0.12 + 1.05 * wingFold + 0.1 * flap; // folded, it lies back along the body
+        const sweep = held ? held.sweep : 0.12 + 1.05 * wingFold + 0.1 * flap; // folded, it lies back along the body
         // The arm's axis: up from the back, out to its side, swept toward the tail.
         b.copy(Un[k]).multiplyScalar(Math.cos(spread)).addScaledVector(Sn[k], Math.sin(spread) * side);
         b.multiplyScalar(Math.cos(sweep)).addScaledVector(Tn[k], -Math.sin(sweep)).normalize();
@@ -807,8 +809,8 @@ export const wyrm = definePiece({
         // The chord: toward the tail, squared up to the arm.
         c.copy(Tn[k]).addScaledVector(b, -Tn[k].dot(b)).normalize().multiplyScalar(-1);
         sample(f, a, P).addScaledVector(b, rad[k] * s0 * 0.75);
-        const len = WING_LEN * s0 * (1 - 0.5 * wingFold);
-        const cx = 1 - 0.42 * wingFold; // folded, the fingers close like a fan
+        const len = WING_LEN * s0 * (held ? held.len : 1 - 0.5 * wingFold);
+        const cx = held ? held.fan : 1 - 0.42 * wingFold; // folded, the fingers close like a fan
         const place = (x, y, into) => {
           const y0 = Math.min(y, WRIST[1]);
           const y1 = Math.max(0, y - WRIST[1]);

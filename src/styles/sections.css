@@ -2370,8 +2370,8 @@ html[data-holo='off'] .welcome-face {
   z-index: 1;
   border: 2px solid var(--focus);
   box-shadow:
-    0 0 0 2px var(--bg),
-    inset 0 0 0 1px var(--bg);
+    0 0 0 2px var(--ink),
+    inset 0 0 0 1px var(--ink);
 }
 
 /* System: how the crew is run. */
@@ -3400,7 +3400,7 @@ a.plaque:active::after {
 
 .pow-prov {
   margin-top: 16px;
-  max-width: 76ch;
+  max-width: 60ch; /* stops short of the dragon on watch at its right */
   font-size: 14px;
   line-height: 1.55;
   color: var(--text-2);

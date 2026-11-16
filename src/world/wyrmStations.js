@@ -21,6 +21,17 @@ const sm = (t) => {
 const clamp01 = (t) => Math.max(0, Math.min(1, t));
 const GUTTER = 16; // px the creature keeps from a window edge where it is laid out whole
 const TAIL_REACH = 7 * 0.96; // body units the tail runs on past the oldest week at the roost
+/* The roost pose, in body units. */
+const NECK_WEEKS = 9; // the newest weeks rise as the neck
+const NECK_LIFT = 7.2; // how high the newest week is carried
+const REACH = 8.6; // how far the snout stands out past the newest week
+const FADE = 40; // px: the soft edge at the top of the band
+const POSE_H = 13.2; // ground to the top of the horns and the raised wings
+const ROOST_WINGS = [
+  { sweep: 0.82, len: 0.5, fan: 0.9 },
+  { sweep: 0.08, len: 0.4, fan: 0.8 },
+]; // near side, far side: sweep toward the tail (rad), length and how far the fingers open (0 to 1)
+const WING_BACK = 13; // how far behind the wing root a raised wing reaches
 
 /* A path through waypoints [x, y, z, size], sampled densely (Catmull-Rom), then
    walked by distance along it in the window plane. Past either end it runs on
@@ -79,6 +90,7 @@ export function createWyrmStations({ live, phone }) {
   const L = live.length; // body units, snout to tail tip
   const head = live.head; // how many nodes are head
   const N = live.count();
+  const wingRoot = Math.min(9, N * 0.18);
   const env = { w: 1, h: 1 };
   const st = { glimpse: null, pass: null, breach: null, roost: null, flight: null };
   const out4 = [0, 0, 0, 1];
@@ -209,39 +221,83 @@ export function createWyrmStations({ live, phone }) {
       st.breach = { rect: shore, scale, path: makePath(way), boxes: boxesOf(shore), band: [shore.top, shore.bottom] };
     }
 
-    // 4 The roost: asleep over the graph, one vertebra over each week's column.
+    // 4 The roost: on watch over the graph, one vertebra over each week's column,
+    // the newest weeks rising as its neck, the head held high and looking out.
     const roost = anchorRect('roost');
     const graph = anchorRect('graph');
     st.roost = null;
     if (roost && graph) {
       const cols = columnsOf(graph.el, N);
       if (cols) {
-        // Is there room for the head in front of the newest week, at full size?
-        const full = Math.min(cols.pitch, (roost.h - 12) / 6.4);
-        let fit = false;
-        let ahead = w - cols.xs[N - 1] > live.neck * full + 16;
-        let scale = ahead ? full : Math.min(cols.pitch, (roost.h - 12) / 13.2);
-        /* A window too narrow for a year of columns (a phone, whose graph shows
-           the latest months): laid over them the creature ran off both edges. It
-           is drawn whole here, snout to tail tip inside the gutters, one vertebra
-           a week as ever, each a little nearer the next than the columns are. */
-        const unitsBehind = TAIL_REACH + 1.2;
-        const unitsAhead = live.neck * 0.92 + 0.8;
-        if (cols.xs[0] - unitsBehind * scale < GUTTER || !ahead) {
-          scale = Math.min(full, (w - 2 * GUTTER) / (N - 1 + unitsBehind + unitsAhead));
-          const x0 = GUTTER + unitsBehind * scale;
-          const xs = new Float32Array(N);
-          for (let i = 0; i < N; i++) xs[i] = x0 + i * scale;
-          cols.xs = xs;
-          ahead = true;
-          fit = true;
+        const y0 = window.scrollY;
+        /* Its sky. A note may stand over the anchor: where the note stops short of
+           the creature's tall half (wings, neck, head), the band rises past it, up
+           to a clear margin under whatever stands over the note. Where the note
+           runs the whole width (a phone) the band is the anchor alone. No light
+           ever depends on a keep-out box to stay off the note. */
+        let over = roost.el.previousElementSibling;
+        let noteRight = -1;
+        let noteBottom = -1;
+        while (over && over.matches('p')) {
+          const r = document.createRange();
+          r.selectNodeContents(over);
+          for (const b of r.getClientRects()) {
+            noteRight = Math.max(noteRight, b.right);
+            noteBottom = Math.max(noteBottom, b.bottom + y0);
+          }
+          over = over.previousElementSibling;
         }
-        // With the head out in front there is open ground over its shoulders (the note
-        // above it stops well short of them): the band rises so a half-raised wing and
-        // the lifted head have room. Any text in that taller band is a keep-out box.
-        const rise = ahead ? Math.min(124, scale * 8.4) : 0;
-        const band = [roost.top - 2 - rise, roost.bottom + 2];
-        st.roost = { rect: roost, cols, scale, ahead, fit, lift: ahead ? scale * 2.5 : 0, ground: roost.bottom - 8, boxes: boxesOf(roost, band), band };
+        const ceiling = over ? over.getBoundingClientRect().bottom + y0 + 8 : roost.top;
+        const tallLeft = cols.xs[N - 1] - (wingRoot + WING_BACK) * cols.pitch;
+        const open = noteRight < 0 || noteRight + 28 < tallLeft;
+        // Shut in under a full-width note, it still has the gap between the note and the anchor.
+        const shut = noteBottom < 0 ? roost.top : Math.min(roost.top, Math.max(noteBottom + 4, roost.top - 40));
+        let top = open ? Math.min(roost.top, Math.max(ceiling, roost.top - 170)) : shut;
+        const fitH = () => (roost.bottom - top - FADE) / POSE_H; // the band's edge is a soft fade: nothing is posed inside it
+        let scale = Math.min(cols.pitch, fitH());
+        let fit = false;
+        // Room for the head past the newest week: a little smaller before it is cut.
+        const room = env.w - GUTTER - cols.xs[N - 1];
+        if (REACH * scale > room) {
+          if (room / REACH >= cols.pitch * 0.7) scale = room / REACH;
+          else fit = true;
+        }
+        // The tail curls up tighter where the oldest week is near the window's edge.
+        let tailRoom = (cols.xs[0] - GUTTER) / scale - 0.6;
+        if (tailRoom < 2.4) fit = true;
+        /* A window too narrow for the columns plus its head and tail (a phone, whose
+           graph shows the latest months; a narrow laptop by a little): it is drawn
+           whole, snout to tail tip inside the gutters, one vertebra a week as
+           ever, each as near the next as it takes, so the body is as large as the
+           band allows. */
+        if (fit) {
+          tailRoom = 3.4;
+          const wide = env.w - 2 * GUTTER;
+          const ends = tailRoom + 0.6 + REACH;
+          scale = Math.min(cols.pitch, fitH());
+          let gap = (wide - ends * scale) / (N - 1);
+          if (gap < 0.5 * scale) {
+            scale = wide / ((N - 1) * 0.5 + ends);
+            gap = 0.5 * scale;
+          }
+          gap = Math.min(gap, cols.pitch);
+          // Laid out from the snout's side, so on a narrow laptop the weeks stay close to their columns.
+          const xEnd = env.w - GUTTER - REACH * scale;
+          const xs = new Float32Array(N);
+          for (let i = 0; i < N; i++) xs[i] = xEnd - (N - 1 - i) * gap;
+          cols.xs = xs;
+        }
+        // The tail's curl: an arc of its own length whose reach is the room it has.
+        const tailLen = TAIL_REACH;
+        let lo = 0.02;
+        let hi = 2.6 / tailLen;
+        for (let i = 0; i < 18; i++) {
+          const m = (lo + hi) / 2;
+          if (Math.sin(m * tailLen) / m > tailRoom) lo = m;
+          else hi = m;
+        }
+        const band = [top, roost.bottom + 2];
+        st.roost = { rect: roost, cols, scale, fit, small: scale < 12, curl: Math.max(lo, 0.16), ground: roost.bottom - 8, boxes: boxesOf(roost, band), band };
       }
     }
 
@@ -347,47 +403,52 @@ export function createWyrmStations({ live, phone }) {
         const hw = env.w / 2;
         const ground = s.ground - f.line;
         const xLast = xs[N - 1] - hw;
-        // With room past the newest week the head lies out in front, chin on the
-        // ground. Without it (a phone) the neck curls up and back and the head rests
-        // on its own back.
-        const R = 3.3 * sc;
         const neck = live.neck;
-        const yc = ground - live.radius(head) * sc;
+        const lift = NECK_LIFT * sc;
+        const thin = (j) => 0.5 + 0.5 * sm(j / NECK_WEEKS); // a neck, not a second chest
+        // The neck's slope where it meets the head, and the head's line from there:
+        // it carries the climb on, levels, then dips, so the snout looks out and a
+        // little down over the ground in front of it.
+        const dx = xs[N - 1] - xs[N - 2];
+        const a0 = -Math.atan2((lift * 1.7) / NECK_WEEKS, dx);
+        const a1 = 0.46;
+        const yTop = ground - live.radius(head) * sc * thin(0) - lift;
         const at = (k, d, out) => {
           const wk = live.weekOf(k);
           out[3] = 1;
           out[2] = 0;
           if (wk >= 0) {
+            const j = N - 1 - wk;
+            const up = j < NECK_WEEKS ? Math.pow(1 - j / NECK_WEEKS, 1.7) : 0;
+            out[3] = thin(j);
             out[0] = xs[wk] - hw;
-            out[1] = ground - live.radius(k) * sc;
+            out[1] = ground - live.radius(k) * sc * out[3] - lift * up;
           } else if (k < head) {
-            const q = (neck - d) * sc; // px from the newest vertebra toward the snout
-            if (s.ahead) {
-              // The head is held up off the ground on the neck, snout a little down:
-              // a dragon dozing with its head up, not a fish laid flat.
-              const along = q / (neck * sc); // 0 at the shoulders, 1 at the snout
-              const lift = sm(along / 0.55) * (1 - 0.3 * sm((along - 0.6) / 0.4));
-              out[0] = xLast + q * (1 - 0.1 * sm(along));
-              out[1] = ground - live.radius(k) * sc - lift * s.lift;
-            } else if (q < Math.PI * R) {
-              const a = q / R;
-              out[0] = xLast + Math.sin(a) * R * 0.4;
-              out[1] = yc - (1 - Math.cos(a)) * R;
-              out[2] = 30;
-            } else {
-              out[0] = xLast - (q - Math.PI * R);
-              out[1] = yc - 2 * R + (q - Math.PI * R) * 0.2;
-              out[2] = 30;
+            const q = neck - d; // body units from the newest vertebra toward the snout
+            let x = 0;
+            let y = 0;
+            const steps = 14;
+            for (let i = 0; i < steps; i++) {
+              const u = ((i + 0.5) / steps) * q;
+              const a = a0 + (a1 - a0) * sm(u / 5.2);
+              x += Math.cos(a);
+              y += Math.sin(a);
             }
+            out[0] = xLast + (x * q * sc) / steps;
+            out[1] = yTop + (y * q * sc) / steps;
           } else {
-            // The tail runs on past the oldest week and curls up at its tip.
-            const i = k - head - N + 1;
-            out[0] = xs[0] - hw - i * sc * 0.96;
-            out[1] = ground - live.radius(k) * sc - i * i * sc * 0.07;
+            // The tail runs on past the oldest week and curls up and over at its tip.
+            const i = (k - head - N + 1) * 0.96;
+            const c = s.curl;
+            out[0] = xs[0] - hw - (Math.sin(c * i) / c) * sc;
+            out[1] = ground - live.radius(k) * sc - ((1 - Math.cos(c * i)) / c) * sc;
           }
         };
         guard(s, f);
-        draw({ ...base, scale: sc, at, sleep: 1, fold: s.fit ? 0.6 : s.ahead ? 0.79 : 0.92, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
+        // Awake at rest: eye open, spikes up, the near wing swept back and the far
+        // wing raised behind it, so the pair stand as a V over the shoulders.
+        // Drawn small (a phone) it is drawn fuller, or it is a brown smudge on the dark.
+        draw({ ...base, scale: sc, at, sleep: 0.42, wings: ROOST_WINGS, beat: 0, show: 1, solid: s.small ? 0.55 : 0.4, air: s.small ? 4.6 : 3, up: [0, 1, 0.22] });
         shown.station = 'roost';
         return 'roost';
       }

@@ -2223,7 +2223,7 @@ html[data-world='on'] .deep-head::before {
    along it, one piece over each week column of the graph below. With no scene
    drawing there is nothing to leave room for. */
 .pow-roost {
-  height: clamp(72px, 12svh, 132px);
+  height: clamp(110px, 18svh, 170px);
 }
 
 /* On a phone the neck curls up and the head rests on its own back, so the band is
