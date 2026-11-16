@@ -2762,6 +2762,61 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   background: var(--acc-2);
 }
 
+/* The stats row over the graph: the year's contributions, the longest streak and
+   the month so far, each a figure over its label (as on the old page). */
+.pow-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .pow-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+.pow-stats b {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-metric);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pow-stats b em {
+  font-style: italic;
+  color: var(--text-2);
+}
+
+.pow-stats span {
+  display: block;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* On a phone the graph is cropped to the latest half year; say so. */
+.pow-phone-note {
+  display: none;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+@media (max-width: 640px) {
+  .js .pow-phone-note {
+    display: block;
+  }
+}
+
 /* The skyline stage (SkyStage.jsx): the flat graph is the picture until the 3D
    canvas has drawn its first frame over it, then it fades out under it. The box
    is the flat graph's own, so nothing moves when it does. */

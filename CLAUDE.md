@@ -55,8 +55,14 @@ Four rules encode the thesis:
    (`content.js`) becomes a Receipt button (`Rich` with `receipts`; `Receipt.jsx`, a popover:
    what it measures, where to check). A receipt only repeats facts already in `content.js`.
 
-4. **No vanity totals.** Commit and contribution totals, streaks and month counts are never
-   headline figures (Vidyut: he can make 333 commits in three days). The graph is the evidence.
+4. **GitHub totals: only in the Proof of work stats row.** On Nov 16 Vidyut first cut commit
+   and contribution totals, streaks and month counts as vanity (he can make 333 commits in
+   three days), then asked for them back the same day ("the old GitHub told me what commits
+   and all, it gave me the numbers; this one doesn't give me the numbers"). So the stats row
+   over the commit skyline is back as it was on the old page (the year's contributions, the
+   longest streak, the month so far), each figure computed from `github.json` in
+   `ProofOfWork.jsx`, never typed. They stay there: no totals in the hero, Highlights or
+   anywhere else as a headline.
 
 The colophon quotes Lighthouse runs measured on the production build (`colophon.lighthouse`
 in `content.js`): every run in the batch, its date, never a floor that one run broke.
@@ -402,8 +408,7 @@ with anyone else's agents.
 
 The graph is drawn from a build-time snapshot: `scripts/fetch-github.mjs` (prebuild) writes
 `src/data/github.local.json` (gitignored); the committed `github.json` is the fallback. No
-runtime third-party calls. Every GitHub figure is computed from that JSON, and there is no
-total. The graph is the 3D commit skyline again (Vidyut, Nov 16: "I like the old GitHub, we
+runtime third-party calls. Every GitHub figure is computed from that JSON. The graph is the 3D commit skyline again (Vidyut, Nov 16: "I like the old GitHub, we
 had more: it told me what commits, it gave me the numbers"): `Skyline.jsx`, one 2D canvas, no
 WebGL, every day a tower (height count^0.4, colour ranked within the year), laid by
 `SkyStage.jsx` exactly over the flat graph once its first frame is drawn. Pointing at a tower,
@@ -411,8 +416,8 @@ or tapping it, gives that day's exact count; the week under the pointer is sent 
 (`world:week`) so the dragon on the roost glances at it. It rises as the card scrolls in on a
 desktop and simply stands on phones and under reduced motion. The flat `Heatmap` (a ridge of
 weekly buttes over the calendar) stays underneath as the accessible image, the keyboard range
-control and the scene's "graph" anchor. Headline totals, streaks and month counts did NOT come
-back with it (rule 4). A phone crops the graph to
+control and the scene's "graph" anchor. The stats row over it (total, longest streak, month so far) came back the same
+day (rule 4). A phone crops the graph to
 the latest half year and its label says "last 6 months" (only with the script: without it
 the graph is whole and the label stays twelve). Choosing a week makes the dragon on the roost look at that column.
 
@@ -517,7 +522,8 @@ Don't add these back without asking:
 
 - Phone number. An "Objective" or "Summary" section. Testimonials, a blog, a visitor
   counter, a "currently listening to" widget. Skill percentage bars. A dark/light toggle.
-- GitHub stars, follower counts, commit totals or streaks.
+- GitHub stars or follower counts, and commit totals or streaks anywhere but the Proof of
+  work stats row (rule 4).
 - A proof band of bare numbers under the hero, and any halo or nebula.
 - Alltr (not his project) and TransitGuard's dead demo link.
 - A second world canvas, and any effect that reads as an effects reel.

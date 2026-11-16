@@ -21,8 +21,10 @@ const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'
    - the roost: an empty band over the card, the width of the graph, where the
      scene lays its creature along the weeks (data-world-anchor="roost");
    - the checks: one row per public trail, showing the address it goes to.
-   No totals are shown (Vidyut, Nov 16: commit totals are vanity). The graph is the
-   evidence; a week's or a day's exact count is in its tooltip, read from github.json. */
+   The stats row over the graph (the year's contributions, the longest streak, the
+   month so far) is back as it was on the old page: Vidyut asked for the numbers
+   again on Nov 16, hours after cutting them. Every figure is computed here from
+   github.json, never typed; a day's exact count is in its tooltip. */
 
 /* Counted from the plaques, never typed: the prizes whose link is a Devpost page,
    and the distinct projects behind them. */
@@ -44,15 +46,24 @@ function when(iso) {
   return { month: get('month'), day: Number(get('day')), year: get('year') };
 }
 
+const fmt = (n) => n.toLocaleString('en-US');
+const fill = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+
 function build() {
   const t = when(github.fetchedAt);
-  return { updated: `${t.month} ${t.day}, ${t.year}` };
+  const totals = {};
+  github.days.forEach((d) => {
+    const key = d.date.slice(0, 7);
+    totals[key] = (totals[key] || 0) + d.count;
+  });
+  const key = Object.keys(totals).sort().pop();
+  return { t, current: totals[key], updated: `${t.month} ${t.day}, ${t.year}` };
 }
 
 export default function ProofOfWork() {
   const g = proofOfWork.github;
   const { wins } = proofOfWork;
-  const { updated } = build();
+  const { t, current, updated } = build();
 
   return (
     <section className="sec" id="verify" data-realm="earth">
@@ -111,7 +122,25 @@ export default function ProofOfWork() {
               {g.handle}
             </a>
           </div>
+          <div className="pow-stats">
+            <div>
+              <b>{fmt(github.total)}</b>
+              <span>{g.stats.total}</span>
+            </div>
+            <div>
+              <b>
+                {github.longestStreak}
+                <em>{g.stats.streakUnit}</em>
+              </b>
+              <span>{g.stats.streak}</span>
+            </div>
+            <div>
+              <b>{fmt(current)}</b>
+              <span>{fill(g.stats.month, { month: t.month, day: t.day })}</span>
+            </div>
+          </div>
           <SkyStage days={github.days} label={g.graphLabel} copy={g} />
+          <p className="pow-phone-note">{g.phoneNote}</p>
           <div className="pow-foot">
             <span>
               {g.ridge} {g.note ? `${g.note} ` : ''}

@@ -1654,8 +1654,17 @@ export const proofOfWork = {
     graphLabelPhone: 'My GitHub contribution graph for the last 6 months, one column per week',
     handle: '@vs-githjk',
     href: 'https://github.com/vs-githjk',
-    /* No totals, streaks or month counts here (Vidyut, Nov 16: he can make 333
-       commits in three days, so a total says nothing). The graph is the evidence. */
+    /* The stats row over the graph, as it was on the old page (Vidyut, later on Nov 16:
+       "the old GitHub told me what commits and all, it gave me the numbers; this one
+       doesn't give me the numbers"). Labels only: every figure is computed from
+       github.json in ProofOfWork.jsx, never typed. */
+    stats: {
+      total: 'contributions',
+      streak: 'longest streak',
+      streakUnit: ' days',
+      month: 'contributions, {month} 1 to {day}',
+    },
+    phoneNote: 'The graph shows the latest six months on a phone; the totals cover the whole year.',
     graphLabel: 'My GitHub contribution graph for the last 12 months, one column per week',
     note: '',
     /* The line under the graph. The graph is the 3D skyline (one tower a day,
