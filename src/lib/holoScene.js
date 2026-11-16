@@ -19,8 +19,8 @@
      morph  0 to 1   the face peels into a small planet of light from the
                      outside in: hair and shoulders go first, the eyes last
      flow   0 to 1   the planet pours onto the orbit ring of builds below it:
-                     each point lands on a card, then the light fades and the
-                     cards are what is left
+                     each point lands on the edge of a card and frames it,
+                     then the light fades and the cards are what is left
 
    The planet has no ring of its own (the one ringed planet on the page is the
    giant in the sea). It is lit by the same key light as the face: a day side, a
@@ -100,7 +100,11 @@ void main() {
   // A soft sheen where the surface mirrors the key toward the viewer: the
   // highlights are this light's, on the lit side, not the photograph's.
   float sheen = pow(max(0.0, dot(n, normalize(KEY + vec3(0.0, 0.0, 1.0)))), 14.0) * (1.0 - isHair) * (1.0 - isBody);
-  float lit = tone * (0.46 + 0.54 * key + 0.2 * sheen) + rim * mix(0.05, 0.2, isHair) * (1.0 - 0.5 * isBody);
+  // A fill from the front that falls off with depth: what stands nearest (the
+  // nose, the brow, the lips) catches most of it. In the photograph the nose
+  // tip is as bright as the cheeks; under the key alone it is a quarter darker.
+  float fill = smoothstep(0.0, 0.06, aFace.z) * (1.0 - isHair) * (1.0 - isBody);
+  float lit = tone * (0.42 + 0.58 * key + 0.14 * sheen + 0.25 * fill) + rim * mix(0.05, 0.2, isHair) * (1.0 - 0.5 * isBody);
   lit = mix(lit, 0.8, isCatch);
   // One faint band of light climbs the figure every eleven seconds.
   float band = exp(-pow((aFace.y - (fract(t / 11.0) * 1.7 - 0.75)) * 4.5, 2.0)) * live;
@@ -123,7 +127,9 @@ void main() {
   // surface is as bright as the tone says, whatever SPREAD is.
   faceGlow *= 9.0 / (SPREAD * SPREAD);
   faceGlow /= soft * soft;
-  float faceBloom = (smoothstep(0.5, 0.95, lit) * 0.5 + rim * 0.7 + isCatch) * home;
+  // Only the rim and the catchlights glow: a glow on lit skin doubles the
+  // brightest places and flattens the rest.
+  float faceBloom = (rim * 0.7 + isCatch) * home;
 
   // ---- the planet -------------------------------------------------------------
   float shell = step(0.99, aBall.w);
@@ -175,13 +181,23 @@ void main() {
     float lead = pow(max(0.0, (cw - 0.7) / 0.3), 2.0);
     vec3 rp = vec3(uRingA.z * sw, uRingA.w * cw * uRingB.x, uRingA.w * uRingB.y * (cw - 1.0) + uRingC.z * lead);
     float shrink = 1.0 - uRingC.w * sw * sw;
-    // The thumbnail: the top of the card, five eighths as tall as it is wide.
-    vec2 on = vec2(across * uRingC.x, -0.5 * uRingC.y + (down + 0.5) * uRingC.x * 0.625) * shrink;
+    // The cards are solid and stand in front of this canvas, so light that
+    // landed on a card would be hidden by it. It lands round the card instead:
+    // on the edge of the thumbnail (the top of the card, five eighths as tall
+    // as it is wide) and a little outside it, so each build is framed in light.
+    vec2 box = vec2(0.5 * uRingC.x, 0.3125 * uRingC.x);
+    float along = (across + 0.5) * 4.0 * (box.x + box.y);
+    vec2 edge = along < 2.0 * box.x ? vec2(along - box.x, -box.y)
+      : along < 2.0 * box.x + 2.0 * box.y ? vec2(box.x, along - 2.0 * box.x - box.y)
+      : along < 4.0 * box.x + 2.0 * box.y ? vec2(3.0 * box.x + 2.0 * box.y - along, box.y)
+      : vec2(-box.x, 4.0 * box.x + 3.0 * box.y - along);
+    edge *= 1.0 + 0.09 * (down + 0.5);
+    vec2 on = (edge + vec2(0.0, -0.5 * uRingC.y + box.y)) * shrink;
     float ps = uRingB.z / (uRingB.z - rp.z);
     land = uRingA.xy + (rp.xy + on) * ps;
     // Cards at the back of the ring are dark and small: so is their light.
     plate = 0.6 * smoothstep(-0.25, 0.8, cw);
-    plateSize = uRingC.x * 0.045 * ps * shrink;
+    plateSize = uRingC.x * 0.03 * ps * shrink;
   } else {
     // A phone: two level rows, where the thumbnails drift.
     float row = step(3.14159, mod(aMore.y, 6.28318)) - 0.5;
@@ -233,8 +249,10 @@ varying float vHot;
 void main() {
   vec2 d = gl_PointCoord - 0.5;
   // A Gaussian splat: neighbours overlap and add up to one even surface.
-  float a = exp(-dot(d, d) * 18.0) * vGlow * uGain * 0.6;
-  vec3 col = mix(uDeep, uPale, smoothstep(0.0, 0.62, vTone));
+  float a = exp(-dot(d, d) * 18.0) * vGlow * uGain * 0.75;
+  // The colour pales gently with the light, so brightness follows the lighting
+  // and is not doubled by the ramp.
+  vec3 col = mix(uDeep, uPale, clamp(vTone * 0.9, 0.0, 1.0));
   col = mix(col, uHot, clamp(vHot, 0.0, 1.0));
   gl_FragColor = vec4(col * a, a * 0.55);
 }

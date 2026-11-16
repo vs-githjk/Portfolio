@@ -217,9 +217,13 @@ skin_cap = float(np.percentile(tone[skin_tone], 80))
 # the eyes. They come down to skin level so the grin is not the brightest thing.
 pale = smooth(lum, 0.42, 0.6) * (1 - smooth(sat, 0.2, 0.34))
 teeth = pale * (1 - smooth(mouth, 0.85, 1.1))
-whites = (1 - smooth(sat, 0.16, 0.3)) * smooth(lum, 0.3, 0.5) * (1 - smooth(eyes, 0.8, 1.05))
-tone = tone * (1 - teeth) + skin_cap * 0.92 * teeth
-tone = tone * (1 - whites) + skin_cap * 0.78 * whites
+whites = (1 - smooth(sat, 0.2, 0.36)) * smooth(lum, 0.2, 0.36) * (1 - smooth(eyes, 0.8, 1.05))
+tone = tone * (1 - teeth) + skin_cap * 1.0 * teeth
+tone = tone * (1 - whites) + skin_cap * 0.82 * whites
+# The sockets sit in the photo's own shadow. Half of that goes, so the eyes are
+# set in the face, not sunk in two dark holes (the irises and lashes stay dark).
+socket = (1 - smooth(eyes, 1.0, 2.0)) * smooth(soft, 0.16, 0.3)
+tone = tone + (np.maximum(tone, skin_cap * 0.8) - tone) * 0.5 * socket
 # Stubble reads as a moustache once the colour is gone: lift the upper lip most
 # of the way to the skin around it, and the jaw a little.
 lip_top = np.clip(1.6 * np.exp(-(((xx - 604) / 95) ** 2 + ((yy - 490) / 22) ** 2)), 0, 1)
@@ -231,14 +235,12 @@ tone = tone + (np.maximum(tone, skin_cap * 0.97) - tone) * 0.9 * lip_top
 tone = tone + (np.maximum(tone, skin_mid * 0.8) - tone) * 0.45 * jawline
 # The catchlights: the few brightest pixels inside each eye.
 iris = np.minimum(np.hypot(xx - 515, yy - 380), np.hypot(xx - 682, yy - 357))
-bright = (lum > 0.6) & (iris < 15)
-labels, n = ndi.label(bright)
-catch = np.zeros_like(bright)
-for cx, cy in [(515, 380), (682, 357)]:
-    # One catchlight an eye: the largest bright spot on the iris.
-    here = [(ndi.sum(bright, labels, k), k) for k in np.unique(labels[int(cy) - 15:int(cy) + 16, int(cx) - 15:int(cx) + 16]) if k > 0]
-    if here:
-        catch |= labels == max(here)[1]
+# The catchlights: bright pixels that sit on the dark of the iris itself. The
+# bright rim of the white beside the iris is not one: marked hot, it draws a
+# white sliver that reads as a glitch in the eye.
+on_iris = ndi.gaussian_filter(lum, 5) < 0.34
+catch = (lum > 0.6) & (iris < 12) & on_iris
+print('catchlight pixels', int(catch.sum()))
 # Hair: a low even level carrying its strands.
 strands = np.clip((soft - ndi.gaussian_filter(soft, 6)) * 5.0, -0.12, 0.34)
 hair_tone = 0.1 + strands + 0.5 * np.clip(soft - 0.08, 0, 0.3)
@@ -246,8 +248,8 @@ tone = tone * (1 - hair_soft) + hair_tone * hair_soft
 # The shirt: one quiet level, its folds and placket carried by the normals.
 shirt_tone = 0.24 + 0.5 * np.clip(soft - ndi.gaussian_filter(soft, 9), -0.2, 0.05)
 tone = tone * (1 - shirt) + shirt_tone * shirt
-knee = skin_cap * 0.96
-tone = np.where(tone > knee, knee + (tone - knee) * 0.25, tone)  # the photo's own shine is not our light
+knee = float(np.percentile(tone[skin_tone], 60))
+tone = np.where(tone > knee, knee + (tone - knee) * 0.2, tone)  # the photo's own shine is not our light
 tone = np.clip(tone, 0.03, 1.0) ** 0.9
 tone = np.where(catch, 1.0, tone)
 

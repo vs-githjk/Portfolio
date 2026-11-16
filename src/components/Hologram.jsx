@@ -284,7 +284,7 @@ export default function Hologram() {
         kick();
       })
       .catch((error) => {
-        if (import.meta.env.DEV) console.error(error);
+        if (import.meta.env.DEV) console.error(`hologram off: ${error && error.message}`);
         off();
       });
 
