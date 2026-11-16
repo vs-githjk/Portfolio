@@ -77,7 +77,7 @@ Three rules encode the thesis:
 | Vista: surface | The sea's surface in section; the reader dives through it. One line: "Under the surface: the work." |
 | Experience (sea) | Where he has worked; every result is a complete statement. Moment: light shafts and caustics, and a sounding line whose weight sinks as the roles are read |
 | Vista: giant | The amber ringed giant and the manta |
-| Builds (sea) | Two flagship panels (PrismAI, then DuelWise), the featured builds, the paper, the compact grid. Moment: a shaft of light finds the card under the pointer |
+| Builds (sea) | Three flagship panels (PrismAI, DuelWise, SNAPBACK), the featured builds, the paper, the compact grid. Moment: a shaft of light finds the card under the pointer |
 | Vista: shore | A whole screen: warm light, the camera rises through a second waterline into dusk on a desert shore. One line: "On solid ground: the proof." |
 | Crew (earth) | The Now building panel (Master Agents, a character select screen with the crew's art), now its own `<section class="sec crew">`: the command post, with the mast, the lamp and one figure on the hill behind it |
 | Highlights | Four one-line statements, after the stories they summarize, cut as four strata of rock (one column of beds, palest on top) |
@@ -93,9 +93,9 @@ not read as the same module twice. Keep them visually distinct.
 
 ## The orbit ring (`components/Orbit.jsx`)
 
-Eleven glass cards on an elliptical CSS 3D ring around the name, his strongest, in
+Twelve glass cards on an elliptical CSS 3D ring around the name, his strongest, in
 Vidyut's order: PrismAI, DuelWise, BetterBill, MVR, Vytal, Match Day, Terrametric, the paper,
-PrismKeep, FireSight, Fish Market (DuelWise added Nov 12). Everything else lives only in Builds (Oct 28: fourteen
+PrismKeep, FireSight, Fish Market, with SNAPBACK third (DuelWise added Nov 12, SNAPBACK Nov 15). Everything else lives only in Builds (Oct 28: fourteen
 was too crowded). Each card is one link to its Builds entry (`#build-<id>`); a slide
 `id` in `hero.carousel.slides` must equal the Builds entry id.
 

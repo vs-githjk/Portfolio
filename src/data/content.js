@@ -163,6 +163,18 @@ export const hero = {
         },
       },
       {
+        id: 'snapback',
+        title: 'SNAPBACK',
+        oneLiner: 'Checks a rental ad before you pay.',
+        badge: 'Live · HackPrinceton',
+        badgeKind: 'live',
+        tone: 'light',
+        image: {
+          src: '/builds/ring/snapback.webp',
+          alt: 'SNAPBACK landing page: "Trust the home, not the ad." beside a cutaway 3D house over a city',
+        },
+      },
+      {
         id: 'betterbill',
         title: 'BetterBill',
         oneLiner: 'Finds hospital charges you may not owe.',
@@ -329,7 +341,7 @@ export const builds = {
   eyebrow: "What I've built",
   heading: 'Builds',
   intro:
-    'Nineteen builds, my two strongest first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+    'Twenty builds, my three strongest first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
 
   /* ---- Flagship panels: PrismAI, then DuelWise ---------------------------- */
   /* Sources (Nov 12 2026): PrismAI's live site meetprismai.com, its README on
@@ -461,6 +473,67 @@ export const builds = {
       links: [
         { label: 'Play it', href: 'https://duelwise.app' },
         { label: 'Source', href: 'https://github.com/vs-githjk/duelwise' },
+      ],
+    },
+    {
+      /* Sources (Nov 15 2026): repo DevSingh05/snapback (README "Measured" and
+         "Honest limits", 314 commits, 191 his), plan/devpost-final.md, live at
+         snapback-navy.vercel.app. HackPrinceton Fall 2026, team of 4. No prize
+         (Vidyut, Nov 15): no award badge. */
+      id: 'snapback',
+      kind: 'Hackathon · HackPrinceton 2026 · team of 4',
+      title: 'SNAPBACK',
+      descriptor: 'trust the home, not the ad',
+      when: 'Nov 2026 · live at snapback-navy.vercel.app',
+      oneLiner:
+        'A renter near Houston paid $2,200 for a house the poster did not own. SNAPBACK checks the ad against the home’s own record before you pay, and tells you who to really call.',
+      awards: [],
+      role: 'The idea was mine, and I helped orchestrate the build.',
+      body: [
+        'Send it the ad by iMessage or on the web: a link, its text or screenshots. It checks **the place, the person and the price** against the home’s own record and gives one verdict in plain words, from “Checks passed” to “Don’t pay. Something here doesn’t match.” Code sets every verdict; no model sees or chooses it, and SNAPBACK never pays, books or sends anything for you.',
+        'The wow is literal: it **puts the ad’s photos inside the building’s own Matterport 3D scan** (DINOv2 retrieval, then DISK and LightGlue matching with RANSAC). A photo from a different building is a red flag. It also matches the ad’s phone against the leasing office on record without ever showing the digits, flags lookalike links and a rent far below the building’s lowest, and a ring finder spots the same scam reworded across many ads.',
+        'It publishes its limits: aerial imagery stays evidence only because one held-out next-door building would still pass, and the ring finder’s numbers come from synthetic data, so they are not claimed as real-world accuracy.',
+      ],
+      now: {
+        label: 'Next',
+        text: 'Telling scam rings apart from each other, and matching building footprints so aerial imagery can earn a place in the verdict.',
+      },
+      // README "Measured", LIVE rows (real CoStar kit data, real listing photos).
+      metrics: [
+        { value: '43 of 48', label: 'real listing photos placed in\nthe right home, 0 in a wrong one' },
+        { value: '0 of 30', label: 'decoy photos placed in\nthe claimed building' },
+      ],
+      stack:
+        'Python · FastAPI · DINOv2 · DISK and LightGlue (kornia) · LangChain deepagents · LangSmith · Claude · Photon (iMessage) · ElevenLabs · MapLibre · CoStar · Matterport · Vercel',
+      media: {
+        video: '',
+        lead: {
+          image: '/builds/snapback-hero.webp',
+          alt: 'SNAPBACK landing page: "Trust the home, not the ad." beside a cutaway 3D house over a city, with Check an ad and See how it works',
+          badge: '',
+          caption: 'Live at snapback-navy.vercel.app. The house is a drawing, not a real home.',
+        },
+        stack: [
+          {
+            image: '/builds/snapback-scan.webp',
+            alt: 'A listing photo placed inside the building’s Matterport scan beside its floor plan: 43 of 48 in the right home, 0 in the wrong one, LIVE run',
+            caption: 'An ad’s photo, found inside the building’s own 3D scan.',
+          },
+          {
+            image: '/builds/snapback-report.webp',
+            alt: 'A SNAPBACK report: "Hold off: it asks for money before you’ve seen the place", with the reasons and a Who do I call? button (sample photos)',
+            caption: 'One verdict, the reasons, and who to call (sample case).',
+          },
+          {
+            image: '/builds/snapback-rings.webp',
+            alt: 'The investigator view: 10 of 10 seeded scam rings flagged in a 90-day synthetic stream, median 2.5 days to detect',
+            caption: 'The ring finder over a 90-day stream (synthetic data).',
+          },
+        ],
+      },
+      links: [
+        { label: 'Try it', href: 'https://snapback-navy.vercel.app' },
+        { label: 'Source', href: 'https://github.com/DevSingh05/snapback' },
       ],
     },
   ],
