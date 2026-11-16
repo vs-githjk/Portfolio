@@ -261,15 +261,16 @@ export function createWyrmStations({ live, phone }) {
       const limb = (x) => S - (sx * sx - x * x) / (2 * env.sun.r);
       // With margins it comes down out of the night on the right, where the section
       // has no text, and dives into the sun. On a phone it keeps to the horizon's own
-      // band: in from the left, along the sky just over the limb.
+      // band: in from the left, low over the night side of the world (light on dark,
+      // where it reads), then up into the sun on the limb.
       const way = phone
         ? [
-            [-w / 2 - 220, limb(-w / 2) - 70, 0, 1],
-            [-w / 2 - 20, limb(-w / 2) - 66, 0, 1],
-            [-w * 0.2, limb(-w * 0.2) - 60, -40, 0.96],
-            [sx - w * 0.2, S - 52, -140, 0.8],
-            [sx - 10, S - 34, -240, 0.56],
-            [sx + 6, S - 18, -289, 0.34],
+            [-w / 2 - 220, limb(-w / 2) - 22, 0, 1],
+            [-w / 2 - 20, limb(-w / 2) - 20, 0, 1],
+            [-w * 0.2, limb(-w * 0.2) - 20, -40, 0.96],
+            [sx - w * 0.22, S - 26, -140, 0.82],
+            [sx - w * 0.06, S - 46, -240, 0.58],
+            [sx + 4, S - 66, -289, 0.34],
           ]
         : [
             [w * 0.6, S - h * 0.6, 0, 1],
