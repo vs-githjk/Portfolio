@@ -85,7 +85,7 @@ export const welcome = {
   figure: {
     src: '/holo/wizard-1.webp',
     phone: '/holo/wizard-1-phone.webp',
-    width: 777,
+    width: 776,
     height: 1400,
     /* Where his face is in the picture (its centre across and down, and its reach,
        all as shares of the picture's height and width: x of the width, y and r of
