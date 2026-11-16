@@ -878,7 +878,7 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
                   )}
                   <span className="card-one">{s.oneLiner}</span>
                   <span className="card-cta">
-                    <span>{words.slideCta} →</span>
+                    <span>{s.cta ?? words.slideCta} →</span>
                     <span className="card-idx" aria-hidden="true">
                       {pad2(k + 1)} / {pad2(N)}
                     </span>

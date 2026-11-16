@@ -1,4 +1,6 @@
-import { proofOfWork } from '../data/content';
+import { hero, proofOfWork } from '../data/content';
+import { RING_HOME } from '../data/world';
+import RingStage from './RingStage';
 import { EV } from '../kit/contract';
 import Heatmap from './Heatmap';
 import { put } from './counts';
@@ -27,6 +29,16 @@ const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'
 const onDevpost = proofOfWork.wins.items.filter((w) => w.href.includes('devpost.com'));
 const devpost = { prizes: onDevpost.length, projects: new Set(onDevpost.map((w) => w.project)).size };
 
+/* The ring of wins: when Proof of work is the ring's home (RING_HOME), each card is
+   one win, with the thumbnail of the build that won it, and opens the win's public
+   page (or the build's entry on this page where there is none yet). */
+const ringed = RING_HOME === 'proof';
+const winSlides = proofOfWork.wins.items.map((w, i) => {
+  const build = hero.carousel.slides.find((s) => s.title === w.project) ?? hero.carousel.slides[0];
+  return { id: `win-${i}`, title: w.project, oneLiner: w.event, badge: `${w.place} · ${w.prize}`, badgeKind: 'win', tone: build.tone, image: build.image, href: w.href || `#build-${build.id}`, cta: w.href ? undefined : proofOfWork.wins.ring.ctaBuild };
+});
+const winWords = { ...hero.carousel, label: proofOfWork.wins.ring.label, slideCta: proofOfWork.wins.ring.cta };
+
 const TZ = 'America/New_York'; // fixed, so the date reads the same for every viewer
 const bare = (href) => href.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
 const tell = (id) => window.dispatchEvent(new CustomEvent(EV.focus, { detail: { kind: 'win', id } }));
@@ -51,19 +63,27 @@ export default function ProofOfWork() {
   const g = proofOfWork.github;
   const { wins } = proofOfWork;
   const { updated } = build();
+  const head = (
+    <div className="sec-head reveal">
+      <span className="eyebrow">
+        {proofOfWork.eyebrow}
+      </span>
+      <h2>
+        {proofOfWork.heading} <em>{proofOfWork.headingEm}</em>
+      </h2>
+      <p>{proofOfWork.intro}</p>
+    </div>
+  );
 
   return (
-    <section className="sec" id="verify" data-realm="earth">
+    <section className="sec" id="verify" data-realm="earth" data-ring-home={ringed ? '' : undefined}>
+      {ringed && (
+        <RingStage home="proof" mode="around" slides={winSlides} words={winWords} hrefFor={(s) => s.href}>
+          {head}
+        </RingStage>
+      )}
       <div className="wrap">
-        <div className="sec-head reveal">
-          <span className="eyebrow">
-            {proofOfWork.eyebrow}
-          </span>
-          <h2>
-            {proofOfWork.heading} <em>{proofOfWork.headingEm}</em>
-          </h2>
-          <p>{proofOfWork.intro}</p>
-        </div>
+        {!ringed && head}
 
         <div className="pow-wins-head reveal" id="wins">
           <h3 className="eyebrow">{wins.eyebrow}</h3>

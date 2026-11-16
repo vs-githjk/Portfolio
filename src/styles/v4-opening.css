@@ -414,6 +414,10 @@ html[data-holo='off'] .hub {
    its full radius; its centre block keeps the page's column. */
 .ring-stage {
   overflow-x: clip;
+  /* The plate takes the accent of the realm it stands in (tokens built from other
+     tokens are declared again where the realm changes). */
+  --plate-line: color-mix(in srgb, var(--acc-2) 42%, var(--hair-2));
+  --plate-lit: var(--acc);
 }
 
 .ring-centre {
@@ -469,4 +473,26 @@ html[data-holo='off'] .hub {
 .hero-card .who-text,
 .hero-in .who-main {
   grid-area: auto;
+}
+
+/* In Proof of work the whole ring turns around the heading, a card a win; on a
+   wide window it stands in for the plaques (they return below the breakpoint,
+   where there is no ring). */
+.ring-stage[data-home='proof'] .sec-head {
+  margin-bottom: 0;
+}
+
+.ring-stage[data-home='proof'] .drift {
+  margin: 0;
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .ring-stage[data-home='proof'] .ring-centre {
+    width: min(100%, 620px);
+  }
+
+  .sec[data-ring-home] .plaques,
+  .sec[data-ring-home] .pow-wins-head {
+    display: none;
+  }
 }
