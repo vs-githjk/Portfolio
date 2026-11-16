@@ -132,7 +132,16 @@ export function createWyrmStations({ live, phone }) {
       way.push([left - 400, -g.r * 1.32, -1100, 0.36]);
       const lap = way.length - 3; // the waypoint where the lap ends and the leaving begins
       const path = makePath(way);
-      st.pass = { rect: giant, scale, path, lapEnd: path.lengthAt(lap), boxes: boxesOf(giant), band: [giant.top, giant.bottom] };
+      // Its sky is the whole row the window sits in (a heading may share it: the text
+      // there is kept out box by box), up through the clear space over that row.
+      const up = giant.el.parentElement;
+      const row = up && !up.matches('main, body, .page') ? up.getBoundingClientRect() : null;
+      const sec = giant.el.closest('section')?.getBoundingClientRect();
+      const y = window.scrollY;
+      const top = Math.max(giant.top - env.h * 0.4, Math.min(giant.top, sec ? sec.top + y : giant.top, row ? row.top + y : giant.top));
+      const bottom = Math.max(giant.bottom, row ? row.bottom + y : giant.bottom);
+      const sky = { el: giant.el, top, bottom, h: bottom - top };
+      st.pass = { rect: sky, scale, path, lapEnd: path.lengthAt(lap), boxes: boxesOf(sky, [top, bottom]), band: [top, bottom] };
     }
 
     // 3 The breach: up out of the water through the second waterline, into the dusk.

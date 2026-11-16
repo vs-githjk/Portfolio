@@ -132,7 +132,7 @@ export default function World() {
     function readHue(now) {
       if (now - hueAt < 400) return;
       hueAt = now;
-      const crew = document.querySelector('.crew');
+      const crew = document.querySelector('[data-world-anchor="camp"]') ?? document.querySelector('.crew');
       if (!crew) return;
       const r = crew.getBoundingClientRect();
       if (r.bottom < -window.innerHeight || r.top > window.innerHeight * 2) return;

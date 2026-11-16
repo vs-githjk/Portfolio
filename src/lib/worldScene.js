@@ -987,7 +987,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     home.giant = anchorRect('giant')?.mid ?? H * 0.2;
     home.giantH = anchorRect('giant')?.h ?? h * 0.44;
     const shore = anchorRect('shore');
-    const crew = rect('.crew');
+    const crew = anchorRect('camp');
     home.shore = shore ? shore.top : crew ? crew.top - h : H * 0.55;
     home.shoreH = shore ? shore.h : h;
     home.crew = crew ? crew.top : home.shore + home.shoreH;
@@ -1077,7 +1077,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   const clock = { t: 0, s: 0, scatter: 0 };
   const dawn = { want: 0, now: 0 };
   const state = { camX: 0, camH: 60, pitch: 0, sunTan: 0.1, day: 1, night: 0, lamp: 0, moon: 0, moonDir: new Vector3(0.55, 0.62, -0.3).normalize(), fine: 1, pulse: 0, hold: 0 };
-  const hue = { want: C.ember.clone(), amt: 0 };
+  const hue = { want: C.ember.clone(), amt: 0, id: -1 };
   const frame = { t: 0, scroll: 0, line: 0, cam: { x: 0, y: 0, z: 1 }, top: 0, exit: 0, rise: 0, dpr: 1, resY: 1 };
   function wrap(y, span) {
     return camY + ((((y - camY + span / 2) % span) + span) % span) - span / 2;
@@ -1318,7 +1318,11 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     }
 
     // The crew's lamp takes the chosen character's colour.
-    if (hue.amt > 0) land.lampCol.lerp(hue.want, 0.08);
+    // A member's colour belongs to the camp: it is there only while the camp's own
+    // panel is in the window, and it is ember again everywhere else.
+    const atCamp = home.crew - scroll < h * 1.1 && home.crewEnd - scroll > -h * 0.1;
+    if (hue.amt > 0) land.lampCol.lerp(atCamp ? hue.want : C.ember, 0.08);
+    land.fires?.choose(atCamp ? hue.id : -1, hue.want);
 
     // Draw. Nothing of the world is in the window above the first surface.
     renderer.info.reset();
@@ -1419,7 +1423,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     },
     /** world:agent: which member of the crew is on the stage (their fire stands up). */
     setAgent(id) {
-      land.fires?.choose(id ?? -1, id == null ? null : hue.want);
+      hue.id = id ?? -1;
     },
     /** world:travel { dir }: the snow streaks along the hop for half a second. */
     setTravel(dir) {

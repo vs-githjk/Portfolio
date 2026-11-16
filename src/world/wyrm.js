@@ -102,7 +102,7 @@ void main(){
   float head = step(0.5, vSkin.w) * step(vSkin.w, 1.5);
   float a = 0.035 + 0.5 * edge + scale * (0.1 + 0.26 * (1.0 - fres)) + seam * (0.07 + 0.2 * fres);
   a *= 0.55 + 0.45 * vSkin.z;
-  a = a * (1.0 + 0.3 * head) + vGlow * (0.22 + 0.45 * scale + 0.4 * edge);
+  a = a * (1.0 + 0.3 * head) + vGlow * (0.5 + 0.5 * scale + 0.5 * edge);
   float lv = clamp(0.2 + 0.45 * vSkin.z + 0.5 * edge + 0.25 * scale + vGlow, 0.0, 1.0);
   gl_FragColor = lit(ramp(lv, wf), min(a, 1.0), wf, p);
 }`;
