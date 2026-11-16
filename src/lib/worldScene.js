@@ -956,7 +956,7 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
   /* Quality: 0 is everything; 1 and 2 give back pixels and fine detail when the
      frames run long (World.jsx decides, with hysteresis). */
   let quality = 0;
-  const sizes = { gr: 100, mr: 60, moonX: 0 };
+  const sizes = { gr: 100, mr: 60, moonX: 0, limbZ: -300 };
 
   function layout() {
     w = window.innerWidth;
@@ -1076,7 +1076,11 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
     home.moonDoc = phone ? (home.value + (head ? head.top : home.value + 56)) / 2 + 4 : home.value + h * 0.3;
     // The lit limb crosses the horizon spacer; the body runs down under the footer.
     const hr = w * 1.7 + 500;
-    place(horizon, -300, home.foot, 0, hr + 4, hr);
+    // The limb's depth sets how far it runs ahead of the page as the reader nears the foot. On a
+    // phone the last links stand 56px over it, so it is kept near the page (at -300 it rose
+    // about 90px early and its bright rim crossed the last link for a moment).
+    sizes.limbZ = phone ? -Math.round(camZ * 0.12) : -300;
+    place(horizon, sizes.limbZ, home.foot, 0, hr + 4, hr);
     sizes.hr = hr;
     flags.layout();
     winStars.layout({ w, h });
@@ -1312,13 +1316,13 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
       horizon.userData.air.material.uniforms.uGain.value = 0.7 + 1.5 * b;
       horizon.userData.body.material.uniforms.uRimGain.value = 0.8 + 1.4 * b;
       if (sunrise.visible) {
-        const k = view(-300);
+        const k = view(sizes.limbZ);
         const sx = w * (phone ? 0.2 : 0.17);
         const sy = 4 + (sx * sx) / (2 * sizes.hr);
-        sunrise.position.set(sx * k, -home.foot - sy * k, -290);
+        sunrise.position.set(sx * k, -home.foot - sy * k, sizes.limbZ + 10);
         sunrise.scale.setScalar((phone ? 260 : 420) * k * (0.3 + 0.7 * b));
         sunrise.material.uniforms.uAlpha.value = 0.95 * b;
-        flare.position.set(sx * k, -home.foot - sy * k, -289);
+        flare.position.set(sx * k, -home.foot - sy * k, sizes.limbZ + 11);
         flare.scale.set(w * 1.3 * k * (0.2 + 0.8 * b), 22 * k, 1);
         flare.material.uniforms.uAlpha.value = 0.55 * b;
       }
