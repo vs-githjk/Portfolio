@@ -1691,9 +1691,9 @@ export const contact = {
     made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph, with points of light baked from it that gather into the picture and let go.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
     measured: 'Lighthouse, phone profile, {date}: performance {performance}, accessibility {accessibility}, best practices {bestPractices}, SEO {seo}.',
-    // Measured Nov 15 2026 on the production build (npm run build, npm run preview), Lighthouse 12.2.1,
-    // --form-factor=mobile: three quiet runs gave 96, 100, 100, 100 (LCP 2.6 s, TBT 0 to 10 ms).
-    lighthouse: { date: 'Nov 15 2026', performance: 96, accessibility: 100, bestPractices: 100, seo: 100 },
+    // Measured Nov 16 2026 on the production build (npm run build, vite preview), Lighthouse 12.2.1,
+    // --form-factor=mobile: two runs gave 96, 100, 100, 100 (LCP 2.6 s, TBT 0 to 10 ms, CLS 0).
+    lighthouse: { date: 'Nov 16 2026', performance: 96, accessibility: 100, bestPractices: 100, seo: 100 },
     llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
   },
 };
