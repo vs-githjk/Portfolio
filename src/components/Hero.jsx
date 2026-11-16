@@ -2,7 +2,6 @@ import { useRef } from 'react';
 import { hero } from '../data/content';
 import Orbit from './Orbit';
 import Drift from './Drift';
-import Rich from './Rich';
 import { GitHubIcon, LinkedInIcon } from './Icons';
 
 /* The first screen. The name is the monument at the centre, lit from above by
@@ -51,7 +50,16 @@ export default function Hero() {
             <p className="identity">{hero.identity}</p>
             <p className="identity-sub">{hero.identitySub}</p>
             <p className="cred">
-              <Rich text={hero.credential} />
+              {hero.credential.map((group, g) => (
+                <span className="cred-g" key={g}>
+                  {group.flatMap((item, k) => [
+                    k > 0 ? ' ' : null,
+                    <span className="cred-it" key={item}>
+                      {item}
+                    </span>,
+                  ])}{' '}
+                </span>
+              ))}
             </p>
             <div className="actions">
               {hero.actions

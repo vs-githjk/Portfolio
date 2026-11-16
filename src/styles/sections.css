@@ -952,6 +952,36 @@ html[data-holo='off'] .welcome-face {
   max-width: 70ch;
 }
 
+/* The credentials are two groups of two. A dot leads every item but the first of
+   its group; the dot between the groups shows only where all four share a line
+   (1200px and up). Below that each group is its own line. */
+.cred-g,
+.cred-it {
+  white-space: nowrap;
+}
+
+.cred-it + .cred-it::before,
+.cred-g + .cred-g::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 0.55em 0 0.3em;
+  border-radius: 50%;
+  background: currentColor;
+  vertical-align: 0.28em;
+}
+
+@media (max-width: 1199px) {
+  .cred-g {
+    display: block;
+  }
+
+  .cred-g + .cred-g::before {
+    content: none;
+  }
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

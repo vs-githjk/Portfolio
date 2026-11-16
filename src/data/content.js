@@ -107,9 +107,13 @@ export const hero = {
      on a phone). "5× hackathon winner" = SF Startup Challenge, super{set} SF, Cal Hacks 13.0, LA Hacks,
      Bitcamp. Six first places = 1st overall (SF Startup Challenge) + Track 1 (super{set} SF) + Visa + Photon (LA Hacks AI
      Hackathon) + Real World + Data Science (Bitcamp). */
-  /* Written with \\u00a0 inside each item, so an item never splits across lines
-     (a line may break only after a dot). */
-  credential: 'Comcast\u00a0· Sherlock\u00a0AI\u00a0· 5×\u00a0hackathon\u00a0winner\u00a0· arXiv\u00a0first\u00a0author',
+  /* Two groups of two. An item never splits, a group never splits, and where the
+     line is too narrow for all four the break falls between the groups, so no
+     line ends on a separator (the dots are drawn by the stylesheet). */
+  credential: [
+    ['Comcast', 'Sherlock AI'],
+    ['5× hackathon winner', 'arXiv first author'],
+  ],
   locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA',
   /* Buttons. Email is the one primary action. */
   actions: [
