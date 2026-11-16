@@ -86,7 +86,7 @@ Three rules encode the thesis:
 | Principles | How he thinks about building (2x2 tiles that lean to the pointer) |
 | Value | What that is worth to you (hairline rows). Moment: a moon that fills from crescent to full as the rows are read |
 | Toolkit | The inventory: a label and a line of tools per group; the marks between tools are small stars |
-| Contact | The ask: his studio headshot (the one photograph file of his face; the welcome is that face drawn in coloured points, the hero a sunset silhouette), then the email as the hero of the section, at dawn on the limb of the earth |
+| Contact | The ask: his studio headshot (the welcome shows the same studio headshot in a round window; the hero is a sunset silhouette), then the email as the hero of the section, at dawn on the limb of the earth |
 
 Principles and Value are deliberately different shapes (tiles vs hairline rows) so they do
 not read as the same module twice. Keep them visually distinct.
@@ -148,30 +148,33 @@ HTML: an empty box for the face, the greeting, the cue. `Hologram.jsx` draws the
 fixed background stack with plain WebGL (no three.js).
 
 **The face is not blue light any more (Nov 15 to 16, Vidyut: the realistic blue version "looks
-like a bloody horror thing... make me look nice").** It is a portrait: him in his own colours,
-on the photo's own studio backdrop, inside a round window, drawn in soft painted points. It
-only becomes blue light when it lets go (the peel into the planet). How that was decided, so
+like a bloody horror thing... make me look nice").** It is a portrait: the studio photograph
+itself, crisp, on its own backdrop, inside a round window. Points assemble him at the start
+and take the picture apart when it lets go; it only becomes blue light then (the peel into
+the planet). How that was decided, so
 nobody repeats it: eleven stills (two of them controls) were judged cold by three model
 families (friendly and creepy, 1 to 10). Every face made of blue light (the realistic stipple, a hood of light, an engraved
 hatch, a painterly glow, each also tried with warm skin) was called ghostly, spectral or
 uncanny; his real photo cut out on the dark ground was too; his own colouring in a lit, framed
 picture scored within a point of the untouched headshot with the two judges that could tell
 images apart (built portrait: friendly 8 to 9, creepy 1 to 2; headshot: 8 and 1). The third, Gemini flash-lite, scored the untouched
-headshot creepy 6, so its scores carry no information here. The judges also call the built
-portrait soft and low-resolution (beauty 3 to 7): it is friendly, not yet gorgeous. A crisp
-version needs the photo itself as a texture, which is Vidyut's call (it has never been
-shipped in the welcome). Do not go back to a face of monochrome light, a hood, a halo ring, a
-cut-out head on the dark ground, a dissolving bust, or glowing eyes: each was named as the
-eerie part by a judge.
+headshot creepy 6, so its scores carry no information here. A first build drew the portrait
+with the points alone: friendly, but every judge called it soft and low-resolution. So the
+photograph itself is now shipped as a texture (the conductor's decision, Nov 16: the headshot
+is already public at Contact). Do not go back to a face of monochrome light, a hood, a halo
+ring, a cut-out head on the dark ground, a dissolving bust, or glowing eyes: each was named
+as the eerie part by a judge.
 
-- The points are baked offline by `scripts/bake-hologram.py` from the studio headshot
-  (`~/Portfolio-notes/design/portrait-1200.jpg`) into `public/holo/face-a.bin` (18,000 points,
-  141 KB, all a phone downloads) and `face-b.bin` (24,000 more, 205 KB, the fill-in a desktop
-  adds). Eight bytes a point: position, real depth (Depth Anything V2 Small, so the head can
-  turn), a colour from the photograph (5-6-5 bits), how solid it is, and the spacing to its
-  neighbours. The photo file is still not shipped, but the points are now a soft, lower-detail
-  colour drawing of it, where before they held only tone. Re-run the script by hand if the
-  portrait changes (torch and transformers; the measurements at its top are for that source).
+- Everything is baked offline by `scripts/bake-hologram.py` from the studio headshot
+  (`~/Portfolio-notes/design/portrait-1200.jpg`; the Contact files in `public/` are only 480px
+  and are not registered to the points, so they are not the source) into `public/holo/`:
+  `face-1024.webp` (47 KB) and `face-512.webp` (15 KB, a phone's), the square the round window
+  sits in; `face-a.bin` (18,000 points, 141 KB, all a phone downloads) and `face-b.bin`
+  (24,000 more, 205 KB, the fill-in a desktop adds). Eight bytes a point: position, real
+  depth (Depth Anything V2 Small, so the head can turn), a colour from the photograph (5-6-5
+  bits, in the same grade as the texture), how solid it is, and the spacing to its
+  neighbours. Re-run the script by hand if the portrait changes (torch and transformers; the
+  measurements at its top are for that source).
 - Scroll is the timeline, counted from the top of the page to the hero (`lib/origin.js`,
   `heroOrigin()`): the face peels into a small planet of light (0.04 to 0.37), the planet has
   the window to itself over the empty run under the greeting (`--welcome-run`) and says its
@@ -191,28 +194,38 @@ eerie part by a judge.
 - Budget: mounted when the page is idle, after first paint; DPR capped at 1.75 (1.5 on a
   phone); a phone fetches and draws the base tier only; it draws every frame only while the
   scroll moves or the face is being drawn, about 30 a second otherwise, and not at all past the
-  hero or in a hidden tab. Mobile Lighthouse on the production build measured 97 and 98 on
-  the last round 3 commit (Nov 15; 98, 99, 99 two commits earlier), and the greeting was the
-  only LCP entry at 390 and 1440 (read with a PerformanceObserver: Lighthouse 12.2.1's own
-  LCP-element audit errors on this machine).
+  hero or in a hidden tab. Mobile Lighthouse on the production build measured 96, 98 and 97
+  with the photograph in place (Nov 16), and the greeting was the only LCP entry at 390 and
+  1440 (read with a PerformanceObserver: Lighthouse 12.2.1's own LCP-element audit errors on
+  this machine). The chunk is 12.9 KB gzipped.
 - Under `prefers-reduced-motion` it is one still frame that scrolls away with the page: no
   drawing in, no typing, no ball, no empty run.
-- **How the portrait is drawn.** Points are painted, not added: each soft splat covers what is
-  behind it (premultiplied alpha; a point writes its coverage while it is part of the picture
-  and none once it is light, so one blend mode serves both). The backdrop's points are drawn
-  first and his after, or wide backdrop splats crumble the edge of an ear. Nothing is cut out
-  (a cut-out figure on a flat disc was judged sloppy and floating); the window's wall, which
-  shows only above the photo's top edge, has the backdrop's colour. No light of ours falls on
-  him: the photograph's own is the flattering one (every relight was part of the horror). The
-  window is cut to the pixel in the fragment shader and has one quiet hairline at its rim, no
-  glow. Plain skin is taken from a smoother picture than the features are, so pores do not
-  come out as speckle. The glow pass runs only once light exists. Lessons that still hold:
-  a splat's size is the mean distance to its six nearest neighbours; `half` and `out` are
-  reserved words in GLSL ES, and a shader that fails to compile turns the scene off silently
-  (`data-holo='off'`; in dev the reason is logged), so a screenshot script must refuse to run
-  when it sees that. He is assembled toward the viewer (nearest points first), breathes, and
-  looks slowly from side to side and a little toward the pointer; the head turns on the neck
-  as one piece and the backdrop stays put (it sits on the turn's axis).
+- **How the portrait is drawn.** At rest: the photograph, on a mesh (96 by 96) that has the
+  points' own depth, so it turns with his head exactly as they would; not one point is drawn.
+  The image is loaded by script and lives only in the canvas, never in the page, so it cannot
+  become the largest contentful paint (checked: the greeting is still the only LCP entry). The
+  mesh reaches a little past the window's rim (the backdrop stands behind the picture plane,
+  so in perspective a mesh no wider than the window showed flat cuts at the sides). The window
+  is cut to the pixel in the fragment shader and has one quiet hairline at its rim, no glow.
+  Nothing is painted before he arrives (an empty grey disc used to show for half a second).
+  **Assembling:** from his eyes outward, points first and the photograph a beat behind them;
+  where the photograph has arrived the points step back. (Nearest-to-the-viewer first was
+  tried: for a third of a second it showed a face with holes for eyes.) **Letting go:** from
+  the outside in, the centre of his face last; the photograph fades from a place exactly as
+  its points take off from it, each point showing itself the moment it moves, in the colour
+  the picture had there, so the picture is never swapped for a softer copy: it is taken
+  apart. (No "eyes last" rule: two crisp eyes left hanging alone would be the wrong picture.)
+  Points are painted, not added, while they are picture (premultiplied alpha: a point writes
+  its coverage as paint and none as light, so one blend mode serves both), backdrop points
+  first and his after. If the photograph fails to load, the points are the picture, soft, as
+  in the first build. No light of ours falls on him: the photograph's own is the flattering
+  one. The glow pass runs only once light exists. Lessons that still hold: a splat's size is
+  the mean distance to its six nearest neighbours; `half` and `out` are reserved words in
+  GLSL ES, a uniform shared by a vertex and a fragment shader must have one precision, and a
+  shader that fails to compile or link turns the scene off silently (`data-holo='off'`; in
+  dev the reason is logged), so a screenshot script must refuse to run when it sees that. He
+  breathes and looks slowly from side to side and a little toward the pointer; the head turns
+  on the neck as one piece and the backdrop stays put (it sits on the turn's axis).
 - **The contract with the entry beats** (`lib/face.js`; the v3 entry is another lane's). The
   portrait keeps `<html data-holo>` (`in`, `seen`, `late`, `off`). It publishes its box and seed
   point on `<html>` as `--face-rect-x|y|w|h` and `--face-seed-x|y` (document pixels; also the
@@ -222,7 +235,11 @@ eerie part by a judge.
   forms on the seed (the middle of the window across, 58% down the box); when it is removed
   the scroll drives it again. Checked Nov 16: at `--face-out: 1` the planet's lit extent is
   centred within 13px of the seed at 1440 and 1px at 390, and removing the property restores
-  the picture.
+  the picture (re-checked with the photograph in place). The box is the round window's
+  bounding square. The portrait has its own dissolve (the photograph is taken apart into
+  points, see above), so the spec's fallback (scaling the canvas toward the seed) is not
+  needed. The planet it becomes has no ring; the v3 spec's "ring opens" beat assumes one,
+  and that is the entry lane's to settle.
 - **The ball is a small planet with no ring** (the one ringed planet on the page is the giant
   in the sea): a shell of points of the page's blue light, lit from the upper left (a day side, a soft
   terminator, a bright limb) round a faint core. The face peels into it from the outside in:
