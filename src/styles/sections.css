@@ -4332,3 +4332,39 @@ html[data-holo='off'] .welcome-face {
     will-change: auto;
   }
 }
+
+/* ==========================================================================
+   VISTAS OVER THE LIT WORLD (world lane, round 3)
+   The line on a waterline now crosses lit sand, a bright surface and a low sun
+   as the page moves. Its text sits on a feathered shade (no edge, a little
+   wider than the words), so it keeps AA contrast on any part of the scene
+   without counting its halo.
+   ========================================================================== */
+.vista-text {
+  position: relative;
+  display: inline-block;
+}
+
+html[data-world='on'] .vista-text::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -34px -96px;
+  background: color-mix(in srgb, var(--vista-shade) 46%, transparent);
+  pointer-events: none;
+  mask-image:
+    linear-gradient(to right, transparent, var(--ink) 96px, var(--ink) calc(100% - 96px), transparent),
+    linear-gradient(to bottom, transparent, var(--ink) 34px, var(--ink) calc(100% - 34px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, var(--ink) 96px, var(--ink) calc(100% - 96px), transparent),
+    linear-gradient(to bottom, transparent, var(--ink) 34px, var(--ink) calc(100% - 34px), transparent);
+  -webkit-mask-composite: source-in;
+}
+
+html[data-world='on'] .vista-line {
+  isolation: isolate;
+  text-shadow:
+    0 0 2px var(--vista-shade),
+    0 0 10px var(--vista-shade);
+}

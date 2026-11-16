@@ -1297,10 +1297,16 @@ export function createWorld(canvas, { days } = {}) {
   }
 
   /* Compile every program while the page is idle, so the breach never waits on one. */
-  function prewarm() {
-    renderer.compile(backScene, camera);
-    renderer.compile(scene, camera);
-    renderer.compile(land.scene, land.camera);
+  async function prewarm() {
+    // compileAsync lets the driver build the programs off the main thread where it
+    // can (KHR_parallel_shader_compile), one scene at a time.
+    try {
+      await renderer.compileAsync(backScene, camera);
+      await renderer.compileAsync(scene, camera);
+      await renderer.compileAsync(land.scene, land.camera);
+    } catch {
+      // A lost context: World.jsx handles it.
+    }
   }
 
   function setQuality(q) {
