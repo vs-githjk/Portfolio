@@ -35,7 +35,7 @@ float n2(vec2 p){
   return mix(mix(h2(i), h2(i + vec2(1.0, 0.0)), f.x), mix(h2(i + vec2(0.0, 1.0)), h2(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 /* A waterline seen in section: three slow swells, a few pixels tall. */
-float swell(float x, float t){ return sin(x * 0.011 + t * 0.6) * 4.0 + sin(x * 0.027 - t * 0.9) * 2.0 + sin(x * 0.0041 + t * 0.23) * 6.0; }
+float swell(float x, float t){ return sin(x * 0.011 + t * 0.6) * 6.5 + sin(x * 0.027 - t * 0.9) * 3.0 + sin(x * 0.0041 + t * 0.23) * 10.0 + sin(x * 0.061 + t * 1.7) * 1.2; }
 /* The ray through a pixel of the window, for the land's camera: it looks down -z
    and is pitched up by uPitch, so the sky turns with the ground under it. */
 vec3 viewDir(vec2 c){
@@ -113,7 +113,7 @@ float fan(float ang, float r, float t){
   float sw = sin(ang * 23.0 + sin(ang * 7.0 + t * 0.29) * 0.62 + t * 0.24) + 0.6 * sin(ang * 41.0 - t * 0.19);
   float shaft = pow(smoothstep(-0.05, 1.0, sw * 0.5 + 0.5), 2.0);
   float streak = smoothstep(0.6, 1.0, sin(ang * 59.8 + t * 0.324 + r * 4.0));
-  return shaft * (0.75 + 0.5 * streak) * exp(-r * 0.62);
+  return shaft * (0.75 + 0.5 * streak) * exp(-r * 0.9);
 }
 
 /* The underside of a surface, seen from just below it: a bright rippled ceiling
@@ -153,9 +153,9 @@ vec3 water(vec2 c){
   w = mix(w, uBeam * 0.42, fresh * 0.3);
 
   float lit1 = (0.13 + 0.87 * exp(-dep / 1.5)) * smoothstep(0.0, 0.7, b);
-  vec2 S = vec2(W * 0.6, min(uTop, -0.2 * H) - 0.7 * H);
+  vec2 S = vec2(W * 0.6, min(uTop, -0.15 * H) - 0.34 * H);
   vec2 v1 = c - S;
-  w += mix(uRay, uBeam, fresh * 0.8) * fan(atan(v1.x, v1.y), length(v1) / H, uTime) * lit1 * (0.3 + 0.16 * fresh);
+  w += mix(uRay, uBeam, fresh * 0.8) * fan(atan(v1.x, v1.y) * 0.62, length(v1) / H, uTime) * lit1 * (0.44 + 0.2 * fresh);
   float lit2 = (1.0 - b) * (1.0 - b);
   if (lit2 > 0.004) {
     vec2 S2 = vec2(W * uSunX, min(uExit, 0.0) - 0.55 * H);
@@ -181,7 +181,7 @@ vec3 sky(vec2 c){
     float cloud = n2(g * vec2(9.0, 26.0) + 4.0) * 0.6 + n2(g * vec2(21.0, 60.0)) * 0.4;
     float rift = smoothstep(0.34, 0.62, fbm1(g.x * 9.0 + 3.0) * 0.6 + cloud * 0.5) * exp(-pow((g.y - 0.012 + 0.03 * sin(g.x * 7.0)) / (wide * 0.42), 2.0));
     float air = smoothstep(0.0, 0.2, rd.y);
-    col += (uStar * 0.5 + uNightLow * 1.6) * band * (0.55 + 0.6 * cloud) * (1.0 - 0.86 * rift) * 0.34 * uNight * air;
+    col += (uStar * 0.5 + uNightLow * 1.6) * band * (0.55 + 0.6 * cloud) * (1.0 - 0.86 * rift) * 0.52 * uNight * air;
   }
   // From orbit the air is below the reader; first light gathers along the limb.
   float low = smoothstep(0.55, 1.0, c.y / uView.y);
@@ -233,17 +233,16 @@ void main(){
     vec3 rd = viewDir(c);
     // The sun: a disc with a darkened limb, the colour the air has left it.
     float ds = length(rd - uSunDir);
-    float R = 0.024;
-    float aa = uTanF * 3.0 / H;
+    float R = 0.021;
     float up = smoothstep(0.02, 0.3, uDay) * (1.0 - uOrbit);
     vec3 warm = uSun * (uSunI / max(max(uSunI.r, uSunI.g), max(uSunI.b, 0.001)));
     // Its light spills into the air around it before the disc itself.
-    col += warm * (0.42 * exp(-ds / 0.035) + 0.2 * exp(-ds / 0.14)) * up;
-    float disc = smoothstep(R + aa, R - aa, ds);
+    col += warm * (0.6 * exp(-ds / 0.03) + 0.26 * exp(-ds / 0.13)) * up;
+    float disc = smoothstep(R * 1.3, R * 0.72, ds);
     if (disc > 0.0) {
       float q = clamp(ds / R, 0.0, 1.0);
-      vec3 body = mix(warm, vec3(1.0), 0.45) * (1.0 - 0.14 * (1.0 - sqrt(1.0 - q * q)));
-      col = mix(col, body * 1.1, disc * up);
+      vec3 body = mix(warm, vec3(1.0), 0.6) * (1.0 - 0.1 * q * q);
+      col = mix(col, body * 1.12, disc * up);
     }
     if (uNight > 0.01) {
       // Stars sit in the sky, not on the glass: they turn with the camera and thin

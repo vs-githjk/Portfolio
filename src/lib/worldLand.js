@@ -86,7 +86,7 @@ const LAND_FRAG = /* glsl */ `
 ${COMMON}
 ${SKY}
 uniform vec2 uRes;
-uniform float uDpr, uSunTan, uLampOn, uFog, uMist, uFine;
+uniform float uDpr, uSunTan, uLampOn, uFog, uMist, uFine, uShore;
 uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent;
 uniform vec2 uWind;
 varying vec3 vW, vN;
@@ -95,7 +95,8 @@ varying float vHor, vEmis, vGlow, vUp;
 void main(){
   vec2 c = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
   // The land stands above the shore's waterline; under it there is only water.
-  if (c.y > uExit + swell(c.x + 300.0, uTime * 1.1)) discard;
+  float above = uExit + swell(c.x + 300.0, uTime * 1.1) - c.y;
+  if (above < 0.0) discard;
   vec3 N = normalize(vN);
   vec3 toCam = uCam - vW;
   float d = length(toCam);
@@ -136,14 +137,14 @@ void main(){
   col += sunC * gl * aa * sh * 0.9;
 #endif
   // Night: the moon while Value is read, and the camp's lamp on the dunes around it.
-  col += albedo * uMoonCol * max(dot(N, uMoonDir), 0.0);
+  col += albedo * uMoonCol * clamp(dot(N, uMoonDir) * 2.2 + 0.1, 0.0, 1.0);
   vec3 Lp = uLampPos - vW;
   float ld = length(Lp);
   col += albedo * uLampCol * uLampOn * (2.6 / (1.0 + ld * ld * 0.00042)) * (0.22 + 0.78 * max(dot(N, Lp / ld), 0.0));
   col = mix(col, uLampCol * (0.95 + 0.4 * uLampOn), vEmis * (0.5 + 0.5 * uLampOn));
 #ifdef BUTTE
   // The week under the pointer: its butte takes the accent from the foot up.
-  col += uAccent * vGlow * (0.5 + 0.9 * (1.0 - vUp)) ;
+  col += uAccent * vGlow * (0.7 + 0.8 * vUp);
 #endif
   // The air: extinction by distance (blue goes first), a mist that pools low, and
   // the colour of the sky along this very ray, so the far ground has no edge.
@@ -152,6 +153,22 @@ void main(){
   vec3 ext = exp(-d * uFog * vec3(0.8, 1.0, 1.3));
   float low = uMist * exp(-max(vW.y, 0.0) * 0.016) * (1.0 - exp(-d * 0.0011));
   col = mix(air, col, ext * (1.0 - clamp(low, 0.0, 0.85)));
+  if (uShore > 0.01 && above < uView.y * 0.2) {
+    // Between the lens and the beach lies the sea's surface, seen at a glance: it
+    // mirrors the sky and the land, carries the sun's glitter, laps at an uneven
+    // shoreline and leaves the sand above it wet and dark.
+    float edge = uView.y * (0.03 + 0.05 * n1(c.x * 0.0045 + 3.0) + 0.006 * sin(c.x * 0.05 + uTime * 0.8)) * uShore;
+    float t = clamp(above / edge, 0.0, 1.0);
+    float surf = 1.0 - smoothstep(0.86, 1.0, above / edge);
+    float rip = 0.6 * n2(vec2(c.x * 0.018, above * 0.3 - uTime * 0.9)) + 0.4 * n2(vec2(c.x * 0.05 + uTime * 0.3, above * 0.7));
+    vec3 mirror = skyAt(normalize(vec3(rd.x, 0.05 + 0.3 * (1.0 - t), rd.z)));
+    vec3 sea = mix(mirror, col * 0.5, 0.25 + 0.5 * t) * (0.72 + 0.4 * rip);
+    float toSun = max(dot(normalize(rd.xz), normalize(uSunDir.xz)), 0.0);
+    sea += uSun * uSunI * pow(toSun, 90.0) * smoothstep(0.45, 0.8, rip) * 1.2 * uDay;
+    col *= 1.0 - 0.42 * (1.0 - smoothstep(edge, edge * 2.4, above)) * (1.0 - surf);
+    col = mix(col, sea, surf);
+    col += uSun * 0.2 * exp(-abs(above - edge * 0.93) / 1.6) * (0.4 + 0.6 * rip);
+  }
   col = 1.12 * col / (1.0 + 0.3 * col);
   col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.012;
   gl_FragColor = vec4(col, 1.0);
@@ -174,7 +191,7 @@ void main(){
   vec3 rd = normalize(p - uCam);
   float mu = dot(rd, uSunDir);
   float hg = min(0.51 / pow(1.49 - 1.4 * mu, 1.5), 6.0) * 0.07;
-  vA = hg * smoothstep(0.0, 0.12, (along + span * 0.5) / span) * smoothstep(1.0, 0.88, (along + span * 0.5) / span);
+  vA = hg * smoothstep(0.0, 0.12, (along + span * 0.5) / span) * smoothstep(1.0, 0.88, (along + span * 0.5) / span) * smoothstep(160.0, 520.0, distance(p, uCam));
   vUv = position.xy;
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
 }`;
@@ -259,7 +276,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
   const campY = 46;
   function height(x, z) {
     const back = -z;
-    const dunes = 1 - sm((back - 760) / 520);
+    const dunes = (1 - sm((back - 760) / 520)) * sm((back - 70) / 230); // level under the camera, so it never stands in a dune
     const table = sm((back - 2080) / 520);
     const range = sm((back - 3250) / 420);
     let y = 26 * fbm(x * 0.0006 + 2.0, z * 0.0006) - 10;
@@ -286,7 +303,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
   }
 
   const gx = phone ? 136 : 256;
-  const gz = phone ? 80 : 128;
+  const gz = phone ? 84 : 150;
   const zAt = (j) => Z0 - ZD * Math.pow(j / gz, ZPOW);
   const xAt = (i) => X0 + ((X1 - X0) * i) / gx;
   const nv = (gx + 1) * (gz + 1);
@@ -315,11 +332,36 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     const k = j * (gx + 1) + i;
     return (hs[k] * (1 - u) + hs[k + 1] * u) * (1 - v) + (hs[k + gx + 1] * (1 - u) + hs[k + gx + 2] * u) * v;
   }
+  /* The commit row: where each week's butte stands and how tall it is. The row runs
+     away from the reader, the oldest week far off on the left, the newest nearest
+     on the right. Heights are that week's commits to the power 0.4 (the tallest
+     week stands `top` units high), on a low mound so an empty week is still a place. */
+  const weeks = weeksOf(days);
+  const nB = weeks.length;
+  const tanF = Math.tan((LAND_FOV * Math.PI) / 360);
+  function row(asp) {
+    const peak = Math.max(1, ...weeks);
+    const top = 118;
+    const half = (z) => -z * tanF * asp * 0.84;
+    const dz = ROW.zNear - ROW.zFar;
+    const dx = half(ROW.zNear) + half(ROW.zFar);
+    const r = (Math.hypot(dx, dz) / Math.max(1, nB)) * 0.92;
+    return weeks.map((n, i) => {
+      const t = nB > 1 ? i / (nB - 1) : 1;
+      const z = ROW.zFar + dz * t;
+      const x = ROW.x - half(ROW.zFar) + dx * t;
+      return { x, z, r, y: ground(x, z) - 2, tall: 6 + top * Math.pow(n / peak, 0.4) };
+    });
+  }
+  // What stands on the ground shades it: the buttes and the camp's tents.
+  const casters = row(aspect).map((b) => ({ x: b.x, z: b.z, r: b.r * 0.8, top: b.y + b.tall * 0.92 }));
+  for (const [dx, dz, r, tall] of [[-46, 10, 24, 22], [40, -22, 16, 15], [74, 8, 15, 14], [-12, 17, 9, 8]]) {
+    casters.push({ x: CAMP.x + dx, z: CAMP.z + dz, r, top: ground(CAMP.x + dx, CAMP.z + dz) + tall });
+  }
   const nor = new Float32Array(nv * 3);
   const hor = new Float32Array(nv);
   // The sun stands to the right of straight ahead, where it shows about three
   // quarters of the way across the window at this aspect.
-  const tanF = Math.tan((LAND_FOV * Math.PI) / 360);
   const sunAz = Math.atan(0.46 * tanF * aspect);
   const ax = Math.sin(sunAz);
   const az = -Math.cos(sunAz);
@@ -345,6 +387,14 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
         const r = step;
         t = Math.max(t, (ground(x + ax * r, z + az * r) - hs[k] - 1.5) / r);
         step *= 1.22;
+      }
+      for (const o of casters) {
+        const ox = o.x - x;
+        const oz = o.z - z;
+        const far = ox * ax + oz * az;
+        if (far <= o.r * 0.5 || far > 1400) continue;
+        const side = Math.abs(ox * az - oz * ax);
+        if (side < o.r) t = Math.max(t, ((o.top - hs[k]) / far) * sm((o.r - side) / (o.r * 0.5)));
       }
       hor[k] = t;
     }
@@ -379,13 +429,14 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     uFog: { value: 0.00042 },
     uMist: { value: 0.2 },
     uFine: { value: 1 },
+    uShore: { value: 0 },
     uCam: { value: new Vector3() },
     uSand: { value: C.sand },
     uSandShade: { value: C['sand-shade'] },
     uAmb: { value: new Vector3() },
     uLampPos: { value: lampPos },
     uLampCol: { value: C.ember.clone() },
-    uMoonDir: { value: new Vector3(0.5, 0.6, 0.4).normalize() },
+    uMoonDir: { value: new Vector3(0.8, 0.36, -0.42).normalize() },
     uMoonCol: { value: new Vector3() },
     uAccent: { value: C.ember },
     uWind: { value: new Vector2(wind.x, wind.z) },
@@ -466,8 +517,6 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
   scene.add(lampGlow);
 
   /* ---- Commit buttes: one for every week, on the playa ------------------------ */
-  const weeks = weeksOf(days);
-  const nB = weeks.length;
   let buttes = null;
   let glowAttr = null;
   const beacon = new Mesh(plane, glow(1));
@@ -476,12 +525,12 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
   if (nB) {
     // A table of rock: a talus skirt, a cliff, a cap. Eight uneven sides, flat shaded.
     const prof = [
-      [1.4, 0],
-      [0.84, 0.4],
-      [0.62, 0.5],
-      [0.55, 0.93],
-      [0.6, 0.955],
-      [0.5, 1],
+      [1.55, 0],
+      [1.0, 0.26],
+      [0.7, 0.4],
+      [0.5, 0.9],
+      [0.54, 0.935],
+      [0.36, 1],
     ];
     const SIDES = 8;
     const bp = [];
@@ -523,33 +572,18 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
   }
   const spin = Array.from({ length: nB }, () => rnd() * Math.PI * 2);
   const lean = Array.from({ length: nB }, () => 0.78 + rnd() * 0.5);
-  /* The row runs away from the reader: the oldest week far off on the left, the
-     newest nearest on the right. Heights are that week's commits to the power 0.4
-     (the tallest week stands `top` units high), on a low mound so an empty week
-     is still a place on the ground. */
   function placeButtes(asp) {
     if (!buttes) return;
-    const peak = Math.max(1, ...weeks);
-    const top = 118;
     const m = new Matrix4();
     const qt = new Quaternion();
     const up = new Vector3(0, 1, 0);
-    const half = (z) => -z * tanF * asp * 0.84;
-    const dz = ROW.zNear - ROW.zFar;
-    const dx = half(ROW.zNear) + half(ROW.zFar);
-    const r = (Math.hypot(dx, dz) / nB) * 0.92;
     tops.length = 0;
-    for (let i = 0; i < nB; i++) {
-      const t = nB > 1 ? i / (nB - 1) : 1;
-      const z = ROW.zFar + dz * t;
-      const x = ROW.x - half(ROW.zFar) + dx * t;
-      const y = ground(x, z) - 2;
-      const tall = 6 + top * Math.pow(weeks[i] / peak, 0.4);
+    row(asp).forEach((b, i) => {
       qt.setFromAxisAngle(up, spin[i]);
-      m.compose(new Vector3(x, y, z), qt, new Vector3(r * lean[i], tall, r / lean[i]));
+      m.compose(new Vector3(b.x, b.y, b.z), qt, new Vector3(b.r * lean[i], b.tall, b.r / lean[i]));
       buttes.setMatrixAt(i, m);
-      tops.push([x, y + tall, z, r]);
-    }
+      tops.push([b.x, b.y + b.tall, b.z, b.r]);
+    });
     buttes.instanceMatrix.needsUpdate = true;
   }
   placeButtes(aspect);
@@ -598,15 +632,15 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     U.uSunTan.value = s.sunTan;
     U.uAmb.value.copy(C['dusk-top']).multiplyScalar(1.9 * s.day).addScaledVector(C['night-low'], 0.5 + 0.3 * s.night).addScaledVector(C['dusk-low'], 0.16 * s.day).addScaledVector(C['gal-b'], 0.085 * s.night);
     U.uLampOn.value = s.lamp;
-    U.uFog.value = 0.00036 + 0.00016 * s.night;
-    U.uMist.value = 0.18 + 0.3 * s.night;
-    U.uMoonCol.value.copy(C['moon-rim']).multiplyScalar(0.34 * s.moon);
-    if (s.moonDir) U.uMoonDir.value.copy(s.moonDir);
+    U.uFog.value = 0.00036 + 0.00006 * s.night;
+    U.uMist.value = 0.18 + 0.1 * s.night;
+    U.uMoonCol.value.copy(C['gal-b']).multiplyScalar(0.2 * s.night).addScaledVector(C['moon-rim'], 0.36 * s.moon);
     lampGlow.material.uniforms.uAlpha.value = (0.16 + 0.5 * s.lamp) * (0.9 + 0.1 * Math.sin(time.value * 1.3));
     lampGlow.quaternion.copy(camera.quaternion);
     streakMat.uniforms.uAlpha.value = 0.5 * s.day * s.fine;
     streaks.visible = s.day * s.fine > 0.02;
     U.uFine.value = s.fine;
+    U.uShore.value = s.shore;
     if (buttes && (lit.level > 0.002 || lit.want > 0)) {
       lit.level += (lit.want - lit.level) * 0.16;
       if (lit.index >= 0) {
