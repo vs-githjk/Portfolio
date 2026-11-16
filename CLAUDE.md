@@ -129,6 +129,14 @@ slide `id` in `hero.carousel.slides` must equal the Builds id.
 One WebGL canvas in the fixed stack, drawn with three.js: space bleeds into the sea at the
 first waterline, the sea ends at the shore, then dusk, night and dawn over a desert earth.
 
+- **The earth is a coast** (`lib/worldLand.js`; Vidyut, Nov 16: the flat buttes were "bland and
+  boring", the camp had "two tents"). One heightfield, sea level at y = 0: the beach with surf
+  where the reader comes out of the water, the camp on a rise (nine tents, banners, crates,
+  eight figures, loose rock, a worn path), an inlet of the sea running away toward the sun,
+  foothills, then two ranges of ridged mountains, the far one snow-capped. The ranges part
+  where the inlet runs, so the sun sets down the water; on a narrow window the inlet narrows
+  so the mountains stay in view. Rock, scrub and snow are `--land-rock`, `--land-scrub`,
+  `--land-snow`. Do not flatten it back to dunes and mesas.
 - One unit is one CSS pixel on the plane z = 0; depth is parallax. The scene reads the page:
   an element marked `data-world-anchor="<name>"` (names in `ANCHOR`, `data/world.js`) is
   where a piece lives, and layout runs again whenever the page height changes.
@@ -166,6 +174,9 @@ Receipts line.
   clips as functions of phase: Fly, Glide, Perch, Roar. Then `npx @gltf-transform/cli
   resample` and `meshopt` give `public/dragon/dragon.glb` (41k triangles, 552 KB, 306 KB
   gzip) and `dragon-lite.glb` (10k, 304 KB, 122 KB gzip; phones). No textures.
+- **Blue, yellow and red** (Vidyut, Nov 16): a deep blue hide, yellow belly plates, horns and
+  claws, red wing skin (`--dragon-hide`, `--dragon-belly`, `--dragon-wing`, `--dragon-glow`). Its
+  yellow is its own; `--win` stays the awards' gold.
 - **The look is a shader**, lit by the place it is in (`LIGHT` in `dragonStations.js`, from the
   page's palette and the `--dragon-*` tokens): plates with seams and a finer layer inside
   them, each plate a low dome, the wing's bones as ridges with the skin hanging between,
