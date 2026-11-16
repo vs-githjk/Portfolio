@@ -86,10 +86,10 @@ export default function Orbit({ stageRef, centreRef }) {
     const centre = centreRef.current;
     const counter = counterRef.current;
     const nameOut = nameRef.current;
-    const plate = scene.querySelector('.plate');
-    const rim = plate.querySelector('.plate-rim');
-    const pads = [...plate.querySelectorAll('.plate-pad')];
-    const ticks = [...plate.querySelectorAll('.plate-tick')];
+    const plate = scene.querySelector('.ring-plate');
+    const rim = plate.querySelector('.ring-plate-rim');
+    const pads = [...plate.querySelectorAll('.ring-plate-pad')];
+    const ticks = [...plate.querySelectorAll('.ring-plate-tick')];
     const fade = plate.querySelector('linearGradient');
     const cards = [...scene.querySelectorAll('.card')];
     const links = cards.map((c) => c.querySelector('.card-link'));
@@ -795,19 +795,19 @@ export default function Orbit({ stageRef, centreRef }) {
       data-state={state}
     >
       <div className="orbit-scene" ref={sceneRef}>
-        <svg className="plate" aria-hidden="true" focusable="false">
+        <svg className="ring-plate" aria-hidden="true" focusable="false">
           <defs>
             <linearGradient id="plate-fade" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="-60" y2="60">
-              <stop offset="0" className="plate-stop" data-end="far" />
-              <stop offset="1" className="plate-stop" />
+              <stop offset="0" className="ring-plate-stop" data-end="far" />
+              <stop offset="1" className="ring-plate-stop" />
             </linearGradient>
           </defs>
-          <path className="plate-rim" />
+          <path className="ring-plate-rim" />
           {slides.map((s) => (
-            <path className="plate-pad" key={s.id} />
+            <path className="ring-plate-pad" key={s.id} />
           ))}
           {slides.map((s) => (
-            <line className="plate-tick" key={s.id} />
+            <line className="ring-plate-tick" key={s.id} />
           ))}
         </svg>
         <div className="cards">

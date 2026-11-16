@@ -472,7 +472,7 @@ html[data-skip] .nav {
 /* The plate the ring cards stand on: two engraved rims and one tick per build,
    drawn by Orbit.jsx from the projection that poses the cards. The SVG is a point
    at the ring centre; everything in it is in px from there. */
-.plate,
+.ring-plate,
 .readout-name {
   display: none;
 }
@@ -482,7 +482,7 @@ html[data-skip] .nav {
     display: none;
   }
 
-  .plate {
+  .ring-plate {
     display: block;
     position: absolute;
     left: 50%;
@@ -499,50 +499,50 @@ html[data-skip] .nav {
       transform var(--dur-slow) var(--ease);
   }
 
-  .orbit[data-ready] .plate {
+  .orbit[data-ready] .ring-plate {
     opacity: 1;
     transform: none;
   }
 
   /* While the first screen is up the plate waits out past the window's edges; it
      comes in as the ring that opened leaves them (data-plate, shell/entry.js). */
-  html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .orbit .plate {
+  html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .orbit .ring-plate {
     opacity: 0;
     transform: scale(var(--plate-from));
     transition-duration: 0.15s;
   }
 
-  .plate-rim {
+  .ring-plate-rim {
     stroke: url(#plate-fade);
     stroke-width: 1;
     opacity: 0.6;
   }
 
-  .plate-stop {
+  .ring-plate-stop {
     stop-color: var(--plate-line);
   }
 
-  .plate-stop[data-end='far'] {
+  .ring-plate-stop[data-end='far'] {
     stop-opacity: 0;
   }
 
   /* One pad per build on the inner rim: the seat its card stands on. */
-  .plate-pad {
+  .ring-plate-pad {
     stroke: var(--plate-line);
     stroke-width: 1.5;
     stroke-linecap: round;
     transition: stroke 0.2s var(--ease);
   }
 
-  .plate-pad[data-lit='near'] {
+  .ring-plate-pad[data-lit='near'] {
     stroke: var(--text);
   }
 
-  .plate-pad[data-lit='front'] {
+  .ring-plate-pad[data-lit='front'] {
     stroke: var(--plate-lit);
   }
 
-  .plate-tick {
+  .ring-plate-tick {
     stroke: var(--plate-line);
     stroke-width: 1;
     stroke-linecap: round;
@@ -551,11 +551,11 @@ html[data-skip] .nav {
       stroke-width 0.2s var(--ease);
   }
 
-  .plate-tick[data-lit='near'] {
+  .ring-plate-tick[data-lit='near'] {
     stroke: var(--text);
   }
 
-  .plate-tick[data-lit='front'] {
+  .ring-plate-tick[data-lit='front'] {
     stroke: var(--plate-lit);
     stroke-width: 2;
   }
