@@ -5,6 +5,9 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/sections.css';
+import './styles/v3-shell.css';
+import './styles/v3-world.css';
+import './styles/v3-sections.css';
 
 import App from './App.jsx';
 
