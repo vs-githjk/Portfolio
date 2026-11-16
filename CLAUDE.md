@@ -283,6 +283,41 @@ no Receipts line.
 - Cold-read rule: crop every station at 390 and 1440 and ask non-Claude vision models "what
   is this creature, and does it look impressive or cheap?" with no hint.
 
+## Phones: everything is there, and scrolling is cheap (Nov 16 2026)
+
+Vidyut on his phone: "a little slow, a little shaky", then "instead of the phone loading
+stuff, the phone can just have everything there". Measured on the production build with
+Chrome's phone emulation (390x844, DPR 3, CPU slowed 4x), one touch scroll down the whole
+page: 52.7ms a frame on average and 150ms at the 95th percentile before, 202 long tasks;
+after, about 17ms and 16.8ms, 9 long tasks. Rules that keep it there:
+
+- **Never write a per-frame CSS variable on `<html>`.** A custom property there is inherited
+  by every element, so each write restyles the whole document. That alone was most of the
+  cost: `--w-depth`, `--w-line` and `--w-shore` were written on the root on every frame of a
+  scroll. `kit/signals.js` now writes each on the element that reads it (`scope` in
+  `Shell.jsx`: the bar for the lines, the rail for the depth) and not at all when that reader
+  is not displayed (a phone has no rail). `data-at` and `data-split` stay on the root: they
+  change a few times a page. The unused root `--px`/`--py` were removed.
+- **Nothing waits for the scroll on a phone or a touch screen** (`(max-width: 760px),
+  (pointer: coarse)`): `.reveal` is shown from the first paint (`base.css`) and `useReveal`
+  marks everything at once; the commit skyline stands in its final pose.
+- **Pictures arrive ahead of the reader** (`lib/eager.js`, every width): after the first
+  scroll, touch, key or pointer, the lazy pictures are promoted to eager in page order, three
+  at a time. Nothing is asked for before that first sign, so the first paint is untouched.
+  (FireSight's thumbnail was measured arriving after its card had passed; this fixed it.)
+- **The phone world is lighter**: canvas at 1.25 (not 1.5; the quality steps still lower it
+  on a slow phone), 300 snow points and 900 galaxy points, 15 frames a second at rest (every
+  frame while the page moves, so set pieces keep their place), no blur behind the bar.
+- **The phone's moon is a picture** (`public/world/moon.webp`, a 256px still cut from a
+  desktop render of the scene's own moon; `--moon-art`, `--moon-phone`; the rule is at the
+  end of `v4-opening.css`). The scene does not draw its moon on a phone but still lights the
+  ground by it. To remake it: hide `.page` and `.rail` in dev at 1800px wide, DPR 3, shoot
+  the Value section and cut the disc out by brightness.
+- **The phone's limb keeps near the page** (`sizes.limbZ`): at the desktop depth it ran
+  ahead of the scroll and its rim crossed the last Contact link for a moment.
+- Desktop is unchanged by all of this except the first rule and the picture queue, neither
+  of which is visible.
+
 ## The shell (`src/shell/`, `src/kit/`)
 
 Everything over the page and the world. `src/kit` and `src/shell` hold no site words: names,
