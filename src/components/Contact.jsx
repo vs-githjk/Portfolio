@@ -1,24 +1,47 @@
+import { useRef, useState } from 'react';
 import { contact } from '../data/content';
 import CopyEmail from './CopyEmail';
 
-/* The ask, and a second pedestal: beams rise from the ground behind the email
-   (CSS only, no canvas). The email is the largest thing in the section. */
+const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(contact.mail.subject)}&body=${encodeURIComponent(contact.mail.body)}`;
+
+/* The ask. The email is the largest thing in the section, set on the horizon the
+   world draws under it; the link opens a draft with a subject and a first line
+   already in it. Taking the one action the page exists for (copying the address
+   or opening the draft) breaks first light: the section is marked data-dawn, a
+   line of light runs under the address, and a `world:dawn` event tells the scene
+   to bring the sun over the limb. It happens once. */
 export default function Contact() {
+  const [dawn, setDawn] = useState(false);
+  const fired = useRef(false);
+  const breakDawn = () => {
+    if (fired.current) return;
+    fired.current = true;
+    setDawn(true);
+    window.dispatchEvent(new CustomEvent('world:dawn'));
+  };
+
   return (
-    <section className="sec contact" id="contact" data-realm="earth">
-      <div className="rise" aria-hidden="true" />
+    <section className="sec contact" id="contact" data-realm="earth" data-dawn={dawn ? 'on' : undefined}>
       <div className="wrap">
-        <img
-          className="c-portrait reveal"
-          src={contact.portrait.src}
-          srcSet={`${contact.portrait.src} 1x, ${contact.portrait.src2x} 2x`}
-          alt={contact.portrait.alt}
-          width="120"
-          height="120"
-          loading="lazy"
-          decoding="async"
-        />
-        <span className="eyebrow reveal">{contact.eyebrow}</span>
+        <div className="c-who reveal">
+          <img
+            className="c-portrait"
+            src={contact.portrait.src}
+            srcSet={`${contact.portrait.src} 1x, ${contact.portrait.src2x} 2x`}
+            alt={contact.portrait.alt}
+            width="120"
+            height="120"
+            loading="lazy"
+            decoding="async"
+          />
+          <div>
+            <span className="eyebrow">{contact.eyebrow}</span>
+            <p className="c-avail">
+              <i aria-hidden="true" />
+              {contact.availability}
+            </p>
+          </div>
+        </div>
         <h2 className="reveal">
           {contact.heading} <em>{contact.headingEm}</em>
         </h2>
@@ -26,10 +49,10 @@ export default function Contact() {
           {contact.blurb}
         </p>
         <div className="email-row reveal" data-delay="2">
-          <a className="email" href={`mailto:${contact.email}`}>
+          <a className="email" href={mailto} onClick={breakDawn}>
             {contact.email}
           </a>
-          <CopyEmail />
+          <CopyEmail onDone={breakDawn} />
         </div>
         <ul className="c-links reveal" data-delay="3">
           {contact.links

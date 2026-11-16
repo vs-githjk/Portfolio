@@ -8,7 +8,7 @@ import Stack from './Stack';
    preprint, never "published". The two headline results sit under the image so
    the media column ends close to the text column; the stack and the links sit
    on its foot so the two columns end on the same line. */
-export default function ResearchRow({ item }) {
+export default function ResearchRow({ item, num }) {
   return (
     <article className="paper reveal" id={`build-${item.id}`}>
       <div className="paper-media">
@@ -22,7 +22,9 @@ export default function ResearchRow({ item }) {
       </div>
       <div className="paper-body">
         <div className="kind">
-          <span className="eyebrow">{item.kind}</span>
+          <span className="eyebrow">
+            <span className="num">{num}</span> {item.kind}
+          </span>
           <span className="eyebrow">{item.when}</span>
         </div>
         <h3 className="paper-title">

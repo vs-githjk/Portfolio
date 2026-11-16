@@ -1,8 +1,12 @@
 import { experience } from '../data/content';
-import Badge from './Badge';
+import Rich from './Rich';
 
-/* Hairline rows, not cards: [org] [note + outcome pills] [when / where]. Every
-   pill is a complete statement that says what changed and for whom. */
+/* Time as depth. The roles hang off a sounding line that runs down the left of
+   the section; its marks are the real dates of each role and nothing else. A
+   weight sinks along the line as the section is read (a scroll-driven animation,
+   sections.css), and the role it has reached is inked in. Rows, not cards:
+   [when, on the line] [org] [story + outcomes]. Every outcome is a complete
+   statement, and a figure in one opens its receipt. */
 export default function Experience() {
   return (
     <section className="sec work" id="work" data-realm="sea">
@@ -12,8 +16,16 @@ export default function Experience() {
           <h2>{experience.heading}</h2>
         </div>
         <div className="xp">
-          {experience.roles.map((r, n) => (
-            <article className="xp-row reveal" data-delay={n || undefined} key={r.org}>
+          <span className="xp-line" aria-hidden="true">
+            <i />
+          </span>
+          {experience.roles.map((r) => (
+            <article className="xp-row" key={r.org}>
+              <p className="xp-when">
+                {r.when}
+                {'\n'}
+                <span>{r.where}</span>
+              </p>
               <div className="xp-org">
                 <span className="xp-logo">
                   <img src={r.logo} alt="" width="48" height="28" loading="lazy" />
@@ -27,20 +39,15 @@ export default function Experience() {
               <div className="xp-note">
                 <p>{r.note}</p>
                 {r.wins.length > 0 && (
-                  <ul className="xp-pills">
+                  <ul className="xp-wins">
                     {r.wins.map((w) => (
                       <li key={w}>
-                        <Badge kind="out">{w}</Badge>
+                        <Rich text={w} receipts />
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
-              <p className="xp-when">
-                {r.when}
-                {'\n'}
-                {r.where}
-              </p>
             </article>
           ))}
         </div>

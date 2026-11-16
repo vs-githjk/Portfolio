@@ -12,7 +12,7 @@ import Stack from './Stack';
    metric and the stack open under "Read more" at the card foot (a native <details>,
    so it needs no script). The role line is one sentence and stays visible: it is the
    ownership fact a skimmer wants. All seven cards share one size and one height, see .mini-grid. */
-export default function CompactRows({ more }) {
+export default function CompactRows({ more, num }) {
   const grid = useRef(null);
   useEqualRows(grid, 6);
   return (
@@ -35,7 +35,9 @@ export default function CompactRows({ more }) {
             </div>
             <div className="mini-body">
               <span className="eyebrow">
-                <span>{c.kind}</span>
+                <span>
+                  <span className="num">{num(n)}</span> {c.kind}
+                </span>
                 <span>{c.when}</span>
               </span>
               <h4 className="mini-title">

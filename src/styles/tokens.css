@@ -269,7 +269,6 @@
   --drift-dim: 0.5; /* thumbnails read as atmosphere, not content */
   --drift-light: 0.45; /* pale thumbnails dimmed to sit with the dark ones */
   --drift-loop: 70s; /* one third of a row per loop */
-  --sky-ratio: 4 / 1; /* the commit skyline's stage; phones override it in sections.css */
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
@@ -407,6 +406,13 @@ html[data-at='earth'] .nav {
 :root,
 [data-realm],
 html[data-at] .nav {
+  /* The four strata of Highlights, palest on top; and the lines of sediment in them. */
+  --bed-1: color-mix(in srgb, var(--acc) 30%, var(--surface-2));
+  --bed-2: color-mix(in srgb, var(--acc) 17%, var(--surface-2));
+  --bed-3: color-mix(in srgb, var(--acc) 7%, var(--surface));
+  --bed-4: var(--ink-2);
+  --bed-grain: color-mix(in srgb, var(--text) 5%, transparent);
+  --xp-rest: 0.78; /* a role the sounding weight has not reached yet: dimmer, still AA */
   --win-bg: color-mix(in srgb, var(--win) 14%, var(--surface));
   --win-line: color-mix(in srgb, var(--win) 42%, transparent);
   --badge-bg: color-mix(in srgb, var(--acc) 20%, var(--surface));

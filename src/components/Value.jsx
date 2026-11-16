@@ -1,8 +1,11 @@
 import { value } from '../data/content';
 import Rich from './Rich';
 
-/* Hairline rows: [tag] [claim] [receipts]. Not cards, so it never reads as
-   Principles twice. */
+/* Hairline rows: [tag] [claim] [evidence]. Not cards, so it never reads as
+   Principles twice. The row under the reader's eye is the lit one: as a row
+   crosses the middle of the window its marker fills and its evidence inks from
+   reading contrast to full (a scroll-driven animation, sections.css). A figure
+   in the evidence opens its receipt. */
 export default function Value() {
   return (
     <section className="sec" id="value" data-realm="earth">
@@ -13,13 +16,13 @@ export default function Value() {
         </div>
         <div className="val">
           {value.claims.map((c) => (
-            <article className="val-row reveal" key={c.tag}>
+            <article className="val-row" key={c.tag}>
               <span className="val-tag">{c.tag}</span>
               <h3>{c.claim}</h3>
               <ul>
                 {c.receipts.map((r) => (
                   <li key={r.slice(0, 28)}>
-                    <Rich text={r} />
+                    <Rich text={r} receipts />
                   </li>
                 ))}
               </ul>

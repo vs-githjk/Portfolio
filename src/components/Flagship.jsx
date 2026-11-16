@@ -16,8 +16,11 @@ import Stack from './Stack';
    the two columns end on the same line (the left one spreads any difference
    between its two blocks). The three stills are a full-width band of identical
    frames with their captions on one baseline. The lead is the agency release,
-   in development, and is labelled as such. */
-export default function Flagship({ item }) {
+   in development, and is labelled as such. The lead still is found by light:
+   as the panel scrolls in it starts in the sea's own tint and a lamp sweep
+   restores its true colour (sections.css, FOUND BY LIGHT). `num` is the build's
+   place in the list, "01/20". */
+export default function Flagship({ item, num }) {
   const { lead, stack } = item.media;
   return (
     <article className="flag reveal" id={`build-${item.id}`}>
@@ -45,7 +48,9 @@ export default function Flagship({ item }) {
       </div>
       <div className="flag-body">
         <div className="kind">
-          <span className="eyebrow">{item.kind}</span>
+          <span className="eyebrow">
+            <span className="num">{num}</span> {item.kind}
+          </span>
           <span className="eyebrow">{item.when}</span>
         </div>
         <h3 className="flag-title">

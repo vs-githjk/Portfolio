@@ -25,6 +25,11 @@ export default function Builds() {
     card.style.setProperty('--lx', `${Math.round(e.clientX - r.left)}px`);
     card.style.setProperty('--ly', `${Math.round(e.clientY - r.top)}px`);
   };
+  /* Every build carries its place in the list ("01/20"), in the order they appear. */
+  const total = builds.flagships.length + builds.items.length + 1 + builds.more.items.length;
+  const num = (i) => `${String(i + 1).padStart(2, '0')}/${total}`;
+  const f = builds.flagships.length;
+  const k = f + builds.items.length;
   return (
     <>
     <section className="sec builds" id="builds" data-realm="sea" onPointerMove={light}>
@@ -34,16 +39,16 @@ export default function Builds() {
           <h2>{builds.heading}</h2>
           <p>{builds.intro}</p>
         </div>
-        {builds.flagships.map((item) => (
-          <Flagship item={item} key={item.id} />
+        {builds.flagships.map((item, n) => (
+          <Flagship item={item} num={num(n)} key={item.id} />
         ))}
         <div className="build-grid" ref={grid}>
           {builds.items.map((item, n) => (
-            <BuildCard item={item} delay={(n % 2) + 1} key={item.id} />
+            <BuildCard item={item} delay={(n % 2) + 1} num={num(f + n)} key={item.id} />
           ))}
         </div>
-        <ResearchRow item={builds.research} />
-        <CompactRows more={builds.more} />
+        <ResearchRow item={builds.research} num={num(k)} />
+        <CompactRows more={builds.more} num={(n) => num(k + 1 + n)} />
       </div>
     </section>
     <Vista set="shore" line={worlds.shore} />

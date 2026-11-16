@@ -12,7 +12,7 @@ import { builds } from '../data/content';
    page stays a minute's read and the story is one click away. It is the last row so
    that opening it in one card leaves its row mate padding at the foot, never a hole
    in the middle. */
-export default function BuildCard({ item, delay }) {
+export default function BuildCard({ item, delay, num }) {
   return (
     <article className="build reveal" id={`build-${item.id}`} data-delay={delay}>
       <div className="build-media">
@@ -26,7 +26,9 @@ export default function BuildCard({ item, delay }) {
       </div>
       <div className="build-body">
         <div className="kind">
-          <span className="eyebrow">{item.kind}</span>
+          <span className="eyebrow">
+            <span className="num">{num}</span> {item.kind}
+          </span>
           <span className="eyebrow">{item.when}</span>
         </div>
         <h3 className="build-title">

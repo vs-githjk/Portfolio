@@ -7,7 +7,8 @@
 //      JavaScript. The client then hydrates the same markup (its script is
 //      requested after the first paint so the first image and the fonts go first).
 //
-// It only rewrites dist/index.html. If anything is off it exits non-zero, so a
+// It rewrites dist/index.html and writes dist/llms.txt (the page as plain text,
+// generated from content.js). If anything is off it exits non-zero, so a
 // broken prerender fails the build instead of shipping an empty page.
 import { readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -47,4 +48,52 @@ out = out.replace(bundle[0], () => loader);
 out = out.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
 if (out === html) throw new Error('prerender: nothing changed');
 await writeFile(new URL('index.html', dist), out);
+
+// /llms.txt: the page for a model that reads instead of scrolls. Written from
+// content.js on every build, so it can only say what the page says.
+const site = (html.match(/<link rel="canonical" href="([^"]+)"/)?.[1] ?? '').replace(/\/$/, '');
+const c = await import(pathToFileURL(new URL('../src/data/content.js', import.meta.url).pathname).href);
+const plain = (t) => String(t).replace(/\*\*(.+?)\*\*/g, '$1').replace(/\s*\n\s*/g, ' ');
+const first = (links = []) => links.find((l) => l.href)?.href;
+const entry = (b) => `- [${b.title}](${first(b.links) ?? `${site}/#build-${b.id}`}): ${plain(b.oneLiner)}${b.role ? ` ${plain(b.role)}` : ''}`;
+const llms = [
+  `# ${c.meta.name}`,
+  '',
+  `> ${c.meta.description}`,
+  '',
+  `${c.hero.where ?? ''}`.trim(),
+  `Site: ${site}/`,
+  '',
+  `## ${c.experience.heading}`,
+  ...c.experience.roles.map((r) => `- ${r.org}, ${r.role} (${plain(r.when)}; ${r.where}): ${[r.note, ...r.wins].map(plain).join(' ')}`),
+  '',
+  `## ${c.builds.heading}`,
+  ...[...c.builds.flagships, ...c.builds.items].map(entry),
+  `- [${c.builds.research.fullTitle}](${first(c.builds.research.links)}): ${plain(c.builds.research.oneLiner)} ${plain(c.builds.research.role)} ${c.builds.research.kind}.`,
+  ...c.builds.more.items.map(entry),
+  `- ${c.builds.building.title} (${c.builds.building.eyebrow.toLowerCase()}, ${c.builds.building.descriptor}): ${plain(c.builds.building.oneLiner)} ${plain(c.builds.building.lead)}`,
+  '',
+  `## ${c.highlights.eyebrow}`,
+  ...c.highlights.items.map((h) => `- ${plain(h.text)}`),
+  '',
+  `## ${c.proofOfWork.wins.eyebrow}`,
+  ...c.proofOfWork.wins.items.map((w) => `- ${w.project}: ${w.place}, ${w.prize}. ${w.event}${w.href ? ` (${w.href})` : ''}`),
+  plain(c.proofOfWork.wins.provenance),
+  '',
+  `## ${c.proofOfWork.checkLabel}`,
+  ...c.proofOfWork.tiles.filter((t) => t.href).map((t) => `- [${t.kind}: ${t.value}](${t.href}): ${t.detail}`),
+  '',
+  `## ${c.principles.heading}`,
+  ...c.principles.items.map((p) => `- ${p.title} ${plain(p.body)}`),
+  '',
+  `## ${c.contact.eyebrow}`,
+  `- ${c.contact.availability}`,
+  `- Email: ${c.contact.email}`,
+  ...c.contact.links.filter((l) => /^https?:/.test(l.href)).map((l) => `- [${l.kind}: ${l.value}](${l.href})`),
+  '',
+]
+  .filter((line, i, all) => !(line === '' && all[i - 1] === ''))
+  .join('\n');
+if (/[\u2013\u2014]/.test(llms)) throw new Error('prerender: a dash found its way into llms.txt');
+await writeFile(new URL('llms.txt', dist), llms);
 console.log(`prerendered: ${(body.length / 1024).toFixed(0)} KB of markup, ${(css.length / 1024).toFixed(0)} KB of CSS inlined`);

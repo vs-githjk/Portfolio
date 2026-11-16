@@ -304,7 +304,7 @@ export const experience = {
       note: 'The question was whether low-code agent tooling could survive inside a real engineering team. I scoped it, chose Langflow and shipped a pilot, then watched how the team actually used it before adding anything.',
       wins: [
         'One place for planning, budget tracking, structured data and team communication, adopted across a 40-person team',
-        'Cut ~40% of the team’s recurring planning and coordination work',
+        'Cut **~40% of the team’s recurring planning and coordination work**',
         'Added RAG over internal documentation after watching how the team really used it',
       ],
       when: 'May to Aug 2025',
@@ -318,7 +318,7 @@ export const experience = {
       role: 'Learning Assistant · Math Peer Tutor',
       team: 'B.S. Computer Science, Math minor',
       note: 'As a Learning Assistant I ran calculus review sessions, and as a peer tutor I work one on one across introductory math. The work is explaining hard ideas to people who do not share my context, and finding the exact spot where a mental model broke. It is the same skill a forward-deployed engineer uses with a customer.',
-      wins: ['GPA 3.84 of 4.00', "Dean's List, 6 of 6 semesters"],
+      wins: ['**GPA 3.84 of 4.00**', "**Dean's List, 6 of 6 semesters**"],
       when: 'Learning Assistant · Aug 2025 to May 2026\nTutor · Jan 2026 to Present',
       where: 'University Park, PA',
     },
@@ -1124,35 +1124,174 @@ export const builds = {
    by how much, for whom, where. Replaces the old `proof` band. */
 export const highlights = {
   eyebrow: 'In one line each',
+  /* Four strata, the newest on top. `bed` is the label on the edge of the cut:
+     where the claim comes from and when, the way a bed in a rock face is dated. */
   items: [
-    'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
-    'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months, and shipped its agency release two months later.',
-    'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
-    '**5× hackathon winner** in 2026, with six first places, including **1st overall** at the SF Startup Challenge.',
+    {
+      bed: 'Hackathons · 2026',
+      text: '**5× hackathon winner** in 2026, with six first places, including **1st overall** at the SF Startup Challenge.',
+    },
+    {
+      bed: 'arXiv · 2026',
+      text: 'Cut CodeLlama 7B’s **CodeQL errors by 83.7% across 5,000 C tasks**, as first author on an arXiv preprint.',
+    },
+    {
+      bed: 'PrismAI · 2026',
+      text: 'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months, and shipped its agency release two months later.',
+    },
+    {
+      bed: 'Comcast · 2025',
+      text: 'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
+    },
   ],
 };
 
+/* ------------------------------------------------------------- RECEIPTS ---- */
+/* The thesis rule "claims come with receipts", made touchable: a bold figure in
+   Highlights, Value or Experience is a button that opens what the figure measures
+   and where it can be checked. `on` maps the exact bold phrase to a receipt.
+   Rules: a receipt only repeats facts and links that are already in this file,
+   and when there is no public page it says so. Never invent a source. */
+export const receipts = {
+  label: 'Receipt',
+  open: 'Receipt for',
+  measures: 'What it measures',
+  check: 'Where to check',
+  close: 'Close',
+  on: {
+    '~40% of recurring planning and coordination work': 'comcast',
+    '~40% of the team’s recurring planning and coordination work': 'comcast',
+    '14 beta users and 100+ meetings analyzed': 'prismai-beta',
+    'CodeQL errors by 83.7% across 5,000 C tasks': 'paper',
+    '5× hackathon winner': 'wins',
+    '1st overall': 'prismkeep',
+    'GPA 3.84 of 4.00': 'psu',
+    "Dean's List, 6 of 6 semesters": 'psu',
+    '135 people played 853 matches': 'duelwise-play',
+    'no strength number it has not earned': 'duelwise-gate',
+  },
+  items: {
+    comcast: {
+      measures:
+        'Recurring planning and coordination work for a 40-person engineering team, after the Langflow pilot I scoped and shipped at Comcast’s India Engineering Centre, May to Aug 2025.',
+      links: [
+        { label: 'Resume, Comcast entry', href: '/resume.pdf' },
+        { label: 'LinkedIn, roles and dates', href: 'https://www.linkedin.com/in/vidyut-sriram-4b5a012aa' },
+      ],
+    },
+    'prismai-beta': {
+      measures:
+        'Beta users, each in an isolated workspace, and meetings analyzed in the beta. These are PrismAI’s own counts, so there is no public page for them; the product itself is live.',
+      links: [
+        { label: 'PrismAI, live site', href: 'https://www.meetprismai.com/' },
+        { label: 'The build on this page', href: '#build-prismai' },
+      ],
+    },
+    paper: {
+      measures:
+        'CodeQL errors in CodeLlama 7B’s C code across 5,000 tasks: 15,088 without the repair loop, 2,463 with it. A preprint, with me as first author.',
+      links: [
+        { label: 'arXiv:2607.21641', href: 'https://arxiv.org/abs/2607.21641' },
+        { label: 'The paper on this page', href: '#build-secure-codegen' },
+      ],
+    },
+    wins: {
+      measures:
+        'Five hackathons in 2026 where a build of mine or my team’s took a prize: Bitcamp, the AI Hackathon by LA Hacks, Cal Hacks 13.0, super{set} SF and the SF Startup Challenge. Six of those prizes are first places.',
+      links: [
+        { label: 'Devpost, vs-githjk', href: 'https://devpost.com/vs-githjk' },
+        { label: 'Every win, with its page', href: '#wins' },
+      ],
+    },
+    prismkeep: {
+      measures:
+        'PrismKeep, 1st overall at the SF Startup Challenge, AWS Builder Loft, Oct 2026. I do not have a public results page to link yet; the code is public.',
+      links: [
+        { label: 'Source on GitHub', href: 'https://github.com/vs-githjk/sf-startup-challenge' },
+        { label: 'The build on this page', href: '#build-prismkeep' },
+      ],
+    },
+    psu: {
+      measures: 'Penn State, B.S. Computer Science with a Math minor, graduating Dec 2026.',
+      links: [{ label: 'Resume, Education', href: '/resume.pdf' }],
+    },
+    'duelwise-play': {
+      measures:
+        'People who played DuelWise and their matches against its agents, Oct 30 to Nov 12 2026, counted on the site’s owner dashboard. My own games and automated test runs are left out.',
+      links: [
+        { label: 'DuelWise, live', href: 'https://duelwise.app' },
+        { label: 'Source on GitHub', href: 'https://github.com/vs-githjk/duelwise' },
+      ],
+    },
+    'duelwise-gate': {
+      measures:
+        'A level shows a strength number only once it beats the level below it: a 95% lower bound over hundreds of games, re-checked before the site shows one. Until then it says In training.',
+      links: [
+        { label: 'DuelWise, live', href: 'https://duelwise.app' },
+        { label: 'The build on this page', href: '#build-duelwise' },
+      ],
+    },
+  },
+};
+
 /* ---------------------------------------------------------- HOW I BUILD --- */
-/* 2x2 grid. Each one carries a receipt from the builds above. */
+/* 2x2 grid. Each one carries a receipt from the builds above, and each runs once
+   as a tiny machine (`demo`, drawn by Principles.jsx). A demo either uses a fact
+   that is already on this page (BetterBill's 22 of 22, Terrametric's 36 hours) or
+   says in its own label that it is an illustration. `alt` is what a screen reader
+   hears in place of the drawing. */
 export const principles = {
   eyebrow: 'How I build',
   heading: 'Principles',
+  replay: 'Replay',
   items: [
     {
       title: 'The model explains. Code decides.',
       body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s agency release prices change orders the same way: the model estimates the hours, and code computes every dollar. When a number matters, it should never come from a guess.',
+      demo: {
+        kind: 'decide',
+        alt: 'Illustration: the model writes “about $1,240”; it is struck out and code’s computed “$1,180.00” takes its place.',
+        from: 'Model writes',
+        fromValue: 'about $1,240',
+        to: 'Code computes',
+        toValue: '$1,180.00',
+        note: 'Illustrative figures',
+      },
     },
     {
       title: 'Something has to be able to say no.',
       body: 'Every system I build has at least one check that can reject the output: a compiler, a static analyzer, an output guard, a test that fails the build, or a person at the approval gate. If nothing can say no, the output is a guess with good formatting.',
+      demo: {
+        kind: 'gate',
+        alt: 'Illustration: an unchecked output reaches the check and is stopped; a corrected one is let through.',
+        gate: 'The check',
+        no: 'Stopped',
+        yes: 'Let through',
+        note: 'Illustration',
+      },
     },
     {
       title: 'Measure, then claim.',
       body: 'Every number I publish says what it measures, and where I can, how: BetterBill’s catch rate comes with the fact that we planted the errors, and the paper’s error reduction comes with the set of tasks it was measured on. "Feels better" stays a hunch until a number backs it.',
+      demo: {
+        kind: 'measure',
+        alt: 'BetterBill: twenty-two seeded billing errors are counted one by one, and only then does the claim “22 of 22 seeded billing errors caught” ink in.',
+        label: 'Counted first',
+        source: 'BetterBill',
+        count: 22,
+        tally: '22 of 22',
+        claim: '22 of 22 seeded billing errors caught',
+      },
     },
     {
       title: 'End to end first, then polish.',
       body: 'Terrametric ran from field data to a 14-day forecast to an SMS alert inside 36 hours, because the whole path worked before any part of it was pretty. You cannot tune what does not run.',
+      demo: {
+        kind: 'wire',
+        alt: 'Terrametric: a wire lights from field data through the forecast to the SMS alert, and only then is each stage finished.',
+        nodes: ['Field data', 'Forecast', 'SMS alert'],
+        note: 'Terrametric: end to end inside 36 hours',
+      },
     },
   ],
 };
@@ -1183,7 +1322,7 @@ export const value = {
       tag: 'Owner',
       claim: 'I run what I build, from the first commit to the first users.',
       receipts: [
-        'PrismAI and DuelWise are **live, and I run both**: PrismAI has beta users in isolated workspaces, and 135 people played 853 matches against DuelWise’s agents in its first two weeks.',
+        'PrismAI and DuelWise are **live, and I run both**: PrismAI has beta users in isolated workspaces, and **135 people played 853 matches** against DuelWise’s agents in its first two weeks.',
         'Vytal and MVR are **solo builds**: Vytal is live in a controlled beta, MVR is a working proof of concept.',
       ],
     },
@@ -1208,10 +1347,33 @@ export const value = {
    Browser Use, PostGIS, Expo) and Match Day's unconfirmed stack are left
    out. ElevenLabs is in because he wired it himself in NextRound's voiced
    interviewer. Groq stays out. */
+/* The section is a reverse index (Toolkit.jsx): a tool that appears in the stack
+   line of a build on this page is a button, and picking it lists those builds.
+   The index is computed from the `stack` lines above, never typed. `aliases`
+   maps a toolkit name to the exact spellings stack lines use for the same tool.
+   A tool with no stack line here (the resume, or work outside these builds) stays
+   plain text. `answer` never shows a bare count: it names the builds. */
 export const toolkit = {
   eyebrow: 'Toolkit',
   heading: 'Shipped with,',
   headingEm: 'not read about.',
+  hint: 'Pick an underlined tool and the builds that list it in their stack answer.',
+  first: 'LangGraph',
+  answer: '{tool} is in the stack of {builds}.',
+  and: 'and',
+  aliases: {
+    'Anthropic API': ['Claude', 'Claude API', 'Claude Haiku 4.5', 'Claude tool use'],
+    'OpenAI API': ['OpenAI'],
+    'Tool calling': ['Claude tool use'],
+    RAG: ['retrieval'],
+    PostgreSQL: ['Postgres'],
+    'Row-level security': ['RLS on every table', 'forced RLS'],
+    'SSE / WebSockets': ['WebSockets'],
+    'Tailwind CSS': ['Tailwind 4'],
+    'Chrome extensions': ['Chrome extension'],
+    'GitHub CodeQL': ['CodeQL'],
+    Vercel: ['Vercel functions'],
+  },
   groups: [
     {
       name: 'Languages',
@@ -1298,61 +1460,91 @@ export const proofOfWork = {
     },
     note: '',
     phoneNote: 'The graph shows the latest six months on a phone; the totals cover the whole year.',
+    /* The ridge above the calendar: one butte per week. The same record stands on
+       the night horizon behind this section (the world scene). */
+    ridge: 'Each butte is one week; its height follows that week’s contributions.',
+    weekTip: 'Week of {date}: {n} contributions',
+    dayTip: '{n} contributions on {date}',
+    scrub: 'Step through the weeks of the graph',
     updated: 'Updated',
     keyLess: 'Less',
     keyMore: 'More',
   },
+  /* Plaques, ordered by placing (rank 1 first, then the "Winner", then 2nd and
+     3rd). `place` is the word struck on the plaque; Fish Market's is "Winner"
+     because that is all its Devpost page says. Gold is used here and nowhere else. */
   wins: {
     eyebrow: 'Wins',
     link: { label: 'Devpost', href: 'https://devpost.com/vs-githjk' },
+    provenance:
+      'Devpost shows each prize as “Winner” with the prize’s name; the placings (1st, 2nd, 3rd) are as they stand on my resume. Most recent win: Oct 2026.',
     items: [
       {
-        title: 'PrismKeep · 1st overall',
+        place: '1st',
+        prize: 'overall',
+        project: 'PrismKeep',
         event: 'SF Startup Challenge, AWS Builder Loft · Oct 2026',
         href: '', // TODO: Devpost link when Vidyut has it
       },
       {
-        title: 'FireSight · 1st, Track 1: Hacking with Public Data APIs',
+        place: '1st',
+        prize: 'Track 1: Hacking with Public Data APIs',
+        project: 'FireSight',
         event: 'super{set} SF · Oct 2026',
         href: 'https://devpost.com/software/firesight-fnt4le',
       },
       {
-        title: 'Fish Market · Winner, Best Use of Fetch.ai',
+        place: '1st',
+        prize: 'Visa track',
+        project: 'BetterBill',
+        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
+        href: 'https://devpost.com/software/betterbill',
+      },
+      {
+        place: '1st',
+        prize: 'Photon: Best Voice Agent',
+        project: 'BetterBill',
+        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
+        href: 'https://devpost.com/software/betterbill',
+      },
+      {
+        place: '1st',
+        prize: 'Real World track (Ambrook)',
+        project: 'Terrametric',
+        event: 'Bitcamp 2026 · Apr 2026',
+        href: 'https://devpost.com/software/terrametric',
+      },
+      {
+        place: '1st',
+        prize: 'Intermediate Data Science track',
+        project: 'Terrametric',
+        event: 'Bitcamp 2026 · Apr 2026',
+        href: 'https://devpost.com/software/terrametric',
+      },
+      {
+        place: 'Winner',
+        prize: 'Best Use of Fetch.ai',
+        project: 'Fish Market',
         event: 'Cal Hacks 13.0 · Oct 2026',
         href: 'https://devpost.com/software/fish-market-of6te2',
       },
       {
-        title: 'BetterBill · 1st, Visa track',
-        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
-        href: 'https://devpost.com/software/betterbill',
-      },
-      {
-        title: 'BetterBill · 1st, Photon: Best Voice Agent',
-        event: 'AI Hackathon 2026 by LA Hacks · Oct 2026',
-        href: 'https://devpost.com/software/betterbill',
-      },
-      {
-        title: 'Terrametric · 1st, Real World track (Ambrook)',
-        event: 'Bitcamp 2026 · Apr 2026',
-        href: 'https://devpost.com/software/terrametric',
-      },
-      {
-        title: 'Terrametric · 1st, Intermediate Data Science track',
-        event: 'Bitcamp 2026 · Apr 2026',
-        href: 'https://devpost.com/software/terrametric',
-      },
-      {
-        title: 'Terrametric · 3rd, Open Source (Featherless)',
-        event: 'Bitcamp 2026 · Apr 2026',
-        href: 'https://devpost.com/software/terrametric',
-      },
-      {
-        title: 'Research paper · 2nd Place, Engineering',
+        place: '2nd',
+        prize: 'Engineering',
+        project: 'Research paper',
         event: 'Penn State Undergraduate Exhibition 2026',
         href: '', // resume only, no public results page
       },
+      {
+        place: '3rd',
+        prize: 'Open Source (Featherless)',
+        project: 'Terrametric',
+        event: 'Bitcamp 2026 · Apr 2026',
+        href: 'https://devpost.com/software/terrametric',
+      },
     ],
   },
+  checkLabel: 'Check it yourself',
   tiles: [
     {
       kind: 'Devpost',
@@ -1395,9 +1587,17 @@ export const contact = {
     src2x: '/headshot-480.webp',
     alt: 'Vidyut Sriram, smiling, in a light blue polo',
   },
+  /* Mint means available. He graduates in Dec 2026 and can start in Jan 2027. */
+  availability: 'Available from January 2027',
   email: 'vidyut0712@gmail.com',
-  copyLabel: 'Copy',
+  /* The email link opens a draft that already has a subject and a first line. */
+  mail: {
+    subject: 'Hello from your portfolio',
+    body: 'Hi Vidyut,\n\n',
+  },
+  copyLabel: 'Copy email',
   copiedLabel: 'Copied',
+  copiedSay: 'Email address copied.',
   links: [
     {
       kind: 'LinkedIn',
@@ -1411,6 +1611,17 @@ export const contact = {
   footerLeft: 'Vidyut Sriram · State College, PA',
   footerRight: 'Built from scratch · 2026',
   footerTop: 'Back to top',
+  /* The colophon: how the site was made. `lighthouse` holds numbers measured on
+     the production build on the date given, on Lighthouse's phone profile; leave
+     it null rather than quote a number that was not measured that day. */
+  colophon: {
+    label: 'Colophon',
+    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is about thirty thousand points baked from one photograph.',
+    type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
+    measured: 'Lighthouse, phone profile, {date}: performance {performance}, accessibility {accessibility}, best practices {bestPractices}, SEO {seo}.',
+    lighthouse: null,
+    llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
+  },
 };
 
 /* The two waterlines of the journey (Vista.jsx): one short line each, naming the

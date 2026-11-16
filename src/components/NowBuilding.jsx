@@ -17,6 +17,7 @@ import Stack from './Stack';
    Art is /agents/<id>.webp (294px) and /agents/<id>-148.webp. */
 const STEP_MS = 3200;
 
+const HUES = new Map(); // character id -> dominant hue of their art, in degrees
 const art = (id, small) => `/agents/${id}${small ? '-148' : ''}.webp`;
 
 export default function NowBuilding({ item }) {
@@ -53,6 +54,60 @@ export default function NowBuilding({ item }) {
     };
   }, [count]);
 
+  /* The chosen character tints the world: the dominant hue of their art (read
+     once per character from the small file, saturated pixels only) is written to
+     :root as --agent-hue (degrees) and sent as a `world:agent` event, so the
+     scene can lean the nearby sand toward it. */
+  const whoId = item ? item.crew[sel].id : null;
+  useEffect(() => {
+    if (!whoId) return undefined;
+    let live = true;
+    const send = (hue) => {
+      if (!live) return;
+      document.documentElement.style.setProperty('--agent-hue', String(hue));
+      window.dispatchEvent(new CustomEvent('world:agent', { detail: { hue, id: whoId } }));
+    };
+    if (HUES.has(whoId)) {
+      send(HUES.get(whoId));
+      return () => {
+        live = false;
+      };
+    }
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = c.height = 16;
+        const g = c.getContext('2d', { willReadFrequently: true });
+        g.drawImage(img, 0, 0, 16, 16);
+        const d = g.getImageData(0, 0, 16, 16).data;
+        let x = 0;
+        let y = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          const r = d[i] / 255;
+          const gr = d[i + 1] / 255;
+          const b = d[i + 2] / 255;
+          const max = Math.max(r, gr, b);
+          const min = Math.min(r, gr, b);
+          const sat = max - min;
+          if (sat < 0.12) continue;
+          const h = max === r ? ((gr - b) / sat) % 6 : max === gr ? (b - r) / sat + 2 : (r - gr) / sat + 4;
+          x += Math.cos((h * Math.PI) / 3) * sat * max;
+          y += Math.sin((h * Math.PI) / 3) * sat * max;
+        }
+        const hue = Math.round(((Math.atan2(y, x) * 180) / Math.PI + 360) % 360);
+        HUES.set(whoId, hue);
+        send(hue);
+      } catch {
+        /* no canvas: the world keeps its own colour */
+      }
+    };
+    img.src = art(whoId, true);
+    return () => {
+      live = false;
+    };
+  }, [whoId]);
+
   if (!item) return null;
   const n = count;
   const who = item.crew[sel];
@@ -87,42 +142,13 @@ export default function NowBuilding({ item }) {
         </div>
 
         <div className="nb-head">
+          <h3 className="nb-title">
+            {item.title} <span>{item.descriptor}</span>
+          </h3>
           <div className="nb-lede">
-            <h3 className="nb-title">
-              {item.title} <span>{item.descriptor}</span>
-            </h3>
             <p className="nb-one">{item.oneLiner}</p>
             <p className="text">
               <Rich text={item.lead} />
-            </p>
-          </div>
-
-          <div className="nb-run">
-            <div className="nb-prompt">
-              <span className="nb-tag">{item.prompt.label}</span>
-              <p>
-                <b aria-hidden="true">›</b>
-                {item.prompt.lines[0]}
-                <i className="nb-caret" aria-hidden="true" />
-              </p>
-              <p className="nb-alt">
-                <span>{item.prompt.or}</span> {item.prompt.lines[1]}
-              </p>
-            </div>
-            <ol className="nb-steps" aria-label={item.prompt.stepsLabel}>
-              {item.prompt.steps.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ol>
-            <p className="nb-out">
-              <span className="nb-tag">{item.prompt.outLabel}</span>
-              {item.prompt.out}
-            </p>
-            <p className="nb-gates">
-              <span>{item.prompt.gatesLabel}</span>
-              {item.prompt.gates.map((g) => (
-                <b key={g}>{g}</b>
-              ))}
             </p>
           </div>
         </div>
@@ -175,6 +201,35 @@ export default function NowBuilding({ item }) {
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="nb-run">
+          <div className="nb-prompt">
+            <span className="nb-tag">{item.prompt.label}</span>
+            <p>
+              <b aria-hidden="true">›</b>
+              {item.prompt.lines[0]}
+              <i className="nb-caret" aria-hidden="true" />
+            </p>
+            <p className="nb-alt">
+              <span>{item.prompt.or}</span> {item.prompt.lines[1]}
+            </p>
+          </div>
+          <ol className="nb-steps" aria-label={item.prompt.stepsLabel}>
+            {item.prompt.steps.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ol>
+          <p className="nb-out">
+            <span className="nb-tag">{item.prompt.outLabel}</span>
+            {item.prompt.out}
+          </p>
+          <p className="nb-gates">
+            <span>{item.prompt.gatesLabel}</span>
+            {item.prompt.gates.map((g) => (
+              <b key={g}>{g}</b>
+            ))}
+          </p>
         </div>
 
         <div className="nb-sys">
