@@ -595,9 +595,16 @@ html[data-holo='in'] .hub {
   text-align: center;
 }
 
-.welcome-ball span {
-  position: relative;
-  clip-path: inset(-10% calc(100% - var(--speak, 0) * 100%) -10% -2%);
+/* The whole sentence is laid out from the first frame, centred under the ball
+   and waiting dim like the greeting; each letter (--i of --n) lights whole as
+   the ball says it. Nothing is clipped and the line never moves. */
+.welcome-ball .ball-line {
+  white-space: pre;
+}
+
+.welcome-ball i {
+  font-style: normal;
+  opacity: clamp(var(--speak-idle), calc(var(--speak, 0) * (var(--n) + 1) - var(--i)), 1);
 }
 
 .welcome-ball::before {

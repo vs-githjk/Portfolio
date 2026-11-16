@@ -304,20 +304,13 @@ html[data-holo='off'] .door-skip {
   display: none;
 }
 
-/* The ball's line stays on one line at any width, so it types left to right: the
+/* The ball's line stays on one line at any width, so it lights left to right: the
    type steps down until --n letters of the display face (about 0.6em each) fit
    between the gutters. */
 .welcome-ball {
   font-size: min(var(--fs-speak), calc((100vw - 2 * var(--pad)) / (var(--n, 26) * 0.7)));
   white-space: nowrap;
   overflow-x: clip; /* a fixed line wider than the window would widen the page */
-}
-
-/* The ball's line is typed in whole letters (--n of them), not wiped. */
-@supports (width: round(down, 1px, 1px)) {
-  .welcome-ball span {
-    clip-path: inset(-10% calc(100% - round(down, var(--speak, 0) * 100% + 1%, 100% / var(--n, 24))) -10% -2%);
-  }
 }
 
 /* ---- The seed and the ring that opens ------------------------------------ */

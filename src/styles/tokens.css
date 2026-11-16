@@ -230,6 +230,7 @@
   --welcome-run: 70svh; /* empty scroll under the greeting: room for the ball before the hero arrives */
   --fs-hello: clamp(40px, 5.4vw, 72px); /* the greeting's first line */
   --say-idle: var(--text-3); /* the greeting before it has been said */
+  --speak-idle: 0.2; /* the ball's line before the ball has said it (an opacity) */
   /* The greeting is typed while the face draws: delay and length of each line.
      Hologram.jsx mirrors the start of the first and the end of the second. */
   --say-delay-1: 0.5s;

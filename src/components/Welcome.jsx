@@ -163,7 +163,13 @@ export default function Welcome() {
         ))}
       </p>
       <p className="welcome-ball" aria-hidden="true" style={{ '--n': welcome.ball.length }}>
-        <span>{welcome.ball}</span>
+        <span className="ball-line">
+          {Array.from(welcome.ball, (ch, i) => (
+            <i style={{ '--i': i }} key={i}>
+              {ch}
+            </i>
+          ))}
+        </span>
       </p>
       <div className="door">
         <a className="door-enter" href="#top" onClick={enter}>
