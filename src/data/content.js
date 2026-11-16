@@ -1854,13 +1854,15 @@ export const contact = {
     label: 'Colophon',
     made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene with a rigged, animated dragon in it, and the hologram on the first screen is one picture and a small shader of my own: scan lines, a cone of light and a plate under it. When you enter, it closes to a single beam and the page begins.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
-    measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {low} to {high}, {performance} at the median; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
-    // Measured Nov 16 2026 at noon on the merged production build (npm run build, vite preview),
-    // Lighthouse 12.2.1, --form-factor=mobile, three runs in a row, all quoted: performance 95, 96, 96
-    // (LCP 2.5 s, CLS 0, TBT 40 to 160 ms), load average about 5. Accessibility, best practices and SEO
-    // 100 on all three. State every run's range, never a floor that one of the quoted runs broke, and
-    // re-measure when the build changes.
-    lighthouse: { date: 'Nov 16 2026', runs: 'three', performance: 96, low: 95, high: 96, accessibility: 100, bestPractices: 100, seo: 100 },
+    measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {performance} on every run; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
+    // Measured Nov 16 2026, 12:42 EST, on the production build after the final pass (npm run build,
+    // vite preview), Lighthouse 12.2.1, --form-factor=mobile, three runs in a row, all quoted:
+    // performance 96, 96, 96 (LCP 2.5 s, CLS 0, TBT 30 to 100 ms), load average about 2.5 to 4.
+    // Accessibility, best practices and SEO 100 on all three. The sentence above says "on every
+    // run" because the three agreed; if a later measurement spreads, restate it as a range
+    // ("{low} to {high}, {performance} at the median"), never a floor that a quoted run broke,
+    // and re-measure when the build changes.
+    lighthouse: { date: 'Nov 16 2026', runs: 'three', performance: 96, low: 96, high: 96, accessibility: 100, bestPractices: 100, seo: 100 },
     llms: { label: 'llms.txt', href: '/llms.txt' },
   },
 };
