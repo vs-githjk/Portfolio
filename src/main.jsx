@@ -8,6 +8,7 @@ import './styles/sections.css';
 import './styles/v3-shell.css';
 import './styles/v3-world.css';
 import './styles/v3-sections.css';
+import './styles/v4-opening.css';
 
 import App from './App.jsx';
 

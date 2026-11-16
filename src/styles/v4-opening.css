@@ -1,0 +1,472 @@
+/* ============================================================================
+   THE OPENING (v4, Nov 16 2026): the first screen as one projection room, the
+   hero without the ring, and the ring in its new home.
+   Loaded last. Tokens: --holo-* and --hub-* in tokens.css.
+   ========================================================================== */
+
+/* ================================ THE PROJECTIONS ========================== */
+/* The panels beside him are holograms of the same kind as his own (the canvas:
+   lib/holoScene.js), drawn in CSS with the same numbers: the picture's tones on
+   the hologram's blue with a little of its own colour left in (--holo-warm), a
+   scan line every --holo-pitch pixels, a band of light rolling up every
+   --holo-roll, a hairline frame with red and blue a pixel and a half apart, the
+   foot dissolving, and under it a cone of light standing on a small plate.
+   They take turns (hub-think; --k staggers them, so two or three are lit at
+   once), never touch his picture, and leave with the greeting (--out). */
+.hub {
+  --think: 19.2s; /* one full round of the six */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100svh - var(--nav-h));
+  min-height: var(--welcome-min);
+  pointer-events: none;
+  opacity: calc(1 - var(--out, 0));
+}
+
+.hub-panel {
+  position: absolute;
+  width: var(--hub-w);
+  display: grid;
+  justify-items: center;
+  opacity: 0;
+  animation: hub-think var(--think) var(--ease) infinite;
+  animation-delay: calc(var(--k) * var(--think) / 6);
+}
+
+.hub-panel[data-at='l1'] { left: 9%; top: 9%; }
+.hub-panel[data-at='l2'] { left: 5%; top: 37%; --hub-w: clamp(84px, 8.4vw, 124px); }
+.hub-panel[data-at='l3'] { left: 11%; top: 60%; }
+.hub-panel[data-at='r1'] { right: 9%; top: 11%; }
+.hub-panel[data-at='r2'] { right: 6%; top: 38%; --hub-w: clamp(84px, 8.4vw, 124px); }
+.hub-panel[data-at='r3'] { right: 11%; top: 58%; }
+
+/* The pane. */
+.hub-pic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: calc(var(--hub-w) * 0.07);
+  background: rgb(var(--holo-deep));
+  box-shadow:
+    -1.5px 0 0 rgba(var(--holo-fringe-r), 0.5),
+    1.5px 0 0 rgba(var(--holo-fringe-b), 0.6),
+    0 0 0 1px rgba(var(--holo-pale), 0.34),
+    0 0 26px rgba(var(--holo-deep), 0.28);
+  -webkit-mask-image: linear-gradient(to bottom, #000 56%, rgb(0 0 0 / 0.3));
+  mask-image: linear-gradient(to bottom, #000 56%, rgb(0 0 0 / 0.3));
+  opacity: 0.94;
+  animation: hub-scan var(--think) linear infinite;
+  animation-delay: inherit;
+}
+
+.hub-panel[data-kind='crew'] .hub-pic,
+.hub-panel[data-kind='fact'] .hub-pic {
+  aspect-ratio: 1;
+}
+
+/* The picture's tones take the pane's blue; over them, a share of its own colour. */
+.hub-pic img {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hub-pic img:first-of-type {
+  mix-blend-mode: luminosity;
+  filter: contrast(1.06) brightness(1.04);
+}
+
+.hub-pic img + img {
+  opacity: var(--holo-warm);
+}
+
+/* Whites take the pale blue, as in his picture, where only the very brightest is near white. */
+.hub-pic::before {
+  content: '';
+  grid-area: 1 / 1;
+  align-self: stretch;
+  justify-self: stretch;
+  z-index: 1;
+  background: rgb(var(--holo-pale));
+  mix-blend-mode: multiply;
+}
+
+/* The fact is set in the same light. */
+.hub-pic b {
+  grid-area: 1 / 1;
+  z-index: 2;
+  font-family: var(--font-read);
+  font-weight: 400;
+  font-size: calc(var(--hub-w) * 0.46);
+  line-height: 1;
+  color: rgb(var(--holo-hot));
+  text-shadow: 0 0 18px rgba(var(--holo-pale), 0.7);
+}
+
+.hub-panel[data-kind='fact'] .hub-pic {
+  background: radial-gradient(closest-side, rgba(var(--holo-deep), 0.85), rgba(var(--holo-deep), 0.34));
+}
+
+/* Scan lines, and the band of light that rolls up. */
+.hub-pic::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background:
+    linear-gradient(to top, transparent 42%, rgba(var(--holo-hot), 0.16) 50%, transparent 58%) 0 0 / 100% 200%,
+    repeating-linear-gradient(
+      to bottom,
+      rgba(var(--holo-ink), 0.2) 0,
+      transparent calc(var(--holo-pitch) * 0.5px),
+      rgba(var(--holo-ink), 0.2) calc(var(--holo-pitch) * 1px)
+    );
+  animation: holo-roll var(--holo-roll) linear infinite;
+}
+
+@keyframes holo-roll {
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 200%,
+      0 0;
+  }
+}
+
+/* The cone and the plate under a pane. */
+.hub-cone {
+  position: relative;
+  width: 100%;
+  height: calc(var(--hub-w) * 0.15);
+  margin-bottom: calc(var(--hub-w) * 0.06 + 8px);
+}
+
+.hub-cone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(2% 0, 98% 0, 60% 100%, 40% 100%);
+  background:
+    repeating-linear-gradient(to bottom, rgba(var(--holo-ink), 0.2) 0, transparent calc(var(--holo-pitch) * 0.5px), rgba(var(--holo-ink), 0.2) calc(var(--holo-pitch) * 1px)),
+    linear-gradient(to top, rgba(var(--holo-pale), 0.4), rgba(var(--holo-deep), 0.1));
+}
+
+.hub-cone::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 46%;
+  aspect-ratio: 1 / 0.2;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(var(--holo-pale), 0.75);
+  background:
+    radial-gradient(50% 50%, rgb(var(--holo-hot)) 0, rgba(var(--holo-hot), 0.5) 22%, transparent 50%),
+    rgba(var(--holo-ink), 0.5);
+  box-shadow: 0 0 12px rgba(var(--holo-deep), 0.5);
+}
+
+.hub-panel figcaption {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text);
+}
+
+/* One projection: the plate and the cone light, the picture is scanned in from
+   its foot (hub-scan, the same clock), it holds and floats a little, then its
+   light goes out. It is lit for about a third of the round. */
+@keyframes hub-think {
+  0% {
+    opacity: 0;
+    translate: 0 0;
+  }
+  1.5% {
+    opacity: var(--hub-dim);
+  }
+  20% {
+    translate: 0 -5px;
+  }
+  33% {
+    opacity: var(--hub-dim);
+    translate: 0 0;
+  }
+  36%,
+  100% {
+    opacity: 0;
+    translate: 0 0;
+  }
+}
+
+@keyframes hub-scan {
+  0%,
+  1% {
+    clip-path: inset(100% -4px 0 -4px);
+    filter: brightness(1.7);
+  }
+  5% {
+    clip-path: inset(0 -4px 0 -4px);
+    filter: brightness(1.25);
+  }
+  7%,
+  100% {
+    clip-path: inset(0 -4px 0 -4px);
+    filter: none;
+  }
+}
+
+/* They wait for his projection: the layer comes up once it has been scanned in. */
+html.js:not([data-holo]) .hub,
+html[data-holo='in'] .hub {
+  opacity: 0;
+}
+
+html[data-holo='in'] .hub {
+  animation: hub-in 0.8s var(--ease) 1.7s forwards;
+}
+
+@keyframes hub-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.welcome[data-run] .hub {
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+
+html[data-holo='off'] .hub {
+  display: none;
+}
+
+/* A narrow laptop has less room at the sides. */
+@media (max-width: 1100px) {
+  .hub-panel[data-at='l1'],
+  .hub-panel[data-at='l3'] {
+    left: 3%;
+  }
+
+  .hub-panel[data-at='r1'],
+  .hub-panel[data-at='r3'] {
+    right: 3%;
+  }
+}
+
+/* A phone: four projections take turns in two places, in the corners above his
+   picture. Each one ends 10px above the picture's box (lib/face.js publishes it
+   as --face-rect-y, in document pixels; the welcome starts one bar down), so
+   nothing ever meets his head, at any width. The third and fourth arrive as the
+   first and second leave, so each place holds one at a time. */
+@media (max-width: 760px) {
+  .hub .hub-panel[data-at] {
+    --hub-w: 92px;
+    top: calc(var(--face-rect-y, 150px) - var(--nav-h) - 10px);
+    transform: translateY(-100%);
+  }
+
+  .hub-panel[data-at='l2'],
+  .hub-panel[data-at='r2'] {
+    display: none;
+  }
+
+  .hub-panel[data-at='l1'],
+  .hub-panel[data-at='l3'] { left: 4%; }
+  .hub-panel[data-at='r1'],
+  .hub-panel[data-at='r3'] { right: 4%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The projections hold still: the first three stay lit, the rest stay away. */
+  .hub-panel,
+  .hub-pic,
+  .hub-pic::after {
+    animation: none;
+  }
+
+  .hub-panel:nth-child(-n + 3) {
+    opacity: var(--hub-dim);
+  }
+
+  html[data-holo='in'] .hub {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ================================== THE HERO =============================== */
+/* His name is the picture: two lines of the display face, as large as the window
+   allows, on the left; on the right a card of who and where (the photograph, the
+   status, the place) standing on the same foot line as the actions. The beams
+   light it from above. Nothing orbits here: the ring of builds is in Builds. */
+.hero-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  padding-top: 36px;
+  padding-bottom: 56px;
+}
+
+.hero-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-card .portrait {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--r-lg);
+}
+
+.hero-card .who-text {
+  gap: 6px;
+}
+
+.hero .hero-name {
+  font-size: var(--fs-name);
+  line-height: 0.86;
+  white-space: nowrap;
+  margin-bottom: clamp(16px, 2.6svh, 28px);
+  /* The display face is wide: pull the first stem onto the column's edge. */
+  margin-left: -0.035em;
+}
+
+.hero .identity {
+  font-size: var(--fs-thesis);
+  margin-bottom: 14px;
+}
+
+.hero .identity-sub {
+  font-size: 17px;
+  max-width: 46ch;
+  margin-bottom: 14px;
+  text-wrap: pretty;
+}
+
+.hero .cred {
+  margin-bottom: 26px;
+}
+
+.hero .actions {
+  justify-content: flex-start;
+}
+
+@media (min-width: 961px) {
+  .hero-in {
+    grid-template-columns: minmax(0, 1fr) clamp(200px, 20vw, 260px);
+    align-items: end;
+    column-gap: clamp(32px, 5vw, 80px);
+    /* A little short of the window, so the waterline below shows at its foot. */
+    min-height: clamp(540px, calc(100svh - var(--nav-h) - 56px), 820px);
+    padding-top: clamp(40px, 8svh, 96px);
+    padding-bottom: clamp(48px, 9svh, 104px);
+    align-content: center;
+  }
+
+  .hero-card {
+    grid-column: 2;
+    grid-row: 1;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .hero-card .portrait {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .hero-in .who-main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+/* Between a phone and a laptop the credentials are two lines, as on a phone. */
+@media (min-width: 1200px) {
+  .hero .cred {
+    max-width: none;
+  }
+}
+
+/* ============================ THE RING'S NEW HOME ========================== */
+/* The ring of build cards left the hero (it said "here is what I built" twice).
+   It stands where it is an index: at the top of Builds (data-home="builds"), or
+   in Proof of work as a ring of the wins (data-home="proof"); RING_HOME in
+   data/world.js picks one. A stage is as wide as the window, so the ring has
+   its full radius; its centre block keeps the page's column. */
+.ring-stage {
+  overflow-x: clip;
+}
+
+.ring-centre {
+  display: block;
+}
+
+/* Under the block: the block lies in the page as it would without the ring, and
+   the front arc of the ring hangs below it. Orbit.jsx writes the stage's height. */
+.ring-stage[data-ring='under'] {
+  padding: 0;
+}
+
+.ring-stage[data-ring='under'] .ring-centre {
+  padding: 0;
+  margin: 0;
+}
+
+.ring-stage[data-home='builds'] .drift {
+  margin: 4px 0 0;
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .ring-stage[data-ring='under'] {
+    height: var(--stage-h, 780px);
+  }
+
+  .ring-stage[data-ring='under'] .ring-centre {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+    transform: none;
+  }
+
+  /* The ring is the index on a wide window: the dot chart gives way to it. */
+  .ring-stage[data-home='builds'] .depths {
+    display: none;
+  }
+
+  /* Room under the heading for the arc's side cards, which stand higher than the front one. */
+  .ring-stage[data-home='builds'] .deep-open {
+    row-gap: 0;
+    padding-bottom: 64px;
+  }
+
+  .ring-stage[data-home='builds'] {
+    margin-bottom: clamp(40px, 7vw, 96px);
+  }
+}
+
+/* The card's two parts are plain grid children here (the old hero named areas). */
+.hero-card .portrait,
+.hero-card .who-text,
+.hero-in .who-main {
+  grid-area: auto;
+}

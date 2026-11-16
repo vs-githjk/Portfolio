@@ -60,18 +60,14 @@ export const nav = {
 };
 
 /* ------------------------------------------------------------- WELCOME ---- */
-/* The first screen: his face drawn in light says hello. Two short lines and a
-   cue; the hero (his name, the ring) is one scroll or one click away. */
+/* The first screen: a hologram of him says hello. Two short lines and the door;
+   the hero (his name) is one scroll or one click away. */
 export const welcome = {
   label: 'Welcome',
   lines: ['Hey, I’m Vidyut.', 'I build worlds. Reliable ones.'],
-  cue: 'Scroll or click to see what happens next',
-  /* What the ball of light says before it breaks into the page: a line of speech
-     that types under it while it pulses. */
-  ball: 'Here is what I have built.',
-  /* His work, as thoughts on the welcome screen: small soft holograms at the sides
-     of the window that phase in and out in this order. `at` is the seat (l1 to l3
-     down the left, r1 to r3 down the right). A build shows its ring thumbnail
+  /* His work, as small projections at the sides of the first screen, in the same
+     blue light as his own. They phase in and out in this order. `at` is the seat
+     (l1 to l3 down the left, r1 to r3 down the right). A build shows its ring thumbnail
      (/builds/ring/<id>-320.webp), the crew one Master Agents portrait, the fact the
      same "5× hackathon winner" the hero credential states. Decoration: aria-hidden. */
   hub: [

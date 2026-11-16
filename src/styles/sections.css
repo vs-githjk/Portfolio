@@ -431,239 +431,7 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
   max-width: 760px;
 }
 
-/* His work comes to him like thoughts. A layer over the first screen holds a few
-   small soft holograms at the sides (his builds, the crew, one fact): a picture
-   washed to the hologram's blue under faint scan lines, rounded and translucent.
-   Nothing touches his head and nothing is wired to it. They take turns: each
-   phases in from a blur with a short shimmer, holds and bobs, then phases out
-   upward as the next appears (hub-think; --k staggers them, so two or three are
-   in sight at once). They drift a few pixels with the turn of his head (--head)
-   and leave with the greeting (--out). */
-.hub {
-  --think: 19.2s; /* one full round of the six */
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: calc(100svh - var(--nav-h));
-  min-height: var(--welcome-min);
-  pointer-events: none;
-  opacity: calc(1 - var(--out, 0));
-}
-
-.hub-panel {
-  --drift: 5px;
-  position: absolute;
-  width: var(--hub-w);
-  display: grid;
-  gap: 8px;
-  justify-items: center;
-  transform: translateX(calc(var(--head, 0) * var(--drift)));
-  opacity: 0;
-  animation: hub-think var(--think) var(--ease) infinite;
-  animation-delay: calc(var(--k) * var(--think) / 6);
-}
-
-.hub-panel[data-at='l1'] { left: 10%; top: 10%; --drift: 7px; }
-.hub-panel[data-at='l2'] { left: 6%; top: 40%; width: calc(var(--hub-w) * 0.66); --drift: 4px; }
-.hub-panel[data-at='l3'] { left: 12%; top: 64%; --drift: 6px; }
-.hub-panel[data-at='r1'] { right: 10%; top: 12%; --drift: 7px; }
-.hub-panel[data-at='r2'] { right: 7%; top: 42%; --drift: 4px; }
-.hub-panel[data-at='r3'] { right: 12%; top: 62%; --drift: 6px; }
-
-.hub-pic {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  border-radius: var(--r-lg);
-  background: var(--acc);
-  box-shadow:
-    0 0 0 1px var(--glass-line),
-    0 0 28px var(--acc-glow);
-}
-
-.hub-panel[data-kind='crew'] .hub-pic {
-  aspect-ratio: 1;
-  border-radius: 50%;
-}
-
-.hub-pic img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  mix-blend-mode: luminosity;
-  filter: contrast(1.1) brightness(0.92);
-}
-
-.hub-pic::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in srgb, var(--ink) 30%, transparent) 3px 4px);
-}
-
-.hub-panel b {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(36px, 4vw, 58px);
-  line-height: 0.9;
-  color: var(--acc-2);
-  text-shadow: 0 0 24px var(--acc-glow);
-}
-
-.hub-panel figcaption {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
-  text-align: center;
-  color: var(--text);
-}
-
-/* One thought: it rises into focus, shimmers once, holds while it bobs, and
-   leaves upward. It is in sight for about two fifths of the round. */
-@keyframes hub-think {
-  0% {
-    opacity: 0;
-    translate: 0 14px;
-    filter: blur(5px) brightness(1);
-  }
-  /* In focus within 0.4s: a thought is never held as a smudge. */
-  2% {
-    opacity: calc(var(--hub-dim) * 0.6);
-    filter: blur(0) brightness(1.4);
-  }
-  6% {
-    opacity: var(--hub-dim);
-    translate: 0 0;
-    filter: blur(0) brightness(1);
-  }
-  21% {
-    translate: 0 -6px;
-  }
-  33% {
-    opacity: var(--hub-dim);
-    translate: 0 0;
-    filter: blur(0) brightness(1);
-  }
-  /* It leaves sharp, upward: a fade, no blur. */
-  38%,
-  100% {
-    opacity: 0;
-    translate: 0 -16px;
-    filter: blur(0) brightness(1);
-  }
-}
-
-html.js:not([data-holo]) .hub,
-html[data-holo='in'] .hub {
-  opacity: 0;
-}
-
-/* They wait for the face: the layer comes up once it is drawn. */
-html[data-holo='in'] .hub {
-  animation: hub-in 1s var(--ease) 1.7s forwards;
-}
-
-@keyframes hub-in {
-  to {
-    opacity: 1;
-  }
-}
-
-/* A narrow laptop has less room at the sides. */
-@media (max-width: 1100px) {
-  .hub-panel[data-at='l1'],
-  .hub-panel[data-at='l3'] {
-    left: 3%;
-  }
-
-  .hub-panel[data-at='r1'],
-  .hub-panel[data-at='r3'] {
-    right: 3%;
-  }
-}
-
-/* A phone: four thoughts take turns in two places, in the corners above the round
-   window. Each one ends 10px above the portrait's box (lib/face.js publishes it as
-   --face-rect-y, in document pixels; the welcome starts one bar down), so no
-   picture and no label ever meets his head, at any width. They are smaller here.
-   The third and fourth arrive as the first and second leave (their turns are two
-   thirds of a round apart), so each place holds one at a time. Beside the
-   greeting there is no room: a thought there stood a pixel from his name. */
-@media (max-width: 760px) {
-  .hub {
-    --hub-w: 96px;
-  }
-
-  .hub .hub-panel[data-at] {
-    top: calc(var(--face-rect-y, 126px) - var(--nav-h) - 10px);
-    gap: 6px;
-    transform: translate(calc(var(--head, 0) * var(--drift)), -100%);
-  }
-
-  .hub-panel[data-at='l2'],
-  .hub-panel[data-at='r2'] {
-    display: none;
-  }
-
-  .hub-panel[data-at='l1'],
-  .hub-panel[data-at='l3'] { left: 4%; }
-  .hub-panel[data-at='r1'],
-  .hub-panel[data-at='r3'] { right: 4%; }
-}
-
-/* The ball's line of speech: fixed under the ball (Hologram.jsx writes where
-   that is), typed left to right as the page moves, a caret on its edge. */
-.welcome-ball {
-  position: fixed;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  top: var(--ball-y, 60svh);
-  display: grid;
-  justify-items: center;
-  padding-inline: var(--pad);
-  opacity: var(--speak-on, 0);
-  pointer-events: none;
-  font-family: var(--font-display);
-  font-size: var(--fs-speak);
-  line-height: 1.15;
-  color: var(--text);
-  text-align: center;
-}
-
-/* The whole sentence is laid out from the first frame, centred under the ball
-   and waiting dim like the greeting; each letter (--i of --n) lights whole as
-   the ball says it. Nothing is clipped and the line never moves. */
-.welcome-ball .ball-line {
-  white-space: pre;
-}
-
-.welcome-ball i {
-  font-style: normal;
-  opacity: clamp(var(--speak-idle), calc(var(--speak, 0) * (var(--n) + 1) - var(--i)), 1);
-}
-
-.welcome-ball::before {
-  content: '';
-  width: 1px;
-  height: 18px;
-  margin-bottom: 10px;
-  background: linear-gradient(to bottom, transparent, var(--acc-2));
-}
-
-html:not(.js) .welcome-ball,
-html[data-holo='off'] .welcome-ball {
-  display: none;
-}
-
-.welcome-say,
-.welcome-cue {
+.welcome-say {
   opacity: calc(1 - var(--out, 0));
 }
 
@@ -735,57 +503,6 @@ html[data-holo='in'] .say[data-line='2'] {
   }
 }
 
-/* The cue: a mono label and a short line with a spark running down it. */
-.welcome-cue {
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-  min-height: 44px;
-  margin-top: clamp(14px, 3svh, 30px);
-  padding-top: 6px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-wrap: balance;
-  text-transform: uppercase;
-  color: var(--text-2);
-  text-decoration: none;
-  border-radius: var(--r-sm);
-  transition: color var(--dur) var(--ease);
-}
-
-.welcome-cue:hover {
-  color: var(--text);
-}
-
-.welcome-cue i {
-  position: relative;
-  width: 1px;
-  height: clamp(18px, 4svh, 34px);
-  background: var(--hair-2);
-  overflow: hidden;
-}
-
-.welcome-cue i::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent, var(--acc-2));
-  transform: translateY(-100%);
-  animation: cue-fall 2.4s var(--ease) 3s infinite;
-}
-
-@keyframes cue-fall {
-  0% {
-    transform: translateY(-100%);
-  }
-  60%,
-  100% {
-    transform: translateY(100%);
-  }
-}
-
 /* No WebGL: there is no face to stand under, so the screen closes up to the
    greeting and the hero follows at once. */
 html[data-holo='off'] .welcome {
@@ -805,34 +522,12 @@ html[data-holo='off'] .welcome-face {
     --welcome-run: 0px;
   }
 
-  /* The thoughts hold still: the first three stay lit, the rest stay away. */
-  .hub-panel {
-    animation: none;
-  }
-
-  .hub-panel:nth-child(-n + 3) {
-    opacity: var(--hub-dim);
-  }
-
-  html[data-holo='in'] .hub {
-    animation: none;
-    opacity: 1;
-  }
-
-  .welcome-ball {
-    display: none;
-  }
-
   html[data-holo] .say {
     background: none;
     -webkit-text-fill-color: currentColor;
     animation: none;
   }
 
-  .welcome-cue i::after {
-    animation: none;
-    opacity: 0;
-  }
 }
 
 /* ================================== HERO ================================== */
@@ -843,11 +538,11 @@ html[data-holo='off'] .welcome-face {
   scroll-margin-top: var(--nav-h);
 }
 
-.hero-stage {
+.ring-stage {
   position: relative;
 }
 
-.centre {
+.ring-centre {
   position: relative;
   z-index: 22;
   display: grid;
@@ -924,7 +619,7 @@ html[data-holo='off'] .welcome-face {
 
 .hero-name {
   font-family: var(--font-display);
-  font-size: var(--fs-hero);
+  font-size: var(--fs-name);
   line-height: 0.92;
   letter-spacing: var(--tr-display);
   color: var(--text);
@@ -1029,7 +724,7 @@ html[data-holo='off'] .welcome-face {
    Two rows of the ring's thumbnails on a plane tipped back into the beams, dimmed,
    fading out at both sides and at the foot, moving in opposite directions. */
 @media not all and (min-width: 960px) and (min-height: 640px) {
-  .hero-stage .orbit {
+  .ring-stage .orbit {
     display: none;
   }
 }
@@ -1333,38 +1028,18 @@ html[data-holo='off'] .welcome-face {
 }
 
 /* ---- Row mode: phones and short windows. A swipeable snap row. ------------ */
-.hero-stage {
+.ring-stage {
   padding-top: 40px;
   padding-bottom: 24px;
 }
 
-.hero-stage .centre {
+.ring-stage .ring-centre {
   padding-left: max(var(--pad), env(safe-area-inset-left, 0px));
   padding-right: max(var(--pad), env(safe-area-inset-right, 0px));
   margin-bottom: 36px;
 }
 
-.hero-stage .actions {
-  justify-content: flex-start;
-}
-
-.hero-stage .hero-name {
-  white-space: normal;
-}
-
-.hero-stage .hero-name .br {
-  display: inline;
-}
-
-.hero-stage .identity-sub {
-  text-wrap: pretty;
-}
-
-.hero-stage .cred {
-  text-wrap: balance;
-}
-
-.hero-stage .shield {
+.ring-stage .shield {
   display: none;
 }
 
@@ -1412,17 +1087,14 @@ html[data-holo='off'] .welcome-face {
 
 /* ---- Ring mode: a wide, tall window ----------------------------------------- */
 @media (min-width: 960px) and (min-height: 640px) {
-  :root {
-    --fs-hero: clamp(50px, min(5.9vw, 9.6svh), 96px);
-  }
 
-  .hero-stage {
+  .ring-stage {
     height: clamp(600px, calc(100svh - var(--nav-h)), 980px);
     padding: 0;
     --oy: 47%;
   }
 
-  .hero-stage .centre {
+  .ring-stage .ring-centre {
     position: absolute;
     left: 50%;
     top: var(--oy);
@@ -1442,50 +1114,7 @@ html[data-holo='off'] .welcome-face {
     row-gap: 12px;
   }
 
-  .hero-stage .portrait {
-    width: clamp(132px, 11.5vw, 164px);
-    height: clamp(132px, 11.5vw, 164px);
-    align-self: center;
-  }
-
-  .hero-stage .who-main {
-    max-width: 100%;
-  }
-
-  .hero-stage .cred {
-    max-width: none;
-  }
-
-  .hero-stage .who-text {
-    gap: 4px;
-    white-space: nowrap;
-  }
-
-  .hero-stage .actions {
-    justify-content: flex-start;
-  }
-
-  .hero-stage .hero-name {
-    white-space: nowrap;
-  }
-
-  .hero-stage .hero-name .br {
-    display: none;
-  }
-
-  /* The sentence and the status row wrap inside the width of the name block instead of
-     setting it, so the copy group is as wide as its own ink and sits on the ring's
-     centre line. The status and the school line are each one line. */
-  .hero-stage .identity-sub {
-    text-wrap: balance;
-    width: 0;
-    /* Never one long line: on a wide window the name is wider than a readable
-       measure, and a single line ran out under the ring's side cards. */
-    min-width: min(100%, 27em);
-    max-width: none;
-  }
-
-  .hero-stage .shield {
+  .ring-stage .shield {
     display: block;
     top: calc(var(--oy) - 120px);
   }
@@ -1588,45 +1217,16 @@ html[data-holo='off'] .welcome-face {
   }
 }
 
-/* Narrow laptop windows: the credential line wraps instead of running under the
-   side cards of the ring. */
-@media (min-width: 960px) and (max-width: 1199px) and (min-height: 640px) {
-  .hero-stage .cred {
-    max-width: 46ch;
-  }
-}
-
 /* Short laptop windows: the name and the portrait give up some size first, so the
    plain sentence under the thesis stays; only on the very shortest windows, where
    the ring needs the height more, does the sentence give way (the identity line
    above it still says the same thing). */
 @media (min-width: 960px) and (min-height: 640px) and (max-height: 780px) {
-  :root {
-    --fs-hero: clamp(48px, min(5.6vw, 8.6svh), 96px);
-  }
 
-  .hero-stage .centre {
+  .ring-stage .ring-centre {
     row-gap: 8px;
   }
 
-  .hero-stage .portrait {
-    width: clamp(116px, 10vw, 136px);
-    height: clamp(116px, 10vw, 136px);
-  }
-
-  .hero-stage .identity-sub {
-    margin-bottom: 6px;
-  }
-
-  .hero-stage .cred {
-    margin-bottom: 14px;
-  }
-}
-
-@media (min-width: 960px) and (min-height: 640px) and (max-height: 700px) {
-  .hero-stage .identity-sub {
-    display: none;
-  }
 }
 
 /* ============================== EXPERIENCE ================================ */

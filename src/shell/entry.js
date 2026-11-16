@@ -9,15 +9,6 @@ import { entryState, setEntry } from './entryState';
 
    What it writes, all on <html> unless said:
      data-entry       pre | land | (absent: rest), through entryState
-     --face-out       0 to 1: the portrait's light leaving for the seed. Written
-                      only while `driveFace()` says so: a portrait that follows the
-                      scroll by itself needs no second clock, and one with no
-                      dissolve of its own is scaled and blurred by the stylesheet
-     --ring-on/-s/-open  on the `host`: the ring that opens out of the ball, see `ring`
-     --seed-s/-up     on the `host`: the ball's size and how far its centre sits
-                      above the line of speech, for the drawing that meets it
-     data-plate       once the reader is nearly through (spans.plate): what stands
-                      under the place below may come in ahead of the rest
      data-run         on the `host` while the clock runs (the first beat: its words leave)
      data-skip        for two frames after a skip, so nothing eases
      data-cut         after a skip, until the reader scrolls back: the portrait's
@@ -27,15 +18,13 @@ import { entryState, setEntry } from './entryState';
    lands the rest state at once: an instant scroll, no beats. `seen` (a session
    flag) makes the next visit start at rest and the next entry short. */
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
-const span = (a, b, x) => clamp01((x - a) / (b - a));
 const smooth = (t) => t * t * (3 - 2 * t);
 
-export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, landMs = 900, seenKey = 'entry-seen', still = () => false, driveFace = () => false }) {
+export function createEntry({ origin, host, knots, shortMs = 900, spans, landMs = 900, seenKey = 'entry-seen', still = () => false }) {
   const root = document.documentElement;
   let run = null; // the clock: { t0, from, to, short }
   let seen = false;
   let landT = 0;
-  let wrote = '';
   try {
     seen = window.sessionStorage.getItem(seenKey) === '1';
   } catch {
@@ -94,30 +83,7 @@ export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, 
     const y = run ? window.scrollY : f.y;
     const p = y / reach();
     if (!still()) {
-      const out = smooth(span(spans.face[0], spans.face[1], p));
-      const open = span(spans.open[0], spans.open[1], p);
-      const drive = driveFace();
-      const key = `${drive ? out.toFixed(3) : 'x'}|${open.toFixed(3)}|${f.w}|${f.h}`;
-      if (key !== wrote) {
-        wrote = key;
-        if (drive) root.style.setProperty('--face-out', out.toFixed(3));
-        else root.style.removeProperty('--face-out');
-        if (host && ring) {
-          const r = ring(f.w, f.h);
-          const e = open * open; // ease-in: it lets go slowly, then is past the window
-          host.style.setProperty('--ring-on', (span(0, 0.1, open) * (1 - span(0.86, 1, open))).toFixed(3));
-          host.style.setProperty('--ring-open', Math.min(1, open * 3).toFixed(3));
-          host.style.setProperty('--ring-s', (r.reach * (1 + (r.grow - 1) * e)).toFixed(4));
-          host.style.setProperty('--seed-s', r.globe.toFixed(4));
-          host.style.setProperty('--seed-up', `${r.up.toFixed(1)}px`);
-        }
-      }
       const state = entryState();
-      const near = spans.plate != null && p >= spans.plate;
-      if (near !== (root.dataset.plate != null)) {
-        if (near) root.dataset.plate = '';
-        else delete root.dataset.plate;
-      }
       if (state === 'pre' && p >= spans.land) land();
       else if (state !== 'pre' && armed && !run && p < spans.back && f.dy < 0) setEntry('pre');
       if (p < spans.back && root.dataset.cut != null) delete root.dataset.cut;
@@ -161,7 +127,6 @@ export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, 
     stopClock();
     clearTimeout(landT);
     setEntry('rest');
-    root.style.removeProperty('--face-out');
   };
   const mo = new MutationObserver(stand);
   mo.observe(root, { attributes: true, attributeFilter: ['data-holo', 'data-plain'] });
@@ -184,10 +149,8 @@ export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, 
       mo.disconnect();
       rm.removeEventListener('change', stand);
       setEntry('rest');
-      for (const name of ['--face-out']) root.style.removeProperty(name);
       delete root.dataset.skip;
       delete root.dataset.cut;
-      delete root.dataset.plate;
     },
   };
 }

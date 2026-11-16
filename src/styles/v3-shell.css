@@ -8,8 +8,7 @@
      --plate-line    the plate's engraved hairline
      --plate-lit     the lit tick under the front card
      --plate-from    the scale the plate settles from when the reader arrives
-     --sill-h        how much of the Sill shows over the foot of the first screen
-     --sill-w        how wide the Sill is (it leaves the corners to Skip and the load line)
+     --sill-h        the room under the door at the foot of the first screen
      --edge-row      the height of the first screen's corner row (Skip, the load line)
      --land-dur      how long one thing takes to arrive in the hero
      --land-step     the gap between one row arriving and the next
@@ -22,26 +21,22 @@
   --plate-line: color-mix(in srgb, var(--acc-2) 42%, var(--hair-2));
   --plate-lit: var(--acc);
   --plate-from: 1.7;
-  --sill-h: clamp(52px, 8.5svh, 80px);
-  --sill-w: min(74%, 1080px);
+  --sill-h: clamp(40px, 6svh, 60px);
   --edge-row: 0px;
   --land-dur: 0.42s;
   --land-step: 60ms;
   --light: rgb(var(--holo-pale));
-  --ring-lie: 0.29;
 }
 
 @media (max-width: 760px) {
   :root {
-    --sill-w: 100%;
     --edge-row: 44px;
   }
 }
 
 /* =============================== THE THRESHOLD ============================ */
-/* The first screen's foot: the door (Enter, standing on the crest of the Sill),
-   the Sill itself, and the corner row (the load line bottom left, Skip intro
-   bottom right). They leave with the greeting (--out, written by Hologram.jsx). */
+/* The first screen's foot: the door (Enter) and the corner row (the load line
+   bottom left, Skip intro bottom right). They leave with the greeting (--out, written by Hologram.jsx). */
 .welcome {
   padding-bottom: calc(var(--sill-h) + var(--edge-row) + var(--welcome-run));
 }
@@ -131,45 +126,6 @@
   opacity: calc(1 - var(--out, 0));
 }
 
-/* The Sill: the far edge of the plate below, showing over the horizon. Same
-   drawing as the plate: two rims and a tick per ring build. */
-.sill {
-  position: absolute;
-  left: 50%;
-  bottom: var(--edge-row);
-  width: var(--sill-w);
-  height: var(--sill-h);
-  transform: translateX(-50%);
-  fill: none;
-  overflow: hidden;
-}
-
-/* A phone has no ring, so the near edge of the same plate lies under the drift:
-   the ring the reader came through, now underfoot. */
-.drift-plate {
-  display: block;
-  position: relative;
-  width: min(100%, 520px);
-  height: clamp(40px, 12vw, 56px);
-  margin: -52px auto 0;
-  fill: none;
-  transition:
-    opacity var(--dur) var(--ease),
-    transform var(--dur-slow) var(--ease);
-}
-
-@media (min-width: 960px) and (min-height: 640px) {
-  .drift-plate {
-    display: none;
-  }
-}
-
-html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .drift-plate {
-  opacity: 0;
-  transform: scale(var(--plate-from));
-  transition-duration: 0.15s;
-}
-
 .plate-arc-rim,
 .plate-arc-tick {
   stroke: var(--plate-line);
@@ -179,19 +135,6 @@ html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .drift-plate {
 
 .plate-arc-rim[data-rim='outer'] {
   opacity: 0.6;
-}
-
-/* The Sill counts its ticks in, one per ring build, left to right, as the
-   greeting is said; and its crest lights while the pointer is on the door. */
-html.js .sill .plate-arc-tick {
-  animation: sill-count 0.5s var(--ease) both;
-  animation-delay: calc(1.3s + var(--k) * 70ms);
-}
-
-@keyframes sill-count {
-  from {
-    opacity: 0;
-  }
 }
 
 .plate-arc-rim {
@@ -292,7 +235,6 @@ html.js .sill .plate-arc-tick {
 /* On Enter the first beat is on a clock, not on the scroll: the greeting, the
    thoughts, the door and the corner row are gone in a quarter of a second. */
 .welcome[data-run] .welcome-say,
-.welcome[data-run] .hub,
 .welcome[data-run] .door,
 .welcome[data-run] .threshold {
   opacity: 0;
@@ -314,7 +256,7 @@ html[data-holo='off'] .welcome {
 }
 
 /* With no face there is nobody for the thoughts to come to, and no intro to skip. */
-html[data-holo='off'] .hub,
+
 html[data-holo='off'] .door-skip {
   display: none;
 }
@@ -324,86 +266,6 @@ html[data-holo='off'] .door-skip {
 html[data-plain] .door,
 html[data-plain] .threshold {
   display: none;
-}
-
-/* The ball's line stays on one line at any width, so it lights left to right: the
-   type steps down until --n letters of the display face (about 0.6em each) fit
-   between the gutters. */
-.welcome-ball {
-  font-size: min(var(--fs-speak), calc((100vw - 2 * var(--pad)) / (var(--n, 26) * 0.7)));
-  white-space: nowrap;
-  overflow-x: clip; /* a fixed line wider than the window would widen the page */
-}
-
-/* ---- The seed and the ring that opens ------------------------------------ */
-/* A point fixed in the window on the ball's centre: Hologram.jsx writes where the
-   ball's line of speech sits (--ball-y) and shell/entry.js how far above it the
-   centre is (--seed-up). Its ring is the plate's drawing, 100 units in radius: it
-   appears just off the ball's limb, flat, and widens past the window's edges
-   (--ring-on, --ring-s). The globe is drawn only for a portrait with no dissolve
-   of its own (data-face="css"): the canvas shrinks into it and it stands in for
-   the ball. */
-.seed {
-  position: fixed;
-  z-index: 2;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden; /* the ring opens to 14 times the ball: clipped to the window, it never widens the page */
-  pointer-events: none;
-  fill: none;
-}
-
-.seed-at {
-  transform: translate(50vw, calc(var(--ball-y, 60svh) - var(--seed-up, 20svh)));
-}
-
-html:not(.js) .seed,
-html[data-holo='off'] .seed,
-html[data-plain] .seed {
-  display: none;
-}
-
-.seed-ring {
-  opacity: var(--ring-on, 0);
-  transform: scale(var(--ring-s, 1), calc(var(--ring-s, 1) * var(--ring-lie)));
-}
-
-.seed-rim,
-.seed-tick,
-.seed-line,
-.seed-globe {
-  stroke: var(--light);
-  stroke-width: 1;
-  vector-effect: non-scaling-stroke;
-}
-
-.seed-rim[data-rim='outer'],
-.seed-line {
-  opacity: 0.55;
-}
-
-.seed-ball {
-  display: none;
-}
-
-html[data-face='css'] .seed-ball {
-  display: block;
-  opacity: calc(var(--face-out, 0) * var(--face-out, 0) * (1 - var(--ring-open, 0)));
-  transform: scale(var(--seed-s, 1));
-}
-
-.seed-core {
-  fill: rgb(var(--holo-hot));
-}
-
-/* The fallback of the portrait contract: the canvas gathers to the seed. */
-html[data-face='css'] .bg-holo {
-  transform-origin: 50% 42%;
-  transform: scale(calc(1 - 0.8 * var(--face-out, 0)));
-  filter: blur(calc(12px * var(--face-out, 0)));
-  opacity: calc(1 - var(--face-out, 0) * var(--face-out, 0));
-  transition: none;
 }
 
 /* After a skip the portrait's canvas stays dark until the reader scrolls back. */
@@ -423,9 +285,7 @@ html[data-cut] .bg-holo {
 .hero .identity,
 .hero .identity-sub,
 .hero .cred,
-.hero .actions,
-.hero .orbit-bar,
-.hero .drift {
+.hero .actions {
   transition:
     opacity var(--land-dur) var(--ease) calc(var(--land-i, 0) * var(--land-step)),
     transform var(--land-dur) var(--ease) calc(var(--land-i, 0) * var(--land-step));
@@ -436,8 +296,6 @@ html[data-cut] .bg-holo {
 .hero .identity-sub { --land-i: 3; }
 .hero .cred { --land-i: 4; }
 .hero .actions { --land-i: 5; }
-.hero .orbit-bar,
-.hero .drift { --land-i: 6; }
 
 html[data-entry='pre']:not([data-holo='off']) .hero .portrait,
 html[data-entry='pre']:not([data-holo='off']) .hero .who-text,
@@ -445,9 +303,7 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-name,
 html[data-entry='pre']:not([data-holo='off']) .hero .identity,
 html[data-entry='pre']:not([data-holo='off']) .hero .identity-sub,
 html[data-entry='pre']:not([data-holo='off']) .hero .cred,
-html[data-entry='pre']:not([data-holo='off']) .hero .actions,
-html[data-entry='pre']:not([data-holo='off']) .hero .orbit-bar,
-html[data-entry='pre']:not([data-holo='off']) .hero .drift {
+html[data-entry='pre']:not([data-holo='off']) .hero .actions {
   opacity: 0;
   transition-duration: 0.15s;
   transition-delay: 0s;
@@ -459,16 +315,6 @@ html[data-entry='pre']:not([data-holo='off']) .hero .identity-sub,
 html[data-entry='pre']:not([data-holo='off']) .hero .cred,
 html[data-entry='pre']:not([data-holo='off']) .hero .actions {
   transform: translateY(8px);
-}
-
-/* Keyboard focus never sits on something invisible: Tab past Skip intro lands on
-   Email me, so the copy and the ring's bar show at once when focus is inside. */
-html[data-entry='pre']:not([data-holo='off']) .hero .centre:focus-within > *,
-html[data-entry='pre']:not([data-holo='off']) .hero .centre:focus-within > .who-main > *,
-html[data-entry='pre']:not([data-holo='off']) .hero .orbit-bar:focus-within {
-  opacity: 1;
-  transform: none;
-  transition-duration: 0s;
 }
 
 /* The name sets: it arrives a little wide and closes to its true measure. A
@@ -493,12 +339,11 @@ html[data-skip] .nav {
 @media (prefers-reduced-motion: reduce) {
   .door-enter svg,
   .load-line i,
-  .load-line span,
-  html.js .sill .plate-arc-tick {
+  .load-line span {
     animation: none;
   }
 
-  .seed,
+  
   .door-skip {
     display: none;
   }
@@ -538,14 +383,6 @@ html[data-skip] .nav {
   .orbit[data-ready] .ring-plate {
     opacity: 1;
     transform: none;
-  }
-
-  /* While the first screen is up the plate waits out past the window's edges; it
-     comes in as the ring that opened leaves them (data-plate, shell/entry.js). */
-  html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .orbit .ring-plate {
-    opacity: 0;
-    transform: scale(var(--plate-from));
-    transition-duration: 0.15s;
   }
 
   .ring-plate-rim {
@@ -1505,10 +1342,9 @@ html:has(.receipts-ledger) {
 }
 
 /* On a phone the empty run under the greeting is shorter: a thumb reaches the name
-   in about a screen and a half, and the ball still has the window to itself while
-   it speaks. */
+   in about one screen. */
 @media (max-width: 560px) {
   :root {
-    --welcome-run: 52svh;
+    --welcome-run: 8svh;
   }
 }
