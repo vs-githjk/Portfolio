@@ -880,5 +880,5 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
    screen does not pay for it. */
 .contact {
   content-visibility: auto;
-  contain-intrinsic-size: auto 900px;
+  contain-intrinsic-size: auto 600px; /* its content box: 574px at 1440, 677px on a phone */
 }

@@ -369,6 +369,18 @@ button {
   transition-delay: 0.24s;
 }
 
+/* Phones and touch screens (Vidyut, Nov 16: "instead of the phone loading stuff,
+   the phone can just have everything there"): nothing waits for the scroll to
+   appear. Sections are in place from the first paint; useReveal marks them all
+   at once there. */
+@media (max-width: 760px), (pointer: coarse) {
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -40,6 +40,7 @@ import { EV } from '../kit/contract';
      or from a 'world:agent' event with { detail: { hue } }. */
 
 const IDLE_MS = 1000 / 30;
+const IDLE_PHONE_MS = 1000 / 15; // a phone at rest draws half as often: its drifting things are slow
 
 export default function World() {
   const ref = useRef(null);
@@ -79,6 +80,7 @@ export default function World() {
 
     window.dispatchEvent(new CustomEvent(EV.loaded, { detail: { stage: 'chunk' } }));
     if (import.meta.env.DEV) window.__world = world;
+    const idleMs = window.matchMedia('(max-width: 760px)').matches ? IDLE_PHONE_MS : IDLE_MS;
     let raf = 0;
     let cam = window.scrollY;
     let last = 0;
@@ -155,7 +157,7 @@ export default function World() {
       eye.x += (want.x - eye.x) * 0.06;
       eye.y += (want.y - eye.y) * 0.06;
       const every = moving || now < busy;
-      if (every || now - last >= IDLE_MS - 2) {
+      if (every || now - last >= idleMs - 2) {
         readHue(now);
         const t0 = import.meta.env.DEV ? performance.now() : 0;
         world.render(now / 1000, cam, eye.x, eye.y);

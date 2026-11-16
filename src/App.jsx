@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Background from './components/Background';
 import Nav from './components/Nav';
 import Welcome from './components/Welcome';
@@ -15,6 +16,7 @@ import Vista from './components/Vista';
 import Shell from './shell/Shell';
 import { worlds } from './data/content';
 import { useReveal } from './hooks/useReveal';
+import { startEagerImages } from './lib/eager';
 
 /* Page order. Reordering these lines reorders the site.
 
@@ -42,6 +44,8 @@ import { useReveal } from './hooks/useReveal';
    signals, travel, the Chart, the depth rail, Receipts and the sound switch. */
 export default function App() {
   useReveal();
+  // Pictures below the first screen arrive ahead of the reader, not as they scroll into view.
+  useEffect(() => startEagerImages(), []);
 
   return (
     <>

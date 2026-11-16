@@ -335,6 +335,16 @@ html:is([data-world='off'], [data-world='still']) .vista:is([data-set='surface']
   border-bottom: 1px solid color-mix(in srgb, var(--hair) 70%, transparent);
 }
 
+/* On a phone the bar's ground is all but opaque, so the blur behind it shows
+   nothing and still costs the GPU a pass on every frame of a scroll. */
+@media (max-width: 760px), (pointer: coarse) {
+  .nav {
+    background: var(--ink);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* The welcome is a pure first screen: no bar until the hand-off to the hero is
    under way (Nav.jsx sets <html data-nav="on">). Only with scripts, never when the
    hologram is off (the welcome closes up then), and never while something inside
