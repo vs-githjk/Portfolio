@@ -379,11 +379,12 @@ Three faces, three jobs, self-hosted (latin subset), all SIL Open Font License, 
 15 2026 so the page has a voice of its own (Geist, Geist Mono and Instrument Serif were
 retired as the look of every generated page):
 
-- **Fraunces** for display (the name, h2s, card titles, every big number, the email): a soft
-  old-style serif from the family of the 1970s desert-print sleeves the earth world is drawn
-  after. Two static instances, roman and italic, at optical size 48, weight 400, SOFT 100
-  (about 20 KB each; any other axis value makes Google serve a 60 to 150 KB variable file).
-  There is no bold: never set `font-weight` above 400 on the display face.
+- **Brygada 1918** for display (the name, h2s, card titles, every big number, the email): a
+  Polish text face cut in 1918 and revived in 2018. Sturdy strokes, wedge serifs that look
+  carved, lining figures, a real italic; rare enough to be his. Two static files, roman and
+  italic at weight 400 (about 14 KB each). There is no bold: never set `font-weight` above
+  400 on the display face. Fraunces was tried first and dropped the same night: the
+  impeccable detector lists it with Inter and Geist as a face generated pages converge on.
 - **Schibsted Grotesk** for UI and body (variable 400 to 700).
 - **Spline Sans Mono** for labels, nav, buttons, badges and stack lines (variable 400 to 600).
 

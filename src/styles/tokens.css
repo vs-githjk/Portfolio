@@ -19,29 +19,31 @@
    All three are SIL Open Font License 1.1 (from Google Fonts), chosen so the page
    has a voice of its own (Nov 15 2026: Geist and Instrument Serif were retired as
    the look of every generated page).
-   - Fraunces: the display face. A soft old-style serif from the family of the
-     1970s desert-print covers the earth world is drawn after. Shipped as two
-     static instances (roman and italic at optical size 48, weight 400, SOFT 100: sturdy strokes that hold at card-title sizes, about 20 KB each),
-     because the full variable file is 120 KB and the first screen preloads it.
+   - Brygada 1918: the display face. A Polish text face cut in 1918 and revived
+     in 2018: sturdy strokes, wedge serifs that look carved (it sits well on the
+     mesas), lining figures for the big numbers, a real italic. Two static files,
+     roman and italic at weight 400, about 14 KB each. (Fraunces was tried first
+     and dropped: the impeccable detector lists it with Inter and Geist as a face
+     generated pages converge on.)
    - Schibsted Grotesk: UI and body, variable 400 to 700.
    - Spline Sans Mono: labels, nav, buttons, badges and stack lines, variable 400 to 600.
    font-display: swap keeps text visible while they load; index.html preloads the
    two that paint the first screen. Files live in public/fonts. */
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Brygada 1918';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/fraunces-latin.woff2') format('woff2');
+  src: url('/fonts/brygada-1918-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Fraunces';
+  font-family: 'Brygada 1918';
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/fraunces-italic-latin.woff2') format('woff2');
+  src: url('/fonts/brygada-1918-italic-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -224,7 +226,7 @@
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
-  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-display: 'Brygada 1918', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --font-ui: 'Schibsted Grotesk', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
   --font-mono: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
