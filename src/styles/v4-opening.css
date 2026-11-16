@@ -311,9 +311,9 @@ html[data-holo='off'] .hub {
 
 /* ================================== THE HERO =============================== */
 /* His name is the picture: two lines of the display face, as large as the window
-   allows, on the left; on the right a card of who and where (the photograph, the
-   status, the place) standing on the same foot line as the actions. The beams
-   light it from above. Nothing orbits here: the ring of builds is in Builds. */
+   allows, on the left, with the status above it and the thesis and actions under
+   it. On the right, on a wide window, the hologram stands again. The beams light
+   it from above. Nothing orbits here: the ring of builds is in Builds. */
 .hero-in {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -322,21 +322,14 @@ html[data-holo='off'] .hub {
   padding-bottom: 56px;
 }
 
-.hero-card {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 16px;
+.hero-in .who-main,
+.hero-in .who-text {
+  grid-area: auto;
 }
 
-.hero-card .portrait {
-  width: 88px;
-  height: 88px;
-  border-radius: var(--r-lg);
-}
-
-.hero-card .who-text {
+.hero-in .who-text {
   gap: 6px;
+  margin-bottom: clamp(18px, 3svh, 30px);
 }
 
 .hero .hero-name {
@@ -368,29 +361,29 @@ html[data-holo='off'] .hub {
   justify-content: flex-start;
 }
 
+/* A phone has just seen the figure, and has no room for it beside the name. */
+.hero-holo {
+  display: none;
+}
+
 @media (min-width: 961px) {
   .hero-in {
-    grid-template-columns: minmax(0, 1fr) clamp(200px, 20vw, 260px);
-    align-items: end;
-    column-gap: clamp(32px, 5vw, 80px);
+    grid-template-columns: minmax(0, 1fr) var(--hero-holo-w);
+    align-items: center;
+    column-gap: clamp(24px, 4vw, 64px);
     /* A little short of the window, so the waterline below shows at its foot. */
     min-height: clamp(540px, calc(100svh - var(--nav-h) - 56px), 820px);
-    padding-top: clamp(40px, 8svh, 96px);
-    padding-bottom: clamp(48px, 9svh, 104px);
-    align-content: center;
+    padding-top: clamp(32px, 6svh, 72px);
+    padding-bottom: clamp(40px, 7svh, 88px);
   }
 
-  .hero-card {
+  .hero-holo {
+    display: block;
     grid-column: 2;
     grid-row: 1;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-
-  .hero-card .portrait {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
+    /* Never taller than the room the hero has. */
+    width: min(100%, calc((100svh - var(--nav-h) - 200px) * var(--hero-holo-ratio)));
+    justify-self: center;
   }
 
   .hero-in .who-main {
@@ -406,47 +399,145 @@ html[data-holo='off'] .hub {
   }
 }
 
-/* ============================ THE RING'S NEW HOME ========================== */
+/* ============================ THE FIGURE, IN THE PAGE ====================== */
+/* HoloFigure.jsx: the hologram's look in CSS, for the figure where it stands in
+   the page. The numbers mirror the canvas (lib/holoScene.js) and the panels. */
+.holo {
+  position: relative;
+  /* The glow in the air round the silhouette. */
+  filter: drop-shadow(0 0 10px rgba(var(--holo-deep), 0.55)) drop-shadow(0 0 2px rgba(var(--holo-pale), 0.5));
+}
+
+.holo-fig {
+  position: relative;
+  display: grid;
+  width: 100%;
+  background: color-mix(in srgb, rgb(var(--holo-deep)) 62%, rgb(var(--holo-pale)));
+  -webkit-mask: var(--fig) center / 100% 100% no-repeat;
+  mask: var(--fig) center / 100% 100% no-repeat;
+  opacity: 0.94;
+}
+
+.holo-fig img {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.holo-fig img:first-of-type {
+  mix-blend-mode: luminosity;
+  filter: brightness(1.18) contrast(1.12);
+}
+
+.holo-fig::before {
+  content: '';
+  grid-area: 1 / 1;
+  z-index: 1;
+  background: rgb(var(--holo-pale));
+  mix-blend-mode: multiply;
+}
+
+.holo-fig img + img {
+  z-index: 2;
+  opacity: var(--holo-warm);
+}
+
+.holo-fig::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background:
+    linear-gradient(to top, transparent 44%, rgba(var(--holo-hot), 0.14) 50%, transparent 56%) 0 0 / 100% 200%,
+    repeating-linear-gradient(
+      to bottom,
+      rgba(var(--holo-ink), 0.22) 0,
+      transparent calc(var(--holo-pitch) * 0.5px),
+      rgba(var(--holo-ink), 0.22) calc(var(--holo-pitch) * 1px)
+    );
+  animation: holo-roll var(--holo-roll) linear infinite;
+}
+
+/* The cone rises behind the figure from the plate under its feet. */
+.holo-cone {
+  position: absolute;
+  left: 50%;
+  bottom: -3%;
+  width: 78%;
+  height: 34%;
+  transform: translateX(-50%);
+}
+
+.holo-cone::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 8% 0;
+  clip-path: polygon(0 0, 100% 0, 68% 100%, 32% 100%);
+  background: linear-gradient(to top, rgba(var(--holo-pale), 0.34), rgba(var(--holo-deep), 0.02));
+}
+
+.holo-cone::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 72%;
+  aspect-ratio: 1 / 0.2;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  border: 1px solid rgba(var(--holo-pale), 0.8);
+  background:
+    radial-gradient(50% 50%, rgb(var(--holo-hot)) 0, rgba(var(--holo-hot), 0.45) 24%, transparent 52%),
+    rgba(var(--holo-ink), 0.5);
+  box-shadow:
+    0 0 0 5px rgba(var(--holo-ink), 0.35),
+    0 0 0 6px rgba(var(--holo-pale), 0.4),
+    0 0 18px rgba(var(--holo-deep), 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-fig::after {
+    animation: none;
+  }
+}
+
+/* ================================ THE RING'S HOME ========================== */
 /* The ring of build cards left the hero (it said "here is what I built" twice).
-   It stands where it is an index: at the top of Builds (data-home="builds"), or
-   in Proof of work as a ring of the wins (data-home="proof"); RING_HOME in
-   data/world.js picks one. A stage is as wide as the window, so the ring has
-   its full radius; its centre block keeps the page's column. */
+   It stands at the top of Builds, where it is the index: the opener (the heading,
+   one line, the giant's window) is its centre block and the front arc of the
+   ring hangs under it. The stage is as wide as the window, so the ring has its
+   full radius; the block keeps the page's column. Calm on purpose (Vidyut, Nov
+   16: "Builds looks crowded"): the giant has the right of the first row to
+   itself, the ring has the row below to itself, and nothing else is there. */
 .ring-stage {
   overflow-x: clip;
+  padding: 0;
   /* The plate takes the accent of the realm it stands in (tokens built from other
      tokens are declared again where the realm changes). */
   --plate-line: color-mix(in srgb, var(--acc-2) 42%, var(--hair-2));
   --plate-lit: var(--acc);
 }
 
-.ring-centre {
+.ring-stage .ring-centre {
   display: block;
-}
-
-/* Under the block: the block lies in the page as it would without the ring, and
-   the front arc of the ring hangs below it. Orbit.jsx writes the stage's height. */
-.ring-stage[data-ring='under'] {
-  padding: 0;
-}
-
-.ring-stage[data-ring='under'] .ring-centre {
   padding: 0;
   margin: 0;
 }
 
-.ring-stage[data-home='builds'] .drift {
+.ring-stage .drift {
   margin: 4px 0 0;
 }
 
 /* Only with the script: without it there is no ring (index.html hides it), so the
    stage keeps its natural height and the dot chart stays as the index. */
 @media (min-width: 960px) and (min-height: 640px) {
-  .ring-stage[data-ring='under'] {
+  .ring-stage {
     height: auto;
+    margin-bottom: clamp(40px, 7vw, 96px);
   }
 
-  .js .ring-stage[data-ring='under'] {
+  .js .ring-stage {
     height: var(--stage-h, 780px);
   }
 
@@ -454,7 +545,7 @@ html[data-holo='off'] .hub {
     display: none;
   }
 
-  .ring-stage[data-ring='under'] .ring-centre {
+  .ring-stage .ring-centre {
     position: relative;
     left: auto;
     top: auto;
@@ -463,46 +554,38 @@ html[data-holo='off'] .hub {
   }
 
   /* The ring is the index on a wide window: the dot chart gives way to it. */
-  .js .ring-stage[data-home='builds'] .depths {
+  .js .ring-stage .depths {
     display: none;
   }
 
-  /* Room under the heading for the arc's side cards, which stand higher than the front one. */
-  .ring-stage[data-home='builds'] .deep-open {
+  /* The giant hangs from the top of the section, clear of the ring: its window
+     is lifted, and the opener leaves air under the heading down to where the
+     planet ends, so the arc's cards never meet it. */
+  .ring-stage .deep-open {
     row-gap: 0;
-    padding-bottom: 64px;
+    padding-bottom: var(--ring-air);
   }
 
-  .ring-stage[data-home='builds'] {
-    margin-bottom: clamp(40px, 7vw, 96px);
+  .ring-stage .deep-window {
+    margin-top: var(--giant-lift);
+  }
+
+  /* One line. */
+  .ring-stage .deep-head p {
+    max-width: none;
+    font-size: clamp(18px, 1.7vw, 23px);
   }
 }
 
-/* The card's two parts are plain grid children here (the old hero named areas). */
-.hero-card .portrait,
-.hero-card .who-text,
-.hero-in .who-main {
-  grid-area: auto;
+/* The figure arrives with the rest of the hero: unlit while the first screen is
+   up, then last in the row of things that land. */
+.hero .hero-holo {
+  --land-i: 6;
+  transition: opacity var(--land-dur) var(--ease) calc(var(--land-i) * var(--land-step));
 }
 
-/* In Proof of work the whole ring turns around the heading, a card a win; on a
-   wide window it stands in for the plaques (they return below the breakpoint,
-   where there is no ring). */
-.ring-stage[data-home='proof'] .sec-head {
-  margin-bottom: 0;
-}
-
-.ring-stage[data-home='proof'] .drift {
-  margin: 0;
-}
-
-@media (min-width: 960px) and (min-height: 640px) {
-  .ring-stage[data-home='proof'] .ring-centre {
-    width: min(100%, 620px);
-  }
-
-  .js .sec[data-ring-home] .plaques,
-  .js .sec[data-ring-home] .pow-wins-head {
-    display: none;
-  }
+html[data-entry='pre']:not([data-holo='off']) .hero .hero-holo {
+  opacity: 0;
+  transition-duration: 0.15s;
+  transition-delay: 0s;
 }

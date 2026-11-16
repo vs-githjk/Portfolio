@@ -8,7 +8,6 @@ import NowBuilding from './NowBuilding';
 import ResearchRow from './ResearchRow';
 import Vista from './Vista';
 import RingStage from './RingStage';
-import { RING_HOME } from '../data/world';
 import { allBuilds, fill, total } from './counts';
 
 /* Builds, paced: an opener with the depth chart, the flagships as chapters, the
@@ -85,19 +84,15 @@ export default function Builds() {
       </nav>
     </header>
   );
-  /* The ring of the strongest builds is the index here when this is its home: the
-     opener is its centre block and the front arc hangs under it. */
-  const ringed = RING_HOME === 'builds';
+  /* The ring of the strongest builds is the index here: the opener is its centre
+     block and the front arc hangs under it. */
   return (
     <>
       <section className="sec builds" id="builds" data-realm="sea" onPointerMove={light}>
-        {ringed && (
-          <RingStage home="builds" mode="under">
-            <div className="wrap deep">{opener}</div>
-          </RingStage>
-        )}
+        <RingStage>
+          <div className="wrap deep">{opener}</div>
+        </RingStage>
         <div className="wrap deep">
-          {!ringed && opener}
           {builds.flagships.map((item, n) => (
             <Flagship item={item} index={n} key={item.id} />
           ))}

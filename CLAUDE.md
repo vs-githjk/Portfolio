@@ -69,7 +69,7 @@ Re-measure when the build changes, or set it to null.
 | Section (place) | Job |
 |---|---|
 | Welcome (The Threshold) | A hologram of him on a projector plate says hello: "Hey, I'm Vidyut." and "I build worlds. Reliable ones." Enter, or scroll, or Skip intro |
-| Hero (The Landing) | His name, very large, the thesis, one plain line, Email me, Resume and links, beside a card with his portrait, status and place. No builds here |
+| Hero (The Landing) | His name, very large, the status, the thesis, one plain line, Email me, Resume and links; at the right the same hologram figure, smaller. No builds here |
 | Vista: surface (The Waterline) | The dive. "Under the surface: the work." |
 | Experience (The Sounding) | Where he has worked; a sounding weight sinks as the roles are read |
 | Builds (The Deep) | Opener (the heading, the ringed giant, and under them the ring of twelve build cards as the index; the dot chart of all twenty on a phone or without scripts), three flagships as chapters, the fleet of eight featured plates, the paper with its repair loop, More builds as rows |
@@ -97,8 +97,13 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   along its edge, a glow in the air round it, scan lines (`--holo-pitch`), a slow band of
   light, the foot dissolving into the cone (`--holo-foot`), and a plate under it. Try another
   picture with `?figure=/holo/<file>` (a path on this site only).
-  **Today the figure is a stand-in** (his studio photograph, cut out). The avatar Vidyut is
-  choosing (a friendly, magical figure of himself) replaces `public/holo/figure-*.webp`.
+  **The figure today** is him in a robe of stars with a staff and a crystal
+  (`public/holo/wizard-1.webp`, 1200 px tall, and `wizard-1-phone.webp`), made from his own
+  photograph. `scripts/matte-figure.py <figure-on-black.png>` cuts it out in one command
+  (rembg with birefnet-portrait for the body, brightness for the glow, so the ring of glyphs
+  is clear inside) and prints the size to put in `welcome.figure`. The face will be swapped
+  again from a sharper photo: rerun the script. `--holo-foot` is small (0.035) and the plate
+  sits right under the feet, so he stands in the beam.
 - **Never** a point cloud of his face (judged "scary"), never a plain photograph, never a
   frame or a box, never a row slip or any distortion of the picture (he read one as an eye
   glitch). The shimmer is brightness only. Check "friendly or eerie" with other model
@@ -121,30 +126,31 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
 - Reduced motion: one still frame of the figure and three still panels. `?plain` and no
   WebGL: no figure, the greeting and then the hero; Enter is a plain anchor.
 
-## The hero (`components/Hero.jsx`)
+## The hero (`components/Hero.jsx`, `HoloFigure.jsx`)
 
 Vidyut, Nov 16: "If I'm already doing 'Hey, I'm Vidyut', why is there an orbit right here
-that talks about projects? Isn't that the same as Builds?" The hero has no builds. It is his
-name in two lines of the display face (`--fs-name`), the thesis, one plain sentence, the
-credentials and the actions, and on the right a card: the portrait, the status, the place.
-A phone stacks the card over the name. Do not put build cards, a ring or drifting thumbnails
-back in the hero.
+that talks about projects? Isn't that the same as Builds?" The hero has no builds. It is the
+status and the place, his name in two lines of the display face (`--fs-name`), the thesis,
+one plain sentence, the credentials and the actions. At its right, from 961px, the hologram
+stands again, smaller: `HoloFigure` draws the same `welcome.figure` with the same look in
+CSS (`.holo`: the picture's alpha as a mask, luminosity on the hologram's blue, scan lines,
+drop-shadow glow, cone and plate), so it is in the page without a script. A phone omits it.
+The sunset silhouette is gone; his studio headshot appears only in Contact. Do not put
+build cards, a ring or drifting thumbnails back in the hero.
 
 ## The ring (`components/RingStage.jsx`, `Orbit.jsx`, `Drift.jsx`)
 
 Twelve glass cards on an elliptical CSS 3D ring, on a plate drawn from the same projection
-(one tick a card). It stands where it is an index, and `RING_HOME` in `data/world.js` is the
-one line that picks where:
+(one tick a card). It stands at the top of Builds as the index (Vidyut chose this over a
+ring of wins in Proof of work, which was built and removed). The opener is the ring's centre
+block and the front arc hangs under it: five cards in sight, the back half never shown.
+Each card links to its Builds entry (`#build-<id>`; a slide `id` in `hero.carousel.slides`
+must equal the Builds id).
 
-- `'builds'` (the default): at the top of Builds. The opener (heading, giant) is the ring's
-  centre block and the front arc of the ring hangs under it (`mode="under"`): five cards in
-  sight, the back half never shown, so nothing crosses the heading. Each card links to its
-  Builds entry (`#build-<id>`; a slide `id` in `hero.carousel.slides` must equal the Builds
-  id). It replaces the dot chart on a wide window.
-- `'proof'`: in Proof of work, the whole ring turns around "Verify me in one click"
-  (`mode="around"`), a card a win, each opening its public page; it replaces the plaques on a
-  wide window. Built and screenshotted as the alternative; not the default because it repeats
-  thumbnails (three Terrametric wins) and hides the gold plaques.
+Calm on purpose (Vidyut: "Builds looks crowded, doesn't feel natural"): the opener is the
+heading and ONE short line; the giant's window is lifted (`--giant-lift`) so the planet ends
+above the ring; `--ring-air` is the clear air under the heading; no dot chart on a wide
+window. Do not add a paragraph, a legend or a second set piece to the opener.
 
 - One rAF loop writes transforms straight to the nodes; `offsetWidth`, never
   `getBoundingClientRect`. It asks for frames only while something moves.
@@ -235,8 +241,8 @@ labels and receipt sentences live in `data/world.js`; events and shared CSS vari
   Without the script every dossier is open. On a phone a plate is a row (small thumbnail,
   name, one-liner, links) and its results open with the dossier.
 - More builds are rows with Read more (`<details>`).
-- Height, measured Nov 16 with the ring as the index: 6,654px at 1440 (it was 6,299 with
-  the dot chart; baseline 9,163) and 8,951px at 390 (it was 8,755; baseline 19,488). Keep
+- Height, measured Nov 16 with the ring as the index: 6,632px at 1440 (it was 6,299 with
+  the dot chart; baseline 9,163) and 8,862px at 390 (it was 8,755; baseline 19,488). Keep
   it at or under these.
 - Images are flat and straight; only the ring is 3D.
 
@@ -345,14 +351,14 @@ Search the repo for `TODO`:
 - Yinzone and BetterBill "Live site" links (hidden until Vidyut sends them)
 - `public/og-card-v8.jpg` is the link-preview card; bump the filename and re-render it when
   the headline facts change
-- The avatar for the hologram (Vidyut is choosing it): drop it in as `welcome.figure`, then
-  delete the stand-in `public/holo/figure-*.webp`
+- The hologram's face will be swapped from a sharper photo: rerun `scripts/matte-figure.py`
+- `public/portrait-180.webp` and `portrait-360.webp` (the sunset silhouette) are no longer used
 - No longer used and still in the repo: `public/holo/face-a.bin`, `face-b.bin`,
   `face-1024.webp`, `face-512.webp` and `scripts/bake-hologram.py` (the point cloud); delete
   them once Vidyut agrees
 - `colophon.lighthouse` is null since the opening was rebuilt: measure the production build
   again on a quiet machine (two runs on a busy one read 89 and 98, LCP 2.3 s)
-- Taste calls waiting on Vidyut: the ring's home (Builds or Proof of work); a shorter phone
+- Taste calls waiting on Vidyut: a shorter phone
   Builds (it would hide the one-liners); the shore camp's tents
 
 ## Things deliberately left out

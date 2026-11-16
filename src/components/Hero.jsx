@@ -1,14 +1,16 @@
-import { hero } from '../data/content';
+import { hero, welcome } from '../data/content';
+import HoloFigure from './HoloFigure';
 import { GitHubIcon, LinkedInIcon } from './Icons';
 
-/* The hero: his name, set very large, lit from above by the beam field. Two
-   columns on a wide window: the name, the thesis, one plain sentence, the
-   credentials and the actions on the left; his photograph with the status and
-   the place on the right, standing on the same foot line as the actions. A phone
-   stacks them: the photograph and the status, then the name and the rest.
+/* The hero: his name, set very large, lit from above by the beam field. On the
+   left the status and the place, the name, the thesis, one plain sentence, the
+   credentials and the actions. On the right, on a wide window, the hologram from
+   the first screen stands again, smaller (HoloFigure: the same figure, the same
+   look, drawn in CSS so it is in the page with no script). A phone has no room
+   for it and has just seen it.
 
-   No figures, and no builds: the ring of builds lives in Builds now (RingStage),
-   where it is the index. This screen says who he is and how to reach him.
+   No figures, and no builds: the ring of builds is the index at the top of
+   Builds. This screen says who he is and how to reach him.
 
    Email and Resume are text buttons; LinkedIn and GitHub are icon buttons
    (their label is the accessible name). */
@@ -19,17 +21,8 @@ export default function Hero() {
   return (
     <header className="hero" id="top">
       <div className="wrap hero-in">
-        <div className="hero-card">
-          <img
-            className="portrait"
-            src={hero.portrait.src2x}
-            srcSet={`${hero.portrait.src} 180w, ${hero.portrait.src2x} 360w`}
-            sizes="(max-width: 760px) 88px, 240px"
-            alt={hero.portrait.alt}
-            width="360"
-            height="360"
-            decoding="async"
-          />
+        <HoloFigure className="hero-holo" figure={welcome.figure} sizes="(max-width: 960px) 1px, 300px" />
+        <div className="who-main">
           <div className="who-text">
             <span className="status">
               <i aria-hidden="true" />
@@ -37,8 +30,6 @@ export default function Hero() {
             </span>
             <span className="where">{hero.locationNote}</span>
           </div>
-        </div>
-        <div className="who-main">
           <h1 className="hero-name" tabIndex={-1}>
             {first} <br />
             {rest.join(' ')}

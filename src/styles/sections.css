@@ -695,26 +695,6 @@ html[data-holo='off'] .welcome-face {
   gap: 10px;
 }
 
-/* An ink veil behind the copy keeps it legible over the brightest beams. */
-.shield {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 820px;
-  height: 560px;
-  max-width: 160vw;
-  transform: translate(-50%, -50%);
-  z-index: 20;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in srgb, var(--ink) 90%, transparent) 0%,
-    color-mix(in srgb, var(--ink) 66%, transparent) 26%,
-    color-mix(in srgb, var(--ink) 22%, transparent) 48%,
-    transparent 68%
-  );
-}
-
 /* ---- The orbit ring: shared card ----------------------------------------- */
 .orbit {
   position: relative;
@@ -1039,10 +1019,6 @@ html[data-holo='off'] .welcome-face {
   margin-bottom: 36px;
 }
 
-.ring-stage .shield {
-  display: none;
-}
-
 /* In row mode the label and the arrows sit above the swipe row, so the row has a
    heading when the reader reaches it. */
 .orbit {
@@ -1112,11 +1088,6 @@ html[data-holo='off'] .welcome-face {
     align-items: start;
     column-gap: clamp(24px, 3vw, 40px);
     row-gap: 12px;
-  }
-
-  .ring-stage .shield {
-    display: block;
-    top: calc(var(--oy) - 120px);
   }
 
   /* The ring's layer covers the stage but only the cards and the control bar

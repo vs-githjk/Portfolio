@@ -226,7 +226,7 @@
   --holo-fringe-b: 70, 150, 255;
   --holo-gain: 1; /* strength of the hologram's light */
   --holo-warm: 0.36; /* how much of a picture's own colour stays in the blue light (0 is pure hologram, 1 the photograph) */
-  --holo-foot: 0.2; /* the share of the figure's height that dissolves into the cone at its foot (0: it ends as the picture ends) */
+  --holo-foot: 0.035; /* the share of the figure's height that dissolves into the cone at its foot (0: it ends as the picture ends) */
   --holo-pitch: 3; /* one scan line every this many CSS pixels, in the canvas and in the panels */
   --holo-roll: 11.8s; /* the band of brighter light takes this long to roll up a projection (the shader's 0.085 a second) */
   --hub-w: clamp(112px, 12.5vw, 188px); /* a small projection beside him on the welcome screen */
@@ -261,12 +261,12 @@
   --orbit-yaw: 26;
   --orbit-lean: 4;
   --orbit-shade: 0.72; /* darkness of a card at the back, away from the copy */
-  --orbit-behind: 0.95; /* darkness of a back card sitting behind the hero copy */
-  --orbit-ghost: 1; /* how much of a card's opacity is lost when it sits behind the hero copy */
   --orbit-side: 0.16; /* extra shrink of cards at the sides of the ring */
   --orbit-front: 150; /* px the front card is pushed toward the camera */
   --orbit-step-ms: 5200;
   --orbit-linger: 0.85;
+  --ring-air: clamp(120px, 18svh, 200px); /* clear air between the Builds heading and the ring under it */
+  --giant-lift: -90px; /* how far the giant's window is lifted at the top of Builds, so the planet ends above the ring */
   --orbit-card-w: clamp(176px, min(15vw, 25svh), 248px); /* shrinks on short windows */
   /* The phone's drift wall, which stands in for the ring below its breakpoint. */
   --drift-card-w: clamp(132px, 34vw, 184px);
@@ -291,6 +291,8 @@
   --font-mono: 'Martian Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --fs-name: clamp(58px, min(40px + 8.4vw, 21svh), 168px); /* his name in the hero: two lines, as large as the window allows */
+  --hero-holo-w: clamp(210px, 22vw, 300px); /* the hologram figure at the hero's right */
+  --hero-holo-ratio: 0.514; /* that figure's width over its height (welcome.figure) */
   --fs-thesis: clamp(24px, 2.5vw, 36px); /* the thesis under it */
   --fs-h2: clamp(38px, 4.6vw, 64px);
   --fs-lead: clamp(22px, 2vw, 28px);

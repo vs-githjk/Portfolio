@@ -66,14 +66,22 @@ export const nav = {
 export const welcome = {
   label: 'Welcome',
   lines: ['Hey, I’m Vidyut.', 'I build worlds. Reliable ones.'],
-  /* The figure the hologram projects: ONE picture with a transparent background
-     (PNG or WebP with alpha; any aspect, a bust or a whole body). Its alpha is its
-     silhouette; the scene adds the light, the scan lines and the plate under it.
-     To change the figure, change `src` (and `phone`, a smaller copy for phones;
-     leave it out to use `src` everywhere). To try one without editing this file,
-     open the page with ?figure=/holo/<file> (a path on this site).
-     Today it is a stand-in: his studio photograph, cut out. The avatar goes here. */
-  figure: { src: '/holo/figure-1024.webp', phone: '/holo/figure-512.webp' },
+  /* The figure the hologram projects, on the first screen and again, smaller, at
+     the hero's right: ONE picture with a transparent background (WebP or PNG with
+     alpha; any aspect). Its alpha is its silhouette; the page adds the light, the
+     scan lines and the plate under it. Today: him in a robe of stars with a staff
+     and a crystal, made from his own photograph and cut out by
+     scripts/matte-figure.py, which writes both files and prints their size.
+     `width` and `height` are the desktop file's own pixels (the hero reserves its
+     box from them): update them when the script prints new ones. To try a figure
+     without editing this file, open the page with ?figure=/holo/<file>. */
+  figure: {
+    src: '/holo/wizard-1.webp',
+    phone: '/holo/wizard-1-phone.webp',
+    width: 617,
+    height: 1200,
+    alt: 'A hologram of Vidyut, smiling, in a long robe of stars, a wooden staff in one hand and a glowing crystal in the other',
+  },
   /* His work, as small projections at the sides of the first screen, in the same
      blue light as his own. They phase in and out in this order. `at` is the seat
      (l1 to l3 down the left, r1 to r3 down the right). A build shows its ring thumbnail
@@ -90,21 +98,13 @@ export const welcome = {
 };
 
 /* ---------------------------------------------------------------- HERO ---- */
-/* The hero: the name, identity, one plain line, credentials and actions, beside
-   a card with the portrait, the status and the place. No figures and no builds.
+/* The hero: the status and the place, the name, identity, one plain line,
+   credentials and actions; at its right the hologram figure (welcome.figure),
+   smaller. No figures and no builds.
    `carousel` below is the ring of build cards; it no longer stands in the hero
-   (it is the index at the top of Builds, or the ring of wins in Proof of work:
-   RING_HOME in data/world.js) but its words and slides are still kept here. */
+   (it is the index at the top of Builds) but its words and slides are kept here. */
 export const hero = {
   status: 'Forward-deployed and AI engineer',
-  /* Vidyut's own photo (Oct 2026): his silhouette on a beach at sunset, 180px and
-     360px (2x) squares, shown at about 160px beside the name on a laptop and 112px
-     on a phone. The share card still uses the studio headshot originals in public/. */
-  portrait: {
-    src: '/portrait-180.webp',
-    src2x: '/portrait-360.webp',
-    alt: 'Vidyut Sriram in silhouette on a beach at sunset, the sky orange over the waves',
-  },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
   /* The plain line under the identity: what that means in practice. */
@@ -356,7 +356,7 @@ export const builds = {
   /* {Total} and {flagships} are counted from the lists below and written as words
      (components/counts.js), so the sentence can never disagree with the page. */
   intro:
-    '{Total} builds, my {flagships} strongest first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+    '{Total} builds, strongest first. Every number has a source.',
   /* The depth chart under the heading: one dot per build, in page order, each a
      link to its entry. A gold dot is a build with an award. */
   chart: {
@@ -1559,10 +1559,6 @@ export const proofOfWork = {
   wins: {
     eyebrow: 'Wins',
     link: { label: 'Devpost', href: 'https://devpost.com/vs-githjk' },
-    /* The ring of wins (only when the ring's home is Proof of work: RING_HOME in
-       data/world.js). A card is one win and opens its public page, or its build
-       on this page where there is no page yet. */
-    ring: { label: 'Every win, one click each', cta: 'Open its page', ctaBuild: 'See the build' },
     provenance:
       'Devpost shows each prize as “Winner” with the prize’s name; the placings (1st, 2nd, 3rd) are as they stand on my resume. Most recent win: Oct 2026.',
     items: [
@@ -1709,8 +1705,8 @@ export const contact = {
     faces: {
       label: 'The faces',
       rows: [
-        { where: 'First screen', what: 'A hologram: one picture of me in blue light, on a projector plate; on Enter it closes to a single beam' },
-        { where: 'Beside my name', what: 'A silhouette on a beach at sunset' },
+        { where: 'First screen', what: 'A hologram: me in a robe of stars, in blue light on a projector plate; on Enter it closes to a single beam' },
+        { where: 'Beside my name', what: 'The same hologram, smaller' },
         { where: 'Contact', what: 'The studio headshot' },
       ],
     },

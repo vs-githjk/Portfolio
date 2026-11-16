@@ -10,13 +10,9 @@ import { registerBinding } from '../kit/bindings';
    and the ring turns one card every few seconds. It is an index: every card is
    one link (to its Builds entry, or wherever `hrefFor` says).
 
-   Two ways to stand (`mode`, set by RingStage):
-     under   the front arc of the ring hangs under the centre block (the Builds
-             opener). The back half is not shown: a card fades out as it passes
-             the side, so nothing ever crosses the heading. The ring sets the
-             stage's height (--stage-h).
-     around  the whole ring turns around the centre block in a window-tall stage;
-             a card behind the copy fades whole.
+   It stands under its centre block (the Builds opener, see RingStage): only the
+   front arc is shown. A card fades out as it passes the side, so nothing ever
+   crosses the heading, and the ring sets the stage's height (--stage-h).
 
    Behavior:
    - the ring is one rAF loop that writes transforms straight to the nodes (no
@@ -45,7 +41,7 @@ const RING_MQ = '(min-width: 960px) and (min-height: 640px)';
 const pad2 = (k) => String(k).padStart(2, '0');
 const easeOut = (p) => 1 - Math.pow(1 - p, 3);
 const LAND = { gap: 40, dur: 420, hold: 600, from: 0.6 };
-/* Under a block: the cosine of the ring angle where a card is gone, and where it is whole. */
+/* The cosine of the ring angle where a card is gone, and where it is whole. */
 const ARC = [0.3, 0.48];
 
 /* Two widths per ring card: 320 for the desktop ring (cards are about 220px wide),
@@ -71,11 +67,10 @@ function Shot({ slide }) {
   );
 }
 
-export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slides, words = hero.carousel, mode = 'around', hrefFor = (s) => `#build-${s.id}` }) {
+export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slides, words = hero.carousel }) {
   const N = slides.length;
   const STEP = (2 * Math.PI) / N;
   const NAME_CH = Math.max(...slides.map((s) => s.title.length));
-  const under = mode === 'under';
   const reducedHook = useReducedMotion();
   const regionRef = useRef(null);
   const sceneRef = useRef(null);
@@ -126,15 +121,13 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
       lean: num('--orbit-lean', 4),
       shade: num('--orbit-shade', 0.7),
       front: num('--orbit-front', 0),
-      behind: num('--orbit-behind', 0.95),
-      ghost: num('--orbit-ghost', 0.78),
       side: num('--orbit-side', 0.1),
       stepMs: num('--orbit-step-ms', 5200),
       linger: num('--orbit-linger', 0.85),
       rim: num('--plate-rim', 0.06),
       pad: num('--plate-pad', 0.44),
     };
-    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, cardH: 240, copyL: -340, copyR: 340, front: CFG.front };
+    const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, cardH: 240, front: CFG.front };
     const reasons = { user: false, hover: false, hidden: document.hidden, offscreen: false, landing: false, drag: false };
     const hov = cards.map(() => 0);
     const hovT = cards.map(() => 0);
@@ -234,17 +227,7 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
       scene.style.removeProperty('--card-h');
       geo.cardH = Math.max(...cards.map((c) => c.offsetHeight)) || 240;
       scene.style.setProperty('--card-h', `${geo.cardH}px`);
-      // Where the copy really stands, relative to the ring centre: the left and right
-      // ends of the centre block's own children (the block is centred on the stage).
-      const half = centre.offsetWidth / 2;
-      const kids = Array.from(centre.children).filter((c) => c.offsetWidth > 0);
-      if (kids.length) {
-        geo.copyL = Math.min(...kids.map((c) => c.offsetLeft)) - half;
-        geo.copyR = Math.max(...kids.map((c) => c.offsetLeft + c.offsetWidth)) - half;
-      }
-      const stageH = stage.clientHeight;
-      // Under the block the ring keeps its own depth; around it, the stage's height sets it.
-      geo.rz = under ? CFG.rz : Math.min(CFG.rz, Math.round(stageH * 0.46));
+      geo.rz = CFG.rz;
       // The widest the ring may be: the outermost card keeps 16px to spare on each side.
       const room = scene.clientWidth / 2 - 16;
       const wide = scene.clientWidth;
@@ -264,7 +247,7 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
       // centre block (which ends 18px above the front card) touches the nav.
       const blockH = centre.offsetHeight || 360;
       const minO = 14 + blockH + 18 - frontTop;
-      const O = under ? Math.round(minO) : Math.max(Math.round(stageH * 0.47), Math.round(minO));
+      const O = Math.round(minO);
       stage.style.setProperty('--oy', `${O}px`);
       stage.style.setProperty('--centre-off', `${(frontTop - 18).toFixed(0)}px`);
       // The lifted front card is nearer the camera, so it grows about the ring centre.
@@ -274,10 +257,9 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
         return frontTop + cardH + grow * (geo.rz * geo.sinT + cardH / 2) + 18;
       };
       geo.front = CFG.front;
-      while (!under && geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
       stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
-      // Under the block the ring is what makes the stage tall: down to the control bar.
-      if (under) stage.style.setProperty('--stage-h', `${Math.round(O + barAt(geo.front) + 44 + 12)}px`);
+      // The ring is what makes the stage tall: down to the control bar.
+      stage.style.setProperty('--stage-h', `${Math.round(O + barAt(geo.front) + 44 + 12)}px`);
       drawPlate();
       // Where the plate is in the document, for its receipt (kit/bindings.js).
       const box = stage.getBoundingClientRect();
@@ -330,24 +312,9 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
         // A pale thumbnail (tone: 'light') would stay the brightest thing at the back of
         // the ring, so it dims further as it leaves the front.
         if (slides[k].tone === 'light') shade += (1 - shade) * 0.62 * (1 - cap);
-        let hidden = 0;
-        if (c < 0) {
-          // How far the card's near edge is from the copy on its side (negative while
-          // it overlaps the copy), on screen: position and half-width both shrink with depth.
-          const ps = CFG.persp / (CFG.persp - z);
-          const hw = (geo.cardW / 2) * ps * 0.92;
-          const gap = x >= 0 ? x * ps - hw - geo.copyR : geo.copyL - (x * ps + hw);
-          const cover = Math.max(0, Math.min(1, 1 - gap / 80));
-          hidden = cover * Math.min(1, -c * 2);
-          shade += (CFG.behind - shade) * hidden;
-        }
-        // A card behind the hero copy fades out whole, so the beams show through
-        // where a dark slab would otherwise sit behind the name.
-        // It leaves a little early (full cover is not needed), so no faint outline of a
-        // card lingers beside the hero copy while it turns.
-        // Under the block only the front arc shows: a card is whole two steps from the
+        // Only the front arc shows: a card is whole two steps from the
         // front and gone before it reaches the side, where the heading is.
-        const vis = under ? Math.max(0, Math.min(1, (c - ARC[0]) / (ARC[1] - ARC[0]))) : Math.max(0, 1 - CFG.ghost * Math.min(1, hidden * 1.35));
+        const vis = Math.max(0, Math.min(1, (c - ARC[0]) / (ARC[1] - ARC[0])));
         if (Math.abs(vis - lastVis[k]) > 0.004) {
           lastVis[k] = vis;
           cards[k].style.setProperty('--vis', vis.toFixed(3));
@@ -823,7 +790,7 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
         c.removeEventListener('mouseleave', cardHandlers[k][1]);
       });
     };
-  }, [stageRef, centreRef, slides, N, STEP, under]);
+  }, [stageRef, centreRef, slides, N, STEP]);
 
   return (
     <section
@@ -832,7 +799,6 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
       aria-roledescription="carousel"
       aria-label={words.label}
       data-state={state}
-      data-ring={mode}
     >
       <div className="orbit-scene" ref={sceneRef}>
         <svg className="ring-plate" aria-hidden="true" focusable="false">
@@ -859,7 +825,7 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
               aria-roledescription="slide"
               aria-label={`${k + 1} of ${N}: ${s.title}`}
             >
-              <a className="card-link" href={hrefFor(s)} tabIndex={k === 0 ? 0 : -1} {...(/^https?:/.test(hrefFor(s)) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+              <a className="card-link" href={`#build-${s.id}`} tabIndex={k === 0 ? 0 : -1}>
                 <span className="card-media">
                   <Shot slide={s} />
                   <span className="card-prog" aria-hidden="true">
@@ -878,7 +844,7 @@ export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slid
                   )}
                   <span className="card-one">{s.oneLiner}</span>
                   <span className="card-cta">
-                    <span>{s.cta ?? words.slideCta} →</span>
+                    <span>{words.slideCta} →</span>
                     <span className="card-idx" aria-hidden="true">
                       {pad2(k + 1)} / {pad2(N)}
                     </span>

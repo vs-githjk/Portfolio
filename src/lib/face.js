@@ -13,9 +13,9 @@
 
      --face-rect-x, --face-rect-y, --face-rect-w, --face-rect-h   the picture's box, document pixels */
 export const FACE_MAX = 620; // the picture is never wider or taller than this, CSS pixels
-export const CONE = 0.23; // from the picture's foot down to the plate, in units of its shorter side
-export const PLATE = 0.3; // the plate's half width, in the same units
-const FOOT = 0.06; // room under the plate's centre for its near rim
+export const CONE = 0.05; // from the picture's foot down to the plate, in units of its shorter side: the figure stands on it
+export const PLATE = 0.42; // the plate's half width, in the same units
+const FOOT = 0.1; // room under the plate's centre for its near rim
 
 export const face = {
   aspect: 1,
