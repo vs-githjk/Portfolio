@@ -318,6 +318,7 @@ export default function Hologram() {
     };
     let seenAtStart = seen;
 
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     const load = (url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))));
     // A phone stops at the base tier. A desktop that cannot get the fill-in still has a face.
     // The photograph is fetched here, by script, and drawn in the canvas: it is never an
@@ -337,7 +338,7 @@ export default function Hologram() {
         image = files.pop();
         cloud = parseFace(files.filter(Boolean), ring.n);
         // Parsing and compiling are two tasks, not one long one.
-        return new Promise((resolve) => setTimeout(() => resolve(cloud), 0));
+        return tick();
       })
       .then(() => {
         if (dead) return;
@@ -352,7 +353,17 @@ export default function Hologram() {
           // The bloom is a desktop pass.
           phone ? 0 : Number(style.getPropertyValue('--holo-bloom')) || 0
         );
+        // Compiling, uploading the photograph and the first layout read are three
+        // tasks, not one long one (together they held a slow phone for a quarter second).
+        return tick();
+      })
+      .then(() => {
+        if (dead || !scene) return undefined;
         if (image) scene.setPicture(image);
+        return tick();
+      })
+      .then(() => {
+        if (dead || !scene) return;
         measure();
         seenAtStart = seen || rm.matches || window.scrollY > 40;
         seen = seenAtStart;
