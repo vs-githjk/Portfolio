@@ -312,7 +312,7 @@ html:not(.js) .bg-room {
   position: absolute;
   left: -8%;
   right: -8%;
-  top: calc(var(--hz) - 66svh);
+  top: 0;
   height: 92svh;
   filter: blur(26px) saturate(1.25);
   background:
@@ -332,7 +332,8 @@ html:not(.js) .bg-room {
     radial-gradient(54% 34% at 84% 36%, rgba(var(--room-violet), 0.56), transparent 100%),
     radial-gradient(40% 30% at 10% 18%, rgba(var(--holo-deep), 0.42), transparent 100%),
     radial-gradient(40% 30% at 92% 14%, rgba(var(--holo-deep), 0.38), transparent 100%);
-  transform: rotate(-4deg);
+  /* moved by transform, not top: --hz arrives from script and must not count as a layout shift */
+  transform: translateY(calc(var(--hz) - 66svh)) rotate(-4deg);
   /* A dark column behind him: his robe is a night sky, and reads against night. */
   -webkit-mask-image: linear-gradient(to right, #000 0, #000 20%, transparent 39%, transparent 61%, #000 80%), linear-gradient(to bottom, transparent 0, #000 22%, #000 80%, transparent 100%);
   -webkit-mask-composite: source-in;
@@ -345,7 +346,8 @@ html:not(.js) .bg-room {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--hz) - 64svh);
+  top: 0;
+  transform: translateY(calc(var(--hz) - 64svh));
   height: 86svh;
   opacity: 0.16;
   mix-blend-mode: overlay;
@@ -841,4 +843,12 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
     margin: 0;
     pointer-events: none;
   }
+}
+
+/* The Contact hologram's picture is a CSS mask, which the browser fetches as soon
+   as the box is rendered; skip rendering Contact until it is near, so the first
+   screen does not pay for it. */
+.contact {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
 }

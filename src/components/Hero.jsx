@@ -27,6 +27,7 @@ export default function Hero() {
           alt={hero.portrait.alt}
           width="640"
           height="640"
+          loading="lazy"
           decoding="async"
         />
         <div className="who-main">

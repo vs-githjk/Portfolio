@@ -1684,3 +1684,10 @@
     content: '...';
   }
 }
+
+/* Each stage brings its product's own faces; skip rendering a stage until it is
+   near, so those fonts are not fetched before the first screen paints. */
+.pstage {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
