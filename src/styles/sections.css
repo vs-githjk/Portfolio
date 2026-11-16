@@ -577,21 +577,33 @@ html[data-holo='in'] .hub {
   }
 }
 
-/* A phone: four thoughts take turns in two places, above the round window's
-   shoulders and clear of its edge. The third and fourth arrive as the first and
-   second leave (their turns are two thirds of a round apart), so each place holds
-   one at a time. Beside the greeting there is no room: a thought there stood a
-   pixel from his name. */
+/* A phone: four thoughts take turns in two places, in the corners above the round
+   window. Each one ends 10px above the portrait's box (lib/face.js publishes it as
+   --face-rect-y, in document pixels; the welcome starts one bar down), so no
+   picture and no label ever meets his head, at any width. They are smaller here.
+   The third and fourth arrive as the first and second leave (their turns are two
+   thirds of a round apart), so each place holds one at a time. Beside the
+   greeting there is no room: a thought there stood a pixel from his name. */
 @media (max-width: 760px) {
+  .hub {
+    --hub-w: 96px;
+  }
+
+  .hub .hub-panel[data-at] {
+    top: calc(var(--face-rect-y, 126px) - var(--nav-h) - 10px);
+    gap: 6px;
+    transform: translate(calc(var(--head, 0) * var(--drift)), -100%);
+  }
+
   .hub-panel[data-at='l2'],
   .hub-panel[data-at='r2'] {
     display: none;
   }
 
   .hub-panel[data-at='l1'],
-  .hub-panel[data-at='l3'] { left: 4%; top: -3%; }
+  .hub-panel[data-at='l3'] { left: 4%; }
   .hub-panel[data-at='r1'],
-  .hub-panel[data-at='r3'] { right: 4%; top: -3%; }
+  .hub-panel[data-at='r3'] { right: 4%; }
 }
 
 /* The ball's line of speech: fixed under the ball (Hologram.jsx writes where
