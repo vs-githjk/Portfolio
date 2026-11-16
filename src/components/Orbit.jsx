@@ -361,8 +361,9 @@ export default function Orbit({ stageRef, centreRef }) {
           lastCap[k] = cap;
           cards[k].style.setProperty('--cap', cap.toFixed(3));
         }
-        // Only the front card shows its call to action and its progress line.
-        const near = Math.max(0, Math.min(1, ((1 + c) / 2 - 0.9) / 0.1));
+        // Only the front card shows its call to action and its progress line: a card one
+        // step round is already at 0 (at a third of full it read as a disabled link).
+        const near = Math.max(0, Math.min(1, ((1 + c) / 2 - 0.955) / 0.045));
         if (Math.abs(near - lastNear[k]) > 0.004) {
           lastNear[k] = near;
           parts[k].cta.style.opacity = near.toFixed(3);

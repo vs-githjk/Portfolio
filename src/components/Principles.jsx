@@ -30,7 +30,8 @@ function Gate({ d }) {
     <>
       <path className="pm-rule" d="M12 54H268" />
       <text className="pm-l" x="12" y="18">{d.note}</text>
-      <text className="pm-l" x="140" y="18" textAnchor="middle">{d.gate}</text>
+      {/* beside the bar, not over it: the bar lifts through this height */}
+      <text className="pm-l" x="150" y="18">{d.gate}</text>
       <path className="pm-frame" d="M128 28H152M128 80H152" />
       <rect className="pm-bar" x="138" y="32" width="4" height="44" />
       <g className="pm-a">
