@@ -223,8 +223,8 @@
   /* ---- THE WELCOME: his face in light, on the screen above the hero ---------- */
   --holo-gain: 0.92; /* strength of the hologram's light */
   --holo-bloom: 1; /* strength of the glow around it (0 turns the bloom pass off) */
-  --hub-w: clamp(84px, 11.5vw, 172px); /* a thought beside him on the welcome screen */
-  --hub-dim: 0.62; /* and how lit it is at its brightest */
+  --hub-w: clamp(112px, 13vw, 196px); /* a thought beside him on the welcome screen */
+  --hub-dim: 0.88; /* and how lit it is at its brightest */
   --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
   --welcome-min: 500px; /* the welcome screen never gets shorter than this */
   --welcome-run: 70svh; /* empty scroll under the greeting: room for the ball before the hero arrives */

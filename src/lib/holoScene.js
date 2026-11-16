@@ -126,21 +126,29 @@ void main() {
   float spin = t * 0.16 * live;
   s = vec3(s.x * cos(spin) + s.z * sin(spin), s.y, s.z * cos(spin) - s.x * sin(spin));
   float lat = s.y;
+  // Folded light: three great circles of brighter points, wound round the ball at
+  // different tilts and turning with it, so it reads as ribbons gathered into a
+  // sphere, not as an even grain.
+  float g1 = dot(s, vec3(0.0, 0.94, 0.342));
+  float g2 = dot(s, vec3(0.61, 0.5, -0.614));
+  float g3 = dot(s, vec3(-0.66, 0.37, 0.653));
+  float bands = max(exp(-g1 * g1 * 110.0), max(exp(-g2 * g2 * 110.0), exp(-g3 * g3 * 110.0)));
   s = turn(s, 0.0, 0.32);
   s = vec3(s.x * 0.966 + s.y * 0.259, s.y * 0.966 - s.x * 0.259, s.z);
   // Speaking: it swells with the words and a ripple runs from pole to pole.
   float ripple = sin(lat * 7.0 - t * 6.5) * uSpeak;
   float rad = aBall.w * (1.0 + 0.045 * uSpeak * sin(t * 9.5) * shell + 0.028 * ripple * shell);
-  rad *= mix(1.0 + 0.1 * sin(t * 2.6 + r1 * 6.3) * live + 0.3 * uSpeak, 1.0, shell);
+  // The core is a wide soft heart, not a bright dot (a dot in a disc is an eye).
+  rad *= mix(2.6 * (1.0 + 0.1 * sin(t * 2.6 + r1 * 6.3) * live + 0.3 * uSpeak), 1.0, shell);
   vec3 b = s * rad;
   float day = clamp((dot(s, KEY) + 0.22) / 1.22, 0.0, 1.0);
   float limb = pow(1.0 - abs(s.z), 2.2);
   float weather = 0.86 + 0.14 * sin(lat * 9.0 + 0.8 + 1.3 * sin(lat * 23.0));
   float facing = smoothstep(-0.35, 0.25, s.z);
-  float ballGlow = mix(0.035, (0.03 + 0.42 * day * day * weather + 0.3 * limb * (0.25 + 0.75 * day) + 0.12 * ripple * day) * mix(0.06, 1.0, facing), shell);
-  float ballHot = mix(0.2, 0.25 * limb * day, shell);
+  float ballGlow = mix(0.02 + 0.03 * uSpeak, (0.03 + 0.42 * day * day * weather + 0.3 * limb * (0.25 + 0.75 * day) + 0.12 * ripple * day) * mix(0.06, 1.0, facing) * (0.5 + 1.25 * bands), shell);
+  float ballHot = mix(0.03, 0.25 * limb * day + 0.12 * bands * day, shell);
   float ballSize = uBall * uBallGap * mix(3.6, 3.0, shell);
-  float ballBloom = mix(0.3, (0.6 * limb + 0.15) * day, shell);
+  float ballBloom = mix(0.1, (0.6 * limb + 0.15 + 0.2 * bands) * day, shell);
 
   // ---- between them: the peel ---------------------------------------------------
   float m = clamp(uMorph * 2.3 - aMore.x * 1.3, 0.0, 1.0);

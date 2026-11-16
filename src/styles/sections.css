@@ -473,7 +473,7 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
   height: 100%;
   object-fit: cover;
   mix-blend-mode: luminosity;
-  filter: contrast(1.05) brightness(0.8);
+  filter: contrast(1.1) brightness(0.92);
 }
 
 .hub-pic::after {
@@ -494,11 +494,12 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
 
 .hub-panel figcaption {
   font-family: var(--font-mono);
-  font-size: var(--fs-micro);
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
   text-align: center;
-  color: var(--acc-text);
+  color: var(--text);
 }
 
 /* One thought: it rises into focus, shimmers once, holds while it bobs, and
@@ -506,30 +507,33 @@ html.js:not([data-nav]):not([data-holo='off']) .nav:not(:focus-within) {
 @keyframes hub-think {
   0% {
     opacity: 0;
-    translate: 0 18px;
-    filter: blur(7px) brightness(1);
+    translate: 0 14px;
+    filter: blur(5px) brightness(1);
   }
-  7% {
+  /* In focus within 0.4s: a thought is never held as a smudge. */
+  2% {
+    opacity: calc(var(--hub-dim) * 0.6);
+    filter: blur(0) brightness(1.4);
+  }
+  6% {
     opacity: var(--hub-dim);
     translate: 0 0;
-    filter: blur(0) brightness(1.5);
-  }
-  11% {
     filter: blur(0) brightness(1);
   }
   21% {
     translate: 0 -6px;
   }
-  31% {
+  33% {
     opacity: var(--hub-dim);
     translate: 0 0;
     filter: blur(0) brightness(1);
   }
-  40%,
+  /* It leaves sharp, upward: a fade, no blur. */
+  38%,
   100% {
     opacity: 0;
-    translate: 0 -20px;
-    filter: blur(7px) brightness(1);
+    translate: 0 -16px;
+    filter: blur(0) brightness(1);
   }
 }
 
