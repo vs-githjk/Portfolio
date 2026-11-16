@@ -325,7 +325,7 @@ export function createWyrmStations({ live, phone }) {
           }
         };
         guard(s, f);
-        draw({ ...base, scale: sc, at, sleep: 1, fold: s.ahead ? 0.5 : 0.62, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
+        draw({ ...base, scale: sc, at, sleep: 1, fold: s.ahead ? 0.9 : 0.92, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
         shown.station = 'roost';
         return 'roost';
       }

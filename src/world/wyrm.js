@@ -25,10 +25,15 @@ import { definePiece } from './piece';
    that day's level (0 to 4). Nothing here is typed: change the weeks and the
    body changes.
 
-   The form: a skin of scales pinched at every week like a paper lantern, a spine of light through them, a swept
-   sail along the back, two pairs of leaf fins (they are fins in water and wings
-   in air), a narrow lantern head with one eye light, two swept horns and two
-   trailing barbels, and a barb at the tail.
+   The form is a dragon's, said in as few lines as it takes: a skin of scales pinched
+   at every week like a paper lantern with a spine of light through it; a deep chest
+   that narrows to a neck in front and a long tail behind (the anatomy scales each
+   week's girth, it never replaces it); a row of swept spikes down the back, one a
+   week, as tall as that week; two membrane wings, each an arm to a wrist and four
+   finger bones with the skin scalloped between their tips; four legs that end in
+   three claws; a short wedge of a head with an open jaw, one eye light and two long
+   horns swept back; and a spearhead at the tail. (Leaf fins, a sail and barbels read
+   as a fish: three rounds of cold readers said so.)
 
    The piece knows nothing about where it lives. Each frame the caller gives it
    a pose: for every node, a point in window px (x and y from the middle of the
@@ -130,7 +135,7 @@ void main(){
 }`;
 
 const BAND_VERT = /* glsl */ `
-attribute vec4 aBand; // u along, v across, kind (0 spine, 1 sail, 2 barbel, 3 leaf), tone
+attribute vec4 aBand; // u along, v across, kind (0 line, 1 back spikes, 2 unused, 3 leaf: horn or tail barb, 4 wing), tone
 varying vec4 vBand;
 void main(){
   vBand = aBand;
@@ -149,23 +154,33 @@ void main(){
     a = 0.8 * smoothstep(0.34, 0.08, c) + 0.14 * (1.0 - c);
     lv = 0.55 + 0.45 * smoothstep(0.4, 0.0, c);
   } else if (k < 1.5) {
-    // The sail: a thin membrane, a bright top edge, a rib at every vertebra.
-    float rib = smoothstep(0.16, 0.02, abs(fract(u + 0.5) - 0.5)) * uRibs;
-    float top = smoothstep(0.8, 0.98, v);
-    a = (0.05 + 0.1 * v + 0.55 * top + 0.34 * rib * (0.3 + 0.7 * v)) * vBand.w;
-    lv = 0.3 + 0.5 * top + 0.3 * rib;
+    // The back: one swept spike a vertebra, not a sail (a continuous fin is a fish's).
+    float tooth = 1.0 - 2.0 * abs(fract(u + 0.5) - 0.5);
+    float inside = tooth - v;
+    float rim = smoothstep(0.2, 0.02, inside);
+    a = smoothstep(0.0, 0.06, inside) * (0.2 + 0.6 * rim) * vBand.w;
+    lv = 0.35 + 0.55 * rim;
   } else if (k < 2.5) {
     float c = abs(v * 2.0 - 1.0);
     a = (1.0 - u) * (0.7 * smoothstep(0.5, 0.1, c) + 0.1);
     lv = 0.7 - 0.4 * u;
+  } else if (k > 3.5) {
+    // A wing: finger bones from the wrist (the edges of each panel, v = 0 and 1),
+    // a lit scalloped margin, and skin between that carries a little light.
+    float dv = min(v, 1.0 - v) * u;
+    float bone = smoothstep(0.034, 0.008, dv) * smoothstep(0.0, 0.06, u);
+    float margin = smoothstep(0.9, 0.99, u);
+    float weave = smoothstep(0.1, 0.0, abs(fract(u * 5.0) - 0.5)) * uRibs;
+    a = (0.13 + 0.07 * u + 0.8 * bone + 0.7 * margin + 0.07 * weave) * vBand.w;
+    lv = 0.28 + 0.6 * bone + 0.5 * margin;
   } else {
     // A leaf: a midrib, veins that sweep to the tip, a lit margin, almost no blade.
     float av = abs(v);
     float mid = smoothstep(0.07, 0.015, av);
-    float vein = smoothstep(0.09, 0.0, abs(fract(u * 7.0 - av * 2.4) - 0.5)) * uRibs * (1.0 - smoothstep(0.86, 1.0, u));
+    float vein = 0.0; // horn and barb are plain blades (veins made them leaves)
     float margin = smoothstep(0.82, 0.99, av);
     // The blade itself carries light, so a wing is a surface at any size, not a bundle of lines.
-    a = (0.1 + 0.08 * (1.0 - av) + 0.6 * mid + 0.3 * vein * (1.0 - 0.5 * av) + 0.62 * margin) * vBand.w;
+    a = (0.3 + 0.1 * (1.0 - av) + 0.6 * mid + 0.3 * vein * (1.0 - 0.5 * av) + 0.62 * margin) * vBand.w;
     a *= smoothstep(0.0, 0.05, u);
     lv = 0.3 + 0.55 * mid + 0.45 * margin + 0.2 * vein;
   }
@@ -174,18 +189,18 @@ void main(){
 
 /* Anatomy, in body units (one unit is the gap between two vertebrae). */
 const HEAD = [
-  [0, 0.5],
-  [1.0, 0.8],
-  [2.4, 0.98],
-  [3.9, 1.22],
-  [5.2, 1.62],
-  [6.5, 2.2],
-  [7.8, 2.5],
-  [9.2, 2.2],
-  [10.5, 1.9],
-]; // distance from the snout tip, radius: a long wedge of a muzzle, a brow no wider than the body, a neck
-const SKULL = 6; // the widest head node: the eye and the crests sit here
-const NECK = 11.7; // where the newest vertebra sits
+  [0, 0.66],
+  [0.8, 0.92],
+  [1.8, 1.1],
+  [2.9, 1.3],
+  [3.9, 1.7],
+  [4.9, 2.25],
+  [5.9, 2.5],
+  [7.0, 2.2],
+  [8.0, 1.8],
+]; // distance from the snout tip, radius: a short blunt muzzle, a heavy brow, a neck
+const SKULL = 6; // the widest head node: the eye and the horns sit here
+const NECK = 9.1; // where the newest vertebra sits
 const BROW = [0, 1.75, -1.75]; // lantern ribs along the head: over the brow and down each cheek (rad from the back)
 const TAIL = 7; // nodes after the oldest vertebra
 const DAYS = 7;
@@ -223,7 +238,8 @@ export const wyrm = definePiece({
     const sorted = weeks.map((w) => w.total).filter(Boolean).sort((a, b) => a - b);
     const rank = (w) => (w.total ? sorted.indexOf(w.total) / Math.max(1, sorted.length - 1) : 0);
 
-    // Per node: distance from the snout, radius, sail height, tone, week (or -1).
+    const chestAt = Math.min(9, N * 0.18); // the vertebra the wings root at
+    // Per node: distance from the snout, radius, spike height, tone, week (or -1).
     const dist = new Float32Array(M);
     const rad = new Float32Array(M);
     const sail = new Float32Array(M);
@@ -241,8 +257,13 @@ export const wyrm = definePiece({
       const w = weeks[N - 1 - j];
       const s = size(w);
       dist[k] = NECK + j;
-      rad[k] = 0.95 + 1.6 * s;
-      sail[k] = (0.5 + 2.9 * s) * Math.min(1, (j + 0.6) / 2.2); // it rises out of the neck
+      // Anatomy scales the week's girth: a neck, a deep chest where the wings root,
+      // then a tail that thins all the way back.
+      const chest = Math.exp(-(((j - chestAt) / (N * 0.12 + 1)) ** 2));
+      const taper = Math.max(0, Math.min(1, (j - N * 0.42) / (N * 0.58)));
+      const anat = (0.78 + 0.8 * chest) * (1 - 0.5 * taper * taper * (3 - 2 * taper));
+      rad[k] = (0.95 + 1.6 * s) * anat;
+      sail[k] = (0.7 + 2.3 * s) * Math.min(1, (j + 0.6) / 2.2); // the spikes rise out of the neck
       tone[k] = 0.18 + 0.82 * rank(w);
       week[k] = N - 1 - j;
     }
@@ -359,33 +380,58 @@ export const wyrm = definePiece({
     group.add(dots);
 
     /* ---- bands: spine, sail, two barbels and the leaves, one dynamic mesh ---- */
-    const BARB = 12;
     const [LU, LV] = T.leaf; // a leaf is (LU + 1) x (2 LV + 1) vertices
     // root node (as a distance from the snout), length, spread from the back (rad),
     // sweep toward the tail (rad), side, beat phase, how far it beats
-    const backHalf = NECK + N * 0.5;
-    const wingAt = NECK + Math.min(8, N * 0.16);
+    const wingAt = NECK + chestAt;
+    const hipAt = NECK + N * 0.4;
     const leaf = (at, len, spread, sweep, side, ph, beat, wide, fold = 0) => ({ at, len, spread, sweep, side, ph, beat, wide, fold });
     const LEAVES = [];
     for (const side of [1, -1]) {
-      // A wing is a fan of three leaves from one shoulder; it folds along the body in sleep.
-      LEAVES.push(leaf(wingAt, 22, 1.0, 0.2, side, 0, 1, 0.3, 1));
-      LEAVES.push(leaf(wingAt + 0.6, 19, 1.1, 0.56, side, 0.3, 1, 0.32, 1));
-      LEAVES.push(leaf(wingAt + 1.2, 14, 1.2, 0.94, side, 0.6, 1, 0.34, 1));
-      LEAVES.push(leaf(backHalf, 10, 1.5, 0.72, side, 1.6, 0.6, 0.3, 1)); // the hind pair
-      // A horn behind each eye: long, narrow and swept back. (A broad crest here read
-      // as a fish's gill cover.)
-      LEAVES.push(leaf(8.4, 8, 0.2, 0.12, side, 0.3, 0.02, 0.1));
-      LEAVES.push(leaf(9.4, 6.5, 0.9, 1.1, side, 0.5, 0.05, 0.16)); // and a short frill under it
+      // A horn behind each eye: long, narrow and swept back, and a short spur under it.
+      LEAVES.push(leaf(6.5, 10.5, 0.36, 0.92, side, 0.3, 0.02, 0.1));
+      LEAVES.push(leaf(7.1, 4.2, 1.35, 1.15, side, 0.5, 0.03, 0.1));
     }
-    LEAVES.push(leaf(5.6, 6, 3.14159, 0.95, 1, 0.9, 0.12, 0.26)); // a leaf under the chin
     // The tail ends in a barb: two blades laid along the tail's line, back to back
     // (each is broad on its outer side), so together they are one spearhead. (Two long leaves at a wide angle were a fish's fluke.)
-    LEAVES.push(leaf(length - 0.7, 4.8, 0, 1.45, 1, 2.4, 0.05, 0.42));
-    LEAVES.push(leaf(length - 0.7, 4.8, 3.14159, 1.45, 1, 2.4, 0.05, 0.42));
+    LEAVES.push(leaf(length - 0.7, 3.4, 0, 1.45, 1, 2.4, 0.05, 0.26));
+    LEAVES.push(leaf(length - 0.7, 3.4, 3.14159, 1.45, 1, 2.4, 0.05, 0.26));
+    /* A wing, in its own plane: x toward the tail, y along the span, in wing lengths.
+       The arm runs from the shoulder to the wrist; four finger bones fan from the
+       wrist; the skin runs tip to tip, then back to the body behind the shoulder. */
+    const WING_LEN = 27;
+    const WRIST = [-0.17, 0.5];
+    const RIM = [
+      [0.04, 1.0],
+      [0.44, 0.9],
+      [0.74, 0.6],
+      [0.82, 0.24],
+      [0.5, 0.0],
+      [0, 0],
+    ]; // finger tips 1 to 4, where the skin meets the body, the shoulder
+    const PANEL_V = [
+      [0, 1],
+      [0, 1],
+      [0, 1],
+      [0, 0.5],
+      [0.5, 1],
+    ]; // a bone on an edge at v = 0 or 1: fingers, then the arm
+    const SCALLOP = [0.17, 0.17, 0.17, 0.1, 0];
+    const SEG = tier === 'phone' ? 4 : 7;
+    const wingVerts = PANEL_V.length * (SEG + 1) * 2;
+    const WINGS = [1, -1];
+    /* A leg: hip, knee, ankle, foot, and three claws. Root vertebra (distance from
+       the snout) and side. */
+    const LEGS = [
+      [wingAt + 1.5, 1],
+      [wingAt + 1.5, -1],
+      [hipAt, 1],
+      [hipAt, -1],
+    ];
+    const legVerts = 4 * 2 + 3 * 2 * 2;
     const leafVerts = (LU + 1) * (2 * LV + 1);
     const JAW = 6;
-    const nBand = M * 2 + M * 2 + 2 * (BARB + 1) * 2 + (JAW + 1) * 2 + BROW.length * HEAD.length * 2 + LEAVES.length * leafVerts;
+    const nBand = M * 2 + M * 2 + (JAW + 1) * 2 + BROW.length * HEAD.length * 2 + LEAVES.length * leafVerts + WINGS.length * wingVerts + LEGS.length * legVerts;
     const bandPos = new BufferAttribute(new Float32Array(nBand * 3), 3);
     bandPos.setUsage(DynamicDrawUsage);
     const bandAttr = new Float32Array(nBand * 4);
@@ -412,15 +458,6 @@ export const wyrm = definePiece({
     }
     strip(o, M);
     o += M * 2;
-    const barb0 = o;
-    for (let b = 0; b < 2; b++) {
-      for (let i = 0; i <= BARB; i++) {
-        bandAttr.set([i / BARB, 0, 2, 1], (o + i * 2) * 4);
-        bandAttr.set([i / BARB, 1, 2, 1], (o + i * 2 + 1) * 4);
-      }
-      strip(o, BARB + 1);
-      o += (BARB + 1) * 2;
-    }
     const jaw0 = o;
     for (let i = 0; i <= JAW; i++) {
       bandAttr.set([0.5, 0, 0, 1], (o + i * 2) * 4);
@@ -452,6 +489,29 @@ export const wyrm = definePiece({
         }
       }
       o += leafVerts;
+    }
+    const wing0 = o;
+    for (let wi = 0; wi < WINGS.length; wi++) {
+      for (let pnl = 0; pnl < PANEL_V.length; pnl++) {
+        const [v0, v1] = PANEL_V[pnl];
+        for (let i = 0; i <= SEG; i++) {
+          const vv = v0 + ((v1 - v0) * i) / SEG;
+          bandAttr.set([0, vv, 4, 1], (o + i * 2) * 4);
+          bandAttr.set([1, vv, 4, 1], (o + i * 2 + 1) * 4);
+        }
+        strip(o, SEG + 1);
+        o += (SEG + 1) * 2;
+      }
+    }
+    const leg0 = o;
+    for (let l = 0; l < LEGS.length; l++) {
+      for (let i = 0; i < legVerts / 2; i++) {
+        bandAttr.set([0.5, 0, 0, 1], (o + i * 2) * 4);
+        bandAttr.set([0.5, 1, 0, 1], (o + i * 2 + 1) * 4);
+      }
+      strip(o, 4);
+      for (let cl = 0; cl < 3; cl++) strip(o + 8 + cl * 4, 2);
+      o += legVerts;
     }
     const bandGeo = keep(new BufferGeometry());
     bandGeo.setAttribute('position', bandPos);
@@ -658,28 +718,6 @@ export const wyrm = definePiece({
         a.addScaledVector(Un[k], hgt * 0.92).addScaledVector(Tn[k], -hgt * (0.5 + 0.4 * sleep));
         put(sail0 + k * 2 + 1, a);
       }
-      // Two barbels trail from the snout, out and down along the neck.
-      for (let s = 0; s < 2; s++) {
-        const side = s ? 1 : -1;
-        for (let i = 0; i <= BARB; i++) {
-          const u = i / BARB;
-          const f = nodeAt(0.6 + u * 18);
-          sample(f, a, P);
-          sample(f, b, Sn).normalize();
-          sample(f, c, Un).normalize();
-          const s0 = sc[Math.min(M - 1, Math.round(f))];
-          const wave = Math.sin(t * 1.5 - u * 4.2 + s * 1.3) * 0.5 * u * (1 - 0.6 * sleep);
-          a.addScaledVector(b, side * (0.6 + 2.2 * Math.sqrt(u)) * s0).addScaledVector(c, (-0.7 - 3.4 * u * u + wave) * s0);
-          sample(f, e, Tn);
-          e.cross(Z);
-          if (e.lengthSq() < 1e-6) e.copy(c);
-          e.normalize();
-          const hw = Math.max(0.9, 0.11 * q.scale) * (s0 / q.scale) * (1 - 0.7 * u);
-          const at = barb0 + s * (BARB + 1) * 2 + i * 2;
-          put(at, b.copy(a).addScaledVector(e, hw));
-          put(at + 1, b.copy(a).addScaledVector(e, -hw));
-        }
-      }
       // The lower jaw: a line under the snout, hinged at the skull, a little open.
       for (let i = 0; i <= JAW; i++) {
         const u = i / JAW; // 0 at the hinge, 1 at the chin
@@ -688,13 +726,13 @@ export const wyrm = definePiece({
         const r = rad[k] + (rad[k + 1] - rad[k]) * (f - k);
         sample(f, a, P);
         sample(f, c, Un).normalize();
-        const gape = 0.5 + 0.12 * Math.sin(t * 0.8) * (1 - sleep) - 0.3 * sleep;
+        const gape = 1.0 + 0.16 * Math.sin(t * 0.8) * (1 - sleep) - 0.7 * sleep;
         a.addScaledVector(c, -(r * (1 - 0.25 * u) + gape * u + 0.12) * sc[k]);
         sample(f, e, Tn);
         e.cross(Z);
         if (e.lengthSq() < 1e-6) e.copy(c);
         e.normalize();
-        const hw = Math.max(1, 0.14 * q.scale) * (sc[k] / q.scale) * (1 - 0.5 * u);
+        const hw = Math.max(1.1, 0.2 * q.scale) * (sc[k] / q.scale) * (1 - 0.5 * u);
         put(jaw0 + i * 2, b.copy(a).addScaledVector(e, hw));
         put(jaw0 + i * 2 + 1, b.copy(a).addScaledVector(e, -hw));
       }
@@ -749,6 +787,105 @@ export const wyrm = definePiece({
             at++;
           }
         }
+      }
+      // The wings.
+      at = wing0;
+      for (const side of WINGS) {
+        const f = nodeAt(wingAt);
+        const k = Math.min(M - 1, Math.round(f));
+        const s0 = sc[k];
+        const flap = Math.sin(t * (1.1 + 1.5 * beat)) * (0.12 + 0.6 * beat);
+        const spread = 0.62 + flap - 0.1 * wingFold;
+        const sweep = 0.12 + 1.05 * wingFold + 0.1 * flap; // folded, it lies back along the body
+        // The arm's axis: up from the back, out to its side, swept toward the tail.
+        b.copy(Un[k]).multiplyScalar(Math.cos(spread)).addScaledVector(Sn[k], Math.sin(spread) * side);
+        b.multiplyScalar(Math.cos(sweep)).addScaledVector(Tn[k], -Math.sin(sweep)).normalize();
+        // The hand bends on at the wrist: it leads the stroke down and trails it up.
+        const tip = spread + 0.55 * flap + 0.5 * wingFold;
+        e.copy(Un[k]).multiplyScalar(Math.cos(tip)).addScaledVector(Sn[k], Math.sin(tip) * side);
+        e.multiplyScalar(Math.cos(sweep)).addScaledVector(Tn[k], -Math.sin(sweep)).normalize();
+        // The chord: toward the tail, squared up to the arm.
+        c.copy(Tn[k]).addScaledVector(b, -Tn[k].dot(b)).normalize().multiplyScalar(-1);
+        sample(f, a, P).addScaledVector(b, rad[k] * s0 * 0.75);
+        const len = WING_LEN * s0 * (1 - 0.5 * wingFold);
+        const cx = 1 - 0.42 * wingFold; // folded, the fingers close like a fan
+        const place = (x, y, into) => {
+          const y0 = Math.min(y, WRIST[1]);
+          const y1 = Math.max(0, y - WRIST[1]);
+          into.copy(a).addScaledVector(b, y0 * len).addScaledVector(e, y1 * len).addScaledVector(c, x * cx * len);
+        };
+        for (let pnl = 0; pnl < PANEL_V.length; pnl++) {
+          const [x0, y0] = RIM[pnl];
+          const [x1, y1] = RIM[pnl + 1];
+          for (let i = 0; i <= SEG; i++) {
+            const u = i / SEG;
+            const pull = SCALLOP[pnl] * Math.sin(Math.PI * u);
+            const x = x0 + (x1 - x0) * u;
+            const y = y0 + (y1 - y0) * u;
+            place(WRIST[0], WRIST[1], hint);
+            put(at, hint);
+            place(x + (WRIST[0] - x) * pull, y + (WRIST[1] - y) * pull, hint);
+            put(at + 1, hint);
+            at += 2;
+          }
+        }
+      }
+      // The legs: tucked back along the belly in flight, folded under it at rest
+      // with the claws forward.
+      at = leg0;
+      for (const [d0, side] of LEGS) {
+        const f = nodeAt(d0);
+        const k = Math.min(M - 1, Math.round(f));
+        const s0 = sc[k];
+        const r = rad[k];
+        const kick = 0.25 * Math.sin(t * 0.9 + d0) * (1 - sleep);
+        // [toward the tail, down] in body units, awake then asleep
+        const J = [
+          [0.2, r * 0.55, 0.1, r * 0.3],
+          [2.0 + kick, r * 0.9 + 1.5, 1.8, r * 0.55],
+          [4.3 + kick, r * 0.75 + 1.0, 0.9, r * 0.98],
+          [5.6 + kick, r * 0.9 + 2.2, -0.9, r * 1.0],
+        ];
+        const hwLeg = [0.42, 0.34, 0.24, 0.2];
+        let px0 = 0;
+        let py0 = 0;
+        let px1 = 0;
+        let py1 = 0;
+        const pt = (bk, dn, into) => into.copy(P[k]).addScaledVector(Tn[k], -bk * s0).addScaledVector(Un[k], -dn * s0).addScaledVector(Sn[k], side * r * 0.62 * s0);
+        for (let i = 0; i < 4; i++) {
+          const bk = J[i][0] + (J[i][2] - J[i][0]) * sleep;
+          const dn = J[i][1] + (J[i][3] - J[i][1]) * sleep;
+          pt(bk, dn, a);
+          e.crossVectors(Tn[k], Z);
+          if (e.lengthSq() < 1e-6) e.copy(Un[k]);
+          e.normalize();
+          const hw = Math.max(1.2, hwLeg[i] * q.scale) * (s0 / q.scale);
+          put(at + i * 2, hint.copy(a).addScaledVector(e, hw));
+          put(at + i * 2 + 1, hint.copy(a).addScaledVector(e, -hw));
+          px0 = px1;
+          py0 = py1;
+          px1 = bk;
+          py1 = dn;
+        }
+        // Three claws fan from the foot, along the last bone's line.
+        const dl = Math.hypot(px1 - px0, py1 - py0) || 1;
+        const ux = (px1 - px0) / dl;
+        const uy = (py1 - py0) / dl;
+        for (let cl = 0; cl < 3; cl++) {
+          const ang = (cl - 1) * 0.5 + 0.25;
+          const cxn = ux * Math.cos(ang) - uy * Math.sin(ang);
+          const cyn = ux * Math.sin(ang) + uy * Math.cos(ang);
+          const base = at + 8 + cl * 4;
+          pt(px1, py1, a);
+          e.crossVectors(Tn[k], Z).normalize();
+          const hw = Math.max(1, 0.2 * q.scale) * (s0 / q.scale);
+          put(base, hint.copy(a).addScaledVector(e, hw));
+          put(base + 1, hint.copy(a).addScaledVector(e, -hw));
+          pt(px1 + cxn * 1.5, py1 + cyn * 1.5, a);
+          put(base + 2, hint.copy(a).addScaledVector(e, hw * 0.2));
+          put(base + 3, hint.copy(a).addScaledVector(e, -hw * 0.2));
+        }
+        at += legVerts;
       }
       bandPos.needsUpdate = true;
 
