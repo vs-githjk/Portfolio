@@ -12,6 +12,7 @@ import Toolkit from './components/Toolkit';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Vista from './components/Vista';
+import Shell from './shell/Shell';
 import { worlds } from './data/content';
 import { useReveal } from './hooks/useReveal';
 
@@ -61,6 +62,7 @@ export default function App() {
         </main>
         <Footer />
       </div>
+      <Shell />
     </>
   );
 }

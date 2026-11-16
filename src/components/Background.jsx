@@ -10,8 +10,8 @@ import { heroOrigin } from '../lib/origin';
      any failure. Nothing flashes when the canvas fades in over them.
    - BackgroundField (a 2D canvas with beams and stars) lives in its own chunk
      and mounts after first paint.
-   - The same scroll handler marks <html data-at="sea|earth"> with the world under
-     the nav, so the bar wears that world's palette.
+   - <html data-at="sea|earth">, the world under the nav, is written by the kit's
+     signals (kit/signals.js) from cached section offsets.
    - Scroll sets two custom properties on .bg (--bg-y, --bg-fade); CSS turns
      them into parallax (transform only) and the fade-out after the first
      screen. Under prefers-reduced-motion there is no parallax and no shimmer.
@@ -78,20 +78,7 @@ export default function Background() {
       node.style.setProperty('--bg-fade', beamFade(y, vh).toFixed(3));
       node.style.setProperty('--bg-deep', worldFade(y, vh).toFixed(3));
       node.style.setProperty('--bg-y', reduced ? '0' : Math.max(0, y).toFixed(1));
-      // Which world is under the nav: the bar takes that world's palette (tokens.css).
-      let at = '';
-      for (const el of realms) {
-        const r = el.getBoundingClientRect();
-        if (r.height > 0 && r.top <= 64) at = el.dataset.realm; // the last one the bar has reached
-      }
-      if (at !== was) {
-        was = at;
-        if (at) document.documentElement.dataset.at = at;
-        else delete document.documentElement.dataset.at;
-      }
     };
-    const realms = document.querySelectorAll('[data-realm]');
-    let was = null;
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
