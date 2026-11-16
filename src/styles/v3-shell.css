@@ -1419,12 +1419,34 @@ html[data-travel='in'] .bg-world {
   gap: 4px;
   padding: 10px max(var(--pad), env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--hair-2);
-  background: color-mix(in srgb, var(--ink-2) 94%, transparent);
+  background: var(--ink-2);
+  box-shadow: 0 -18px 28px -10px var(--ink);
   font-family: var(--font-mono);
   font-size: 10.5px;
   line-height: 1.4;
   letter-spacing: 0.04em;
   color: var(--text-2);
+}
+
+/* The ledger is a solid slip along the foot (nothing shows through it), and the
+   page grows by its height while it is up, so the last lines can always be
+   scrolled clear of it. On a phone each thing runs on as one sentence, two things at most. */
+body:has(.receipts-ledger) .foot {
+  padding-bottom: 96px;
+}
+
+@media (max-width: 760px) {
+  .receipts-ledger li {
+    display: block;
+  }
+
+  .receipts-ledger li > * + * {
+    margin-left: 8px;
+  }
+
+  .receipts-ledger li:nth-child(n + 4) {
+    display: none;
+  }
 }
 
 .receipts-ledger li {
