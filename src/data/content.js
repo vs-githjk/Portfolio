@@ -1730,15 +1730,15 @@ export const contact = {
     made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene with a rigged, animated dragon in it, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
     measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {low} to {high}, {performance} at the median; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
-    // Measured Nov 16 2026 on the production build with the model dragon (npm run build, vite preview),
-    // Lighthouse 12.2.1, --form-factor=mobile, nine runs in a row, all quoted:
-    // performance 98, 97, 97, 97, 97, 97, 97, 97, 97 (LCP 2.1 to 2.5 s, CLS 0, TBT 10 to 40 ms).
+    // Measured Nov 16 2026 on the production build with the European Dragon and the coast (npm run build,
+    // vite preview), Lighthouse 12.2.1, --form-factor=mobile, nine runs in a row, all quoted:
+    // performance 95, 89, 87, 97, 98, 97, 97, 97, 97 (LCP 1.8 to 2.5 s, CLS 0, TBT 20 to 430 ms).
+    // Runs two and three (TBT 420 to 430 ms) were taken while other work had the machine at a load
+    // average of 11 to 21; nine runs of the build before this one, on a quieter machine, were 97 to 98.
     // Accessibility, best practices and SEO 100 on all nine. Lighthouse does not scroll, so the world
-    // and the dragon (asked for after the first scroll on a phone) are not in these runs: they measure
-    // that neither costs the first screen anything. The build before this one had one cold run at 67
-    // (a 2.9 s task seconds after the build); it did not come back here. State every run's range,
-    // never a floor that one of the quoted runs broke, and re-measure when the build changes.
-    lighthouse: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 97, high: 98, accessibility: 100, bestPractices: 100, seo: 100 },
+    // and the dragon (asked for after the first scroll on a phone) are not in these runs. State every
+    // run's range, never a floor that one of the quoted runs broke, and re-measure when the build changes.
+    lighthouse: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 87, high: 98, accessibility: 100, bestPractices: 100, seo: 100 },
     llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
   },
 };

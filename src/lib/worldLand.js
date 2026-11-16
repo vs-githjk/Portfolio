@@ -75,6 +75,15 @@ void main(){
   gl_Position = projectionMatrix * viewMatrix * wp;
 }`;
 
+/* The ground's shader. Its notes are kept out of the string (the string ships): from the top,
+   the land stands above the shore's waterline; detail the mesh is too coarse to carry leans the
+   normal by the slope of two layers of noise; sand ripples on low gentle ground only, fading
+   before their period nears a pixel; rock with strata and streaks down the fall line; scrub on
+   the gentler ground; snow above the line where the ground can hold it, lower in the gullies; a
+   worn path; the camp's four tints; sun, rim and glitter; the moon and the lamp; the inlet (a
+   mirror for the sky, the bed near the shore, the sun's road, surf); wet sand; the air
+   (extinction by distance, low mist, the sky's colour along the ray); the sea's surface seen at
+   a glance at the beach with its foam; the bright line of the surface; tone, hush and grain. */
 const LAND_FRAG = /* glsl */ `
 ${COMMON}
 ${SKY}
@@ -84,10 +93,8 @@ uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonC
 uniform vec2 uWind;
 varying vec3 vW, vN;
 varying float vHor, vEmis, vGlow, vUp, vDeep, vTint;
-
 void main(){
   vec2 c = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
-  // The land stands above the shore's waterline; under it there is only water.
   float above = uExit + swell(c.x + 300.0, uTime * 1.1) - c.y;
   if (above < 0.0) discard;
   vec3 N = normalize(vN);
@@ -96,11 +103,10 @@ void main(){
   vec3 V = toCam / d;
   vec3 albedo = uSand;
   float aa = 0.0;
-  float wet = 0.0;      // 1 on the inlet's water
+  float wet = 0.0;
   float snow = 0.0;
 #ifdef SAND
   float alt = vW.y;
-  // Detail the mesh is too coarse to carry: the slope of two layers of noise leans the normal.
   float nearK = 1.0 - smoothstep(2600.0, 4200.0, d);
   vec2 q1 = vW.xz * 0.011; vec2 q2 = vW.xz * 0.034;
   float h0 = n2(q1) + 0.45 * n2(q2);
@@ -109,8 +115,6 @@ void main(){
   float wall = smoothstep(0.9, 0.6, vN.y);
   float rocky = max(wall, high * 0.75);
   N = normalize(N - vec3(grad.x, 0.0, grad.y) * (0.5 + 1.3 * rocky) * (0.35 + 0.65 * nearK) * uFine);
-  // Sand: ripples across the wind on gentle, low ground only, fading before their
-  // period nears a pixel, so there is nothing to moire on a phone.
   float sandy = (1.0 - high) * (1.0 - wall);
   float ph = dot(vW.xz, uWind) * 2.0 + 3.0 * n2(vW.xz * 0.011);
   aa = (1.0 - smoothstep(0.3, 1.0, fwidth(ph))) * uFine * sandy;
@@ -118,18 +122,14 @@ void main(){
   N = normalize(N + vec3(uWind.x, 0.0, uWind.y) * cos(ph) * 0.26 * aa * gentle);
   albedo *= 0.86 + 0.28 * n2(vW.xz * 0.0031 + 7.0);
   albedo *= 1.0 + (n2(vW.xz * 0.9) - 0.5) * 0.2 * (1.0 - smoothstep(180.0, 800.0, d)) * uFine;
-  // Rock: strata across the faces, darker in the gullies, streaked down the fall line.
   float strata = 0.5 + 0.5 * sin(alt * 0.06 + 3.0 * n2(vW.xz * 0.004));
   float streak = n2(vec2(vW.x * 0.03 + vW.z * 0.012, alt * 0.006));
   vec3 rock = mix(uRock * 0.72, uRock * 1.35 + uSandShade * 0.2, strata * 0.6 + streak * 0.4);
-  // Scrub on the gentler ground between the beach and the rock.
   float scrub = smoothstep(26.0, 70.0, alt) * (1.0 - smoothstep(210.0, 380.0, alt)) * smoothstep(0.66, 0.9, N.y) * smoothstep(0.38, 0.62, n2(vW.xz * 0.006 + 2.0) * 0.6 + 0.4 * n2(vW.xz * 0.03));
   albedo = mix(albedo, rock, rocky);
   albedo = mix(albedo, uScrub * (0.8 + 0.4 * n2(vW.xz * 0.05)), scrub * 0.8);
-  // Snow above the line, where the ground is not too steep to hold it; it runs lower in the gullies.
   snow = smoothstep(400.0, 520.0, alt + 110.0 * (n2(vW.xz * 0.0045 + 9.0) - 0.5) - 90.0 * grad.x) * smoothstep(0.42, 0.7, N.y);
   albedo = mix(albedo, uSnow, snow);
-  // A worn path from the beach up to the camp and on along the shore.
   float pd = 1e5;
   for (int i = 0; i < 3; i++) {
     vec2 pa = uPath[i].xz; vec2 pb = uPath[i + 1].xz - pa;
@@ -142,7 +142,6 @@ void main(){
   wet = smoothstep(0.0, 2.5, vDeep);
 #endif
 #ifdef CAMP
-  // 0 dark cloth, 1 rock, 2 a banner in the accent, 3 pale canvas
   albedo = vTint < 0.5 ? uSandShade * 1.3 : vTint < 1.5 ? mix(uRock, uSand, 0.35) * (0.9 + 0.4 * h2(floor(vW.xz * 0.2))) : vTint < 2.5 ? uAccent * 0.8 : uSand * 0.9 + 0.12;
 #endif
   float ndl = dot(N, uSunDir);
@@ -158,7 +157,6 @@ void main(){
   float gl = step(0.992, h2(cell + floor(uTime * 1.5))) * pow(max(dot(reflect(-uSunDir, N), V), 0.0), 6.0);
   col += sunC * gl * aa * sh * 0.9;
 #endif
-  // Night: the moon while Value is read, and the camp's lamp on the dunes around it.
   col += albedo * uMoonCol * (clamp(dot(N, uMoonDir) * 2.2 + 0.1, 0.0, 1.0) + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 3.0));
   vec3 Lp = uLampPos - vW;
   float ld = length(Lp);
@@ -167,8 +165,6 @@ void main(){
   vec3 rd = -V;
 #ifdef SAND
   if (wet > 0.0) {
-    /* The inlet: a mirror for the sky at a glance, the bed showing through close
-       to the shore, the sun's road of glitter, and surf where it meets the land. */
     vec2 rp = vW.xz * 0.02 + vec2(uTime * 0.05, uTime * 0.11);
     vec3 wn = normalize(vec3((n2(rp) - 0.5) * 0.22 + (n2(rp * 3.1 + 4.0) - 0.5) * 0.1, 1.0, (n2(rp + 9.0) - 0.5) * 0.22));
     vec3 rf = reflect(rd, wn);
@@ -178,26 +174,19 @@ void main(){
     vec3 sea = mix(bed, mirror * 0.92, clamp(fres + smoothstep(2.0, 16.0, vDeep) * 0.5, 0.0, 1.0));
     float road = pow(max(dot(normalize(rf), uSunDir), 0.0), 220.0) + 0.35 * pow(max(dot(normalize(rf), uSunDir), 0.0), 26.0);
     sea += uSun * uSunI * road * 2.2 * uDay * sh;
-    // Surf: a bright edge and two lines of foam that run in and fade.
     float lap = vDeep + 1.6 * sin(uTime * 0.8 + vW.x * 0.02) + 3.0 * (n2(vW.xz * 0.05) - 0.5);
     float foam = (1.0 - smoothstep(0.6, 3.2, lap)) + 0.6 * smoothstep(0.55, 0.9, sin(lap * 0.55 - uTime * 0.9)) * (1.0 - smoothstep(5.0, 16.0, lap)) * smoothstep(0.35, 0.6, n2(vW.xz * 0.09 + uTime * 0.05));
     sea = mix(sea, uFoam * (0.35 + 0.5 * dif + 0.4 * length(uAmb)), clamp(foam, 0.0, 1.0) * 0.85);
     col = mix(col, sea, wet);
   } else {
-    // Wet sand just above the water's edge.
     col *= 1.0 - 0.3 * (1.0 - smoothstep(0.0, 9.0, vW.y)) * (1.0 - smoothstep(60.0, 140.0, vW.y + 100.0 * smoothstep(0.9, 0.6, vN.y)));
   }
 #endif
-  // The air: extinction by distance (blue goes first), a mist that pools low, and
-  // the colour of the sky along this very ray, so the far ground has no edge.
   vec3 air = skyAt(normalize(vec3(rd.x, max(rd.y, 0.0), rd.z)));
   vec3 ext = exp(-d * uFog * vec3(0.8, 1.0, 1.3));
   float low = uMist * exp(-max(vW.y, 0.0) * 0.016) * (1.0 - exp(-d * 0.0011));
   col = mix(air, col, ext * (1.0 - clamp(low, 0.0, 0.85)));
   if (uShore > 0.01 && above < uView.y * 0.2) {
-    // Between the lens and the beach lies the sea's surface, seen at a glance: it
-    // mirrors the sky and the land, carries the sun's glitter, laps at an uneven
-    // shoreline and leaves the sand above it wet and dark.
     float edge = uView.y * (0.03 + 0.05 * n1(c.x * 0.0045 + 3.0) + 0.006 * sin(c.x * 0.05 + uTime * 0.8)) * uShore;
     float t = clamp(above / edge, 0.0, 1.0);
     float surf = 1.0 - smoothstep(0.86, 1.0, above / edge);
@@ -209,18 +198,17 @@ void main(){
     col *= 1.0 - 0.42 * (1.0 - smoothstep(edge, edge * 2.4, above)) * (1.0 - surf);
     col = mix(col, sea, surf);
     col += uSun * 0.2 * exp(-abs(above - edge * 0.93) / 1.6) * (0.4 + 0.6 * rip);
-    // Surf on the beach: foam along the line where the water stops, and a thinner line running in behind it.
     float fl = above / edge;
     float foamB = exp(-abs(fl - 1.0) * 14.0) * smoothstep(0.3, 0.6, rip + 0.25 * sin(c.x * 0.09 + uTime)) + 0.5 * exp(-abs(fl - 0.72 - 0.06 * sin(uTime * 0.7)) * 22.0) * smoothstep(0.45, 0.7, rip);
     col = mix(col, uFoam * (0.5 + 0.5 * uDay), clamp(foamB, 0.0, 1.0) * 0.8);
   }
-  // The same bright line of surface the backdrop draws, so the cut has no stair.
   col = mix(col, uFoam, exp(-above / 2.0) * 0.8);
   col = 1.12 * col / (1.0 + 0.3 * col);
   col = hush(col, c);
   col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.012;
   gl_FragColor = vec4(col, 1.0);
-}`;
+}
+`;
 
 /* Sand on the wind: thin streaks low over the dunes that only show against the
    light, brightest when the reader looks toward the sun through them. */
