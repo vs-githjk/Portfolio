@@ -96,7 +96,9 @@ export default function Nav() {
         else delete root.dataset.nav;
       }
       let hide = el.dataset.hide === 'true';
-      if (y < 160) hide = false;
+      // The hero at rest is the top of the page proper: the bar never hides there,
+      // so the entry's own glide (a scroll down) lands with the bar in place.
+      if (y < heroOrigin() + 160) hide = false;
       else if (y > last + 8) hide = true;
       else if (y < last - 8) hide = false;
       else return;
