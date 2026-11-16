@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { welcome } from '../data/content';
 import { heroOrigin } from '../lib/origin';
+import { measureFace } from '../lib/face';
 
 /* The welcome: the first screen. His face in light (Hologram.jsx draws it into
    the fixed background, on the empty box marked data-holo-anchor here), a
@@ -42,7 +43,15 @@ export default function Welcome() {
     const late = setTimeout(() => {
       if (!root.dataset.holo) root.dataset.holo = 'late';
     }, LATE_MS);
-    return () => clearTimeout(late);
+    // The portrait's box and seed point are published at once (lib/face.js), so the
+    // entry beats can meet the portrait before its points have loaded, or without WebGL.
+    const place = () => measureFace();
+    place();
+    window.addEventListener('resize', place, { passive: true });
+    return () => {
+      clearTimeout(late);
+      window.removeEventListener('resize', place);
+    };
   }, []);
 
   const glide = (e) => {

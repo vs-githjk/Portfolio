@@ -1,17 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { heroOrigin } from '../lib/origin';
 import { ring } from '../lib/ring';
+import { face, measureFace } from '../lib/face';
 import { createHologram, parseFace } from '../lib/holoScene';
 
-/* The welcome hologram (plain WebGL, its own small chunk; the scene itself is
+/* The welcome portrait (plain WebGL, its own small chunk; the scene itself is
    lib/holoScene.js). This file is the lifecycle, the choreography and the budget.
+
+   - At rest it is him, in his own colours, in a round window (not a face of blue
+     light: that was judged ghostly, see CLAUDE.md). It becomes light only as it
+     lets go.
 
    - It arrives after the first paint (Background mounts it when the page is
      idle) and then fetches the point cloud, so the greeting text is the first
      thing painted and the face draws itself in a moment later.
    - The canvas is fixed, so the light stays in the window while the page scrolls
-     under it. Scroll is the timeline: over the welcome screen the face peels
-     into a small planet of light (the eyes go last), the planet says one line
+     under it. Scroll is the timeline (or --face-out on <html>, when the entry
+     beats set it: lib/face.js): the picture lets go of its light, which gathers
+     into a small planet (the eyes go last), the planet says one line
      (the caption in Welcome.jsx types under it while it swells with the words;
      this file writes --speak, --speak-on and --ball-y on the welcome section),
      then its light pours onto the orbit ring of builds as the hero arrives (the
@@ -25,8 +31,8 @@ import { createHologram, parseFace } from '../lib/holoScene';
      frame while the scroll is moving or the face is being drawn, about 30 a
      second while it only breathes. DPR is capped (1.75, 1.5 on a phone). A phone
      downloads and draws the base tier only (face-a.bin); a desktop adds the
-     fill-in (face-b.bin). The glow is a bloom pass in a third-size buffer
-     (desktop only; a phone's soft splats do without it).
+     fill-in (face-b.bin). The glow is a bloom pass in a third-size buffer, run
+     only once there is light to glow (desktop only).
    - On a desktop he also looks a little toward the pointer (eased, a few degrees).
    - Under prefers-reduced-motion it is one still frame of the face that scrolls
      away with the page: no drawing in, no turn, no planet. */
@@ -64,6 +70,8 @@ export default function Hologram() {
     const gain = (Number(style.getPropertyValue('--holo-gain')) || 1) * (phone ? 1.15 : 1);
 
     let scene;
+    let cloud = null; // the parsed points (and where the round window sits among them)
+    let lastOut = ''; // the last --face-out seen
     let raf = 0;
     let dead = false;
     let started = 0; // when the face began to draw (performance.now)
@@ -91,6 +99,8 @@ export default function Hologram() {
       dead = true;
       cancelAnimationFrame(raf);
       root.dataset.holo = 'off';
+      // The welcome closes up now: there is no portrait box to publish.
+      requestAnimationFrame(() => measureFace(anchor));
     };
 
     function measure() {
@@ -98,6 +108,7 @@ export default function Hologram() {
       const h = window.innerHeight;
       const r = anchor.getBoundingClientRect();
       box = { x: r.left + r.width / 2, y: r.top + window.scrollY + r.height / 2, w: r.width, h: r.height };
+      measureFace(anchor); // the portrait's box and seed point, for the entry beats (lib/face.js)
       scene.resize(w, h, Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.75));
     }
 
@@ -130,7 +141,8 @@ export default function Hologram() {
         canvas.style.transform = `translate3d(0, ${-y}px, 0)`;
         if (last === 0) {
           last = now;
-          scene.render({ ...pose(w, h, 0), ring: land, time: 4, intro: 1, morph: 0, flow: 0, turn: -0.07, nod: 0.01, voice: 0, speak: 0, still: true, gain, glow: 0.5 });
+          const at = pose(w, h, 0, 0);
+          scene.render({ ...at, ...windowAt(at, 0, 1), ring: land, time: 4, intro: 1, morph: 0, flow: 0, turn: -0.07, nod: 0.01, voice: 0, speak: 0, still: true, gain, glow: 0.5 });
         }
         return;
       }
@@ -141,7 +153,8 @@ export default function Hologram() {
         // Past the hero (a jump from a nav link lands here in one step): leave nothing
         // behind, neither the last frame of light nor a half-typed line.
         cleared = true;
-        scene.render({ ...pose(w, h, 1), ring: land, time: 0, intro: 1, morph: 1, flow: 1, turn: 0, nod: 0, voice: 0, speak: 0, still: false, gain: 0 });
+        const end = pose(w, h, 1, 1);
+        scene.render({ ...end, ...windowAt(end, 1, 0), ring: land, time: 0, intro: 1, morph: 1, flow: 1, turn: 0, nod: 0, voice: 0, speak: 0, still: false, gain: 0 });
         const host = anchor.parentElement.style;
         host.setProperty('--speak', '1');
         host.setProperty('--speak-on', '0');
@@ -150,12 +163,20 @@ export default function Hologram() {
         faded = '';
       }
       if (!gone) cleared = false;
-      const busy = moving || intro < 1 || since < VOICE[1];
+      // The entry beats (another lane) may drive how far the portrait's light has left:
+      // --face-out, 0 to 1, on <html>. When it is set it replaces the scroll for that.
+      const outNow = root.style.getPropertyValue('--face-out').trim();
+      const driven = outNow !== '';
+      const faceOut = driven ? Math.min(1, Math.max(0, parseFloat(outNow) || 0)) : 0;
+      const outMoved = outNow !== lastOut;
+      lastOut = outNow;
+      const busy = moving || outMoved || intro < 1 || since < VOICE[1];
       if (!gone && (busy || now - last >= IDLE_MS - 2)) {
         const t = now / 1000;
         const talking = !seenAtStart && since > VOICE[0] && since < VOICE[1];
         const flow = span(0.68, 0.86, eased);
-        const at = pose(w, h, eased);
+        const morph = driven ? faceOut : span(0.04, 0.37, eased);
+        const at = pose(w, h, eased, driven ? faceOut : -1);
         if (flow > 0) where();
         // The ball speaks: its line types as the page moves, and it pulses with it.
         const typed = span(0.41, 0.57, eased);
@@ -172,7 +193,7 @@ export default function Hologram() {
         // He looks slowly from side to side, and a little toward the pointer.
         gaze.x += (want.x - gaze.x) * 0.04;
         gaze.y += (want.y - gaze.y) * 0.04;
-        const look = Math.max(-1, Math.min(1, Math.sin(t * 0.42) * 0.7 + gaze.x * 0.6)) * (1 - span(0, 0.3, eased));
+        const look = Math.max(-1, Math.min(1, Math.sin(t * 0.42) * 0.7 + gaze.x * 0.6)) * (1 - span(0, 0.3, eased)) * (1 - span(0, 0.3, morph));
         const head = look.toFixed(2);
         if (head !== turned) {
           turned = head;
@@ -187,11 +208,12 @@ export default function Hologram() {
         }
         scene.render({
           ...at,
+          ...windowAt(at, morph, ease(span(0, 0.3, intro))),
           ball: at.ball * pulse,
           time: t,
           intro: ease(intro),
           ring: land,
-          morph: span(0.04, 0.37, eased),
+          morph,
           flow,
           // A slow look to one side and back: one eased swing every fifteen seconds.
           turn: look * 0.14,
@@ -199,8 +221,8 @@ export default function Hologram() {
           voice: talking ? 0.5 + 0.5 * Math.sin(t * 7.5) : 0,
           // While the planet says its line it swells and a ripple runs over it.
           speak: word * (0.55 + 0.45 * Math.sin(t * 5.3) * Math.sin(t * 1.9)),
-          // The face keeps its features: less bloom on it than on the planet.
-          glow: 0.5 + 0.5 * ease(span(0.04, 0.37, eased)),
+          // The glow comes up with the light as it leaves the picture.
+          glow: 0.5 + 0.5 * ease(morph),
           still: false,
           // The light lands on the builds, then leaves them to it: it is all gone by the
           // time the hero sits under the nav, where the cue's glide (and many readers) stop.
@@ -213,20 +235,45 @@ export default function Hologram() {
 
     /* Where the light sits in the window. It starts on its place in the welcome
        screen and stays close to the middle of the window while the page leaves. */
-    function pose(w, h, p) {
-      const size = Math.min(box.h / 0.84, box.w * 1.3, 760);
-      const home = box.y - 0.1 * size; // the head's centre sits a little above the box's
+    function pose(w, h, p, out = -1) {
+      // The round window is centred in the box and fills it; the picture is sized so the
+      // window has that width (cloud.disc is where the window sits among the points).
+      const d = cloud.disc;
+      const side = face.rect ? face.rect.w : Math.min(box.h, box.w, 640);
+      const size = side / (2 * d.r);
+      const homeX = box.x - d.x * size;
+      const homeY = box.y + d.y * size; // the head's centre: the window's centre is the box's
+      if (out >= 0) {
+        // Driven by --face-out: the light leaves toward the seed point (the middle of the
+        // window across, 58% down the portrait's box), where the planet forms.
+        const e = ease(out);
+        const seedY = face.seed ? face.seed.y - window.scrollY : h * 0.5;
+        return { cx: homeX + (w / 2 - homeX) * e, cy: homeY + (seedY - homeY) * e, size, ball: Math.min(w, h) * (phone ? 0.2 : 0.17) };
+      }
       // It lifts a little before it speaks, so the hero has room to arrive under the line.
       // And it lifts again as it pours: his name is rising toward it, and the light
       // that is still leaving must be clear of the name's top corners.
       const mid = h * (0.4 - 0.13 * ease(span(0.3, 0.42, p)) - 0.1 * ease(span(0.68, 0.8, p)));
       return {
-        cx: box.x,
-        cy: home + (mid - home) * ease(span(0, 0.36, p)),
+        cx: homeX,
+        cy: homeY + (mid - homeY) * ease(span(0, 0.36, p)),
         size,
         // The planet's radius.
         ball: Math.min(w, h) * (phone ? 0.2 : 0.17),
       };
+    }
+
+    /* The round window for this frame: the circle the picture is cut to and the wall
+       behind it. As the picture lets go, the window closes onto the planet and its
+       wall goes out. `open` is how far the window has opened at the start. */
+    function windowAt(at, morph, open) {
+      const d = cloud.disc;
+      const e = ease(span(0, 0.9, morph));
+      const x0 = at.cx + d.x * at.size;
+      const y0 = at.cy - d.y * at.size;
+      const r0 = d.r * at.size;
+      const disc = { x: x0 + (at.cx - x0) * e, y: y0 + (at.cy - y0) * e, r: r0 + (at.ball - r0) * e };
+      return { disc, wall: { ...disc, a: open * (1 - ease(span(0.2, 0.75, morph))) } };
     }
 
     /* Where the light is to land, in the window, now. The orbit ring when it is
@@ -273,11 +320,11 @@ export default function Hologram() {
     Promise.all([load(FACE_URLS[0]), phone ? null : load(FACE_URLS[1]).catch(() => null)])
       .then((files) => {
         if (dead) return;
-        const cloud = parseFace(files.filter(Boolean), ring.n);
+        cloud = parseFace(files.filter(Boolean), ring.n);
         // Parsing and compiling are two tasks, not one long one.
         return new Promise((resolve) => setTimeout(() => resolve(cloud), 0));
       })
-      .then((cloud) => {
+      .then(() => {
         if (dead) return;
         scene = createHologram(
           canvas,
