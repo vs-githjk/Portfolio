@@ -20,6 +20,9 @@ const tell = (id) => window.dispatchEvent(new CustomEvent(EV.focus, { detail: { 
    the cards in a row stay one height by construction. Without the script every
    dossier is simply open (the `.js` class is what folds them).
 
+   On a phone a plate is a row: a small thumbnail beside the name, the one-liner,
+   the first result, the links; its other results open with the dossier.
+
    A plate tells the world which build has the reader's attention (world:focus). */
 export default function BuildCard({ item, anchor }) {
   const [open, setOpen] = useState(false);
@@ -37,7 +40,7 @@ export default function BuildCard({ item, anchor }) {
         onBlur={() => tell(null)}
       >
         <div className="plate-media">
-          <Media image={item.media?.image} alt={item.media?.alt} tile={item.tile} ratio="var(--plate-ratio)" sizes="(min-width: 1100px) 300px, (min-width: 560px) 46vw, 92vw" badges={<MediaBadges item={item} />} />
+          <Media image={item.media?.image} alt={item.media?.alt} tile={item.tile} ratio="var(--plate-ratio)" sizes="(min-width: 1100px) 300px, (min-width: 561px) 46vw, 120px" badges={<MediaBadges item={item} />} />
         </div>
         <div className="plate-name">
           <span className="eyebrow">
@@ -77,6 +80,15 @@ export default function BuildCard({ item, anchor }) {
               <Rich text={p} />
             </p>
           ))}
+          {(item.metrics || []).length > 1 && (
+            <ul className="plate-results dossier-results">
+              {item.metrics.slice(1).map((m) => (
+                <li key={m.label}>
+                  <b>{m.value}</b> {m.label.replace(/\n/g, ' ')}
+                </li>
+              ))}
+            </ul>
+          )}
           <Stack text={item.stack} />
         </div>
       </div>

@@ -28,6 +28,17 @@ export default function Flagship({ item, index }) {
   ];
   const figure = item.metrics[item.figure ?? 0];
   const rest = item.metrics.filter((m) => m !== figure);
+  const now = (
+    <div className="now-box">
+      <span className="now">
+        <i aria-hidden="true" />
+        {item.now.label}
+      </span>
+      <p className="text">
+        <Rich text={item.now.text} />
+      </p>
+    </div>
+  );
   return (
     <article className="ch" id={`build-${item.id}`} data-side={index % 2 ? 'right' : 'left'} data-build={item.id}>
       <div className="ch-arrival reveal">
@@ -57,15 +68,7 @@ export default function Flagship({ item, index }) {
         <div className="ch-tell">
           <Metrics items={rest} />
           <p className="role">{item.role}</p>
-          <div className="now-box">
-            <span className="now">
-              <i aria-hidden="true" />
-              {item.now.label}
-            </span>
-            <p className="text">
-              <Rich text={item.now.text} />
-            </p>
-          </div>
+          {now}
         </div>
         <details className="ch-more fold">
           <summary>
@@ -73,6 +76,8 @@ export default function Flagship({ item, index }) {
             <span className="sr">{fill(builds.labels.storySr, { title: item.title })}</span>
           </summary>
           <div className="fold-body">
+            {/* On a phone the Now building box opens with the story (one copy shows at a time). */}
+            <div className="ch-now-folded">{now}</div>
             {item.body.map((p) => (
               <p className="text" key={p.slice(0, 24)}>
                 <Rich text={p} />

@@ -996,6 +996,22 @@ html[data-world='on'] .deep-head::before {
   font-size: var(--fs-micro);
 }
 
+.dossier-results,
+.ch-now-folded {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .dossier-results {
+    display: grid;
+    padding: 0;
+  }
+
+  .ch-now-folded {
+    display: block;
+  }
+}
+
 /* FireSight: its thumbnail lights floor by floor, from the ground up, once. */
 @media (prefers-reduced-motion: no-preference) {
   .js .plate[data-build='firesight'].reveal .media-frame img {
@@ -1575,6 +1591,154 @@ html[data-world='on'] .deep-head::before {
 
   .dossier-name {
     display: none;
+  }
+
+  /* A plate is a row on a phone: the thumbnail small beside the name, then the
+     one-liner, the first result and the links. Eight full plates ran to twelve
+     screens; the rest of each build is one tap away in its dossier. */
+  .plate,
+  .fleet-pair > .plate:nth-of-type(n) {
+    grid-template-columns: 104px minmax(0, 1fr);
+    grid-template-areas:
+      'media name'
+      'awards awards'
+      'one one'
+      'results results'
+      'handle handle';
+    column-gap: 14px;
+    padding: 14px 16px 0;
+  }
+
+  .plate-media,
+  .plate-media .media {
+    display: contents;
+  }
+
+  .plate-media .media-frame {
+    grid-area: media;
+    align-self: start;
+    border: 1px solid var(--hair-2);
+    border-radius: var(--r-sm);
+  }
+
+  .plate-media .media-awards {
+    grid-area: awards;
+    position: static;
+    transform: none;
+    margin-top: 12px;
+  }
+
+  .plate-name {
+    grid-area: name;
+    padding: 0;
+  }
+
+  .plate > .one {
+    grid-area: one;
+    padding: 10px 0 0;
+  }
+
+  .plate-results {
+    grid-area: results;
+    padding: 8px 0 0;
+  }
+
+  .plate > .plate-results li:nth-child(n + 2) {
+    display: none;
+  }
+
+  /* The links share the foot's line with the dossier button, which spans it. */
+  .plate-foot {
+    grid-area: handle;
+    position: relative;
+    z-index: 1;
+    align-self: center;
+    justify-self: start;
+    padding: 0;
+  }
+
+  .plate-handle {
+    grid-area: handle;
+    margin-top: 10px;
+    margin-inline: -16px;
+  }
+
+  .plate-handle .fold-btn {
+    justify-content: flex-end;
+  }
+
+  .plate-foot {
+    margin-top: 10px;
+  }
+
+  /* Three links leave no room for the button beside them: they take their own line. */
+  .plate:has(.plate-foot .links > :nth-child(3)) {
+    grid-template-areas:
+      'media name'
+      'awards awards'
+      'one one'
+      'results results'
+      'foot foot'
+      'handle handle';
+  }
+
+  .plate:has(.plate-foot .links > :nth-child(3)) .plate-foot {
+    grid-area: foot;
+    margin-top: 2px;
+  }
+
+  .plate:has(.plate-foot .links > :nth-child(3)) .plate-handle {
+    margin-top: 0;
+  }
+
+  /* More builds: the place sits over the name, and the links share a line with
+     Read more. */
+  .mrow {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .mrow-thumb {
+    grid-row: 1 / span 2;
+  }
+
+  .mrow-num {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 0 0 4px;
+  }
+
+  .mrow-name {
+    grid-row: 2;
+  }
+
+  .mrow-links,
+  .mrow-more {
+    grid-row: 4;
+  }
+
+  .mrow-links {
+    position: relative;
+    z-index: 1;
+    align-self: start;
+    justify-self: start;
+  }
+
+  .mrow-more > summary {
+    justify-content: flex-end;
+  }
+
+  .mrow:not(:has(.mrow-links)) .mrow-more > summary {
+    justify-content: flex-start;
+  }
+
+  /* A flagship keeps one figure and its role line in sight; what is being built
+     now opens with the full story. */
+  .ch-tell > .now-box {
+    display: none;
+  }
+
+  .ch-world {
+    --ch-window: clamp(150px, 21svh, 190px);
   }
 
   .depths-groups {
