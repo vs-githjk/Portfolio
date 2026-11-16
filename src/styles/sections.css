@@ -562,17 +562,21 @@ html[data-holo='in'] .hub {
   }
 }
 
-/* A phone: four small ones in the corners of the picture, clear of the face. */
+/* A phone: four thoughts take turns in two places, above the round window's
+   shoulders and clear of its edge. The third and fourth arrive as the first and
+   second leave (their turns are two thirds of a round apart), so each place holds
+   one at a time. Beside the greeting there is no room: a thought there stood a
+   pixel from his name. */
 @media (max-width: 760px) {
   .hub-panel[data-at='l2'],
   .hub-panel[data-at='r2'] {
     display: none;
   }
 
-  .hub-panel[data-at='l1'] { left: 4%; top: 1.5%; }
-  .hub-panel[data-at='r1'] { right: 4%; top: 1.5%; }
-  .hub-panel[data-at='l3'] { left: 4%; top: 59%; }
-  .hub-panel[data-at='r3'] { right: 4%; top: 59%; }
+  .hub-panel[data-at='l1'],
+  .hub-panel[data-at='l3'] { left: 4%; top: -3%; }
+  .hub-panel[data-at='r1'],
+  .hub-panel[data-at='r3'] { right: 4%; top: -3%; }
 }
 
 /* The ball's line of speech: fixed under the ball (Hologram.jsx writes where
@@ -651,6 +655,8 @@ html[data-holo='off'] .welcome-ball {
 }
 
 .say[data-line='2'] {
+  /* Clear of the first line's descenders (the y of "Hey," came within 8px). */
+  margin-top: 0.34em;
   font-size: var(--fs-lead);
   line-height: 1.2;
   color: var(--text-2);
