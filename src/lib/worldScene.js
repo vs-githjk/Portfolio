@@ -735,7 +735,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   const carried = moonsPiece.create({
     lead,
     rest: counts.rest ?? [],
-    colors: { dim: C['giant-night'], day: C['giant-band'], rim: C['giant-rim'], glint: C['giant-rim'] },
+    colors: { dim: C['giant-day'].clone().multiplyScalar(0.5), day: C['giant-rim'], rim: C['giant-rim'], glint: C['giant-rim'] },
     light: giant.userData.light,
     wet,
     time,

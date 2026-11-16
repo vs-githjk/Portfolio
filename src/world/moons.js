@@ -33,8 +33,8 @@ void main(){
   float disc = smoothstep(0.62, 0.56, r);
   vec3 n = vec3(p / 0.6, sqrt(max(0.0, 1.0 - dot(p, p) / 0.36)));
   float day = clamp(dot(n, normalize(uLight)) * 1.2 + 0.1, 0.0, 1.0);
-  vec3 c = mix(uDim, uDay, day) * (0.5 + 0.5 * vBody.z) + uRim * pow(1.0 - n.z, 2.0) * (0.25 + 0.75 * vBody.z);
-  float halo = pow(max(0.0, 1.0 - r), 2.2) * (0.1 + 0.6 * vBody.z) * (1.0 - disc);
+  vec3 c = mix(uDim, uDay, day) * (0.8 + 0.3 * vBody.z) + uRim * pow(1.0 - n.z, 2.0) * (0.45 + 0.55 * vBody.z);
+  float halo = pow(max(0.0, 1.0 - r), 2.2) * (0.22 + 0.6 * vBody.z) * (1.0 - disc);
   gl_FragColor = vec4(sea(mix(uRim, c, disc), 0.3), (disc + halo) * uShow);
 }`;
 

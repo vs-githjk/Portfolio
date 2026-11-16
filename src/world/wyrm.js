@@ -102,7 +102,7 @@ void main(){
   float head = step(0.5, vSkin.w) * step(vSkin.w, 1.5);
   float a = 0.035 + 0.5 * edge + scale * (0.1 + 0.26 * (1.0 - fres)) + seam * (0.07 + 0.2 * fres);
   a *= 0.55 + 0.45 * vSkin.z;
-  a = a * (1.0 + 0.3 * head) + vGlow * (0.5 + 0.5 * scale + 0.5 * edge);
+  a = a * (1.0 + 0.9 * head) + 0.05 * head + vGlow * (0.5 + 0.5 * scale + 0.5 * edge);
   float lv = clamp(0.2 + 0.45 * vSkin.z + 0.5 * edge + 0.25 * scale + vGlow, 0.0, 1.0);
   gl_FragColor = lit(ramp(lv, wf), min(a, 1.0), wf, p);
 }`;
@@ -164,7 +164,8 @@ void main(){
     float mid = smoothstep(0.07, 0.015, av);
     float vein = smoothstep(0.09, 0.0, abs(fract(u * 7.0 - av * 2.4) - 0.5)) * uRibs * (1.0 - smoothstep(0.86, 1.0, u));
     float margin = smoothstep(0.82, 0.99, av);
-    a = (0.03 + 0.045 * (1.0 - av) + 0.6 * mid + 0.3 * vein * (1.0 - 0.5 * av) + 0.62 * margin) * vBand.w;
+    // The blade itself carries light, so a wing is a surface at any size, not a bundle of lines.
+    a = (0.1 + 0.08 * (1.0 - av) + 0.6 * mid + 0.3 * vein * (1.0 - 0.5 * av) + 0.62 * margin) * vBand.w;
     a *= smoothstep(0.0, 0.05, u);
     lv = 0.3 + 0.55 * mid + 0.45 * margin + 0.2 * vein;
   }
@@ -612,7 +613,7 @@ export const wyrm = definePiece({
         a.copy(P[k]).addScaledVector(Un[k], rad[k] * sc[k] * 0.36).addScaledVector(Sn[k], side * rad[k] * sc[k] * 0.7).addScaledVector(Tn[k], sc[k] * 0.55);
         dotPos.setXYZ(n, a.x, a.y, a.z);
         const blink = sleep > 0.5 ? 0.3 + 0.08 * Math.sin(t * 0.9) : 1 - 0.9 * Math.pow(Math.max(0, Math.sin(t * 0.37 + 1)), 60);
-        dotAttr.setXYZ(n, Math.max(6, px * sz[k] * 3.4 * blink), 1, 1);
+        dotAttr.setXYZ(n, Math.max(7, px * sz[k] * 4.2 * blink), 1, 1);
         n++;
       }
       for (let k = 1; k < M; k += glowEvery) {
@@ -698,7 +699,7 @@ export const wyrm = definePiece({
           c.crossVectors(Tn[k], Z);
           if (c.lengthSq() < 1e-6) c.copy(Un[k]);
           c.normalize();
-          const hw = Math.max(0.9, 0.1 * q.scale) * (sc[k] / q.scale);
+          const hw = Math.max(1.1, 0.15 * q.scale) * (sc[k] / q.scale);
           const i = brow0 + (l * HEAD.length + k) * 2;
           put(i, b.copy(a).addScaledVector(c, hw));
           put(i + 1, b.copy(a).addScaledVector(c, -hw));
@@ -714,7 +715,7 @@ export const wyrm = definePiece({
         const fold = L.fold * sleep; // the wings fold along the body in sleep
         const flap = Math.sin(t * (1.1 + 1.5 * beat) - L.ph) * (0.1 + 0.62 * beat) * L.beat;
         const spread = L.spread + flap - 0.25 * fold;
-        const sweep = L.sweep + 0.75 * fold + 0.12 * flap;
+        const sweep = L.sweep + 0.5 * fold + 0.12 * flap;
         // The leaf's long axis: up from the back, out to its side, swept toward the tail.
         b.copy(Un[k]).multiplyScalar(Math.cos(spread)).addScaledVector(Sn[k], Math.sin(spread) * L.side);
         b.multiplyScalar(Math.cos(sweep)).addScaledVector(Tn[k], -Math.sin(sweep)).normalize();
@@ -722,7 +723,7 @@ export const wyrm = definePiece({
         c.copy(Tn[k]).addScaledVector(b, -Tn[k].dot(b)).normalize();
         e.crossVectors(b, c); // the leaf's own normal: it cups along this
         a.addScaledVector(b, rad[k] * s0 * 0.7);
-        const len = L.len * s0;
+        const len = L.len * s0 * (1 - 0.42 * fold); // folded, a wing is drawn in
         for (let i = 0; i <= LU; i++) {
           const u = i / LU;
           const wide = L.wide * Math.pow(Math.sin(Math.PI * Math.pow(u, 0.62)), 0.85) * (1 - 0.3 * u);
