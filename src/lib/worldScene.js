@@ -532,6 +532,9 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
   C['sand-shade'] = col('--sand-shade', [70, 42, 44]); // rock strata, tent cloth, shadowed ground
   C['sea-floor'] = col('--sea-floor', [11, 33, 44]); // the darkest the water gets
   C['sea-tint'] = col('--sea-tint', [128, 218, 232]); // what the water does to white light
+  C['land-rock'] = col('--land-rock', [92, 66, 74]); // the mountains' rock at dusk
+  C['land-scrub'] = col('--land-scrub', [92, 82, 58]); // dry scrub on the foothills
+  C['land-snow'] = col('--land-snow', [238, 226, 228]); // snow on the far range
   const phone = window.matchMedia('(max-width: 760px)').matches;
   const rnd = seeded(41);
 

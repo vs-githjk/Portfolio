@@ -10,6 +10,10 @@
   --dragon-belly: 226, 172, 52;
   --dragon-wing: 150, 28, 24;
   --dragon-glow: 255, 150, 60;
+  /* The coast behind the shore: the mountains' rock, the scrub on their feet, the snow on the far range. */
+  --land-rock: 92, 66, 74;
+  --land-scrub: 92, 82, 58;
+  --land-snow: 238, 226, 228;
 }
 
 :root {
