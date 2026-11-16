@@ -825,3 +825,20 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
 .tk-row li {
   color: var(--text);
 }
+
+/* On wide windows the hologram stands tall at the right of the ask, so the page
+   ends with him beside the email, not above it out of sight. */
+@media (min-width: 1100px) {
+  .contact {
+    position: relative;
+  }
+
+  .contact .c-holo {
+    position: absolute;
+    top: clamp(48px, 6vw, 96px);
+    right: max(28px, calc((100vw - 1440px) / 2 + 28px));
+    width: clamp(140px, 12vw, 210px);
+    margin: 0;
+    pointer-events: none;
+  }
+}

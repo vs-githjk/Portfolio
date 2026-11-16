@@ -120,14 +120,13 @@ export const welcome = {
    (it is the index at the top of Builds) but its words and slides are kept here. */
 export const hero = {
   status: 'Forward-deployed and AI engineer',
-  /* His own photograph, the one he chose (a Halloween evening, shirt and tie):
-     head, shoulders, chest and his right arm, cropped from the wider photo with
-     the room's pink light calmed. 320 and 640 px wide. The one place on the page
-     his photograph is shown. */
+  /* His own photograph, the one he chose (Nov 16): an autumn afternoon under a
+     tree, head and shoulders. 320 and 640 px square, shown in a circle. The one
+     place on the page his photograph is shown. */
   portrait: {
     src: '/hero-photo-320.webp',
     src2x: '/hero-photo-640.webp',
-    alt: 'Vidyut Sriram, smiling, in a white shirt with the sleeves rolled and a blue tie',
+    alt: 'Vidyut Sriram under an autumn tree, in a grey hoodie',
   },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
