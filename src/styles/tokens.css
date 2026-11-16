@@ -8,27 +8,74 @@
    Nov 15 2026: the page is three worlds (see THREE WORLDS at the foot of this
    file). What follows in :root is the first of them, the galaxy.
 
-   The idea ("Indigo"): deep indigo-black ground lit from above by vertical
-   beams of blue-violet light, a white serif headline, lavender-grey body.
-   Electric blue (--acc) is the one accent: the front card, the progress line,
-   rules, the primary action. Gold (--win) is for awards and nothing else.
-   Mint (--ok) means live or available. Scarcity is what keeps them loud.
+   The idea ("Observatory", Nov 15 2026; it replaced "Indigo", whose indigo-to-
+   violet family is the colour of every generated page): a neutral blue-black
+   ground lit from above by beams of starlight, one blue and a faint sodium
+   amber that foreshadows the earth; a paper-white serif headline (--text is the
+   same #f0eee9 in all three worlds), cool grey body. One blue (--acc) is the one
+   accent: the front card, the progress line, rules, the primary action. Gold
+   (--win) is for awards and nothing else. Mint (--ok) means live or available.
+   Scarcity is what keeps them loud. Every pair below was re-measured for AA.
    ========================================================================== */
 
 /* ---- FONTS: self-hosted, latin subset, one request each ---------------------
-   All three are SIL Open Font License 1.1 (from Google Fonts), chosen so the page
-   has a voice of its own (Nov 15 2026: Geist and Instrument Serif were retired as
-   the look of every generated page).
-   - Brygada 1918: the display face. A Polish text face cut in 1918 and revived
-     in 2018: sturdy strokes, wedge serifs that look carved (it sits well on the
-     mesas), lining figures for the big numbers, a real italic. Two static files,
-     roman and italic at weight 400, about 14 KB each. (Fraunces was tried first
-     and dropped: the impeccable detector lists it with Inter and Geist as a face
-     generated pages converge on.)
+   All SIL Open Font License 1.1, chosen so the page has a voice of its own (Nov 15
+   2026: Geist and Instrument Serif were retired as the look of every generated page).
+   - Sprat (Ethan Nakache, Collletttivo): the display face, for words: the name, h2s
+     and titles. A sharp serif after Eric Gill's lettering, variable on width and
+     weight. Its width is the world system: extended and light in space, regular in
+     the sea, condensed and heavy on the earth, black for the crew's title. Each is
+     a static instance cut from Sprat_Variable.ttf (wdth 140 wght 75, 122/100,
+     100/140, 100/200; the font's own axes run wdth 100 to 200, wght 10 to 200),
+     letters and punctuation only, about 8 KB each. The name's kerning proofed at
+     --fs-mega. Its figures did not: the zero is a monoline oval at every weight, so
+     it reads as a letter O beside bold digits and in the email. Digits and $ are
+     therefore left out of the files, and every figure falls through to:
+   - Brygada 1918: figures (lining, sturdy), the email, and display lines that are
+     sentences (--font-read). A Polish text face cut in 1918 and revived in 2018.
+     Two static files, roman and italic, about 14 KB each.
    - Schibsted Grotesk: UI and body, variable 400 to 700.
-   - Spline Sans Mono: labels, nav, buttons, badges and stack lines, variable 400 to 600.
+   - Martian Mono (Evil Martians): labels, nav, buttons, badges and stack lines. The
+     condensed cut (wdth 75), weights 400 to 600: sturdier strokes than Spline Sans
+     Mono at 11 to 12px on a dark ground, and it reads like an instrument.
    font-display: swap keeps text visible while they load; index.html preloads the
    two that paint the first screen. Files live in public/fonts. */
+@font-face {
+  font-family: 'Sprat Space';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sprat-space-latin.woff2') format('woff2');
+  unicode-range: U+0020-0023, U+0025-002F, U+003A-007D, U+00A0, U+00B7, U+2018-2019, U+201C-201D, U+2026, U+2190-2193;
+}
+
+@font-face {
+  font-family: 'Sprat Sea';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sprat-sea-latin.woff2') format('woff2');
+  unicode-range: U+0020-0023, U+0025-002F, U+003A-007D, U+00A0, U+00B7, U+2018-2019, U+201C-201D, U+2026, U+2190-2193;
+}
+
+@font-face {
+  font-family: 'Sprat Earth';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sprat-earth-latin.woff2') format('woff2');
+  unicode-range: U+0020-0023, U+0025-002F, U+003A-007D, U+00A0, U+00B7, U+2018-2019, U+201C-201D, U+2026, U+2190-2193;
+}
+
+@font-face {
+  font-family: 'Sprat Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/sprat-black-latin.woff2') format('woff2');
+  unicode-range: U+0020-0023, U+0025-002F, U+003A-007D, U+00A0, U+00B7, U+2018-2019, U+201C-201D, U+2026, U+2190-2193;
+}
+
 @font-face {
   font-family: 'Brygada 1918';
   font-style: normal;
@@ -57,53 +104,53 @@
 }
 
 @font-face {
-  font-family: 'Spline Sans Mono';
+  font-family: 'Martian Mono';
   font-style: normal;
   font-weight: 400 600;
   font-display: swap;
-  src: url('/fonts/spline-sans-mono-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url('/fonts/martian-mono-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2013-2014, U+2018-2019, U+201C-201D, U+2022, U+2026, U+20AC, U+2122, U+2190-2193, U+2197, U+2212;
 }
 
 :root {
-  /* ---- NEUTRALS: indigo ink ----------------------------------------------- */
-  --ink: #06081c; /* page */
-  --ink-2: #04060f; /* deepest ground, footer */
-  --surface: #0d1130; /* cards, raised */
-  --surface-2: #141a42; /* media backdrops, tiles, pills */
-  --hair: #1d2352; /* every 1px divider */
-  --hair-2: #333b7e; /* borders that need to be seen: frames, buttons, card outline */
+  /* ---- NEUTRALS: observatory black ---------------------------------------- */
+  --ink: #07090e; /* page */
+  --ink-2: #04050a; /* deepest ground, footer */
+  --surface: #0e121b; /* cards, raised */
+  --surface-2: #151b27; /* media backdrops, tiles, pills */
+  --hair: #1f2633; /* every 1px divider */
+  --hair-2: #3a4558; /* borders that need to be seen: frames, buttons, card outline */
 
   /* ---- TEXT -------------------------------------------------------------- */
-  --text: #f5f3ff; /* white: headlines and names */
-  --text-2: #bab7dd; /* lavender-grey body */
-  --text-3: #8f8dba; /* mono labels, stack lines; AA on every surface */
+  --text: #f0eee9; /* paper white: headlines and names, the same in every world */
+  --text-2: #b3bac6; /* cool grey body */
+  --text-3: #8b94a3; /* mono labels, stack lines; AA on every surface */
 
-  /* ---- ACCENT: electric blue ---------------------------------------------- */
-  --acc: #5b7dff; /* active card border, progress line, rules, graph ramp */
-  --acc-2: #9fb5ff; /* brightest graph level, hover */
-  --acc-fill: #2f52e6; /* primary button fill */
-  --acc-ink: #ffffff; /* text on the primary button (6.05:1) */
-  --acc-text: #9fb5ff; /* accent used as text on ink */
-  --acc-glow: rgba(91, 125, 255, 0.28);
-  --link: #9fb5ff;
+  /* ---- ACCENT: one instrument blue ---------------------------------------- */
+  --acc: #6f9bff; /* active card border, progress line, rules, graph ramp */
+  --acc-2: #b4c9ff; /* brightest graph level, hover */
+  --acc-fill: #2b5ce6; /* primary button fill */
+  --acc-ink: #ffffff; /* text on the primary button */
+  --acc-text: #9dbbff; /* accent used as text on ink */
+  --acc-glow: rgba(111, 155, 255, 0.26);
+  --link: #9dbbff;
   --focus: #8fe9ff; /* focus ring: a cool cyan that no surface uses */
 
   /* ---- STATE ------------------------------------------------------------- */
   --ok: #6fe3bb; /* available, live, copied */
   --bad: #ff7a90; /* reserved: nothing uses it today */
   --win: #ffd36b; /* award badges only */
-  --badge-fg: #c4d2ff;
+  --badge-fg: #cfdcff;
 
   /* ---- BEAMS: the light field (r, g, b triples, read by the canvas) -------- */
-  --beam-a: 99, 102, 241; /* indigo */
-  --beam-b: 76, 118, 255; /* blue */
-  --beam-c: 139, 92, 246; /* violet */
-  --star-a: 225, 228, 255;
-  --star-b: 170, 190, 255;
-  --sky: linear-gradient(180deg, #0a0c2a 0%, var(--ink) 46%, var(--ink-2) 100%);
-  --glow-core: rgba(228, 232, 255, 0.9);
-  --glow-mid: rgba(150, 160, 255, 0.5);
+  --beam-a: 150, 166, 196; /* starlight, held down so it never whites out the name */
+  --beam-b: 84, 124, 232; /* the one blue */
+  --beam-c: 120, 94, 58; /* sodium amber, faint: the earth, seen from a long way off */
+  --star-a: 232, 236, 244;
+  --star-b: 170, 196, 255;
+  --sky: linear-gradient(180deg, #0b0f19 0%, var(--ink) 46%, var(--ink-2) 100%);
+  --glow-core: rgba(232, 238, 250, 0.9);
+  --glow-mid: rgba(128, 162, 240, 0.5);
 
   /* ---- WORLD PAINT: the three.js scene below the hero (r, g, b triples for the shaders) */
   /* the sea: a grade from just under the surface to the deep, and its light */
@@ -191,9 +238,9 @@
   --say-dur-2: 1.2s;
 
   /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
-  --glass-line: rgba(170, 180, 255, 0.16);
-  --glass-hi: rgba(190, 200, 255, 0.1);
-  --shadow-ink: rgb(0, 0, 20);
+  --glass-line: rgba(180, 196, 230, 0.16);
+  --glass-hi: rgba(200, 214, 240, 0.1);
+  --shadow-ink: rgb(0, 2, 8);
   --persp: 1200px;
   --tilt-max: 3deg; /* how far a tile leans toward the pointer */
   --z-1: 8px;
@@ -226,9 +273,17 @@
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
-  --font-display: 'Brygada 1918', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  /* --font-display is the world's cut of Sprat (re-declared per realm below); it has
+     no digits, so a figure inside a title falls through to Brygada. --font-read is
+     Brygada by name: figures, the email, and display lines that are sentences.
+     --font-wide is the extended cut, used for the one emphasised phrase in a heading
+     (a change of proportion, never an italic). */
+  --font-read: 'Brygada 1918', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-display: 'Sprat Space', var(--font-read);
+  --font-wide: 'Sprat Space', var(--font-read);
+  --font-black: 'Sprat Black', var(--font-read);
   --font-ui: 'Schibsted Grotesk', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
-  --font-mono: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: 'Martian Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --fs-hero: clamp(60px, 16vw, 72px); /* row mode; ring mode overrides in sections.css */
   --fs-h2: clamp(38px, 4.6vw, 64px);
@@ -241,8 +296,8 @@
   --fs-mega: clamp(56px, 9vw, 128px); /* the Master Agents title */
   --fs-label: 12px;
   --fs-micro: 11px;
-  --tr-display: -0.015em;
-  --tr-label: 0.12em;
+  --tr-display: 0em; /* the extended cut wants air; the sea and the earth tighten it */
+  --tr-label: 0.1em;
 
   /* ---- LAYOUT ------------------------------------------------------------ */
   --pad: clamp(16px, 5vw, 72px); /* gutter: exactly 16px at 390 */
@@ -266,7 +321,7 @@
   --cut-md: 18px;
   --cut-sm: 9px;
   --nb-pad: clamp(20px, 3.2vw, 40px); /* the panel's side padding */
-  --grid-line: rgba(170, 180, 255, 0.04); /* the faint board lines on that panel */
+  --grid-line: rgba(180, 196, 230, 0.04); /* the faint board lines on that panel */
 
   /* ---- MOTION ------------------------------------------------------------ */
   --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
@@ -296,7 +351,7 @@ html[data-at='sea'] .nav {
   --surface-2: #103039;
   --hair: #163a43;
   --hair-2: #2d6470;
-  --text: #f0f8f6;
+  --text: #f0eee9;
   --text-2: #b4cfcc;
   --text-3: #87a8a6;
   --acc: #4cc3e6; /* sunlit shallows */
@@ -312,6 +367,8 @@ html[data-at='sea'] .nav {
   --shadow-ink: rgb(0, 10, 14);
   --grid-line: rgba(160, 230, 240, 0.04);
   --world-calm: 0.4; /* the shallows are bright: a heavy calm ground would read as a box */
+  --font-display: 'Sprat Sea', var(--font-read);
+  --tr-display: -0.01em;
 }
 
 [data-realm='earth'],
@@ -322,16 +379,16 @@ html[data-at='earth'] .nav {
   --surface-2: #2b201a;
   --hair: #35271f;
   --hair-2: #6a4f3d;
-  --text: #f9f2e8; /* bone */
+  --text: #f0eee9; /* the same paper white */
   --text-2: #d1c2b1;
   --text-3: #a79785;
-  --acc: #f0915a; /* ember */
-  --acc-2: #ffc9a0;
-  --acc-fill: #b0501e;
+  --acc: #e8774a; /* ember, pushed toward red so it is never mistaken for award gold */
+  --acc-2: #ffc2a0;
+  --acc-fill: #a84a1c;
   --acc-ink: #ffffff;
-  --acc-text: #ffb98c;
-  --acc-glow: rgba(240, 145, 90, 0.26);
-  --link: #ffb98c;
+  --acc-text: #f7a680;
+  --acc-glow: rgba(232, 119, 74, 0.26);
+  --link: #f7a680;
   --badge-fg: #ffd9bf;
   --glass-line: rgba(255, 214, 180, 0.16);
   --glass-hi: rgba(255, 224, 196, 0.1);
@@ -341,6 +398,8 @@ html[data-at='earth'] .nav {
   --beam-a: 226, 120, 64;
   --beam-b: 255, 190, 136;
   --beam-c: 168, 78, 84;
+  --font-display: 'Sprat Earth', var(--font-read);
+  --tr-display: -0.012em;
 }
 
 /* Tokens built from other tokens are declared again in every realm, because a

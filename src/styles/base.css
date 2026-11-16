@@ -146,9 +146,13 @@ button {
   letter-spacing: var(--tr-display);
 }
 
+/* The emphasised phrase of a heading changes proportion, not slant: it is set in
+   the extended cut of the same face. */
 .sec-head h2 em,
 .contact h2 em {
-  font-style: italic;
+  font-family: var(--font-wide);
+  font-style: normal;
+  letter-spacing: 0;
   color: var(--text-2);
 }
 
@@ -291,7 +295,7 @@ button {
 }
 
 .metric b {
-  font-family: var(--font-display);
+  font-family: var(--font-read);
   font-weight: 400;
   font-size: var(--fs-metric);
   line-height: 1;
