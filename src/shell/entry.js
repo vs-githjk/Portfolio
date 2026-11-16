@@ -16,6 +16,8 @@ import { entryState, setEntry } from './entryState';
      --ring-on/-s/-open  on the `host`: the ring that opens out of the ball, see `ring`
      --seed-s/-up     on the `host`: the ball's size and how far its centre sits
                       above the line of speech, for the drawing that meets it
+     data-plate       once the reader is nearly through (spans.plate): what stands
+                      under the place below may come in ahead of the rest
      data-run         on the `host` while the clock runs (the first beat: its words leave)
      data-skip        for two frames after a skip, so nothing eases
      data-cut         after a skip, until the reader scrolls back: the portrait's
@@ -111,6 +113,11 @@ export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, 
         }
       }
       const state = entryState();
+      const near = spans.plate != null && p >= spans.plate;
+      if (near !== (root.dataset.plate != null)) {
+        if (near) root.dataset.plate = '';
+        else delete root.dataset.plate;
+      }
       if (state === 'pre' && p >= spans.land) land();
       else if (state !== 'pre' && armed && !run && p < spans.back && f.dy < 0) setEntry('pre');
       if (p < spans.back && root.dataset.cut != null) delete root.dataset.cut;
@@ -180,6 +187,7 @@ export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, 
       for (const name of ['--face-out']) root.style.removeProperty(name);
       delete root.dataset.skip;
       delete root.dataset.cut;
+      delete root.dataset.plate;
     },
   };
 }

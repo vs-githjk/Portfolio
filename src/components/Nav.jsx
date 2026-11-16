@@ -34,19 +34,31 @@ function Tools({ tab }) {
   };
   return (
     <div className="nav-tools">
-      <button className="nav-tool" data-tool="chart" type="button" tabIndex={tab} aria-haspopup="dialog" aria-label={shell.chart.open} title={shell.chart.open} aria-keyshortcuts={shell.chart.key} onClick={flip('chart', true)}>
+      <button className="nav-tool" data-tool="chart" type="button" tabIndex={tab} aria-haspopup="dialog" aria-label={shell.chart.open} aria-keyshortcuts={shell.chart.key} onClick={flip('chart', true)}>
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
           <circle cx="10" cy="10" r="8.2" />
-          <path d="M10 3.6 12 10l-2 6.4L8 10z" />
-          <path d="M10 1.8v1.4M10 16.8v1.4M1.8 10h1.4M16.8 10h1.4" />
+          <path className="nav-needle" d="M10 3.4 12.2 10H7.8z" transform="rotate(38 10 10)" />
+          <path d="M7.8 10 10 16.6 12.2 10" transform="rotate(38 10 10)" />
         </svg>
+        <span className="nav-tool-label" aria-hidden="true">
+          {shell.chart.open}
+        </span>
       </button>
       <button className="nav-tool" data-tool="receipts" type="button" tabIndex={tab} aria-pressed={receipts} aria-keyshortcuts={shell.receipts.key} onClick={flip('receipts')}>
-        <i aria-hidden="true" />
-        {shell.receipts.label}
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M5 2.6h10v14.8l-2.5-1.6-2.5 1.6-2.5-1.6L5 17.4z" />
+          <path d="M7.8 7h4.4M7.8 10.2h4.4" />
+        </svg>
+        <span className="nav-tool-label">{shell.receipts.label}</span>
       </button>
       <button className="nav-tool" data-tool="sound" type="button" tabIndex={tab} aria-pressed={sound} onClick={flip('sound')}>
-        {shell.sound.label}: {sound ? shell.sound.on : shell.sound.off}
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M3 7.8h3l4-3.2v10.8l-4-3.2H3z" />
+          {sound ? <path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" /> : <path d="m13.4 8 3.6 4M17 8l-3.6 4" />}
+        </svg>
+        <span className="nav-tool-label">
+          {shell.sound.label}: {sound ? shell.sound.on : shell.sound.off}
+        </span>
       </button>
     </div>
   );

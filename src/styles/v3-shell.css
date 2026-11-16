@@ -4,6 +4,7 @@
    file needs are declared here, on :root, each one built from an existing token:
 
      --plate-rim     how much wider the plate's outer rim is than the ring (a ratio)
+     --plate-pad     half the length of a station's pad on the inner rim, in steps of the ring
      --plate-line    the plate's engraved hairline
      --plate-lit     the lit tick under the front card
      --plate-from    the scale the plate settles from when the reader arrives
@@ -17,9 +18,10 @@
 */
 :root {
   --plate-rim: 0.06;
-  --plate-line: color-mix(in srgb, var(--acc-2) 26%, var(--hair-2));
+  --plate-pad: 0.44;
+  --plate-line: color-mix(in srgb, var(--acc-2) 42%, var(--hair-2));
   --plate-lit: var(--acc);
-  --plate-from: 1.3;
+  --plate-from: 1.7;
   --sill-h: clamp(52px, 8.5svh, 80px);
   --sill-w: min(74%, 1080px);
   --edge-row: 0px;
@@ -142,14 +144,40 @@
   overflow: hidden;
 }
 
-.sill-rim,
-.sill-tick {
+/* A phone has no ring, so the near edge of the same plate lies under the drift:
+   the ring the reader came through, now underfoot. */
+.drift-plate {
+  display: block;
+  position: relative;
+  width: min(100%, 520px);
+  height: clamp(40px, 12vw, 56px);
+  margin: -52px auto 0;
+  fill: none;
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur-slow) var(--ease);
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .drift-plate {
+    display: none;
+  }
+}
+
+html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .drift-plate {
+  opacity: 0;
+  transform: scale(var(--plate-from));
+  transition-duration: 0.15s;
+}
+
+.plate-arc-rim,
+.plate-arc-tick {
   stroke: var(--plate-line);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
-.sill-rim[data-rim='outer'] {
+.plate-arc-rim[data-rim='outer'] {
   opacity: 0.6;
 }
 
@@ -248,10 +276,10 @@ html[data-holo='off'] .door-skip {
 }
 
 /* The ball's line stays on one line at any width, so it types left to right: the
-   type steps down until --n letters of the display face (about 0.7em each) fit
+   type steps down until --n letters of the display face (about 0.6em each) fit
    between the gutters. */
 .welcome-ball {
-  font-size: min(var(--fs-speak), calc((100vw - 2 * var(--pad)) / (var(--n, 26) * 0.7)));
+  font-size: min(var(--fs-speak), calc((100vw - 2 * var(--pad)) / (var(--n, 26) * 0.62)));
   white-space: nowrap;
 }
 
@@ -448,17 +476,22 @@ html[data-skip] .nav {
       transform var(--dur-slow) var(--ease);
   }
 
-  .orbit[data-ready][data-land] .plate {
+  .orbit[data-ready] .plate {
     opacity: 1;
     transform: none;
+  }
+
+  /* While the first screen is up the plate waits out past the window's edges; it
+     comes in as the ring that opened leaves them (data-plate, shell/entry.js). */
+  html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .orbit .plate {
+    opacity: 0;
+    transform: scale(var(--plate-from));
+    transition-duration: 0.15s;
   }
 
   .plate-rim {
     stroke: url(#plate-fade);
     stroke-width: 1;
-  }
-
-  .plate-rim[data-rim='outer'] {
     opacity: 0.6;
   }
 
@@ -468,6 +501,22 @@ html[data-skip] .nav {
 
   .plate-stop[data-end='far'] {
     stop-opacity: 0;
+  }
+
+  /* One pad per build on the inner rim: the seat its card stands on. */
+  .plate-pad {
+    stroke: var(--plate-line);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    transition: stroke 0.2s var(--ease);
+  }
+
+  .plate-pad[data-lit='near'] {
+    stroke: var(--text);
+  }
+
+  .plate-pad[data-lit='front'] {
+    stroke: var(--plate-lit);
   }
 
   .plate-tick {
@@ -519,18 +568,63 @@ html[data-skip] .nav {
     user-select: none;
   }
 
-  /* The front readout: the station number and the build standing on it. */
-  .readout {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 12px;
+  /* A card touches the plate: a soft contact shadow under its foot, gone with the
+     caption when the card is only a thumbnail at the sides. */
+  .orbit-scene .card::after {
+    content: '';
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: calc(100% - 7px);
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ink-2) 92%, transparent), transparent);
+    opacity: var(--cap, 1);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* The station number lives in one place, under the lit tick; the cards do not repeat it. */
+  .orbit-scene .card-idx {
+    display: none;
+  }
+
+  /* The front readout. The counter sits on the ring's centre line, straight under
+     the lit tick, with the step buttons at its sides; the label and Pause to the
+     left, the name of the build standing there to the right. */
+  .orbit-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2px;
+    width: min(100%, 760px);
+  }
+
+  .orbit-side {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .orbit-side[data-side='left'] {
+    justify-content: flex-end;
+  }
+
+  .orbit-side .eyebrow {
+    margin-right: 14px;
+    white-space: nowrap;
+  }
+
+  .orbit .counter {
+    min-width: 0;
+    padding: 0 4px;
+    text-align: center;
+    color: var(--text);
   }
 
   .readout-name {
     display: block;
-    min-width: calc(var(--name-ch, 12) * 1ch + 13px);
-    padding-left: 12px;
-    border-left: 1px solid var(--hair-2);
+    margin-left: 14px;
     font-family: var(--font-mono);
     font-size: var(--fs-label);
     font-weight: 500;
@@ -540,9 +634,6 @@ html[data-skip] .nav {
     color: var(--text);
   }
 
-  .orbit-bar {
-    width: min(100%, 680px);
-  }
 }
 
 /* ================================ THE BAR ================================= */
@@ -708,36 +799,30 @@ html[data-travel='in'] .bg-world {
   stroke-linecap: round;
 }
 
-.nav-tool[data-tool='chart'] {
-  justify-content: center;
-  padding: 0;
+.nav-tool .nav-needle {
+  fill: currentColor;
 }
 
-/* Receipts carries a small lamp: hollow when off, lit in the realm's accent when on. */
-.nav-tool[data-tool='receipts'] i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 1px solid var(--text-3);
-  transition:
-    background-color 0.2s var(--ease),
-    border-color 0.2s var(--ease);
-}
-
-.nav-tool[data-tool='receipts'][aria-pressed='true'] i {
-  background: var(--acc);
-  border-color: var(--acc);
+/* Receipts and Sound are lit in the realm's accent while they are on. */
+.nav-tool[aria-pressed='true'] svg {
+  stroke: var(--acc-text);
 }
 
 /* Sound's label changes ("off" to "on"); the button keeps one width. */
-.nav-tool[data-tool='sound'] {
-  min-width: 11.5ch;
-  justify-content: flex-start;
+.nav-tool[data-tool='sound'] .nav-tool-label {
+  min-width: 10.5ch;
+  text-align: left;
 }
 
 @media (max-width: 1100px) {
-  .nav-tool[data-tool='sound'] {
+  .nav-tool[data-tool='sound'],
+  .nav-tool[data-tool='chart'] .nav-tool-label {
     display: none;
+  }
+
+  .nav-tool[data-tool='chart'] {
+    justify-content: center;
+    padding: 0;
   }
 }
 

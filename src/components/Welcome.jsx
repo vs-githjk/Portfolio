@@ -4,6 +4,7 @@ import { entry as words, loadLines } from '../data/world';
 import { heroOrigin } from '../lib/origin';
 import { createEntry } from '../shell/entry';
 import LoadLine from '../shell/LoadLine';
+import PlateArc from '../shell/PlateArc';
 
 /* The Threshold: the first screen. His face in light (Hologram.jsx draws it into
    the fixed background, on the empty box marked data-holo-anchor here), a
@@ -26,7 +27,8 @@ import LoadLine from '../shell/LoadLine';
      0.25 s  the light lets go: the portrait gathers to the seed, the ringed world
      1.05 s  it speaks: welcome.ball types under it
      2.05 s  the ring opens: a plate rim grows out of the ball, past the window's edges
-     2.85 s  inside: the plate settles, the cards land, the name sets (Orbit, CSS)
+     2.60 s  the plate comes in from past the window's edges as the ring leaves them
+     2.85 s  inside: the cards land on it, the name sets (Orbit, CSS)
 
    KNOTS maps that clock onto the scroll (share of the way to the hero); SPANS says
    where on the way each thing happens and mirrors the numbers Hologram.jsx uses
@@ -47,28 +49,14 @@ const KNOTS = [
   [1950, 0.585, 'linear'],
   [2850, 1],
 ];
-const SPANS = { face: [0.04, 0.34], open: [0.6, 0.98], land: 0.995, back: 0.6 };
+const SPANS = { face: [0.04, 0.34], open: [0.6, 0.98], plate: 0.84, land: 0.995, back: 0.6 };
 const LATE_MS = 3600;
 
 /* The Sill and the ring that opens are the same drawing as the Orrery's plate:
    two rims, the outer RIM wider, one tick per ring build between them. */
 const N = hero.carousel.slides.length;
 const RIM = 1.06;
-const SILL = { cx: 500, cy: 118, rx: 452, ry: 96, arc: 62 };
-const sill = (grow, deg) => {
-  const a = (deg * Math.PI) / 180;
-  return [SILL.cx + SILL.rx * grow * Math.sin(a), SILL.cy - SILL.ry * grow * Math.cos(a)];
-};
 const fix = (v) => v.toFixed(1);
-const sillArc = (grow) => {
-  const [x0, y0] = sill(grow, -84);
-  const [x1, y1] = sill(grow, 84);
-  return `M${fix(x0)} ${fix(y0)}A${fix(SILL.rx * grow)} ${fix(SILL.ry * grow)} 0 0 1 ${fix(x1)} ${fix(y1)}`;
-};
-const sillTicks = Array.from({ length: N }, (_, k) => {
-  const deg = -SILL.arc + ((k + 0.5) / N) * 2 * SILL.arc;
-  return [sill(1, deg), sill(RIM, deg)];
-});
 const ringTicks = Array.from({ length: N }, (_, k) => {
   const a = (k / N) * 2 * Math.PI;
   return [100 * Math.sin(a), 100 * Math.cos(a), 100 * RIM * Math.sin(a), 100 * RIM * Math.cos(a)];
@@ -178,13 +166,7 @@ export default function Welcome() {
         </span>
       </div>
       <div className="threshold">
-        <svg className="sill" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <path className="sill-rim" d={sillArc(1)} />
-          <path className="sill-rim" data-rim="outer" d={sillArc(RIM)} />
-          {sillTicks.map(([a, b], k) => (
-            <line className="sill-tick" key={k} x1={fix(a[0])} y1={fix(a[1])} x2={fix(b[0])} y2={fix(b[1])} />
-          ))}
-        </svg>
+        <PlateArc className="sill" count={N} />
         <LoadLine lines={loadLines} />
         <a className="door-skip" href="#top" onClick={skip}>
           {words.skip}

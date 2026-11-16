@@ -27,7 +27,9 @@ import { registerBinding } from '../kit/bindings';
    The Orrery (v3). The cards stand on an engraved plate: two hairline rims and
    one tick per build, drawn in the scene's own SVG from the same projection that
    poses the cards (foot()), so a resting card's foot sits on its tick by
-   construction. The ticks are stations and do not turn; the front one is lit.
+   construction. The inner rim is cut into one pad per build, so the plate itself
+   counts them. Pads and ticks are stations and do not turn; the front one is lit,
+   and the counter under it reads which build stands there.
    The ring can be thrown: a drag on a card turns it under the hand, and on
    release it keeps its speed, slows, and settles on the nearest station. When
    the reader arrives from the welcome (shell/entryState.js) the plate settles
@@ -84,7 +86,8 @@ export default function Orbit({ stageRef, centreRef }) {
     const counter = counterRef.current;
     const nameOut = nameRef.current;
     const plate = scene.querySelector('.plate');
-    const rims = [...plate.querySelectorAll('.plate-rim')];
+    const rim = plate.querySelector('.plate-rim');
+    const pads = [...plate.querySelectorAll('.plate-pad')];
     const ticks = [...plate.querySelectorAll('.plate-tick')];
     const fade = plate.querySelector('linearGradient');
     const cards = [...scene.querySelectorAll('.card')];
@@ -120,6 +123,7 @@ export default function Orbit({ stageRef, centreRef }) {
       stepMs: num('--orbit-step-ms', 5200),
       linger: num('--orbit-linger', 0.85),
       rim: num('--plate-rim', 0.06),
+      pad: num('--plate-pad', 0.44),
     };
     const geo = { rx: CFG.rx, rz: CFG.rz, sinT: Math.sin(CFG.tilt), cosT: Math.cos(CFG.tilt), cardW: 248, cardH: 240, copyL: -340, copyR: 340, front: CFG.front };
     const reasons = { user: false, hover: false, hidden: document.hidden, offscreen: false, landing: false, drag: false };
@@ -180,23 +184,28 @@ export default function Orbit({ stageRef, centreRef }) {
       return [(geo.rx * grow * s + lx * Math.cos(yaw)) * ps, (geo.rz * grow * c * geo.sinT + Math.cos(lean) * half) * ps];
     }
 
-    // The plate: both rims as closed paths, one tick per station between them. It
-    // fades out toward the back, where it would run behind the hero copy.
+    // The plate: the outer rim as one closed path; the inner rim as one pad per
+    // station (the seat a card stands on, so the rim itself counts the builds),
+    // and a tick from each pad to the outer rim. It fades out toward the back,
+    // where it would run behind the hero copy.
     function drawPlate() {
-      const path = (grow) => {
+      const arc = (from, to, steps, grow) => {
         let d = '';
-        for (let i = 0; i < 240; i++) {
-          const [x, y] = foot((i / 240) * 2 * Math.PI, grow);
+        for (let i = 0; i <= steps; i++) {
+          const [x, y] = foot(from + ((to - from) * i) / steps, grow);
           d += `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
         }
-        return `${d}Z`;
+        return d;
       };
-      rims[0].setAttribute('d', path(1));
-      rims[1].setAttribute('d', path(1 + CFG.rim));
+      rim.setAttribute('d', `${arc(0, 2 * Math.PI, 240, 1 + CFG.rim)}Z`);
       const y1 = foot(Math.PI * 0.62)[1];
       const y2 = foot(Math.PI * 0.36)[1];
       fade.setAttribute('y1', y1.toFixed(1));
       fade.setAttribute('y2', y2.toFixed(1));
+      pads.forEach((pad, k) => {
+        pad.setAttribute('d', arc((k - CFG.pad) * STEP, (k + CFG.pad) * STEP, 14, 1));
+        pad.style.opacity = Math.max(0, Math.min(1, (foot(k * STEP)[1] - y1) / (y2 - y1))).toFixed(2);
+      });
       ticks.forEach((tick, k) => {
         const a = foot(k * STEP);
         const b = foot(k * STEP, 1 + CFG.rim);
@@ -268,6 +277,7 @@ export default function Orbit({ stageRef, centreRef }) {
     function pose(now = performance.now()) {
       const th = free ?? theta(vt);
       const f0 = ((Math.round(-th / STEP) % N) + N) % N;
+      const want = cards.map(() => '');
       const ranks = [];
       for (let k = 0; k < N; k++) {
         const w = k * STEP + th;
@@ -293,11 +303,12 @@ export default function Orbit({ stageRef, centreRef }) {
         // A card under the pointer lifts 6px off the plate.
         cards[k].style.transform = `translate(-50%,-50%) translate3d(${x.toFixed(1)}px,${(y - hov[k] * 6).toFixed(1)}px,${z.toFixed(1)}px) rotateY(${(-CFG.yaw * s).toFixed(2)}deg) rotateZ(${(CFG.lean * s).toFixed(2)}deg) scale(${grow.toFixed(3)})`;
         // The tick under the front card is lit; the one under a lifted card brightens.
-        const mark = k === f0 ? 'front' : hovT[k] ? 'near' : '';
-        if (mark !== lit[k]) {
-          lit[k] = mark;
-          ticks[k].dataset.lit = mark;
-        }
+        // Stations do not turn: a card's station is where it rests when the ring is still.
+        // The one under the front card is lit; one under a lifted card, or one a card is
+        // landing on, brightens.
+        const st = (((k + Math.round(th / STEP)) % N) + N) % N;
+        if (k === f0) want[st] = 'front';
+        else if (!want[st] && (hovT[k] || (land > 0.02 && land < 0.98))) want[st] = 'near';
         // Dim with depth. A back card that sits behind the hero copy goes almost
         // fully dark, so nothing on it competes with the text in front.
         // The caption is either shown or gone, never half there: the side cards of the ring
@@ -348,6 +359,12 @@ export default function Orbit({ stageRef, centreRef }) {
           parts[k].prog.style.opacity = near.toFixed(3);
         }
         ranks.push([c, k]);
+      }
+      for (let st = 0; st < N; st++) {
+        if (want[st] === lit[st]) continue;
+        lit[st] = want[st];
+        ticks[st].dataset.lit = want[st];
+        pads[st].dataset.lit = want[st];
       }
       ranks.sort((a, b) => b[0] - a[0]);
       const key = ranks.map((r) => r[1]).join();
@@ -781,7 +798,9 @@ export default function Orbit({ stageRef, centreRef }) {
             </linearGradient>
           </defs>
           <path className="plate-rim" />
-          <path className="plate-rim" data-rim="outer" />
+          {slides.map((s) => (
+            <path className="plate-pad" key={s.id} />
+          ))}
           {slides.map((s) => (
             <line className="plate-tick" key={s.id} />
           ))}
@@ -827,8 +846,8 @@ export default function Orbit({ stageRef, centreRef }) {
         </div>
       </div>
       <div className="orbit-bar">
-        <span className="eyebrow">{carousel.label}</span>
-        <div className="orbit-controls">
+        <div className="orbit-side" data-side="left">
+          <span className="eyebrow">{carousel.label}</span>
           <button
             className="ctl ctl-pause"
             type="button"
@@ -840,16 +859,16 @@ export default function Orbit({ stageRef, centreRef }) {
           <button className="ctl" type="button" aria-label={carousel.controls.prev} onClick={() => api.current.step(-1)}>
             <ChevronLeftIcon />
           </button>
+        </div>
+        <span className="counter" ref={counterRef} aria-live="off">
+          {pad2(1)} / {pad2(N)}
+        </span>
+        <div className="orbit-side" data-side="right">
           <button className="ctl" type="button" aria-label={carousel.controls.next} onClick={() => api.current.step(1)}>
             <ChevronRightIcon />
           </button>
-          <span className="readout" style={{ '--name-ch': NAME_CH }}>
-            <span className="counter" ref={counterRef} aria-live="off">
-              {pad2(1)} / {pad2(N)}
-            </span>
-            <span className="readout-name" ref={nameRef} aria-hidden="true">
-              {slides[0].title}
-            </span>
+          <span className="readout-name" ref={nameRef} aria-hidden="true" style={{ '--name-ch': NAME_CH }}>
+            {slides[0].title}
           </span>
         </div>
       </div>
