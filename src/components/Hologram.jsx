@@ -75,6 +75,8 @@ export default function Hologram() {
     let last = 0;
     let faded = ''; // how far the greeting has faded (written to the welcome as --out)
     let cleared = false; // the canvas has been wiped after the hand-off
+    let heroTop = 1e6; // where the hero's own words begin, document pixels: no light falls below it
+    const words = document.querySelector('#top .hero-in');
 
     try {
       seen = window.sessionStorage.getItem(SEEN_KEY) === '1';
@@ -92,6 +94,7 @@ export default function Hologram() {
 
     function measure() {
       measureFace(anchor);
+      if (words) heroTop = words.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(words).paddingTop || '0');
       scene.resize(window.innerWidth, window.innerHeight, Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.75));
     }
 
@@ -156,7 +159,7 @@ export default function Hologram() {
           faded = out;
           host.style.setProperty('--out', out);
         }
-        scene.render({ ...pose(y, RIDE), time: now / 1000, on: intro, out: span(LEAVE[0], LEAVE[1], eased), gain });
+        scene.render({ ...pose(y, RIDE), time: now / 1000, on: intro, out: span(LEAVE[0], LEAVE[1], eased), gain, keep: heroTop - y });
         last = now;
       }
       if (!gone) raf = requestAnimationFrame(frame);

@@ -45,6 +45,7 @@ uniform vec2 uRes;    // the canvas in device pixels
 uniform vec4 uPane;   // the figure's picture: centre x, centre y (from the top), half width, half height
 uniform vec3 uEmit;   // the plate: centre x, y, half width
 uniform float uPx;    // device pixels to a CSS pixel
+uniform float uKeep;  // no light below this line (device pixels from the top): the hero's words start there
 uniform float uTime, uOn, uOut, uGain, uWarm, uPitch, uFoot;
 uniform vec3 uDeep, uPale, uHot;
 uniform sampler2D uTex;
@@ -146,7 +147,8 @@ void main() {
   // slice of a face.
   pic = mix(pic, mix(uPale, uHot, 0.6), 0.9 * smoothstep(0.1, 0.75, shut));
   float open = 1.0 - shut;
-  float curtain = smoothstep(open + 0.03, open - 0.01, abs(q.x));
+  // (Shut means shut: no sliver of the figure is left standing in the middle.)
+  float curtain = smoothstep(open + 0.03, open - 0.01, abs(q.x)) * (1.0 - smoothstep(0.8, 1.0, shut));
   float fold = exp(-abs(abs(q.x) - open) * size.x / (7.0 * px)) * shut * (1.0 - step(0.999, shut));
 
   float show = drawn * curtain * body;
@@ -201,7 +203,10 @@ void main() {
   float beam = bx * by * smoothstep(0.55, 1.0, shut) * (1.0 - smoothstep(0.55, 1.0, lift));
   col += mix(uPale, uHot, 0.55) * beam * 1.15;
 
-  gl_FragColor = vec4(col * uGain, alpha * step(0.001, uGain));
+  // A guarantee, not a tuned path: no light at all below the line where the hero's
+  // own words begin (uKeep, a window y), with a short fade above it.
+  float keep = smoothstep(uKeep, uKeep - 56.0 * px, p.y);
+  gl_FragColor = vec4(col * uGain * keep, alpha * step(0.001, uGain) * keep);
 }
 `;
 
@@ -240,7 +245,7 @@ export function createHologram(canvas, tones, look) {
   gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
   const u = {};
-  for (const name of ['uRes', 'uPane', 'uEmit', 'uPx', 'uTime', 'uOn', 'uOut', 'uGain', 'uWarm', 'uPitch', 'uFoot', 'uDeep', 'uPale', 'uHot', 'uTex']) u[name] = gl.getUniformLocation(program, name);
+  for (const name of ['uRes', 'uPane', 'uEmit', 'uPx', 'uKeep', 'uTime', 'uOn', 'uOut', 'uGain', 'uWarm', 'uPitch', 'uFoot', 'uDeep', 'uPale', 'uHot', 'uTex']) u[name] = gl.getUniformLocation(program, name);
   gl.uniform3fv(u.uDeep, tones.deep);
   gl.uniform3fv(u.uPale, tones.pale);
   gl.uniform3fv(u.uHot, tones.hot);
@@ -289,14 +294,15 @@ export function createHologram(canvas, tones, look) {
       canvas.style.height = `${h}px`;
     },
     /* pane: { x, y, w, h } its centre and half sizes; emit: { x, y, w } the plate's
-       centre and half width; all in CSS pixels from the window's top left. */
-    render({ pane, emit, time, on, out, gain }) {
+       centre and half width; keep: the window y below which nothing is lit; all in CSS
+       pixels from the window's top left. */
+    render({ pane, emit, time, on, out, gain, keep = 1e6 }) {
       const W = canvas.width;
       const H = canvas.height;
       gl.viewport(0, 0, W, H);
       gl.disable(gl.SCISSOR_TEST);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      if (gain <= 0) return;
+      if (gain <= 0 || out >= 1) return;
       // Only the column the light can reach is shaded: the picture and the plate, and
       // the whole height of the window once the beam is leaving.
       const reach = (Math.max(pane.w, emit.w) + 32) * dpr;
@@ -312,6 +318,7 @@ export function createHologram(canvas, tones, look) {
       gl.uniform4f(u.uPane, pane.x * dpr, pane.y * dpr, pane.w * dpr, pane.h * dpr);
       gl.uniform3f(u.uEmit, emit.x * dpr, emit.y * dpr, emit.w * dpr);
       gl.uniform1f(u.uPx, dpr);
+      gl.uniform1f(u.uKeep, keep * dpr);
       gl.uniform1f(u.uTime, time);
       gl.uniform1f(u.uOn, on);
       gl.uniform1f(u.uOut, out);
