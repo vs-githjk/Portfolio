@@ -99,7 +99,7 @@ export function createDragonStations({ live, phone, C }) {
     const shore = anchorRect('shore');
     st.breach = null;
     if (shore && shore.h > 300) {
-      const size = phone ? Math.min(17, (w * 0.74) / MODEL.span) : Math.max(28, Math.min(44, w / 33));
+      const size = phone ? Math.min(20, (w * 0.86) / MODEL.span) : Math.max(30, Math.min(52, w / 28));
       // x in window widths, y in window heights (both from the middle), z in px
       const way = phone
         ? [
@@ -145,11 +145,11 @@ export function createDragonStations({ live, phone, C }) {
       // Head to the left and toward the reader, tail away to the right: about 12 units wide, 8.4 tall.
       const wide = 12.2;
       const reach = 4.6; // from the feet to the snout, on the screen
-      let size = Math.min((roost.h - 10) / (MODEL.tall + 1.6), (Math.min(roost.w, w - 2 * GUTTER) * (phone ? 0.98 : 0.6)) / wide);
+      let size = Math.min((roost.h - 6) / (MODEL.tall + 0.9), (Math.min(roost.w, w - 2 * GUTTER) * (phone ? 0.98 : 0.6)) / wide);
       const xFeet = phone ? roost.left + reach * size + 6 : roost.right - (wide - reach) * size - roost.w * 0.04;
       const open = !phone && (noteRight < 0 || noteRight + 28 < xFeet - reach * size);
       const top = open ? Math.min(roost.top, Math.max(ceiling, roost.top - 150)) : roost.top;
-      if (open) size = Math.min(size * 1.5, (roost.bottom - top - 10) / (MODEL.tall + 1.6));
+      if (open) size = Math.min(size * 1.5, (roost.bottom - top - 6) / (MODEL.tall + 0.9));
       const band = [top - (open ? 40 : 6), roost.bottom + 8];
       const cols = graph ? columnsOf(graph.el, Number(graph.el.dataset?.weeks) || 53) : null;
       // The section's calm ground opens over the band (v3-sections.css reads these).
@@ -269,7 +269,7 @@ export function createDragonStations({ live, phone, C }) {
           heading(s.dawn, e, 0.02, (cam.z - z) / cam.z);
           light('dawn');
           guard(s, f);
-          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.25 : 1.3), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), clips: { fly: 1 }, beat: 0.95, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
+          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.25 : 1.3), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), clips: { fly: 1 }, beat: 0.62, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
           shown.station = 'flight';
           shown.u = u;
           return 'flight';
@@ -324,7 +324,7 @@ export function createDragonStations({ live, phone, C }) {
           s.roared = true;
           live.roar(f.t);
         }
-        live.update({ ...base, x, y, z, size: s.size, feet: true, fwd: face, up: [0, 1, 0], bank: 0, clips: { fly: 1 - settle, perch: settle }, beat: 1.25, look: [yaw * settle, pitch * settle], show: L <= 0 ? 0 : sm(L / 0.1), phase: 0.2 });
+        live.update({ ...base, x, y, z, size: s.size, feet: true, fwd: face, up: [0, 1, -0.2 * settle], bank: 0, clips: { fly: 1 - settle, perch: settle }, beat: 0.8, look: [yaw * settle, pitch * settle], show: L <= 0 ? 0 : sm(L / 0.1), phase: 0.2 });
         shown.station = 'roost';
         shown.u = L;
         return 'roost';
@@ -344,7 +344,7 @@ export function createDragonStations({ live, phone, C }) {
         light('dusk');
         guard(s, f);
         // Going up its back is to the reader's left; as it levels off toward the sun the reader sees it from behind and below.
-        live.update({ ...base, x: a3[0] * w, y: a3[1] * h, z, size: s.size, fwd: [...fwd], up: [mix(-0.2, -0.62, climb), mix(1, 0.2, climb), mix(0.5, 0.76, climb)], bank: 0.25 * sm((e - 0.55) / 0.25), clips: { fly: 1 }, beat: mix(0.85, 1.3, climb), show: sm(u / 0.08) * (1 - sm((u - 0.86) / 0.12)), phase: 0.1 });
+        live.update({ ...base, x: a3[0] * w, y: a3[1] * h, z, size: s.size, fwd: [...fwd], up: [mix(-0.2, -0.62, climb), mix(1, 0.2, climb), mix(0.5, 0.76, climb)], bank: 0.25 * sm((e - 0.55) / 0.25), clips: { fly: 1 }, beat: mix(0.6, 0.85, climb), show: sm(u / 0.08) * (1 - sm((u - 0.86) / 0.12)), phase: 0.1 });
         shown.station = 'breach';
         shown.u = u;
         return 'breach';
@@ -372,7 +372,7 @@ export function createDragonStations({ live, phone, C }) {
         heading(at, e, 0.015, (cam.z - z) / cam.z);
         light('sea');
         guard(s, f);
-        live.update({ ...base, x: a3[0], y: a3[1] + Math.sin(f.t * 0.6) * 4, z, size: s.size, fwd: [...fwd], up: [0, 0.8, 0.6], bank: 0.16, clips: { fly: 0.35 + 0.65 * pace, glide: 0.65 * (1 - pace) }, beat: 0.5 + 0.3 * pace, show: sm(e / 0.08) * (1 - sm((e - 0.93) / 0.07)), phase: 0.62 });
+        live.update({ ...base, x: a3[0], y: a3[1] + Math.sin(f.t * 0.6) * 4, z, size: s.size, fwd: [...fwd], up: [0, 0.8, 0.6], bank: 0.16, clips: { fly: 0.35 + 0.65 * pace, glide: 0.65 * (1 - pace) }, beat: 0.42 + 0.2 * pace, show: sm(e / 0.08) * (1 - sm((e - 0.93) / 0.07)), phase: 0.62 });
         shown.station = 'pass';
         shown.u = u;
         return 'pass';

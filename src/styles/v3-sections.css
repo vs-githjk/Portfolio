@@ -2224,7 +2224,7 @@ html[data-world='on'] .deep-head::before {
    should stand (the scene fits it to the band). With no scene drawing there is
    nothing to leave room for; under reduced motion the band holds a still of it. */
 .pow-roost {
-  height: clamp(250px, 40svh, 390px);
+  height: clamp(280px, 48svh, 460px);
 }
 
 @media (max-width: 560px) {
