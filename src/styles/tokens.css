@@ -224,6 +224,13 @@
   --holo-ink: 2, 6, 22; /* the dark between its scan lines */
   --holo-fringe-r: 255, 96, 120; /* the two colours its frame splits into, a pixel and a half apart */
   --holo-fringe-b: 70, 150, 255;
+  /* The room round the hologram (Vidyut, Nov 16: "a grand, magical yellow, red, blue"):
+     blue leads near the figure; these two warm lights live in the far background
+     (the dusk, the rim of the range) and in small accents (runes, nodes, embers).
+     Not the award gold (--win), which stays for awards. */
+  --room-gold: 255, 198, 112;
+  --room-ember: 236, 98, 58;
+  --room-haze: 120, 74, 110; /* the far ridge, seen through dusk air */
   --holo-gain: 1; /* strength of the hologram's light */
   --holo-warm: 0.36; /* how much of a picture's own colour stays in the blue light (0 is pure hologram, 1 the photograph) */
   --holo-foot: 0.035; /* the share of the figure's height that dissolves into the cone at its foot (0: it ends as the picture ends) */

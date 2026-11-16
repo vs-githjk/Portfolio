@@ -101,7 +101,9 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   (`public/holo/wizard-1.webp`, 1200 px tall, and `wizard-1-phone.webp`), made from his own
   photograph. `scripts/matte-figure.py <figure-on-black.png>` cuts it out in one command
   (rembg with birefnet-portrait for the body, brightness for the glow, so the ring of glyphs
-  is clear inside) and prints the size to put in `welcome.figure`. The face will be swapped
+  is clear inside) and prints the size to put in `welcome.figure`. Run
+  `scripts/tidy-hair.py` on the source first: in blue light a flat mass of dark hair read
+  as a fur hat, so it trims the crown a few pixels and spreads the hair's tones. The face will be swapped
   again from a sharper photo: rerun the script. `--holo-foot` is small (0.035) and the plate
   sits right under the feet, so he stands in the beam.
 - **Never** a point cloud of his face (judged "scary"), never a plain photograph, never a
@@ -112,13 +114,24 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   builds, the paper, the crew and one gold "5×" plate) are projections of the same kind, in
   CSS (`v4-opening.css`): the same ramp, line pitch, frame split, cone and plate, at three
   depths. They never touch the figure and are `aria-hidden`. A phone shows four, taking turns.
-- **The room** (`WelcomeScene.jsx`; Vidyut, Nov 16: the screen with only the avatar was "very
-  empty"). Behind the panels: a floor of light round the plate (rings, spokes, a band of
-  glyphs; placed from `--plate-x/-y/-w`, faded out before the greeting), four small
-  constellations and drifting glyphs at the sides, the limb of a far world low on the left,
-  and motes rising in the beam (in the shader). The panels and the sky shift a few pixels
-  against the pointer (`--px`, `--py`). A phone gets the floor and two constellations.
-  Nothing touches the figure or sits on the greeting; under reduced motion it is all still.
+- **The room** (Vidyut, Nov 16: the screen with only the avatar was "very empty"; then "a
+  grand, magical yellow, red, blue"; then "tech stuff ... not just a fantasy thing, it's a
+  job thing as well"). It should read as an engineer's workshop that happens to be magical:
+  elegant and restrained, never a cartoon or a cyberpunk cliche.
+  - `WelcomeBackdrop.jsx` (in the fixed stack, under the hologram's canvas, moved with the
+    scroll): dusk low on the horizon, ember and gold, strongest at the sides, and two mountain
+    ridges in silhouette with a gold rim. SVG and CSS only; an echo of the world's coastline.
+  - `WelcomeScene.jsx` (over the page): a floor of light round the plate with a band of gold
+    runes; circuit traces from the plate to each panel's base (45 degree turns, gold nodes, a
+    gold pulse, mono numbers; laid out from the panels' real places; a wide window only);
+    constellations, drifting gold glyphs and a few ember sparks at the sides. Motes rise in
+    the beam (in the shader). Panels and sky shift a few pixels against the pointer.
+  - Colour: the figure and everything near it stay blue. `--room-gold` and `--room-ember`
+    live in the far background and in small accents only; `--win` is still for awards (the
+    "5×" plate). This is the one screen where rule 1's "one accent" is widened, on purpose.
+  - Nothing touches the figure or sits on the greeting (measured Nov 16: greeting 10:1 or more
+    at 1440, 390 and 360). A phone gets the dusk, the range, the floor and two constellations.
+    Under reduced motion it is all still.
 - **No second act.** There is no ball and no line of speech between him and his name. On Enter
   (a clock, `KNOTS` in `Welcome.jsx`) or on scroll, two curtains of light close over the figure
   (it turns to light as they come and is never squeezed), leave one vertical beam, and the

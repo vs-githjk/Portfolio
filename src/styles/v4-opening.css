@@ -201,6 +201,10 @@
 }
 
 .hub-panel figcaption {
+  /* A tight ink halo: a caption can stand over the dusk. */
+  text-shadow:
+    0 0 3px var(--ink),
+    0 0 8px var(--ink);
   font-family: var(--font-mono);
   font-size: clamp(9px, calc(var(--w) * 0.07), 11px);
   white-space: nowrap;
@@ -459,7 +463,7 @@ html[data-plain] .obs,
 }
 
 .obs-glyph {
-  stroke: rgba(var(--holo-pale), 0.5);
+  stroke: rgba(var(--room-gold), 0.7);
   stroke-width: 1.3;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
@@ -522,29 +526,91 @@ html[data-plain] .obs,
 }
 
 .obs-rune {
-  stroke: rgba(var(--holo-pale), 0.7);
+  stroke: rgba(var(--room-gold), 0.85);
   stroke-width: 1;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 
-/* The far world: only its lit limb shows, low on the left. */
-.obs-limb {
-  position: absolute;
-  left: -30vw;
-  top: 74%;
-  width: 54vw;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 64% 6%, rgba(var(--holo-deep), 0.26), rgba(var(--holo-deep), 0.07) 26%, rgba(var(--holo-ink), 0.5) 52%);
-  box-shadow:
-    inset 0 1.5px 0 rgba(var(--holo-pale), 0.4),
-    0 -6px 44px rgba(var(--holo-deep), 0.16);
+/* Ember sparks, low at the sides: they rise a little and go out. */
+.obs-ember {
+  fill: rgb(var(--room-ember));
+  opacity: 0;
+  animation: obs-spark 9s ease-out calc(var(--k) * -1.6s) infinite;
 }
 
-/* A phone: the floor and two constellations; no limb, no drifting glyphs. */
+@keyframes obs-spark {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  12% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -90px);
+  }
+}
+
+/* The traces: circuit from the plate to each panel's base, laid out by
+   WelcomeScene.jsx. Fine blue wire, gold nodes, a gold pulse travelling out. */
+.obs-traces {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  display: none;
+}
+
+.obs[data-traced] .obs-traces {
+  display: block;
+}
+
+.obs-wire {
+  stroke: rgba(var(--holo-pale), 0.3);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.obs-pulse {
+  stroke: rgb(var(--room-gold));
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-dasharray: 7 93;
+  stroke-dashoffset: 107;
+  animation: obs-run 5.2s linear calc(var(--k) * -0.65s) infinite;
+}
+
+@keyframes obs-run {
+  to {
+    stroke-dashoffset: 7;
+  }
+}
+
+.obs-node {
+  fill: var(--ink);
+  stroke: rgba(var(--room-gold), 0.9);
+  stroke-width: 1;
+}
+
+.obs-node[data-end] {
+  fill: rgba(var(--room-gold), 0.85);
+  stroke: none;
+}
+
+.obs-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  fill: rgba(var(--holo-pale), 0.5);
+}
+
+/* A phone: the floor and two constellations; no traces, glyphs or sparks. */
 @media (max-width: 760px) {
-  .obs-limb,
+  .obs-traces,
+  .obs-ember,
   .obs-glyph,
   .obs-con[data-side='b'] {
     display: none;
@@ -561,6 +627,84 @@ html[data-plain] .obs,
     animation: none;
     opacity: 0.5;
   }
+
+  .obs-ember {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .obs-pulse {
+    animation: none;
+    stroke-dashoffset: 60;
+  }
+}
+
+/* ============================== THE FAR WALL =============================== */
+/* WelcomeBackdrop.jsx, in the fixed stack under the hologram's canvas: dusk over
+   a mountain range. The horizon stands --room-rise above the plate. Warm light
+   is strongest toward the sides and low; the middle and everything above stay
+   the page's blue, so the figure's own light leads. */
+.bg-room {
+  --room-rise: clamp(22px, 4svh, 40px);
+  --hz: calc(var(--plate-y, 72svh) - var(--room-rise));
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+html[data-plain] .bg-room,
+html[data-holo='off'] .bg-room,
+html:not(.js) .bg-room {
+  display: none;
+}
+
+.room-dusk {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--hz) - 46svh);
+  height: 46svh;
+  background:
+    radial-gradient(52% 46% at 12% 100%, rgba(var(--room-gold), 0.62), transparent 100%),
+    radial-gradient(48% 42% at 90% 100%, rgba(var(--room-gold), 0.54), transparent 100%),
+    radial-gradient(74% 28% at 8% 100%, rgba(var(--room-ember), 0.7), transparent 100%),
+    radial-gradient(74% 26% at 94% 100%, rgba(var(--room-ember), 0.64), transparent 100%),
+    linear-gradient(to top, rgba(var(--room-ember), 0.3), rgba(var(--room-haze), 0.22) 34%, transparent 82%);
+}
+
+.room-range {
+  position: absolute;
+  left: 0;
+  top: calc(var(--hz) - 19svh);
+  width: 100%;
+  height: 19svh;
+}
+
+.room-far {
+  fill: rgba(var(--room-haze), 0.34);
+}
+
+.room-near {
+  fill: var(--ink);
+}
+
+.room-rim {
+  fill: none;
+  stroke: rgba(var(--room-gold), 0.75);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The ground in front of the range: ink, so the floor of light and the greeting
+   stand on a calm dark field. */
+.room-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--hz) - 1px);
+  height: 60svh;
+  background: linear-gradient(to bottom, var(--ink), color-mix(in srgb, var(--ink) 86%, transparent) 60%, transparent);
 }
 
 /* ================================== THE HERO =============================== */

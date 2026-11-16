@@ -5,6 +5,7 @@ import { heroOrigin } from '../lib/origin';
 import { EV } from '../kit/contract';
 import { emit } from '../kit/bus';
 import { useSwitch } from '../shell/switches';
+import WelcomeBackdrop from './WelcomeBackdrop';
 
 /* One fixed layer stack behind the page: the vertical light-beam field.
 
@@ -145,6 +146,7 @@ export default function Background() {
           <BackgroundField onReady={onReady} />
         </Suspense>
       )}
+      <WelcomeBackdrop />
       {on && !plain && (
         <Suspense fallback={null}>
           <Hologram />
