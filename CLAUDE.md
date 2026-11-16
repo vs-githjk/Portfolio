@@ -157,8 +157,8 @@ fixed background stack with plain WebGL (no three.js: the chunk measured 9.95 KB
 - Scroll is the timeline, counted from the top of the page to the hero (`lib/origin.js`,
   `heroOrigin()`): the face peels into a small planet of light (0.04 to 0.37), the planet has
   the window to itself over the empty run under the greeting (`--welcome-run`) and says its
-  line (typed 0.41 to 0.57), then its light pours onto the orbit ring (0.70 to 0.95) and fades
-  (0.93 to 1.03), gone when the hero sits under the nav. The canvas is fixed, so the light
+  line (typed 0.41 to 0.57), then its light pours onto the orbit ring (0.68 to 0.92) and fades
+  (0.92 to 1), all gone when the hero sits under the nav (the cue's glide stops there). The canvas is fixed, so the light
   stays in the window while the page leaves. The cue is a real link to `#top`; with scripts it
   glides there in 5.6s (`GLIDE_MS`) and any wheel, touch or key hands the scroll back.
 - The greeting is prerendered text and is the LCP element. It waits dim (`--say-idle`), and is

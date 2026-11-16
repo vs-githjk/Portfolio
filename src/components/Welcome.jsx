@@ -23,7 +23,7 @@ import { heroOrigin } from '../lib/origin';
    up on its own.
 
    The cue is a real link to the hero. With scripts it glides there slowly enough
-   for the face to turn into the ball, the ball to say its line and burst on the way; any wheel, touch or
+   for the face to turn into the ball, the ball to say its line and pour its light onto the builds on the way; any wheel, touch or
    key hands the scroll straight back to the reader. */
 /* The glide, as [share of the time, share of the way]: down to the words, a slow
    beat while they are read, then on into the hero. */

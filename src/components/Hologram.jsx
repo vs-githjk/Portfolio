@@ -153,7 +153,7 @@ export default function Hologram() {
       if (!gone && (busy || now - last >= IDLE_MS - 2)) {
         const t = now / 1000;
         const talking = !seenAtStart && since > VOICE[0] && since < VOICE[1];
-        const flow = span(0.7, 0.95, eased);
+        const flow = span(0.68, 0.92, eased);
         const at = pose(w, h, eased);
         if (flow > 0) where();
         // The ball speaks: its line types as the page moves, and it pulses with it.
@@ -201,8 +201,9 @@ export default function Hologram() {
           // The face keeps its features: less bloom on it than on the planet.
           glow: 0.5 + 0.5 * ease(span(0.04, 0.37, eased)),
           still: false,
-          // The light lands on the builds, then leaves them to it.
-          gain: gain * (1 + word * 0.1 * Math.sin(t * 9.5)) * (1 - ease(span(0.93, 1.03, eased))),
+          // The light lands on the builds, then leaves them to it: it is all gone by the
+          // time the hero sits under the nav, where the cue's glide (and many readers) stop.
+          gain: gain * (1 + word * 0.1 * Math.sin(t * 9.5)) * (1 - ease(span(0.92, 1, eased))),
         });
         last = now;
       }
