@@ -1,46 +1,35 @@
-import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-import { readTokens } from './piece';
-import { weeksFrom, wyrm } from './wyrm';
+import { PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { createDragon } from './dragon';
 
-/* Dev only (kit-demo.html is not a build input): the wyrm piece mounted with
-   another theme's tokens and a labelled demo array, to show that a piece carries
-   no site words, colours or counts.
+/* Dev only (kit-demo.html is not a build input): the dragon alone on a plain
+   ground, to judge the model, its clips and each place's light.
 
-   ?data=real   the site's own snapshot instead of the demo array
-   ?weeks=n     length of the demo array (default 30)
-   ?pose=s|arc|coil|flat   ?still   ?t=seconds (a frozen moment of the motion)   ?theme=mono|site (site: the site's own piece tokens)   ?bare (no label)   ?line (a waterline through the middle) */
+   ?clip=fly|glide|perch|roar   ?light=sea|dusk|night|dawn   ?yaw=deg (0 flies to the right, 90 toward the reader)
+   ?pitch=deg   ?bank=deg   ?size=px per unit   ?lite (the phone file)   ?still   ?t=seconds   ?bare (no label) */
 const q = new URLSearchParams(location.search);
 const root = document.documentElement;
-if (q.get('theme') === 'site') await import('../styles/v3-world.css');
-else if (q.has('theme')) root.dataset.theme = q.get('theme');
 if (q.has('bare')) root.dataset.bare = '';
-
-const DEMO = Array.from({ length: Number(q.get('weeks')) || 30 }, (_, i) => {
-  const levels = Array.from({ length: 7 }, (_, d) => (i * 7 + d * 3) % 5);
-  return { total: levels.reduce((a, b) => a + b * 3, 0) + (i % 6) * 4, levels };
-});
-let weeks = DEMO;
-let label = `DEMO DATA: ${DEMO.length} made-up weeks`;
-if (q.get('data') === 'real') {
-  const snaps = import.meta.glob('../data/github*.json', { eager: true, import: 'default' });
-  const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'];
-  weeks = weeksFrom(github.days);
-  label = `${weeks.length} weeks from the snapshot`;
-}
+const num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
 
 const canvas = document.getElementById('c');
 const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
 renderer.setClearColor(0x000000, 0);
 const scene = new Scene();
 const camera = new PerspectiveCamera(36, 1, 10, 12000);
-const tok = readTokens(getComputedStyle(root), wyrm.tokens);
-const live = wyrm.create({
-  weeks,
-  colors: { water: [tok['wyrm-sea-lo'], tok['wyrm-sea'], tok['wyrm-sea-hi']], air: [tok['wyrm-air-lo'], tok['wyrm-air'], tok['wyrm-air-hi']] },
-  tier: window.innerWidth < 760 ? 'phone' : 'desktop',
-});
+const time = { value: 0 };
+const live = await createDragon({ url: q.has('lite') ? '/dragon/dragon-lite.glb' : '/dragon/dragon.glb', tier: q.has('lite') ? 'phone' : 'desktop', time });
 scene.add(live.object);
-document.getElementById('label').textContent = `${label} · piece "${wyrm.name}" · ${live.count()} vertebrae`;
+const v = (r, g, b, k = 1) => new Vector3((r / 255) * k, (g / 255) * k, (b / 255) * k);
+const LIGHT = {
+  sea: { keyDir: [0.25, 0.9, 0.35], key: v(150, 232, 232, 0.95), lowDir: [0, -1, 0.2], low: v(15, 84, 96, 0.5), amb: v(15, 84, 96, 0.7), hide: v(12, 46, 58), belly: v(60, 128, 132), rim: v(150, 232, 232, 0.9), glow: v(150, 240, 255), fog: v(6, 40, 50), fogK: 0, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.5 },
+  dusk: { keyDir: [0.5, 0.22, -0.7], key: v(255, 226, 178, 1.5), lowDir: [-0.3, -0.8, 0.5], low: v(226, 120, 64, 0.22), amb: v(104, 52, 74, 0.55), hide: v(30, 20, 22), belly: v(120, 70, 50), rim: v(255, 190, 136), glow: v(255, 140, 70), fog: v(226, 120, 64), fogK: 0, caust: 0, rimGain: 1.25, fire: 0.9, thin: 1.15 },
+  night: { keyDir: [-0.5, 0.62, 0.6], key: v(246, 230, 210, 0.8), lowDir: [0.25, -0.85, 0.45], low: v(255, 150, 84, 0.34), amb: v(30, 22, 20, 2.6), hide: v(30, 20, 22), belly: v(120, 70, 50), rim: v(255, 150, 84, 0.8), glow: v(255, 140, 70), fog: v(30, 22, 20), fogK: 0, caust: 0, rimGain: 0.7, fire: 1.25, thin: 0.5 },
+};
+LIGHT.dawn = { ...LIGHT.dusk, keyDir: [-0.62, 0.12, -0.6], amb: v(30, 22, 20, 1.7) };
+live.light(LIGHT[q.get('light')] ?? LIGHT.night);
+const ground = { sea: '#0a3a44', dusk: '#b4705a', night: '#120d0c', dawn: '#1a1416' }[q.get('light') ?? 'night'];
+document.body.style.background = q.get('bg') ? '#' + q.get('bg') : ground;
+document.getElementById('label').textContent = `dragon · ${live.bones} bones · ${live.triangles} triangles · clips ${live.clips.join(', ')}`;
 
 let w = 1;
 let h = 1;
@@ -57,39 +46,19 @@ function layout() {
   camera.position.set(0, 0, camZ);
   camera.updateProjectionMatrix();
 }
-const kind = q.get('pose') || 's';
+const clip = q.get('clip') || 'fly';
 const still = q.has('still');
-const t0 = Number(q.get('t')) || 0;
+const rad = Math.PI / 180;
 function frame(ms) {
-  const t = still ? t0 : ms / 1000;
-  const L = live.length;
-  const scale = Math.min((w * 0.86) / L, kind === 'coil' ? 16 : 22);
-  const at = (k, d, out) => {
-    const u = d / L; // 0 at the snout, 1 at the tail tip
-    const swim = Math.sin(t * 1.5 - d * 0.24) * (0.3 + 2.2 * u) * scale * (still ? 0.4 : 1);
-    if (kind === 'flat') {
-      out[0] = (0.5 - u) * L * scale;
-      out[1] = 0;
-      out[2] = 0;
-    } else if (kind === 'coil') {
-      const a = u * 8.2 - 0.6 + t * 0.15;
-      const r = (34 + u * 250) * (scale / 16);
-      out[0] = Math.cos(a) * r;
-      out[1] = Math.sin(a) * r * 0.62 + swim * 0.2;
-      out[2] = Math.sin(a + 1) * 120;
-    } else if (kind === 'arc') {
-      out[0] = (0.5 - u) * L * scale * 0.9;
-      out[1] = -Math.sin(u * Math.PI) * h * 0.3 + h * 0.18 + swim;
-      out[2] = Math.cos(u * 5) * 100;
-    } else {
-      out[0] = (0.5 - u) * L * scale * 0.94;
-      out[1] = Math.sin(u * 5.2 + 0.4) * h * 0.13 * (0.5 + u) - h * 0.02 + swim;
-      out[2] = Math.cos(u * 5.2 + 0.4) * 150;
-    }
-  };
-  live.water(q.has('line') ? 0 : 1e5, q.has('line') ? 0 : 1e5);
-  const pose = { t, scale, at, cam: { x: 0, y: 0, z: camZ }, beat: 0.7, dpr, resY: Math.floor(h * dpr), show: 1, solid: 0 };
-  if (still && !t0) live.still(pose);
+  const t = q.has('t') ? Number(q.get('t')) : ms / 1000;
+  time.value = t;
+  const yaw = num('yaw', 35) * rad;
+  const pitch = num('pitch', 0) * rad;
+  const fwd = [Math.cos(yaw) * Math.cos(pitch), Math.sin(pitch), Math.sin(yaw) * Math.cos(pitch)];
+  const perch = clip === 'perch' || clip === 'roar';
+  if (clip === 'roar' && !still) live.roar(t);
+  const pose = { t, cam: { x: 0, y: 0, z: camZ }, x: num('x', 0), y: num('y', perch ? h * 0.2 : 0), z: num('z', 0), size: num('size', Math.min(w / 17, h / 11)), feet: perch, fwd, up: [0, 1, 0], bank: num('bank', 0) * rad, clips: { [perch ? 'perch' : clip]: 1 }, beat: num('beat', 0.8), look: [num('look', 0) * rad, num('nod', 0) * rad], show: 1, dpr, resY: Math.floor(h * dpr), phase: num('phase', 0.3) };
+  if (still) live.still(pose);
   else live.update(pose);
   renderer.render(scene, camera);
   root.dataset.demo = 'ready';

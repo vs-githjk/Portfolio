@@ -38,7 +38,7 @@ import { COMMON, SKY } from './worldBackdrop';
 
    On it stand the crew's base camp (a mast with a lamp, three tents lit from
    inside, one figure, a fire for every member of the crew). The commit buttes that
-   stood on the playa are retired: the weeks are the wyrm's body now (src/world/wyrm.js). */
+   stood on the playa are retired: the page's own graph carries the weeks. */
 
 export const LAND_FOV = 38;
 const X0 = -4700;

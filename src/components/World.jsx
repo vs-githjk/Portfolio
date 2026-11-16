@@ -25,9 +25,9 @@ import { EV } from '../kit/contract';
      steps it back up, and a level that had to be left twice is not tried again.
 
    The page talks to the world through the kit's events (src/kit/contract.js):
-   - 'world:week' { index }: light that week's vertebra of the wyrm (the column
-     index of the commit graph); any other index puts it out.
-   - 'world:dawn': the sun comes over the limb at the foot and the wyrm flies.
+   - 'world:week' { index }: the dragon on the roost looks at that week's column
+     of the commit graph for a moment.
+   - 'world:dawn': the sun comes over the limb at the foot and the dragon flies.
    - 'world:focus' { kind, id }: a win's star flares, a build's piece answers.
    - 'world:run' { state, step, gate }: the camp's lamp follows the run.
    - 'world:travel' { dir, phase }: the snow streaks along a hop.
@@ -40,10 +40,6 @@ import { EV } from '../kit/contract';
      or from a 'world:agent' event with { detail: { hue } }. */
 
 const IDLE_MS = 1000 / 30;
-
-/* The same snapshot the commit graph draws (ProofOfWork.jsx). */
-const snaps = import.meta.glob('../data/github*.json', { eager: true, import: 'default' });
-const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'];
 
 export default function World() {
   const ref = useRef(null);
@@ -61,12 +57,11 @@ export default function World() {
           relayout();
         });
       }
-      // Dev: ?weeks=n&crew=n&wins=n&cells=n change the data, to prove the scene follows it.
+      // Dev: ?crew=n&wins=n&cells=n change the data, to prove the scene follows it.
       const q = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
       const cut = (list, key) => (q?.has(key) ? list.slice(0, Number(q.get(key))) : list);
       const scenesOf = Object.fromEntries(builds.flagships.filter((f) => f.scene).map((f) => [f.id, q?.has('cells') && f.scene.cells ? { ...f.scene, cells: Number(q.get('cells')) } : f.scene]));
       world = createWorld(canvas, {
-        days: q?.has('weeks') ? github?.days.slice(-7 * Number(q.get('weeks'))) : github?.days,
         solo: import.meta.env.DEV ? (new URLSearchParams(window.location.search).get('solo') ?? '') : '',
         // Every count in the scene comes from the page's own data.
         scenes: scenesOf,
@@ -171,6 +166,7 @@ export default function World() {
         if (!drawn) {
           drawn = true;
           root.dataset.world = 'on';
+          askDragon();
         }
       }
       raf = requestAnimationFrame(frame);
@@ -178,6 +174,29 @@ export default function World() {
     const kick = () => {
       if (!raf) raf = requestAnimationFrame(frame);
     };
+    // The dragon is a chunk and a model of its own: asked for once, after the world
+    // has drawn its first frame and the page is idle, never before.
+    let asked = false;
+    let gone = false;
+    function askDragon() {
+      if (asked) return;
+      asked = true;
+      const go = () => {
+        if (gone) return;
+        world
+          .loadDragon()
+          .then((ok) => {
+            if (!ok || gone) return;
+            root.dataset.dragon = 'on';
+            hurry();
+          })
+          .catch(() => {
+            root.dataset.dragon = 'off';
+          });
+      };
+      if ('requestIdleCallback' in window) window.requestIdleCallback(go, { timeout: 2500 });
+      else setTimeout(go, 600);
+    }
 
     // The set pieces live at places in the page, so any change in its height
     // (a Read more opening, fonts arriving, a resize) lays them out again.
@@ -269,6 +288,8 @@ export default function World() {
     kick();
 
     return () => {
+      gone = true;
+      delete root.dataset.dragon;
       cancelAnimationFrame(raf);
       clearTimeout(rsz);
       ro.disconnect();

@@ -2,7 +2,7 @@ import { Vector4 } from 'three';
 
 /* A window for a piece made of light: it shows only inside one rectangle of the
    window (feathered at the edges) and gives nothing inside up to six keep-out
-   boxes (the text inside that rectangle). Shared by the small pieces; the wyrm
+   boxes (the text inside that rectangle). Shared by the small pieces; the dragon
    has its own, with a band and two waterlines. All in window px, y down. */
 export const BOXES = 6;
 

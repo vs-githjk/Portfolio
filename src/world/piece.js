@@ -43,7 +43,7 @@ export function readTokens(read, tokens, fallback = [128, 128, 128]) {
 
 /* Keep-out boxes for anything made of light: the text boxes inside an element,
    in document px, merged down to at most `max` rectangles and padded. A piece's
-   shader gives no light inside them (see GUARD in wyrm.js). */
+   shader gives no light inside them (see GUARD in dragon.js). */
 export function neighbourText(el, band) {
   // An anchor is often one cell of a row whose other cells hold text (a heading
   // beside a window). The row is the anchor's parent, unless that is the page itself.

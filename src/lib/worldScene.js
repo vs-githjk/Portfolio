@@ -28,8 +28,6 @@ import { BACK_FRAG, BACK_VERT, COMP_FRAG, COMP_VERT } from './worldBackdrop';
 import { createLand, LAND_FOV } from './worldLand';
 import { anchorRect } from '../world/anchors';
 import { readTokens } from '../world/piece';
-import { weeksFrom, wyrm } from '../world/wyrm';
-import { createWyrmStations } from '../world/wyrmStations';
 import { constellation } from '../world/constellation';
 import { flagWorlds } from '../world/flagWorlds';
 import { moons as moonsPiece } from '../world/moons';
@@ -40,7 +38,7 @@ import { moons as moonsPiece } from '../world/moons';
    of a sea, seen in section; scrolling is a dive through it. The water takes the
    red out of everything first (Beer-Lambert), light fans down from a sun above
    the surface, and in it hang a ringed gas giant with caustics on its lit side, a
-   creature of light (the wyrm: a year of commits) and a school of fish. Near the end of Builds warm light comes
+   dragon (a rigged model, src/world/dragon.js) and a school of fish. Near the end of Builds warm light comes
    down, the camera rises through a second waterline, and it is golden hour on a
    desert: real ground (lib/worldLand.js) with the crew's lamp-lit base camp on a
    dune. The sun sets behind the crew's panel; night falls over the commit buttes
@@ -510,9 +508,8 @@ const TRACK = {
   camX: [[2, 0], [3, 36], [4, 300], [5, 400]], // the land camera travels as the page is read
 };
 
-/** Build the scene on a canvas. Throws if WebGL is not available. `days` is the
-    GitHub snapshot's day list (the same data the commit graph draws). */
-export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' } = {}) {
+/** Build the scene on a canvas. Throws if WebGL is not available. */
+export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}) {
   const css = getComputedStyle(document.documentElement);
   const col = (name, fallback) => {
     const v = triple(css, name);
@@ -639,7 +636,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   scene.add(comp);
 
   /* ---- The land: its own scene and camera, drawn last ------------------------ */
-  // The commit buttes are retired: the wyrm's roost and the page's own graph carry the weeks now.
+  // The commit buttes are retired: the page's own graph carries the weeks now.
   const land = createLand({ C, stage, time, dpr, phone, aspect: window.innerWidth / Math.max(1, window.innerHeight), crew: counts.crew ?? [] });
   const sunAz = land.sunAz;
 
@@ -800,20 +797,44 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   const flare = new Mesh(plane, glowMat(C['earth-rim'], 0));
   scene.add(moonGlow, sunrise, flare);
 
-  /* ---- The wyrm: a year of weeks as one creature of light (src/world/wyrm.js) ---
-     It lives in the sea's scene while it is under water (so the giant can hide it)
-     and in a scene of its own, drawn over the land, once it is in the air. */
+  /* ---- The dragon (src/world/dragon.js, dragonStations.js) ---------------------
+     A rigged model in a chunk of its own, asked for once this scene is drawing
+     (loadDragon). It lives in the sea's scene while it is under water (so the
+     giant can hide it) and in a scene of its own, drawn over the land, once it
+     is in the air. Until it has arrived there is simply no dragon. */
   const overScene = new Scene();
-  const tok = readTokens(css, wyrm.tokens);
-  const dragon = wyrm.create({
-    weeks: weeksFrom(days),
-    colors: { water: [tok['wyrm-sea-lo'], tok['wyrm-sea'], tok['wyrm-sea-hi']], air: [tok['wyrm-air-lo'], tok['wyrm-air'], tok['wyrm-air-hi']] },
-    tier: phone ? 'phone' : 'desktop',
-    wet,
-  });
-  const stations = createWyrmStations({ live: dragon, phone });
-  scene.add(dragon.object);
-  dragon.object.renderOrder = 5;
+  for (const [name, fallback] of [
+    ['dragon-sea-hide', [10, 44, 56]],
+    ['dragon-sea-belly', [70, 140, 142]],
+    ['dragon-sea-glow', [150, 240, 255]],
+    ['dragon-air-hide', [34, 22, 24]],
+    ['dragon-air-belly', [128, 76, 54]],
+    ['dragon-air-glow', [255, 140, 70]],
+  ]) {
+    C[name] = col(`--${name}`, fallback);
+  }
+  let dragon = null;
+  let stations = null;
+  let stationEnv = null;
+  let dragonAsked = false;
+  async function loadDragon() {
+    if (dragonAsked) return false;
+    dragonAsked = true;
+    const [{ createDragon }, { createDragonStations }] = await Promise.all([import('../world/dragon'), import('../world/dragonStations')]);
+    const live = await createDragon({ url: phone ? '/dragon/dragon-lite.glb' : '/dragon/dragon.glb', tier: phone ? 'phone' : 'desktop', time, wet });
+    live.object.userData.solo = 'dragon';
+    scene.add(live.object);
+    const st = createDragonStations({ live, phone, C });
+    if (stationEnv) st.layout(stationEnv);
+    try {
+      await renderer.compileAsync(live.object, camera, scene);
+    } catch {
+      // A lost context: World.jsx handles it.
+    }
+    dragon = live;
+    stations = st;
+    return true;
+  }
 
   /* ---- A world for each flagship build, in its own window (src/world/flagWorlds.js) */
   const ftok = readTokens(css, flagWorlds.tokens);
@@ -826,7 +847,6 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   const winStars = constellation.create({ ids: counts.winIds ?? Array.from({ length: counts.wins ?? 0 }, (_, i) => i), color: wtok['win-star'] });
   winStars.object.renderOrder = 7;
   overScene.add(winStars.object);
-  dragon.object.userData.solo = 'wyrm';
 
   /* ---- The school: fish that circle in the warm water under the shore -------- */
   const nFish = phone ? 14 : 26;
@@ -1055,16 +1075,17 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     flags.layout();
     winStars.layout({ w, h });
     flagRects = lead.map((id) => anchorRect(`flag-${id}`));
-    // The wyrm's stations read the same page.
+    // The dragon's stations read the same page.
     const sunX = w * (phone ? 0.2 : 0.17);
-    stations.layout({
+    stationEnv = {
       w,
       h,
       camZ,
       surf: home.surf,
       giant: { x: w * (phone ? 0.2 : 0.27), doc: home.giant + (phone ? 20 : 70), r: gr, k: gk },
       sun: { x: sunX, doc: home.foot + 4 + (sunX * sunX) / (2 * hr), r: hr },
-    });
+    };
+    stations?.layout(stationEnv);
   }
 
   /* The drifting things keep to the margins: `edge(off)` is a screen x from the
@@ -1195,7 +1216,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
     }
 
-    // The wyrm: at most one station at a time (src/world/wyrmStations.js). In the
+    // The dragon: at most one station at a time (src/world/dragonStations.js). In the
     // sea it is part of the sea's scene; in the air it is drawn over the land.
     frame.t = t;
     frame.scroll = scroll;
@@ -1208,9 +1229,11 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     frame.rise = rise;
     frame.dpr = dpr.value;
     frame.resY = stage.uRes.value.y;
-    const station = stations.update(frame);
-    const aloft = station === 'breach' || station === 'roost' || station === 'flight';
-    if (aloft !== (dragon.object.parent === overScene)) (aloft ? overScene : scene).add(dragon.object);
+    if (stations) {
+      const station = stations.update(frame);
+      const aloft = station !== '' && station !== 'pass';
+      if (aloft !== (dragon.object.parent === overScene)) (aloft ? overScene : scene).add(dragon.object);
+    }
 
     // The flagship worlds, the giant's moons and the wins' stars.
     frame.w = w;
@@ -1355,7 +1378,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       renderer.clearDepth();
       renderer.render(land.scene, land.camera);
     }
-    if ((dragon.object.parent === overScene && dragon.object.visible) || winStars.object.visible) {
+    if ((dragon && dragon.object.parent === overScene && dragon.object.visible) || winStars.object.visible) {
       renderer.clearDepth();
       renderer.render(overScene, camera);
     }
@@ -1369,7 +1392,6 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       await renderer.compileAsync(backScene, camera);
       await renderer.compileAsync(scene, camera);
       await renderer.compileAsync(land.scene, land.camera);
-      await renderer.compileAsync(dragon.object, camera);
       await renderer.compileAsync(overScene, camera);
     } catch {
       // A lost context: World.jsx handles it.
@@ -1398,7 +1420,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
 
   function dispose() {
     for (const d of disposables) d.dispose();
-    for (const p of [dragon, flags, winStars, carried]) p.dispose();
+    for (const p of [dragon, flags, winStars, carried]) p?.dispose();
     land.dispose();
     renderer.dispose();
   }
@@ -1413,12 +1435,14 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     setHue,
     breakDawn: () => {
       dawn.want = 1;
-      stations.fly(time.value);
+      stations?.fly(time.value);
     },
+    /** world:week { index }: the dragon on the roost looks at that week's column for a moment. */
     setWeek(index) {
-      dragon.setLit(index);
+      stations?.lookAt(index, time.value);
     },
-    station: () => stations.shown,
+    loadDragon,
+    station: () => stations?.shown ?? { station: '', u: 0 },
     /** world:focus { kind, id }: a win's star flares, a build's moon lights. */
     setFocus(kind, id, extra) {
       if (kind === 'win') winStars.setFocus(id);
@@ -1448,8 +1472,6 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       const line = -camY;
       const out = [];
       const put = (id, x, y, visible) => out.push({ id, x: Math.round(x), y: Math.round(y), side: x < w / 2 ? 'left' : 'right', visible: !!visible && y > 0 && y < h && x > -40 && x < w + 40 });
-      const d = dragon.binding.project();
-      put('wyrm', d.x + w / 2, d.y + h / 2, d.visible);
       put('giant', w / 2 + w * (phone ? 0.2 : 0.27), (home.giant + (phone ? 20 : 70) - line) / view(-220) + h / 2, giant.visible);
       for (const b of flags.binding) {
         const p = b.project();
@@ -1464,7 +1486,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     },
     /** What the scene is made of, counted from the pieces themselves (Receipts, credits, tests). */
     census: () => ({
-      vertebrae: dragon.count(),
+      dragon: dragon ? { bones: dragon.bones, triangles: dragon.triangles, clips: dragon.clips } : null,
       ...Object.fromEntries(flags.binding.map((b) => [b.id, b.count()])),
       giant: carried.binding.count(),
       fires: land.fires ? land.fires.binding.count() : 0,
@@ -1473,6 +1495,5 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     /** Draw calls and triangles of the last frame. */
     stats: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, points: renderer.info.render.points, programs: renderer.info.programs?.length ?? 0 }),
     pieces: () => ({ dragon, flags, winStars, carried, fires: land.fires }),
-    weeks: dragon.count(),
   };
 }
