@@ -5,7 +5,8 @@ import { definePiece } from './piece';
    ring for every other build. Both counts come from the lists it is given. A
    moon lights when its build is the one in front of the reader. They ride in
    the ring's own plane (the caller gives this object the ring's rotation and
-   adds it to the giant), all on the arc of the ring a window can see. */
+   adds it to the giant): the lights all along the arc a window can see, the
+   moons on its near side, in front of the giant, clear of any text column. */
 const VERT = /* glsl */ `
 attribute vec3 aBody; // size in giant radii, kind (0 moon, 1 ring light), lit 0 to 1
 uniform float uPx, uTime;
@@ -56,8 +57,11 @@ export const moons = definePiece({
     const A0 = 2.42;
     const A1 = 5.28;
     for (let i = 0; i < nM; i++) {
-      const a = 2.62 + (nM > 1 ? i / (nM - 1) : 0.5) * 1.15;
-      const r = 2.82 + 0.42 * ((i * 2) % 3) * 0.5;
+      // The moons ride inside the ring, on its near side, so they cross the giant's
+      // own disc: out on the far left of the arc they drifted into the reading
+      // column beside it, and wide on the near side they sat on the Builds chart.
+      const a = 4.35 + (nM > 1 ? i / (nM - 1) : 0.5) * 0.9;
+      const r = 1.3 + 0.08 * Math.abs(i - (nM - 1) / 2);
       pos.set([Math.cos(a) * r, Math.sin(a) * r, 0], i * 3);
       body.setXYZ(i, 0.26, 0, 0);
     }

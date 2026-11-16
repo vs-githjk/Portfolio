@@ -364,10 +364,10 @@ html[data-world='on'] .builds::before {
   transform: translate(-50%, 0);
 }
 
+/* The key sits under the rows, in the column: at the top right it lay on the
+   giant's lit disc. */
 .depths-legend {
-  position: absolute;
-  top: 18px;
-  right: 0;
+  margin-top: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1743,11 +1743,6 @@ html[data-world='on'] .deep-head::before {
 
   .depths-groups {
     display: grid;
-  }
-
-  .depths-legend {
-    position: static;
-    margin-top: 8px;
   }
 
   /* No hover on a phone, and a name wider than the gutter would widen the page. */
