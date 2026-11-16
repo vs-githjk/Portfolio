@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Context for Claude Code working in this repo. This describes the v3 site on branch
-`overhaul` as of Nov 16 2026 (after judging round 6).
+`overhaul` as of Nov 16 2026 (after judging round 6 and the v4 opening: the hologram,
+the hero without the ring, the ring in Builds).
 
 ## What this is
 
@@ -67,11 +68,11 @@ Re-measure when the build changes, or set it to null.
 
 | Section (place) | Job |
 |---|---|
-| Welcome (The Threshold) | His studio photograph in a round window says hello: "Hey, I'm Vidyut." and "I build worlds. Reliable ones." Enter, or scroll, or Skip intro |
-| Hero (The Orrery) | The name, the role, Email me and Resume, and the ring of twelve builds standing on an engraved plate |
+| Welcome (The Threshold) | A hologram of him on a projector plate says hello: "Hey, I'm Vidyut." and "I build worlds. Reliable ones." Enter, or scroll, or Skip intro |
+| Hero (The Landing) | His name, very large, the thesis, one plain line, Email me, Resume and links, beside a card with his portrait, status and place. No builds here |
 | Vista: surface (The Waterline) | The dive. "Under the surface: the work." |
 | Experience (The Sounding) | Where he has worked; a sounding weight sinks as the roles are read |
-| Builds (The Deep) | Opener (the ringed giant and a depth chart of all twenty builds), three flagships as chapters, the fleet of eight featured plates, the paper with its repair loop, More builds as rows |
+| Builds (The Deep) | Opener (the heading, the ringed giant, and under them the ring of twelve build cards as the index; the dot chart of all twenty on a phone or without scripts), three flagships as chapters, the fleet of eight featured plates, the paper with its repair loop, More builds as rows |
 | Vista: shore (The Breach) | Inside Builds: the camera rises through the second waterline into dusk |
 | Crew (The Camp) | Master Agents, a character select screen, and a run that holds at each gate |
 | Highlights (The Cut) | Four sentences cut as strata of rock |
@@ -84,45 +85,80 @@ Re-measure when the build changes, or set it to null.
 
 Principles and Value are different shapes on purpose (tiles vs hairline rows).
 
-## The entry (`components/Welcome.jsx`, `shell/entry.js`, `Hologram.jsx`, `lib/holoScene.js`)
+## The entry (`components/Welcome.jsx`, `shell/entry.js`, `Hologram.jsx`, `lib/holoScene.js`, `lib/face.js`)
 
-- The face is his own photograph in its own colours, in a round window: friendly first,
-  never eerie. Every monochrome or glowing version of a face read as a ghost and was cut.
-  No lines to his head, nothing over the face or the greeting. His work stands beside him as
-  small thoughts (`welcome.hub`).
-- The greeting is prerendered text and the LCP element. Never hide it to reveal it.
-- Scroll is the timeline; Enter plays the same timeline on a clock (`KNOTS` in
-  `Welcome.jsx`): the light lets go (a full second, so the photo and its points are seen
-  together), gathers to a ball, the ball says `welcome.ball`, a ring opens out of it, and the
-  points land on the ring's cards as the hero sets. Any wheel, touch or key hands the scroll
-  back.
+Vidyut, Nov 16: "I asked for a hologram [and got] a normal picture of my face", then, of a
+framed hologram of the photo, "it shouldn't be a box". The first screen is a projection room.
+
+- **The figure.** `welcome.figure` in `content.js` is ONE picture with a transparent
+  background (PNG or WebP with alpha, any aspect, bust or whole body). Its alpha is its
+  silhouette: nothing rectangular is drawn round it. The scene adds the hologram: the
+  picture's tones on the `--holo-*` ramp with a share of its own colour (`--holo-warm`), light
+  along its edge, a glow in the air round it, scan lines (`--holo-pitch`), a slow band of
+  light, the foot dissolving into the cone (`--holo-foot`), and a plate under it. Try another
+  picture with `?figure=/holo/<file>` (a path on this site only).
+  **Today the figure is a stand-in** (his studio photograph, cut out). The avatar Vidyut is
+  choosing (a friendly, magical figure of himself) replaces `public/holo/figure-*.webp`.
+- **Never** a point cloud of his face (judged "scary"), never a plain photograph, never a
+  frame or a box, never a row slip or any distortion of the picture (he read one as an eye
+  glitch). The shimmer is brightness only. Check "friendly or eerie" with other model
+  families, cold, against the plain photo as a control, before shipping a new figure.
+- **One visual language.** The panels at the sides (`welcome.hub`) are projections of the same
+  kind, in CSS (`v4-opening.css`): the same ramp, line pitch, frame split, cone and plate. They
+  take turns, never touch the figure, and are `aria-hidden`.
+- **No second act.** There is no ball and no line of speech between him and his name. On Enter
+  (a clock, `KNOTS` in `Welcome.jsx`) or on scroll, two curtains of light close over the figure
+  (it turns to light as they come and is never squeezed), leave one vertical beam, and the
+  beam lifts off the plate as the hero arrives. Any wheel, touch or key hands the scroll back.
+- The greeting is prerendered text and the LCP element. Never hide it to reveal it. The
+  picture is fetched by script and drawn in the canvas; it is never an element of the page.
 - Skip intro lands the hero at once and moves focus to the name (`.hero-name`,
   `tabIndex=-1`), so the next Tab is Email me.
-- `--welcome-run` is the empty scroll under the greeting (70svh, 52svh on a phone, 0 under
+- `--welcome-run` is the empty scroll under the greeting (16svh, 8svh on a phone, 0 under
   reduced motion).
-- The hologram is a second, tiny WebGL context (plain WebGL, no three.js) that stops before
-  the world starts. Points are baked by `scripts/bake-hologram.py` into `public/holo/`.
-- Reduced motion, `?plain` and no WebGL: a still portrait, no beats, Enter is a plain anchor.
+- The hologram is a second, tiny WebGL context (plain WebGL, one fragment shader, no
+  three.js) that stops before the world starts.
+- Reduced motion: one still frame of the figure and three still panels. `?plain` and no
+  WebGL: no figure, the greeting and then the hero; Enter is a plain anchor.
 
-## The Orrery (`components/Orbit.jsx`, `Drift.jsx`, `shell/PlateArc.jsx`)
+## The hero (`components/Hero.jsx`)
 
-Twelve glass cards on an elliptical CSS 3D ring around the name, on a plate drawn from the
-same projection (one tick a build). Each card links to its Builds entry (`#build-<id>`); a
-slide `id` in `hero.carousel.slides` must equal the Builds id.
+Vidyut, Nov 16: "If I'm already doing 'Hey, I'm Vidyut', why is there an orbit right here
+that talks about projects? Isn't that the same as Builds?" The hero has no builds. It is his
+name in two lines of the display face (`--fs-name`), the thesis, one plain sentence, the
+credentials and the actions, and on the right a card: the portrait, the status, the place.
+A phone stacks the card over the name. Do not put build cards, a ring or drifting thumbnails
+back in the hero.
+
+## The ring (`components/RingStage.jsx`, `Orbit.jsx`, `Drift.jsx`)
+
+Twelve glass cards on an elliptical CSS 3D ring, on a plate drawn from the same projection
+(one tick a card). It stands where it is an index, and `RING_HOME` in `data/world.js` is the
+one line that picks where:
+
+- `'builds'` (the default): at the top of Builds. The opener (heading, giant) is the ring's
+  centre block and the front arc of the ring hangs under it (`mode="under"`): five cards in
+  sight, the back half never shown, so nothing crosses the heading. Each card links to its
+  Builds entry (`#build-<id>`; a slide `id` in `hero.carousel.slides` must equal the Builds
+  id). It replaces the dot chart on a wide window.
+- `'proof'`: in Proof of work, the whole ring turns around "Verify me in one click"
+  (`mode="around"`), a card a win, each opening its public page; it replaces the plaques on a
+  wide window. Built and screenshotted as the alternative; not the default because it repeats
+  thumbnails (three Terrametric wins) and hides the gold plaques.
 
 - One rAF loop writes transforms straight to the nodes; `offsetWidth`, never
   `getBoundingClientRect`. It asks for frames only while something moves.
-- Only the front card shows its call to action and progress line; a card one step round
-  shows none (at a third of full opacity it read as a disabled link). Cards behind the hero
-  copy fade whole; captions wipe with a clip-path, never fade.
+- The cards wait unlit until the ring is first seen, then land on their ticks front first.
+- Only the front card shows its call to action and progress line. Captions wipe with a
+  clip-path, never fade.
 - Hover pauses, focus stops it; only the front card is tabbable; arrows step, Home and End
   jump; Pause, Prev, Next.
 - Below 960px wide or 640px tall the ring gives way to `Drift.jsx`: the thumbnails as two
-  dim drifting rows over the plate's near rim, `aria-hidden`, no captions or links. It is
-  atmosphere, not a list: a captioned card row on a phone read as Builds twice (Vidyut, Oct
-  2026). Do not put captioned build cards in the phone hero.
-- The ring registers the `orrery` binding for Receipts in both modes (in row mode from the
-  plate's rim, measured on resize only).
+  dim drifting rows, `aria-hidden`, no captions or links. It is atmosphere, not a list.
+  Without scripts there is no ring and the dot chart is the index.
+- The plate takes the accent of the realm it stands in (`--plate-*` are declared on
+  `.ring-stage`).
+- The ring registers the `orrery` binding for Receipts.
 
 ## The world (`components/World.jsx`, `lib/worldScene.js`, `lib/worldBackdrop.js`, `lib/worldLand.js`, `src/world/`)
 
@@ -199,8 +235,9 @@ labels and receipt sentences live in `data/world.js`; events and shared CSS vari
   Without the script every dossier is open. On a phone a plate is a row (small thumbnail,
   name, one-liner, links) and its results open with the dossier.
 - More builds are rows with Read more (`<details>`).
-- Height, measured Nov 16: 6,299px at 1440 (baseline 9,163) and 8,755px at 390 (baseline
-  19,488). Keep it at or under these.
+- Height, measured Nov 16 with the ring as the index: 6,654px at 1440 (it was 6,299 with
+  the dot chart; baseline 9,163) and 8,951px at 390 (it was 8,755; baseline 19,488). Keep
+  it at or under these.
 - Images are flat and straight; only the ring is 3D.
 
 ## Master Agents (`components/NowBuilding.jsx`, `CrewRun.jsx`, `builds.building`)
@@ -246,7 +283,8 @@ snapshot), nothing random or time-based renders. `.reveal` hides only under `htm
   words and wiring (place names, shell labels, receipt sentences), with every count computed.
 - `src/styles/` is every visual decision: `tokens.css` (the control panel), `base.css`,
   `sections.css` and `v3-sections.css` (per region, top to bottom), `v3-shell.css` (the
-  shell), `v3-world.css`. `scripts/check-classes.mjs` fails the build when the shell sheet
+  shell), `v3-world.css`, `v4-opening.css` (the projections, the hero, the ring's homes;
+  loaded last). `scripts/check-classes.mjs` fails the build when the shell sheet
   and a sections sheet both claim a bare class name (`.plate` and `.chart` once did).
 - `src/components/` is structure only. Never hardcode a color, font or radius: use a token.
 - Editing copy means `content.js`; editing looks means `styles/`. Say so before a change
@@ -307,8 +345,15 @@ Search the repo for `TODO`:
 - Yinzone and BetterBill "Live site" links (hidden until Vidyut sends them)
 - `public/og-card-v8.jpg` is the link-preview card; bump the filename and re-render it when
   the headline facts change
-- Taste calls waiting on Vidyut: a rim of light points round the resting photo on the first
-  screen; a shorter phone Builds (it would hide the one-liners); the shore camp's tents
+- The avatar for the hologram (Vidyut is choosing it): drop it in as `welcome.figure`, then
+  delete the stand-in `public/holo/figure-*.webp`
+- No longer used and still in the repo: `public/holo/face-a.bin`, `face-b.bin`,
+  `face-1024.webp`, `face-512.webp` and `scripts/bake-hologram.py` (the point cloud); delete
+  them once Vidyut agrees
+- `colophon.lighthouse` is null since the opening was rebuilt: measure the production build
+  again on a quiet machine (two runs on a busy one read 89 and 98, LCP 2.3 s)
+- Taste calls waiting on Vidyut: the ring's home (Builds or Proof of work); a shorter phone
+  Builds (it would hide the one-liners); the shore camp's tents
 
 ## Things deliberately left out
 
@@ -320,7 +365,8 @@ Don't add these back without asking:
 - A proof band of bare numbers under the hero, and any halo or nebula.
 - Alltr (not his project) and TransitGuard's dead demo link.
 - A second world canvas, and any effect that reads as an effects reel.
-- A face in monochrome light, lines to his head, panels over his face, a wandering guide
-  that follows the reader down the page.
+- A point cloud of his face, a plain photograph or a framed box on the first screen, a ball
+  or any second act between the welcome and the hero, the ring or build thumbnails in the
+  hero, lines to his head, panels over the figure, a wandering guide that follows the reader.
 - Glass cards or blur scrims behind text (the calm ground does that job).
-- Captioned build cards in the phone hero.
+- Build cards of any kind in the hero.
