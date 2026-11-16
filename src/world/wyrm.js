@@ -432,7 +432,7 @@ export const wyrm = definePiece({
       o += HEAD.length * 2;
     }
     const leaf0 = o;
-    for (const L of LEAVES) {
+    for (let l = 0; l < LEAVES.length; l++) {
       for (let i = 0; i <= LU; i++) {
         for (let j = -LV; j <= LV; j++) {
           bandAttr.set([i / LU, j / LV, 3, 1], (o + i * (2 * LV + 1) + j + LV) * 4);
