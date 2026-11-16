@@ -58,9 +58,9 @@ export function createDragonStations({ live, phone, C }) {
   const v = (name, k = 1) => [C[name].x * k, C[name].y * k, C[name].z * k];
   const LIGHT = {
     sea: { keyDir: [0.25, 0.9, 0.35], key: v('sea-ray', 0.95), lowDir: [0, -1, 0.2], low: v('sea-shallow', 0.5), amb: v('sea-shallow', 1.15), hide: v('dragon-sea-hide', 1.5), belly: v('dragon-sea-belly'), rim: v('sea-ray', 0.9), glow: v('dragon-sea-glow'), fogK: 0.0011, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.22, split: 0 },
-    dusk: { keyDir: [0.5, 0.22, -0.7], key: v('sun', 1.5), lowDir: [-0.3, -0.8, 0.5], low: v('dusk-low', 0.22), amb: v('dusk-mid', 0.55), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('dusk-low', 0.82), fogK: 0.00075, caust: 0, rimGain: 1.25, fire: 0.9, thin: 1.15, split: 1 },
+    dusk: { keyDir: [0.5, 0.22, -0.7], key: v('sun', 1.5), lowDir: [-0.3, -0.8, 0.5], low: v('dusk-low', 0.22), amb: v('dusk-mid', 0.55), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('dusk-low', 0.82), fogK: 0.00075, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.72, split: 1 },
     night: { keyDir: [-0.5, 0.62, 0.6], key: v('moon-rim', 1.1), lowDir: [0.25, -0.85, 0.45], low: v('ember', 0.6), amb: v('night-low', 3.2), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('ember', 1), glow: v('dragon-air-glow'), fog: v('night-low'), fogK: 0, caust: 0, rimGain: 1.1, fire: 1.4, thin: 0.5, split: 0 },
-    dawn: { keyDir: [-0.62, 0.12, -0.6], key: v('sun', 1.25), lowDir: [0, -1, 0.2], low: v('earth-rim', 0.2), amb: v('night-low', 1.7), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('night-low', 1.4), fogK: 0.0004, caust: 0, rimGain: 1.3, fire: 1, thin: 1, split: 0 },
+    dawn: { keyDir: [-0.62, 0.12, -0.6], key: v('sun', 1.25), lowDir: [0, -1, 0.2], low: v('earth-rim', 0.2), amb: v('night-low', 1.7), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('night-low', 1.4), fogK: 0.0004, caust: 0, rimGain: 1.3, fire: 1, thin: 0.72, split: 0 },
   };
   let lit = '';
   const light = (name) => {
@@ -185,12 +185,13 @@ export function createDragonStations({ live, phone, C }) {
             [sx, S - 16, -1500],
           ]
         : [
-            [w * 0.62, S - h * 0.5, 40],
-            [w * 0.5, S - h * 0.45, 20],
-            [w * 0.38, S - h * 0.34, -40],
-            [w * 0.29, S - h * 0.2, -200],
-            [sx + w * 0.07, S - h * 0.09, -600],
-            [sx + w * 0.02, S - 30, -1200],
+            // down the right margin, clear of the column, then low along the limb to the sun
+            [w * 0.66, S - h * 0.52, 40],
+            [w * 0.56, S - h * 0.42, 20],
+            [w * 0.47, S - h * 0.27, -20],
+            [w * 0.4, S - h * 0.13, -120],
+            [w * 0.3, S - h * 0.075, -380],
+            [sx + w * 0.05, S - h * 0.045, -900],
             [sx, S - 14, -2000],
           ];
       const lowWay = [
@@ -211,7 +212,7 @@ export function createDragonStations({ live, phone, C }) {
         clock: [from, Math.max(120, end - from)],
         boxes: boxesOf(contact, [top - 40, horizon.bottom]),
         band: [phone ? horizon.top - 30 : top, horizon.bottom],
-        lowBand: [horizon.top - 20, horizon.bottom],
+        lowBand: [horizon.top - (phone ? 60 : 150), horizon.bottom],
       };
     }
   }
@@ -266,7 +267,7 @@ export function createDragonStations({ live, phone, C }) {
           heading(s.dawn, e, 0.02, (cam.z - z) / cam.z);
           light('dawn');
           guard(s, f);
-          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.25 : 1.5), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), clips: { fly: 1 }, beat: 0.95, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
+          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.25 : 1.3), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), clips: { fly: 1 }, beat: 0.95, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
           shown.station = 'flight';
           shown.u = u;
           return 'flight';

@@ -73,13 +73,16 @@ void main(){
 const FRAG = /* glsl */ `
 uniform vec3 uKeyDir, uKey, uLowDir, uLow, uAmb, uHide, uBelly, uRim, uGlow, uFog, uWaterCol, uSigmaW;
 uniform vec3 uEye[2];
+uniform vec3 uRib[22];
 uniform float uTime, uFogK, uCaust, uRimGain, uFire, uThin, uSplit, uPlates;
 varying vec3 vN; varying vec3 vW; varying vec3 vRest; varying vec3 vRN; varying vec3 vMask;
 ${GUARD}
 float h13(vec3 p){ p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 vec3 h33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
 #ifdef PLATES
-/* Plates: the nearest and second nearest of a jittered lattice. x: 0 on a seam, 1 inside a plate; y: the plate's own number; zw unused. */
+/* Plates: the nearest and second nearest of a jittered lattice. x: 0 on a seam, 1 inside a plate; y: the plate's own number.
+   gTo is left pointing from the fragment to its plate's middle, for the dome of each plate. */
+vec3 gTo;
 vec4 plates(vec3 q){
   vec3 c = floor(q); vec3 f = q - c;
   float d1 = 9.0; float d2 = 9.0; vec3 best = vec3(0.0); vec3 to = vec3(0.0);
@@ -89,7 +92,8 @@ vec4 plates(vec3 q){
     float d = dot(r, r);
     if (d < d1) { d2 = d1; d1 = d; best = c + o; to = r; } else if (d < d2) { d2 = d; }
   }
-  return vec4(smoothstep(0.015, 0.13, sqrt(d2) - sqrt(d1)), h13(best), normalize(to + 1e-4).xy);
+  gTo = to;
+  return vec4(smoothstep(0.015, 0.13, sqrt(d2) - sqrt(d1)), h13(best), 0.0, 0.0);
 }
 #endif
 #ifdef PLATES
@@ -124,8 +128,28 @@ void main(){
     vec4 pl = plates(q);
     seam = mix(1.0, pl.x, fine * body);
     shade = mix(0.5, pl.y, fine);
-    N = normalize(N + (1.0 - seam) * 0.5 * N.yzx * (pl.z - 0.5) * body);
+    // each plate is a low dome: its edges lean away from its middle
+    vec3 lean = gTo - dot(gTo, vRN) * vRN;
+    vec3 dome = -lean * 0.95 * fine * body;
   #endif
+  #ifndef PLATES
+    vec3 dome = vec3(0.0);
+  #endif
+  // The dome is found at rest: carried onto the posed body by the same turn that took the rest normal to N.
+  N = normalize(N + dome * 0.55 - N * dot(dome, vRN) * 0.3);
+  // The wing's bones: the arm and three fingers, as ridges the skin hangs between.
+  float rib = 0.0; float web = 1.0;
+  if (skin > 0.02) {
+    vec3 r = vec3(abs(vRest.x), vRest.yz);
+    float dmin = 9.0;
+    for (int i = 0; i < 11; i++) {
+      vec3 a = uRib[2 * i]; vec3 ab = uRib[2 * i + 1] - a;
+      float t = clamp(dot(r - a, ab) / dot(ab, ab), 0.0, 1.0);
+      dmin = min(dmin, length(r - a - ab * t));
+    }
+    rib = smoothstep(0.26, 0.07, dmin) * skin;
+    web = smoothstep(0.1, 1.1, dmin);
+  }
   float under_ = smoothstep(0.15, -0.55, vRN.y) * body;   // belly, throat and the underside of the tail
   vec3 albedo = mix(uHide * (0.7 + 0.6 * shade), mix(uHide, uBelly, 0.5) * (0.85 + 0.3 * shade), under_);
   albedo = mix(albedo, uBelly * 1.3, point * 0.7);
@@ -135,7 +159,8 @@ void main(){
   #ifdef PLATES
     vein = mix(1.0, 0.82 + 0.18 * plates(vRest * 1.7 + 7.3).x, fine2(vRest));
   #endif
-  albedo = mix(albedo, (uHide * 1.25 + uBelly * 0.14) * vein, skin);
+  albedo = mix(albedo, (uHide * 1.25 + uBelly * 0.14) * vein * (0.6 + 0.4 * web), skin);
+  albedo = mix(albedo, uHide * 0.45, rib * 0.9);
 
   float ndl = dot(N, uKeyDir);
   float dif = smoothstep(-0.2, 1.0, ndl);
@@ -146,7 +171,8 @@ void main(){
   col += uKey * pow(max(dot(N, H), 0.0), 42.0) * 0.55 * seam * body * occ;
   // Light through the wing: the far side lit shows on the near side, most when the reader looks toward the light.
   float thru = max(-ndl, 0.0) * (0.45 + 0.55 * pow(max(dot(V, -uKeyDir), 0.0), 2.0));
-  col += uKey * uThin * mix(uBelly, uGlow, 0.55) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * vein;
+  col += uKey * uThin * mix(uBelly, uGlow, 0.55) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * vein * (0.3 + 0.7 * web) * (1.0 - 0.85 * rib);
+  col += uKey * pow(max(dot(N, H), 0.0), 24.0) * 0.3 * rib * occ;
   // The rim: the place's own light on every edge turned away from the reader.
   float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
   col += uRim * fres * uRimGain * (0.3 + 0.7 * smoothstep(-0.5, 0.5, ndl)) * mix(0.55, 1.0, occ);
@@ -194,6 +220,28 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
   // The eye bones sit inside the skull: the eye itself is a little way out along x.
   const eyeAt = (n, side) => (bone(n) ? new Vector3().setFromMatrixPosition(bone(n).matrixWorld).add(new Vector3(side * 0.2, 0, 0)) : new Vector3(0, 99, 0));
 
+  /* The left wing's bones at rest, as eleven segments (the shader mirrors them): the arm,
+     then three fingers from the wrist. A finger's last bone has no end in the file, so it
+     runs on by most of its own bone's length. */
+  function ribs() {
+    const at = (n) => new Vector3().setFromMatrixPosition(bone(n).matrixWorld);
+    const chains = [
+      ['Wing.L', 'Wing.001.L', 'Wing.002.L'],
+      ['Wing.002.L', 'Wing.002.L.001', 'Wing.002.L.002', null],
+      ['Wing.001.L.001', 'Wing.001.L.002', 'Wing.001.L.003', null],
+      ['Wing.001.L.004', 'Wing.001.L.005', 'Wing.001.L.006', null],
+    ];
+    const out = [];
+    for (const chain of chains) {
+      if (chain.some((n) => n && !bone(n))) continue;
+      const pts = chain.filter(Boolean).map(at);
+      if (chain[chain.length - 1] === null) pts.push(pts[pts.length - 1].clone().multiplyScalar(1.85).addScaledVector(pts[pts.length - 2], -0.85));
+      for (let i = 0; i < pts.length - 1; i++) out.push(pts[i], pts[i + 1]);
+    }
+    while (out.length < 22) out.push(new Vector3(0, 99, 0), new Vector3(0, 99.1, 0));
+    for (const v of out) v.x = Math.abs(v.x);
+    return out.slice(0, 22);
+  }
   const U = {
     uBox: { value: Array.from({ length: GUARD_BOXES }, () => new Vector4(-9e4, -9e4, -9e4, -9e4)) },
     uBand: { value: new Vector2(-1e5, 1e5) },
@@ -220,6 +268,7 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     uPlates: { value: 5.2 },
     uEye: { value: [eyeAt('eye.L', 1), eyeAt('eye.R', -1)] },
     uRestM: { value: restM },
+    uRib: { value: ribs() },
     uSigmaW: wet?.uSigmaW ?? { value: new Vector3(1, 0.4, 0.3) },
     uWaterCol: wet?.uWaterCol ?? { value: new Vector3() },
   };
