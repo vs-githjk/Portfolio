@@ -1,16 +1,20 @@
-import { AnimationMixer, DoubleSide, Group, LoopOnce, Matrix4, Quaternion, ShaderMaterial, SkinnedMesh, Vector2, Vector3, Vector4 } from 'three';
+import { AnimationMixer, Box3, BufferAttribute, DoubleSide, Group, Matrix4, Quaternion, ShaderMaterial, SkinnedMesh, Vector2, Vector3, Vector4 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
-/* The dragon: a rigged, animated model, lit by the place it is in.
+/* The dragon: a rigged, animated model, repainted and lit by the place it is in.
 
-   Model: "Low Poly Ice Dragon" by xterryx, OpenGameArt,
-   https://opengameart.org/content/low-poly-ice-dragon , CC0 1.0 (public domain).
-   scripts/bake-dragon.py smooths it, lengthens the wings, bakes three masks into
-   the vertex colours (R wing skin, G occlusion, B points) and writes the four
-   clips this file plays: Fly, Glide, Perch, Roar. No textures: the hide, its
-   plates, the light through the wings and the fire under the throat are all in
-   the shader below, in the palette of the realm it is in.
+   Model: "European Dragon" by Nonexistent 101, Sketchfab,
+   https://sketchfab.com/3d-models/european-dragon-82f393a2e6c048ad80c171ce3b3a7b87 ,
+   CC-BY 4.0 (credited in content.js). scripts/prep-dragon.py and gltf-transform
+   make the two files in public/dragon/. Its clips: Fly (it hovers upright, four
+   beats to the clip), Perch (its "Idle Sit") and Stand.
+
+   Vidyut did not want the model's own colours (Nov 16), so the shader repaints it:
+   only the light and dark of its base colour and its normal map are used. Blue
+   scales with a sheen, a gold belly and claws, red wing skin with the light
+   through it, faint glowing eyes, a soft rim. Which part is which is read once at
+   load from the skin weights (wing bones, toe bones) into a vertex colour.
 
    This file is its own chunk, asked for after the world is drawing. It is told
    where to be by dragonStations.js: a place in the window (px from the middle,
@@ -18,11 +22,12 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
    it gives nothing inside the caller's keep-out boxes or outside its band. */
 
 export const GUARD_BOXES = 6;
-export const MODEL = { length: 15.7, span: 11.6, head: 5.4, tail: 10.25, chest: 2.9, tall: 8.4 }; // model units, measured in the bake
+export const MODEL = { length: 11, span: 16, tall: 8.4 }; // the units the stations think in: the model is scaled so it sits 8.4 tall (wings folded up)
 
 const VERT = /* glsl */ `
 attribute vec4 color;
 uniform mat4 uRestM;
+varying vec2 vUv;
 varying vec3 vN; varying vec3 vW; varying vec3 vRest; varying vec3 vRN; varying vec3 vMask;
 #include <common>
 #include <skinning_pars_vertex>
@@ -42,6 +47,7 @@ void main(){
   vW = w.xyz;
   vN = normalize(mat3(modelMatrix) * objectNormal);
   vMask = color.rgb;
+  vUv = uv;
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 
@@ -72,33 +78,11 @@ void main(){
 
 const FRAG = /* glsl */ `
 uniform vec3 uKeyDir, uKey, uLowDir, uLow, uAmb, uHide, uBelly, uWing, uRim, uGlow, uFog, uWaterCol, uSigmaW;
-uniform vec3 uEye[2];
-uniform vec3 uRib[22];
-uniform float uTime, uFogK, uCaust, uRimGain, uFire, uThin, uSplit, uPlates;
+uniform float uTime, uFogK, uCaust, uRimGain, uFire, uThin, uSplit;
+uniform sampler2D uMap, uNormalMap;
+varying vec2 vUv;
 varying vec3 vN; varying vec3 vW; varying vec3 vRest; varying vec3 vRN; varying vec3 vMask;
 ${GUARD}
-float h13(vec3 p){ p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
-vec3 h33(vec3 p){ p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
-#ifdef PLATES
-/* Plates: the nearest and second nearest of a jittered lattice. x: 0 on a seam, 1 inside a plate; y: the plate's own number.
-   gTo is left pointing from the fragment to its plate's middle, for the dome of each plate. */
-vec3 gTo;
-vec4 plates(vec3 q){
-  vec3 c = floor(q); vec3 f = q - c;
-  float d1 = 9.0; float d2 = 9.0; vec3 best = vec3(0.0); vec3 to = vec3(0.0);
-  for (int k = -1; k <= 1; k++) for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
-    vec3 o = vec3(float(i), float(j), float(k));
-    vec3 r = o + h33(c + o) * 0.86 - f;
-    float d = dot(r, r);
-    if (d < d1) { d2 = d1; d1 = d; best = c + o; to = r; } else if (d < d2) { d2 = d; }
-  }
-  gTo = to;
-  return vec4(smoothstep(0.015, 0.13, sqrt(d2) - sqrt(d1)), h13(best), 0.0, 0.0);
-}
-#endif
-#ifdef PLATES
-float fine2(vec3 r){ return 1.0 - smoothstep(0.25, 0.7, length(fwidth(r * 1.7))); }
-#endif
 float caustic(vec2 uv, float t){
   vec2 p = mod(uv * 6.28318, 6.28318) - 250.0; vec2 i = p; float c = 1.0;
   for (int n = 0; n < 3; n++) {
@@ -115,86 +99,53 @@ void main(){
   if (g < 0.02) discard;
   vec3 N = normalize(vN) * (gl_FrontFacing ? 1.0 : -1.0);
   vec3 V = normalize(cameraPosition - vW);
+  vec3 col;
+#ifdef EYE
+  // The eyes: faint lamps, brighter where the fire is up.
+  float iris = dot(texture2D(uMap, vUv).rgb, vec3(0.333));
+  col = uGlow * (0.35 + 1.4 * iris) * (0.45 + 0.55 * uFire) + uRim * 0.06;
+  float dif = 1.0;
+#else
   float skin = vMask.r;                 // wing membrane
-  float occ = mix(0.3, 1.0, vMask.g);
-  float point = vMask.b;                // horn, spike, claw, tooth
+  float claw = vMask.b;                 // toes and claws
   float body = 1.0 - skin;
-
-  // The hide: plates with dark seams, each plate a shade of its own, finer than the eye at a distance.
-  float seam = 1.0; float shade = 0.5;
-  #ifdef PLATES
-    vec3 q = vRest * uPlates;
-    float fine = 1.0 - smoothstep(0.3, 0.75, length(fwidth(q)));
-    vec4 pl = plates(q);
-    seam = mix(1.0, pl.x, fine * body);
-    shade = mix(0.5, pl.y, fine);
-    // each plate is a low dome: its edges lean away from its middle
-    vec3 lean = gTo - dot(gTo, vRN) * vRN;
-    vec3 dome = -lean * 0.95 * fine * body;
-    // a finer layer inside each plate, only where there are the pixels for it
-    vec3 q2 = vRest * uPlates * 2.7 + 3.1;
-    float fine3 = 1.0 - smoothstep(0.3, 0.75, length(fwidth(q2)));
-    vec4 p2 = plates(q2);
-    seam *= mix(1.0, 0.72 + 0.28 * p2.x, fine3 * body);
-    shade = mix(shade, 0.5 * shade + 0.5 * p2.y, fine3);
-    dome += -(gTo - dot(gTo, vRN) * vRN) * 0.5 * fine3 * body;
+  // The model's own paint is used only for its light and dark: scales, veins, grime.
+  vec3 tex = texture2D(uMap, vUv).rgb;
+  float lum = dot(tex, vec3(0.299, 0.587, 0.114));
+  float d = clamp(lum * mix(5.2, 2.3, skin), 0.0, 1.5);
+  #ifdef TEETH
+    d = 1.0; skin = 0.0; body = 1.0; claw = 1.0;
+  #else
+    // Its normal map, in a frame built from the surface itself.
+    vec3 nm = texture2D(uNormalMap, vUv).xyz * 2.0 - 1.0;
+    vec3 dp1 = dFdx(vW); vec3 dp2 = dFdy(vW); vec2 du1 = dFdx(vUv); vec2 du2 = dFdy(vUv);
+    vec3 T = dp1 * du2.y - dp2 * du1.y; vec3 B = dp2 * du1.x - dp1 * du2.x;
+    float tl = max(dot(T, T), dot(B, B));
+    if (tl > 1e-12) N = normalize(N * sqrt(tl) * 0.9 + (T * nm.x + B * nm.y) * 1.25);
   #endif
-  #ifndef PLATES
-    vec3 dome = vec3(0.0);
-  #endif
-  // The dome is found at rest: carried onto the posed body by the same turn that took the rest normal to N.
-  N = normalize(N + dome * 0.55 - N * dot(dome, vRN) * 0.3);
-  // The wing's bones: the arm and three fingers, as ridges the skin hangs between.
-  float rib = 0.0; float web = 1.0; float fold = 0.0;
-  if (skin > 0.02) {
-    vec3 r = vec3(abs(vRest.x), vRest.yz);
-    float dmin = 9.0;
-    for (int i = 0; i < 11; i++) {
-      vec3 a = uRib[2 * i]; vec3 ab = uRib[2 * i + 1] - a;
-      float t = clamp(dot(r - a, ab) / dot(ab, ab), 0.0, 1.0);
-      dmin = min(dmin, length(r - a - ab * t));
-    }
-    rib = smoothstep(0.26, 0.07, dmin) * skin;
-    web = smoothstep(0.1, 1.1, dmin);
-    fold = sin(dmin * 5.0 + 2.3 * sin(r.y * 0.9 + r.z * 0.7)) * skin * (1.0 - rib);
-  }
-  float under_ = smoothstep(0.15, -0.55, vRN.y) * body;   // belly, throat and the underside of the tail
+  float under_ = smoothstep(-0.15, -0.7, vRN.y) * body;   // belly, throat and the underside of the tail
   float back = smoothstep(0.35, 0.95, vRN.y) * body;
-  vec3 albedo = mix(uHide * (0.7 + 0.6 * shade) * (1.0 - 0.3 * back), uBelly * (0.72 + 0.4 * shade), under_);
-  albedo = mix(albedo, uBelly * 1.25, smoothstep(0.12, 0.5, point));
-  albedo *= mix(1.0, 0.3, (1.0 - seam));
-  // Wing skin: thinner and warmer between the fingers than on them, with veins.
-  float vein = 1.0;
-  #ifdef PLATES
-    vein = mix(1.0, 0.82 + 0.18 * plates(vRest * 1.7 + 7.3).x, fine2(vRest));
-  #endif
-  albedo = mix(albedo, uWing * vein * (0.6 + 0.4 * web), skin);
-  albedo = mix(albedo, uHide * 0.8, rib * 0.9);
+  vec3 albedo = mix(uHide * (0.5 + 1.0 * d) * (1.0 - 0.25 * back), uBelly * (0.55 + 0.75 * d), max(under_, smoothstep(0.25, 0.7, claw)));
+  // Wing skin: red, darker along its veins and bones.
+  albedo = mix(albedo, uWing * (0.4 + 0.75 * d), skin);
 
-  N = normalize(N + vRN.zxy * fold * 0.07);
   float ndl = dot(N, uKeyDir);
   float dif = smoothstep(-0.2, 1.0, ndl);
   float low = smoothstep(-0.1, 1.0, dot(N, uLowDir));
-  vec3 col = albedo * (uAmb * (0.55 + 0.45 * N.y) + uKey * dif + uLow * low) * occ;
-  // A wet sheen on each plate.
+  col = albedo * (uAmb * (0.55 + 0.45 * N.y) + uKey * dif + uLow * low);
+  // The sheen of the scales: a tight highlight and a broad, cooler one under it.
   vec3 H = normalize(uKeyDir + V);
-  col += uKey * pow(max(dot(N, H), 0.0), 42.0) * 0.55 * seam * body * occ;
+  float nh = max(dot(N, H), 0.0);
+  col += (uKey * pow(nh, 48.0) * 0.7 + (uKey * 0.5 + uHide * 2.0) * pow(nh, 9.0) * 0.16) * body * (0.35 + 0.65 * d);
   // Light through the wing: the far side lit shows on the near side, most when the reader looks toward the light.
   float thru = max(-ndl, 0.0) * (0.45 + 0.55 * pow(max(dot(V, -uKeyDir), 0.0), 2.0));
-  col += uKey * uThin * mix(uWing * 2.6, uGlow, 0.38) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * (0.86 + 0.14 * vein) * (0.9 + 0.1 * fold) * (0.1 + 0.9 * web * web) * (1.0 - 0.85 * rib);
-  col += uKey * pow(max(dot(N, H), 0.0), 24.0) * 0.3 * rib * occ;
+  col += uKey * uThin * mix(uWing * 2.6, uGlow, 0.38) * thru * skin * 2.2 * (0.25 + 0.75 * d);
   // The rim: the place's own light on every edge turned away from the reader.
   float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-  col += uRim * fres * uRimGain * (0.3 + 0.7 * smoothstep(-0.5, 0.5, ndl)) * mix(0.55, 1.0, occ);
-
-  // The fire inside: it shows in the seams under the throat and the chest, and in the eye.
-  float along = vRest.z;                                    // head at +5.4, hips near -4
-  float chest = smoothstep(-0.25, -0.8, vRN.y) * body * body * smoothstep(-2.6, 0.2, along) * (1.0 - smoothstep(3.0, 4.6, along));
-  float beat = 0.72 + 0.28 * sin(uTime * 1.7 - along * 0.9);
-  col += uGlow * uFire * chest * (0.04 + 1.1 * (1.0 - seam)) * beat;
-  float eye = 0.0;
-  for (int i = 0; i < 2; i++) { vec3 d = vRest - uEye[i]; eye += smoothstep(0.15, 0.06, length(d * vec3(1.0, 1.7, 0.8))); }
-  col += (uGlow * 1.5 + 0.25) * eye * max(uFire, 0.35);
+  col += uRim * fres * uRimGain * (0.3 + 0.7 * smoothstep(-0.5, 0.5, ndl));
+  // The fire inside shows between the scales under the throat and the chest.
+  col += uGlow * uFire * under_ * (1.0 - skin) * pow(1.0 - min(d, 1.0), 2.0) * 0.5 * (0.72 + 0.28 * sin(uTime * 1.7 + vRest.y * 6.0));
+#endif
 
   // Under water the surface's net of light plays over its back.
   if (uCaust > 0.001) col += uRim * caustic(vW.xz * 0.0021 + vW.y * 0.0009, uTime * 0.3) * smoothstep(0.0, 0.7, N.y) * uCaust * (0.4 + 0.6 * dif);
@@ -211,47 +162,20 @@ void main(){
   gl_FragColor = vec4(col, g);
 }`;
 
-const sanitize = (name) => name.replace(/\s/g, '_').replace(/[^\w-]/g, '');
-
-/* ctx: { url, tier: 'phone' | 'desktop', time: { value } (seconds), wet: { uSigmaW, uWaterCol } }.
+/* ctx: { url, time: { value } (seconds), wet: { uSigmaW, uWaterCol } }.
    Resolves once the model is in memory; the caller adds `object` to a scene. */
-export async function createDragon({ url, tier = 'desktop', time, wet }) {
+export async function createDragon({ url, time, wet }) {
   const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(url);
-  let skinned = null;
+  const meshes = [];
   gltf.scene.traverse((o) => {
-    if (o.isSkinnedMesh) skinned = o;
+    if (o.isSkinnedMesh) meshes.push(o);
   });
-  if (!skinned) throw new Error('dragon: no skinned mesh in ' + url);
-  const bones = Object.fromEntries(skinned.skeleton.bones.map((b) => [b.name, b]));
-  const bone = (n) => bones[sanitize(n)];
+  if (!meshes.length) throw new Error('dragon: no skinned mesh in ' + url);
   gltf.scene.updateMatrixWorld(true);
-  // The mesh is stored quantized: this takes a stored vertex to where it stands at rest, in model units.
-  const restM = new Matrix4().multiplyMatrices(skinned.skeleton.bones[0].matrixWorld, skinned.skeleton.boneInverses[0]);
-  // The eye bones sit inside the skull: the eye itself is a little way out along x.
-  const eyeAt = (n, side) => (bone(n) ? new Vector3().setFromMatrixPosition(bone(n).matrixWorld).add(new Vector3(side * 0.2, 0, 0)) : new Vector3(0, 99, 0));
+  const main = meshes.reduce((a, b) => (b.geometry.attributes.position.count > a.geometry.attributes.position.count ? b : a));
+  const bones = main.skeleton.bones;
+  const named = (re) => bones.filter((b) => re.test(b.name));
 
-  /* The left wing's bones at rest, as eleven segments (the shader mirrors them): the arm,
-     then three fingers from the wrist. A finger's last bone has no end in the file, so it
-     runs on by most of its own bone's length. */
-  function ribs() {
-    const at = (n) => new Vector3().setFromMatrixPosition(bone(n).matrixWorld);
-    const chains = [
-      ['Wing.L', 'Wing.001.L', 'Wing.002.L'],
-      ['Wing.002.L', 'Wing.002.L.001', 'Wing.002.L.002', null],
-      ['Wing.001.L.001', 'Wing.001.L.002', 'Wing.001.L.003', null],
-      ['Wing.001.L.004', 'Wing.001.L.005', 'Wing.001.L.006', null],
-    ];
-    const out = [];
-    for (const chain of chains) {
-      if (chain.some((n) => n && !bone(n))) continue;
-      const pts = chain.filter(Boolean).map(at);
-      if (chain[chain.length - 1] === null) pts.push(pts[pts.length - 1].clone().multiplyScalar(1.85).addScaledVector(pts[pts.length - 2], -0.85));
-      for (let i = 0; i < pts.length - 1; i++) out.push(pts[i], pts[i + 1]);
-    }
-    while (out.length < 22) out.push(new Vector3(0, 99, 0), new Vector3(0, 99.1, 0));
-    for (const v of out) v.x = Math.abs(v.x);
-    return out.slice(0, 22);
-  }
   const U = {
     uBox: { value: Array.from({ length: GUARD_BOXES }, () => new Vector4(-9e4, -9e4, -9e4, -9e4)) },
     uBand: { value: new Vector2(-1e5, 1e5) },
@@ -276,32 +200,61 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     uFire: { value: 1 },
     uThin: { value: 1 },
     uSplit: { value: 0 },
-    uPlates: { value: 5.2 },
-    uEye: { value: [eyeAt('eye.L', 1), eyeAt('eye.R', -1)] },
-    uRestM: { value: restM },
-    uRib: { value: ribs() },
     uSigmaW: wet?.uSigmaW ?? { value: new Vector3(1, 0.4, 0.3) },
     uWaterCol: wet?.uWaterCol ?? { value: new Vector3() },
   };
-  const defines = tier === 'phone' ? {} : { PLATES: 1 };
-  const material = new ShaderMaterial({ uniforms: U, vertexShader: VERT, fragmentShader: FRAG, defines, transparent: true, side: DoubleSide, depthWrite: false, depthTest: true });
-  const depthMaterial = new ShaderMaterial({ uniforms: U, vertexShader: VERT, fragmentShader: DEPTH_FRAG, side: DoubleSide, colorWrite: false });
-  skinned.material = material;
-  skinned.frustumCulled = false;
-  skinned.renderOrder = 5;
-  const depth = new SkinnedMesh(skinned.geometry, depthMaterial);
-  depth.bind(skinned.skeleton, skinned.bindMatrix);
-  depth.frustumCulled = false;
-  depth.renderOrder = 4;
-  skinned.parent.add(depth);
 
-  // The model's own frame: head toward +z, back toward +y, left wing toward +x, feet on y = 0.
-  const inner = new Group();
-  inner.add(gltf.scene);
-  const object = new Group();
-  object.add(inner);
-  object.visible = false;
-  object.matrixAutoUpdate = false;
+  /* Every part gets the one shader. Each is stored quantized in its own frame, so each
+     has its own matrix from a stored vertex to where it stands at rest; the eyes and
+     the teeth are told apart by their names. */
+  const kept = [];
+  const depthMeshes = [];
+  for (const mesh of meshes) {
+    const old = mesh.material;
+    const eye = /eye/i.test(mesh.name) || /eye/i.test(mesh.parent?.name ?? '');
+    const teeth = /teeth/i.test(mesh.name) || /teeth/i.test(mesh.parent?.name ?? '');
+    const restM = new Matrix4().multiplyMatrices(mesh.skeleton.bones[0].matrixWorld, mesh.skeleton.boneInverses[0]);
+    const uniforms = { ...U, uRestM: { value: restM }, uMap: { value: old.map ?? null }, uNormalMap: { value: old.normalMap ?? old.map ?? null } };
+    const defines = eye ? { EYE: 1 } : teeth ? { TEETH: 1 } : {};
+    const material = new ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: FRAG, defines, transparent: true, side: DoubleSide, depthWrite: false, depthTest: true });
+    const depthMaterial = new ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: DEPTH_FRAG, side: DoubleSide, colorWrite: false });
+    kept.push(material, depthMaterial, mesh.geometry, old);
+    if (old.map) kept.push(old.map);
+    if (old.normalMap) kept.push(old.normalMap);
+    mesh.material = material;
+    mesh.frustumCulled = false;
+    mesh.renderOrder = 5;
+    // Which part is which, from the skin: R wing skin (the folding wing bones), B toes and claws.
+    const geo = mesh.geometry;
+    const n = geo.attributes.position.count;
+    const mask = new Uint8Array(n * 4);
+    const kind = mesh.skeleton.bones.map((b) => (/Wing_Fold/i.test(b.name) ? 1 : /Finger|toe/i.test(b.name) ? 2 : 0));
+    const si = geo.attributes.skinIndex;
+    const sw = geo.attributes.skinWeight;
+    for (let i = 0; i < n; i++) {
+      let wing = 0;
+      let claw = 0;
+      let tot = 0;
+      for (let k = 0; k < 4; k++) {
+        const w = sw.getComponent(i, k);
+        const t = kind[si.getComponent(i, k)];
+        tot += w;
+        if (t === 1) wing += w;
+        else if (t === 2) claw += w;
+      }
+      mask[i * 4] = Math.round(255 * Math.min(1, (wing / (tot || 1)) * 1.6));
+      mask[i * 4 + 1] = 255;
+      mask[i * 4 + 2] = Math.round(255 * (claw / (tot || 1)));
+      mask[i * 4 + 3] = 255;
+    }
+    geo.setAttribute('color', new BufferAttribute(mask, 4, true));
+    const depth = new SkinnedMesh(geo, depthMaterial);
+    depth.bind(mesh.skeleton, mesh.bindMatrix);
+    depth.frustumCulled = false;
+    depth.renderOrder = 4;
+    mesh.parent.add(depth);
+    depthMeshes.push(depth);
+  }
 
   const mixer = new AnimationMixer(gltf.scene);
   const act = {};
@@ -311,14 +264,59 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     a.setEffectiveWeight(0);
     act[clip.name.toLowerCase()] = a;
   }
-  if (act.roar) {
-    act.roar.setLoop(LoopOnce, 1);
-    act.roar.clampWhenFinished = true;
-  }
-  const weight = { fly: 0, glide: 0, perch: 0, roar: 0 };
-  let last = -1;
-  let roarAt = -1e9;
+  const BEATS = 4; // wing beats in the Fly clip
 
+  /* The model arrives in its author's frame and size. Posed in a clip, it is measured
+     and brought to the frame the stations think in: head toward +z, back toward +y,
+     feet on y = 0 (or, in flight, its middle on the origin), 8.4 units tall sitting. */
+  const box = new Box3();
+  const tmpBox = new Box3();
+  function measure(name) {
+    for (const k in act) act[k].setEffectiveWeight(k === name ? 1 : 0);
+    if (act[name]) act[name].time = 0;
+    mixer.update(0);
+    gltf.scene.updateMatrixWorld(true);
+    box.makeEmpty();
+    for (const m of meshes) {
+      m.computeBoundingBox();
+      box.union(tmpBox.copy(m.boundingBox).applyMatrix4(m.matrixWorld));
+    }
+    return box.clone();
+  }
+  const at = (b) => new Vector3().setFromMatrixPosition(b.matrixWorld);
+  const sit = measure(act.perch ? 'perch' : 'fly');
+  const head = at(named(/neck/i).pop() ?? bones[bones.length - 1]);
+  const tail = at(named(/tail/i)[4] ?? bones[0]);
+  const yaw = Math.atan2(head.x - tail.x, head.z - tail.z); // the way it faces, about y
+  const scale = MODEL.tall / (sit.max.y - sit.min.y);
+  const feet = new Vector3((sit.min.x + sit.max.x) / 2, sit.min.y, (sit.min.z + sit.max.z) / 2);
+  const flyBox = measure('fly');
+  const middle = flyBox.getCenter(new Vector3());
+  for (const k in act) act[k].setEffectiveWeight(0);
+  const dims = (b) => b.getSize(new Vector3()).applyAxisAngle(new Vector3(0, 1, 0), -yaw).multiplyScalar(scale).toArray().map((v) => Math.round(Math.abs(v) * 10) / 10);
+  const metrics = { sit: dims(sit), fly: dims(flyBox) }; // [across, tall, long] in the stations' units
+
+  const norm = new Group(); // the author's frame, turned and scaled
+  norm.add(gltf.scene);
+  norm.rotation.y = -yaw;
+  norm.scale.setScalar(scale);
+  const seat = new Group(); // where the pivot is: the feet, or the middle of the body in flight
+  seat.add(norm);
+  const tilt = new Group(); // nose down or up about the wings' axis
+  tilt.add(seat);
+  const object = new Group();
+  object.add(tilt);
+  object.visible = false;
+  object.matrixAutoUpdate = false;
+  const pivot = new Vector3();
+  const place = (p) => {
+    pivot.copy(p).applyAxisAngle(axisY, -yaw).multiplyScalar(scale);
+    seat.position.copy(pivot).negate();
+  };
+  const axisY = new Vector3(0, 1, 0);
+
+  const weight = { fly: 0, perch: 0, stand: 0 };
+  let last = -1;
   const X = new Vector3();
   const Y = new Vector3();
   const Z = new Vector3();
@@ -328,20 +326,20 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
   const q2 = new Quaternion();
   const axis = new Vector3();
   const state = { x: 0, y: 0, shown: false };
-  const neck = ['spine.006', 'neck.001', 'neck.002', 'head'].map(bone).filter(Boolean);
+  const neck = named(/^DEF-neck/i);
 
   /* Turn the neck and head by `yaw` (toward the creature's left) and `pitch` (down)
      radians, shared along the neck, about the creature's own axes. */
-  function look(yaw, pitch) {
-    if (!neck.length || (Math.abs(yaw) < 1e-3 && Math.abs(pitch) < 1e-3)) return;
-    const share = [0.16, 0.24, 0.28, 0.32];
+  function look(yawBy, pitchBy) {
+    if (!neck.length || (Math.abs(yawBy) < 1e-3 && Math.abs(pitchBy) < 1e-3)) return;
     for (let i = 0; i < neck.length; i++) {
       const b = neck[i];
+      const share = (0.6 + 0.8 * (i / Math.max(1, neck.length - 1))) / neck.length;
       b.parent.updateWorldMatrix(true, false);
       b.parent.getWorldQuaternion(q0);
       // the turn in world space, then carried into the bone's parent frame
-      q1.setFromAxisAngle(axis.copy(Y), yaw * share[i]);
-      q2.setFromAxisAngle(axis.copy(X), pitch * share[i]);
+      q1.setFromAxisAngle(axis.copy(Y), yawBy * share);
+      q2.setFromAxisAngle(axis.copy(X), pitchBy * share);
       q1.multiply(q2);
       q2.copy(q0).invert().multiply(q1).multiply(q0);
       b.quaternion.premultiply(q2);
@@ -351,8 +349,9 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
   /* pose: { t, cam: { x, y, z }, x, y, z (window px from the middle, y down, and depth),
      size (px a model unit at depth 0), fwd [x, y, z] and up [x, y, z] (world: x right, y up,
      z toward the reader), bank (radians), feet (the place given is where it stands),
-     clips { fly, glide, perch } (weights), beat (wing beats a second), look [yaw, pitch],
-     show (0 to 1), dpr, resY, still } */
+     lean (radians: in flight the model hovers upright; this tips it nose down toward level),
+     clips { fly, glide, perch, stand } (weights; glide is the Fly clip), beat (wing beats a
+     second), look [yaw, pitch], show (0 to 1), dpr, resY, still, phase } */
   function update(pose) {
     const show = pose.show ?? 0;
     U.uShow.value = show;
@@ -373,7 +372,8 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     basis.makeBasis(X, Y, Z);
     object.matrix.copy(basis).scale(axis.set(s, s, s));
     object.matrix.setPosition(cam.x + pose.x * kz, cam.y - pose.y * kz, pose.z);
-    inner.position.y = pose.feet ? 0 : -MODEL.chest;
+    place(pose.feet ? feet : middle);
+    tilt.rotation.x = pose.feet ? 0 : (pose.lean ?? 0);
     state.x = pose.x;
     state.y = pose.y;
     U.uGRes.value.set(pose.dpr, pose.resY);
@@ -381,19 +381,17 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     // The clips: weights ease toward what the station asks for; the beat sets the wing's pace.
     const dt = last < 0 || pose.still ? 0 : Math.min(0.1, Math.max(0, pose.t - last));
     last = pose.t;
-    const ease = pose.still || dt === 0 ? 1 : 1 - Math.exp(-dt / 0.3);
+    const ease = pose.still || dt === 0 ? 1 : 1 - Math.exp(-dt / 0.35);
+    const want = { fly: (pose.clips?.fly ?? 0) + (pose.clips?.glide ?? 0), perch: pose.clips?.perch ?? 0, stand: pose.clips?.stand ?? 0 };
     let sum = 0;
-    for (const k of ['fly', 'glide', 'perch']) {
-      weight[k] += ((pose.clips?.[k] ?? 0) - weight[k]) * ease;
+    for (const k in weight) {
+      weight[k] += (want[k] - weight[k]) * ease;
       sum += weight[k];
     }
-    const roaring = act.roar && pose.t - roarAt < act.roar.getClip().duration && !pose.still;
-    weight.roar += ((roaring ? 1 : 0) - weight.roar) * (pose.still ? 1 : 1 - Math.exp(-dt / 0.18));
-    for (const k of ['fly', 'glide', 'perch']) act[k]?.setEffectiveWeight((weight[k] / (sum || 1)) * (1 - weight.roar));
-    act.roar?.setEffectiveWeight(weight.roar);
-    if (act.fly) act.fly.timeScale = (pose.beat ?? 0.8) * act.fly.getClip().duration;
+    for (const k in weight) act[k]?.setEffectiveWeight(weight[k] / (sum || 1));
+    if (act.fly) act.fly.timeScale = ((pose.beat ?? 0.7) * act.fly.getClip().duration) / BEATS;
     if (pose.still) {
-      for (const k in act) act[k].time = (pose.phase ?? 0.3) * act[k].getClip().duration;
+      for (const k in act) act[k].time = (pose.phase ?? 0.3) * act[k].getClip().duration * (k === 'fly' ? 1 / BEATS : 1);
       mixer.update(0);
     } else mixer.update(dt);
     if (pose.look) look(pose.look[0], pose.look[1]);
@@ -417,19 +415,16 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     object,
     uniforms: U,
     state,
+    metrics,
     clips: Object.keys(act),
-    bones: skinned.skeleton.bones.length,
-    triangles: skinned.geometry.index ? skinned.geometry.index.count / 3 : 0,
+    bones: bones.length,
+    triangles: meshes.reduce((a, m) => a + (m.geometry.index ? m.geometry.index.count / 3 : 0), 0),
     layout() {},
     update,
     still: (pose) => update({ ...pose, still: true }),
     light,
-    /** It roars once (the clip is about 2.5 s). */
-    roar(t) {
-      if (!act.roar || t - roarAt < 4) return;
-      roarAt = t;
-      act.roar.reset().play();
-    },
+    /** The model has no roar: kept so a station may ask. */
+    roar() {},
     /** Up to GUARD_BOXES rectangles [x0, y0, x1, y1] in window px, and a band [top, bottom]. */
     guard(boxes, band) {
       for (let i = 0; i < GUARD_BOXES; i++) {
@@ -444,11 +439,9 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
       U.uWater.value.set(surface, shore);
     },
     dispose() {
-      skinned.geometry.dispose();
-      material.dispose();
-      depthMaterial.dispose();
+      for (const k of kept) k.dispose?.();
       mixer.stopAllAction();
     },
-    binding: { id: 'dragon', count: () => skinned.skeleton.bones.length, project: () => ({ x: state.x, y: state.y, visible: state.shown }) },
+    binding: { id: 'dragon', count: () => bones.length, project: () => ({ x: state.x, y: state.y, visible: state.shown }) },
   };
 }

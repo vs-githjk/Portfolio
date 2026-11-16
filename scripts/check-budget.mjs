@@ -36,7 +36,7 @@ if (world.length) {
 }
 // The dragon: code in a chunk of its own (never inside the world chunk), models under public/dragon.
 const DRAGON_JS_KB = 45; // gzip: the loader, the mesh decoder, the shader and the stations
-const DRAGON_MODEL_KB = { 'dragon.glb': 380, 'dragon-lite.glb': 160 }; // gzip, per file
+const DRAGON_MODEL_KB = { 'dragon.glb': 720, 'dragon-lite.glb': 420 }; // gzip, per file (the European Dragon with its two 1024 px maps: 661 and 385 on Nov 16 2026)
 const dragonJs = files.filter((f) => /^dragon.*\.js$/i.test(f));
 if (!dragonJs.length) fail.push('expected the dragon in a chunk of its own');
 const dragonKb = dragonJs.reduce((a, f) => a + gz(f), 0);

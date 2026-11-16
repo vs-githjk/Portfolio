@@ -92,6 +92,14 @@ export default function Footer() {
                       <a href={r.href} target="_blank" rel="noopener noreferrer">
                         {r.link}
                       </a>
+                      {r.licenceHref && (
+                        <>
+                          {' · '}
+                          <a href={r.licenceHref} target="_blank" rel="noopener noreferrer">
+                            {r.licence}
+                          </a>
+                        </>
+                      )}
                     </dd>
                   </div>
                 ))}

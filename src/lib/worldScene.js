@@ -822,7 +822,7 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
     if (dragonAsked) return false;
     dragonAsked = true;
     const [{ createDragon }, { createDragonStations }] = await Promise.all([import('../world/dragon'), import('../world/dragonStations')]);
-    const live = await createDragon({ url: phone ? '/dragon/dragon-lite.glb' : '/dragon/dragon.glb', tier: phone ? 'phone' : 'desktop', time, wet });
+    const live = await createDragon({ url: phone ? '/dragon/dragon-lite.glb' : '/dragon/dragon.glb', time, wet });
     live.object.userData.solo = 'dragon';
     scene.add(live.object);
     const st = createDragonStations({ live, phone, C });

@@ -4,7 +4,7 @@ import { createDragon } from './dragon';
 /* Dev only (kit-demo.html is not a build input): the dragon alone on a plain
    ground, to judge the model, its clips and each place's light.
 
-   ?clip=fly|glide|perch|roar   ?light=sea|dusk|night|dawn   ?yaw=deg (0 flies to the right, 90 toward the reader)
+   ?clip=fly|perch|stand   ?lean=deg (tips the hovering model toward level flight)   ?light=sea|dusk|night|dawn   ?yaw=deg (0 flies to the right, 90 toward the reader)
    ?pitch=deg   ?bank=deg   ?size=px per unit   ?lite (the phone file)   ?still   ?t=seconds   ?bare (no label)   ?bg=hex|none
 
    public/dragon/perch.webp (the still that stands on the roost under reduced motion) is a
@@ -20,7 +20,7 @@ renderer.setClearColor(0x000000, 0);
 const scene = new Scene();
 const camera = new PerspectiveCamera(36, 1, 10, 12000);
 const time = { value: 0 };
-const live = await createDragon({ url: q.has('lite') ? '/dragon/dragon-lite.glb' : '/dragon/dragon.glb', tier: q.has('lite') ? 'phone' : 'desktop', time });
+const live = await createDragon({ url: q.has('lite') ? '/dragon/dragon-lite.glb' : '/dragon/dragon.glb', time });
 scene.add(live.object);
 const v = (r, g, b, k = 1) => new Vector3((r / 255) * k, (g / 255) * k, (b / 255) * k);
 const LIGHT = {
@@ -33,7 +33,7 @@ live.light(LIGHT[q.get('light')] ?? LIGHT.night);
 const ground = { sea: '#0a3a44', dusk: '#b4705a', night: '#120d0c', dawn: '#1a1416' }[q.get('light') ?? 'night'];
 document.body.style.background = q.get('bg') === 'none' ? 'transparent' : q.get('bg') ? '#' + q.get('bg') : ground;
 if (q.get('bg') === 'none') root.style.background = 'transparent';
-document.getElementById('label').textContent = `dragon · ${live.bones} bones · ${live.triangles} triangles · clips ${live.clips.join(', ')}`;
+document.getElementById('label').textContent = `dragon · ${live.bones} bones · ${live.triangles} triangles · clips ${live.clips.join(', ')} · sitting ${live.metrics.sit.join(' x ')} · flying ${live.metrics.fly.join(' x ')}`;
 
 let w = 1;
 let h = 1;
@@ -59,9 +59,8 @@ function frame(ms) {
   const yaw = num('yaw', 35) * rad;
   const pitch = num('pitch', 0) * rad;
   const fwd = [Math.cos(yaw) * Math.cos(pitch), Math.sin(pitch), Math.sin(yaw) * Math.cos(pitch)];
-  const perch = clip === 'perch' || clip === 'roar';
-  if (clip === 'roar' && !still) live.roar(t);
-  const pose = { t, cam: { x: 0, y: 0, z: camZ }, x: num('x', 0), y: num('y', perch ? h * 0.2 : 0), z: num('z', 0), size: num('size', Math.min(w / 17, h / 11)), feet: perch, fwd, up: [0, 1, 0], bank: num('bank', 0) * rad, clips: { [perch ? 'perch' : clip]: 1 }, beat: num('beat', 0.8), look: [num('look', 0) * rad, num('nod', 0) * rad], show: 1, dpr, resY: Math.floor(h * dpr), phase: num('phase', 0.3) };
+  const perch = clip === 'perch' || clip === 'stand';
+  const pose = { t, cam: { x: 0, y: 0, z: camZ }, x: num('x', 0), y: num('y', perch ? h * 0.2 : 0), z: num('z', 0), size: num('size', Math.min(w / 17, h / 11)), feet: perch, fwd, up: [0, 1, 0], bank: num('bank', 0) * rad, clips: { [clip]: 1 }, lean: num('lean', 0) * rad, beat: num('beat', 0.7), look: [num('look', 0) * rad, num('nod', 0) * rad], show: 1, dpr, resY: Math.floor(h * dpr), phase: num('phase', 0.3) };
   if (still) live.still(pose);
   else live.update(pose);
   renderer.render(scene, camera);

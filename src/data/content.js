@@ -1703,18 +1703,21 @@ export const contact = {
         { where: 'Contact', what: 'The studio headshot' },
       ],
     },
-    /* Work by other people that the site stands on. The dragon: source
-       https://opengameart.org/content/low-poly-ice-dragon , author xterryx, licence
-       CC0 1.0 (public domain; credit is a courtesy, not a condition). What was
-       done to it here is in scripts/bake-dragon.py. */
+    /* Work by other people that the site stands on. The dragon: "European Dragon" by
+       Nonexistent 101 (the name on the model's Sketchfab licence file),
+       https://sketchfab.com/3d-models/european-dragon-82f393a2e6c048ad80c171ce3b3a7b87 ,
+       licence CC-BY 4.0: the credit below is a condition of using it. What was done to
+       it here is in scripts/prep-dragon.py and src/world/dragon.js. */
     borrowed: {
       label: 'Borrowed, with thanks',
       rows: [
         {
           where: 'The dragon',
-          what: 'Began as the Low Poly Ice Dragon by xterryx, released to the public domain (CC0). I smoothed it, lengthened its wings and wrote its four animations; its hide and fire are a shader.',
-          link: 'The model on OpenGameArt',
-          href: 'https://opengameart.org/content/low-poly-ice-dragon',
+          what: 'Based on "European Dragon" by Nonexistent 101, licensed CC BY 4.0. Changed here: made smaller for the web and repainted blue, gold and red in a shader.',
+          link: 'The model on Sketchfab',
+          href: 'https://sketchfab.com/3d-models/european-dragon-82f393a2e6c048ad80c171ce3b3a7b87',
+          licence: 'CC BY 4.0',
+          licenceHref: 'https://creativecommons.org/licenses/by/4.0/',
         },
       ],
     },
