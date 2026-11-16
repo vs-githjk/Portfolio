@@ -95,9 +95,19 @@ export const shell = {
   world: { label: 'World', on: 'on', off: 'plain', hint: 'Plain view is the page alone: no canvases.' },
 };
 
+/* ------------------------------------------------- ANCHORS AND BINDINGS ---- */
+/* The windows the scene reads (data-world-anchor) and the living things Receipts
+   can name. Site words, so they live here and not in the kit's contract. */
+export const ANCHOR = [
+  'surface', 'giant', 'flag-prismai', 'flag-duelwise', 'flag-snapback', 'fleet-fishmarket',
+  'shore', 'camp', 'galaxy', 'roost', 'graph', 'wins', 'value', 'contact', 'horizon',
+];
+
+export const BINDING = ['orrery', 'wyrm', 'giant', 'prism', 'board', 'scan', 'school', 'fires', 'stars', 'moon'];
+
 /* ----------------------------------------------------------- RECEIPTS ---- */
 /* What each living thing in the world is, the count it is drawn from, and the
-   file the count comes from. Keys are contract.js BINDING ids. Every figure is
+   file the count comes from. Keys are BINDING ids. Every figure is
    computed here from the data, so a change in the data changes the sentence. */
 const days = github.days ?? [];
 const weeks = days.length ? Math.ceil((new Date(`${days[0].date}T00:00:00Z`).getUTCDay() + days.length) / 7) : 0;

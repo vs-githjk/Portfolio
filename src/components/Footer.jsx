@@ -1,6 +1,5 @@
 import { builds, contact } from '../data/content';
-import { BINDING } from '../kit/contract';
-import { receipts } from '../data/world';
+import { BINDING, receipts } from '../data/world';
 import { fill, put } from './counts';
 
 /* The foot of the page: the colophon in two lines, then the credits, rolled only

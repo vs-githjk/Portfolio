@@ -1,4 +1,4 @@
-import { ANCHOR } from '../kit/contract';
+import { ANCHOR } from '../data/world';
 
 /* Where the page says the world's pieces live. The shell and the sections mark
    elements with data-world-anchor="<name>" (the names are the contract's). Until
