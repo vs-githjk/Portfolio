@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { contact } from '../data/content';
+import { contact, welcome } from '../data/content';
+import HoloFigure from './HoloFigure';
 import { EV } from '../kit/contract';
 import CopyEmail from './CopyEmail';
 
@@ -27,16 +28,7 @@ export default function Contact() {
     <section className="sec contact" id="contact" data-realm="earth" data-dawn={dawn ? 'on' : undefined}>
       <div className="wrap">
         <div className="c-who reveal">
-          <img
-            className="c-portrait"
-            src={contact.portrait.src}
-            srcSet={`${contact.portrait.src} 1x, ${contact.portrait.src2x} 2x`}
-            alt={contact.portrait.alt}
-            width="120"
-            height="120"
-            loading="lazy"
-            decoding="async"
-          />
+          <HoloFigure className="c-holo" figure={welcome.figure} sizes="120px" />
           <div>
             <span className="eyebrow">
               {contact.eyebrow}

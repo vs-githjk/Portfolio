@@ -47,6 +47,7 @@ uniform vec3 uEmit;   // the plate: centre x, y, half width
 uniform float uPx;    // device pixels to a CSS pixel
 uniform float uKeep;  // no light below this line (device pixels from the top): the hero's words start there
 uniform float uTime, uOn, uOut, uGain, uWarm, uPitch, uFoot;
+uniform vec3 uFace;   // his face in the picture: centre (0 to 1 across and down) and reach (of the height); reach 0 is no face
 uniform vec3 uDeep, uPale, uHot;
 uniform sampler2D uTex;
 
@@ -112,17 +113,23 @@ void main() {
   vec3 ramp = mix(uDeep * 0.24, uDeep * 0.86, smoothstep(0.0, 0.34, g));
   ramp = mix(ramp, uPale, smoothstep(0.22, 0.8, g));
   ramp = mix(ramp, uHot, smoothstep(0.78, 1.0, g) * 0.7);
+  // His face is the part that must read as him: there the picture keeps more of
+  // its own colour and contrast, takes a little more light, and (below) fewer
+  // scan lines. The mask is soft and takes in the hair.
+  vec2 fd = vec2((uv.x - uFace.x) * size.x / size.y, uv.y - uFace.y);
+  float faceK = uFace.z > 0.0 ? smoothstep(uFace.z * 1.35, uFace.z * 0.55, length(fd)) : 0.0;
   // A little of its own colour stays in the light.
   vec3 own = src * vec3(0.92, 0.98, 1.16) * 1.08;
-  vec3 pic = mix(ramp, own, uWarm);
+  vec3 crisp = clamp((src - 0.36) * 1.28 + 0.36, 0.0, 1.0) * vec3(0.9, 1.0, 1.2) * 1.3;
+  vec3 pic = mix(mix(ramp, own, uWarm), mix(ramp * 1.15, crisp, 0.62), faceK);
   // The edge of the figure carries more light than its middle.
-  pic = mix(pic, mix(uPale, uHot, 0.35), rim * 0.55);
+  pic = mix(pic, mix(uPale, uHot, 0.35), rim * 0.55 * (1.0 - 0.6 * faceK));
 
   // Scan lines, one every uPitch CSS pixels, and stronger toward the foot, where
   // the figure comes apart into them.
   float line = 0.5 + 0.5 * cos(p.y / (uPitch * px) * 6.2832);
   float low = smoothstep(1.0 - 2.6 * uFoot, 1.0, q.y) * step(0.001, uFoot);
-  pic *= 1.0 - (0.13 + 0.5 * low) * line;
+  pic *= 1.0 - (0.13 + 0.5 * low) * line * (1.0 - 0.7 * faceK);
   // A band of brighter light rolls slowly up the figure; now and then a second,
   // finer one crosses it. Brightness only.
   float roll = fract(uv.y + t * 0.085);
@@ -261,13 +268,14 @@ export function createHologram(canvas, tones, look) {
   gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
   const u = {};
-  for (const name of ['uRes', 'uPane', 'uEmit', 'uPx', 'uKeep', 'uTime', 'uOn', 'uOut', 'uGain', 'uWarm', 'uPitch', 'uFoot', 'uDeep', 'uPale', 'uHot', 'uTex']) u[name] = gl.getUniformLocation(program, name);
+  for (const name of ['uRes', 'uPane', 'uEmit', 'uPx', 'uKeep', 'uTime', 'uOn', 'uOut', 'uGain', 'uWarm', 'uPitch', 'uFoot', 'uFace', 'uDeep', 'uPale', 'uHot', 'uTex']) u[name] = gl.getUniformLocation(program, name);
   gl.uniform3fv(u.uDeep, tones.deep);
   gl.uniform3fv(u.uPale, tones.pale);
   gl.uniform3fv(u.uHot, tones.hot);
   gl.uniform1f(u.uWarm, look.warm);
   gl.uniform1f(u.uPitch, look.pitch);
   gl.uniform1f(u.uFoot, look.foot);
+  gl.uniform3f(u.uFace, look.face ? look.face.x : 0, look.face ? look.face.y : 0, look.face ? look.face.r : 0);
   gl.uniform1i(u.uTex, 0);
 
   // Until the picture is in there is no figure: one clear pixel.

@@ -11,6 +11,7 @@ default suits a 768 x 1376 standing figure) and touches nothing else:
            crown than at the sides, so the shape is less of a dome
   lifts    the tones inside the hair are spread out, so the strands that are
            there catch the light instead of sinking to one flat dark
+  crisps   a gentle unsharp mask over the whole head box, face included
 
 Needs Pillow, numpy and scipy.
 """
@@ -21,8 +22,9 @@ from PIL import Image
 from scipy import ndimage as ndi
 
 src, out = sys.argv[1], sys.argv[2]
-x0, y0, x1, y1 = (int(v) for v in sys.argv[3:7]) if len(sys.argv) > 6 else (230, 40, 520, 215)
-TRIM_TOP, TRIM_SIDE = 9, 4  # px pulled in at the crown and at the sides
+x0, y0, x1, y1 = (int(v) for v in sys.argv[3:7]) if len(sys.argv) > 6 else (230, 40, 520, 330)
+TRIM_TOP, TRIM_SIDE = 15, 6  # px pulled in at the crown and at the sides
+CRISP = 0.9  # how much fine detail is added back over the whole head (an unsharp mask)
 LIFT = 1.7  # how far the hair's tones are spread
 
 im = np.asarray(Image.open(src).convert('RGB')).astype(np.float32) / 255
@@ -57,6 +59,10 @@ med = float(np.median(lum[inner])) if inner.any() else 0.05
 gain = np.clip(1 + (LIFT - 1) * np.clip((lum - med * 0.6) / max(med, 1e-3), 0, 2.5) / 2.5, 1, LIFT)
 weight = ndi.gaussian_filter(hair.astype(np.float32), 1.5)[..., None]
 lifted = np.clip(box * (1 + (gain[..., None] - 1) * weight) + 0.012 * weight, 0, 1)
+
+# Crisp: the whole head (face and hair) gets its fine detail back, gently.
+blur = np.stack([ndi.gaussian_filter(lifted[..., c], 1.6) for c in range(3)], -1)
+lifted = np.clip(lifted + CRISP * (lifted - blur), 0, 1)
 
 im[y0:y1, x0:x1] = lifted * ndi.gaussian_filter(keep, 0.7)[..., None]
 Image.fromarray((im * 255).round().astype(np.uint8)).save(out)

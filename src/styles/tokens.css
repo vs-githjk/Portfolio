@@ -298,8 +298,7 @@
   --font-mono: 'Martian Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --fs-name: clamp(58px, min(40px + 8.4vw, 21svh), 168px); /* his name in the hero: two lines, as large as the window allows */
-  --hero-holo-w: clamp(210px, 22vw, 300px); /* the hologram figure at the hero's right */
-  --hero-holo-ratio: 0.516; /* that figure's width over its height (welcome.figure) */
+  --hero-photo-w: clamp(210px, 22vw, 300px); /* his photograph at the hero's right */
   --fs-thesis: clamp(24px, 2.5vw, 36px); /* the thesis under it */
   --fs-h2: clamp(38px, 4.6vw, 64px);
   --fs-lead: clamp(22px, 2vw, 28px);

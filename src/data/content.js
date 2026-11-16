@@ -75,24 +75,33 @@ export const welcome = {
      `width` and `height` are the desktop file's own pixels (the hero reserves its
      box from them): update them when the script prints new ones. To try a figure
      without editing this file, open the page with ?figure=/holo/<file>. */
+  /* The plate under the hologram's feet: a fact about him, in award gold, so it can
+     never be read as a panel's label. Both facts are on this page (Highlights, and
+     the wins in Proof of work). */
+  plate: '5× hackathon winner · 6 first places',
   figure: {
     src: '/holo/wizard-1.webp',
     phone: '/holo/wizard-1-phone.webp',
-    width: 619,
+    width: 625,
     height: 1200,
+    /* Where his face is in the picture (its centre across and down, and its reach,
+       all as shares of the picture's height and width: x of the width, y and r of
+       the height). The hologram keeps the face clearer than the rest: fewer scan
+       lines, more of its own colour, a little more light. */
+    face: { x: 0.48, y: 0.105, r: 0.085 },
     alt: 'A hologram of Vidyut, smiling, in a long robe of stars, a wooden staff in one hand and a glowing crystal in the other',
   },
   /* His work, as small projections at the sides of the first screen, in the same
      blue light as his own, at different depths (a wide window shows all eight; a
      phone four, taking turns). `at` is the seat (l1 to l4 down the left, r1 to r4
-     down the right). The fact is the one gold plate: gold is for awards. A build shows its ring thumbnail
-     (/builds/ring/<id>-320.webp), the crew one Master Agents portrait, the fact the
-     same "5× hackathon winner" the hero credential states. Decoration: aria-hidden. */
+     down the right). A build shows its ring thumbnail (/builds/ring/<id>-320.webp),
+     the crew one Master Agents portrait. Decoration: aria-hidden. Each caption
+     sits under its own panel and names only that panel. */
   hub: [
     { at: 'l1', kind: 'build', id: 'prismai', label: 'PrismAI' },
     { at: 'r1', kind: 'build', id: 'duelwise', label: 'DuelWise' },
     { at: 'l2', kind: 'build', id: 'snapback', label: 'SNAPBACK' },
-    { at: 'r2', kind: 'fact', value: '5×', label: 'hackathon winner' },
+    { at: 'r2', kind: 'build', id: 'prismkeep', label: 'PrismKeep' },
     { at: 'l3', kind: 'build', id: 'betterbill', label: 'BetterBill' },
     { at: 'r3', kind: 'build', id: 'terrametric', label: 'Terrametric' },
     { at: 'l4', kind: 'build', id: 'paper', label: 'arXiv preprint' },
@@ -102,12 +111,20 @@ export const welcome = {
 
 /* ---------------------------------------------------------------- HERO ---- */
 /* The hero: the status and the place, the name, identity, one plain line,
-   credentials and actions; at its right the hologram figure (welcome.figure),
-   smaller. No figures and no builds.
+   credentials and actions; at its right his real studio photograph (Vidyut, Nov
+   16: "the hologram to start off with, then just an image of my face, because
+   that's a real thing"). No figures and no builds.
    `carousel` below is the ring of build cards; it no longer stands in the hero
    (it is the index at the top of Builds) but its words and slides are kept here. */
 export const hero = {
   status: 'Forward-deployed and AI engineer',
+  /* The studio headshot, a 4:5 crop of public/portrait@2x.jpg at 320 and 640 px
+     wide. The one place on the page his photograph is shown. */
+  portrait: {
+    src: '/headshot-hero-320.webp',
+    src2x: '/headshot-hero-640.webp',
+    alt: 'Vidyut Sriram, smiling, in a light blue polo against a dark grey studio backdrop',
+  },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
   /* The plain line under the identity: what that means in practice. */
@@ -1668,13 +1685,6 @@ export const contact = {
   headingEm: 'broken.',
   blurb:
     'Building agents that have to hold up with real users? Write to me. If you think I got something on this page wrong, tell me that too.',
-  /* His studio headshot, so a face is on the page once (the hero uses his sunset
-     silhouette). 240px and 480px (2x) squares from public/portrait@2x.jpg. */
-  portrait: {
-    src: '/headshot-240.webp',
-    src2x: '/headshot-480.webp',
-    alt: 'Vidyut Sriram, smiling, in a light blue polo',
-  },
   /* Mint means available. He graduates in Dec 2026 and can start in Jan 2027. */
   availability: 'Available from January 2027',
   email: 'vidyut0712@gmail.com',
@@ -1709,8 +1719,8 @@ export const contact = {
       label: 'The faces',
       rows: [
         { where: 'First screen', what: 'A hologram: me in a robe of stars, in blue light on a projector plate; on Enter it closes to a single beam' },
-        { where: 'Beside my name', what: 'The same hologram, smaller' },
-        { where: 'Contact', what: 'The studio headshot' },
+        { where: 'Beside my name', what: 'My studio headshot' },
+        { where: 'Contact', what: 'The hologram again, smaller' },
       ],
     },
   },

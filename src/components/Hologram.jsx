@@ -200,7 +200,7 @@ export default function Hologram() {
         scene = createHologram(
           canvas,
           { deep: triple(style, '--holo-deep'), pale: triple(style, '--holo-pale'), hot: triple(style, '--holo-hot') },
-          { warm: num('--holo-warm', 0.3), pitch: num('--holo-pitch', 3), foot: Number(style.getPropertyValue('--holo-foot')) || 0 }
+          { warm: num('--holo-warm', 0.3), pitch: num('--holo-pitch', 3), foot: Number(style.getPropertyValue('--holo-foot')) || 0, face: welcome.figure.face }
         );
         await tick();
         if (dead) return;

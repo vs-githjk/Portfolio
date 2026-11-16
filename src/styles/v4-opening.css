@@ -69,8 +69,7 @@
   animation-delay: inherit;
 }
 
-.hub-panel[data-kind='crew'] .hub-pic,
-.hub-panel[data-kind='fact'] .hub-pic {
+.hub-panel[data-kind='crew'] .hub-pic {
   aspect-ratio: 1;
 }
 
@@ -101,39 +100,6 @@
   z-index: 1;
   background: rgb(var(--holo-pale));
   mix-blend-mode: multiply;
-}
-
-/* The fact is set in the same light. */
-.hub-pic b {
-  grid-area: 1 / 1;
-  z-index: 2;
-  font-family: var(--font-read);
-  font-weight: 400;
-  font-size: calc(var(--w) * 0.46);
-  line-height: 1;
-  color: rgb(var(--holo-hot));
-  text-shadow: 0 0 18px rgba(var(--holo-pale), 0.7);
-}
-
-/* The one gold plate: an award. */
-.hub-panel[data-kind='fact'] .hub-pic {
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--win) 46%, transparent), color-mix(in srgb, var(--win) 14%, transparent));
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--win) 70%, transparent),
-    0 0 26px color-mix(in srgb, var(--win) 26%, transparent);
-}
-
-.hub-panel[data-kind='fact'] .hub-pic::before {
-  content: none;
-}
-
-.hub-panel[data-kind='fact'] .hub-pic b {
-  color: var(--win);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--win) 60%, transparent);
-}
-
-.hub-panel[data-kind='fact'] figcaption {
-  color: var(--win);
 }
 
 /* Scan lines, and the band of light that rolls up. */
@@ -672,6 +638,19 @@ html:not(.js) .bg-room {
     linear-gradient(to top, rgba(var(--room-ember), 0.3), rgba(var(--room-haze), 0.22) 34%, transparent 82%);
 }
 
+/* The sun, just gone behind the range on the left: what makes it dusk. */
+.room-sun {
+  position: absolute;
+  left: 31%;
+  top: calc(var(--hz) - 15svh);
+  width: 13svh;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgb(var(--room-gold)) 0, rgba(var(--room-gold), 0.9) 58%, rgba(var(--room-ember), 0.5) 80%, transparent 100%);
+  box-shadow: 0 0 9svh 3svh rgba(var(--room-gold), 0.22);
+}
+
 .room-range {
   position: absolute;
   left: 0;
@@ -681,7 +660,7 @@ html:not(.js) .bg-room {
 }
 
 .room-far {
-  fill: rgba(var(--room-haze), 0.34);
+  fill: rgba(var(--room-haze), 0.46);
 }
 
 .room-near {
@@ -690,8 +669,8 @@ html:not(.js) .bg-room {
 
 .room-rim {
   fill: none;
-  stroke: rgba(var(--room-gold), 0.75);
-  stroke-width: 1.2;
+  stroke: rgba(var(--room-gold), 0.95);
+  stroke-width: 1.5;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
@@ -759,14 +738,24 @@ html:not(.js) .bg-room {
   justify-content: flex-start;
 }
 
-/* A phone has just seen the figure, and has no room for it beside the name. */
-.hero-holo {
-  display: none;
+/* His photograph: real, crisp, plainly framed. Small above the name on a phone. */
+.hero-photo {
+  display: block;
+  width: 96px;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--acc) 46%, transparent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--acc) 9%, transparent),
+    var(--elev-2);
+  background: var(--surface-2);
 }
 
 @media (min-width: 961px) {
   .hero-in {
-    grid-template-columns: minmax(0, 1fr) var(--hero-holo-w);
+    grid-template-columns: minmax(0, 1fr) var(--hero-photo-w);
     align-items: center;
     column-gap: clamp(24px, 4vw, 64px);
     /* A little short of the window, so the waterline below shows at its foot. */
@@ -775,13 +764,12 @@ html:not(.js) .bg-room {
     padding-bottom: clamp(40px, 7svh, 88px);
   }
 
-  .hero-holo {
-    display: block;
+  .hero-photo {
     grid-column: 2;
     grid-row: 1;
     /* Never taller than the room the hero has. */
-    width: min(100%, calc((100svh - var(--nav-h) - 200px) * var(--hero-holo-ratio)));
-    justify-self: center;
+    width: min(100%, calc((100svh - var(--nav-h) - 220px) * 0.8));
+    justify-self: end;
   }
 
   .hero-in .who-main {
@@ -975,15 +963,56 @@ html:not(.js) .bg-room {
   }
 }
 
-/* The figure arrives with the rest of the hero: unlit while the first screen is
-   up, then last in the row of things that land. */
-.hero .hero-holo {
+/* The photograph arrives with the rest of the hero: unlit while the first screen
+   is up, then last in the row of things that land. */
+.hero .hero-photo {
   --land-i: 6;
   transition: opacity var(--land-dur) var(--ease) calc(var(--land-i) * var(--land-step));
 }
 
-html[data-entry='pre']:not([data-holo='off']) .hero .hero-holo {
+html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
   opacity: 0;
   transition-duration: 0.15s;
   transition-delay: 0s;
+}
+
+/* ================================== CONTACT ================================ */
+/* The hologram stands beside the ask (his photograph is beside his name, once). */
+.c-holo {
+  flex: none;
+  width: clamp(64px, 7vw, 92px);
+  margin-bottom: 8px;
+}
+
+/* ============================== THE NAMEPLATE ============================== */
+/* One line of award gold on the floor in front of the plate: a fact about him,
+   under his own feet, so it cannot be read as a build's label. Placed from the
+   plate (--plate-y, --plate-w); it leaves with the greeting. */
+.welcome-plate {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--plate-y, -999px) - var(--nav-h) + var(--plate-w, 100px) * 0.2 + 6px);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 2.5vw, 11px);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--win);
+  text-shadow:
+    0 0 3px var(--ink),
+    0 0 10px var(--ink);
+  opacity: calc(1 - var(--out, 0));
+  pointer-events: none;
+}
+
+html:not(.js) .welcome-plate,
+html[data-holo='off'] .welcome-plate,
+html[data-plain] .welcome-plate,
+html.js:not([data-holo]) .welcome-plate,
+.welcome[data-run] .welcome-plate {
+  display: none;
 }

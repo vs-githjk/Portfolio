@@ -69,7 +69,7 @@ Re-measure when the build changes, or set it to null.
 | Section (place) | Job |
 |---|---|
 | Welcome (The Threshold) | A hologram of him on a projector plate says hello: "Hey, I'm Vidyut." and "I build worlds. Reliable ones." Enter, or scroll, or Skip intro |
-| Hero (The Landing) | His name, very large, the status, the thesis, one plain line, Email me, Resume and links; at the right the same hologram figure, smaller. No builds here |
+| Hero (The Landing) | His name, very large, the status, the thesis, one plain line, Email me, Resume and links; at the right his real studio photograph. No builds here |
 | Vista: surface (The Waterline) | The dive. "Under the surface: the work." |
 | Experience (The Sounding) | Where he has worked; a sounding weight sinks as the roles are read |
 | Builds (The Deep) | Opener (the heading, the ringed giant, and under them the ring of twelve build cards as the index; the dot chart of all twenty on a phone or without scripts), three flagships as chapters, the fleet of eight featured plates, the paper with its repair loop, More builds as rows |
@@ -110,8 +110,13 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   frame or a box, never a row slip or any distortion of the picture (he read one as an eye
   glitch). The shimmer is brightness only. Check "friendly or eerie" with other model
   families, cold, against the plain photo as a control, before shipping a new figure.
+- **The nameplate.** `welcome.plate` ("5× hackathon winner · 6 first places") is one line
+  of award gold on the floor under his feet. It was a gold panel among the builds and was
+  read as DuelWise's label: a fact about him never sits in a seat beside a build.
+- **His face** is kept clearer than the rest of the figure (`welcome.figure.face`: fewer scan
+  lines, more of its own colour and contrast there).
 - **One visual language.** The panels at the sides (`welcome.hub`, eight on a wide window:
-  builds, the paper, the crew and one gold "5×" plate) are projections of the same kind, in
+  builds, the paper and the crew) are projections of the same kind, in
   CSS (`v4-opening.css`): the same ramp, line pitch, frame split, cone and plate, at three
   depths. They never touch the figure and are `aria-hidden`. A phone shows four, taking turns.
 - **The room** (Vidyut, Nov 16: the screen with only the avatar was "very empty"; then "a
@@ -128,7 +133,7 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
     the beam (in the shader). Panels and sky shift a few pixels against the pointer.
   - Colour: the figure and everything near it stay blue. `--room-gold` and `--room-ember`
     live in the far background and in small accents only; `--win` is still for awards (the
-    "5×" plate). This is the one screen where rule 1's "one accent" is widened, on purpose.
+    nameplate). This is the one screen where rule 1's "one accent" is widened, on purpose.
   - Nothing touches the figure or sits on the greeting (measured Nov 16: greeting 10:1 or more
     at 1440, 390 and 360). A phone gets the dusk, the range, the floor and two constellations.
     Under reduced motion it is all still.
@@ -147,17 +152,18 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
 - Reduced motion: one still frame of the figure and three still panels. `?plain` and no
   WebGL: no figure, the greeting and then the hero; Enter is a plain anchor.
 
-## The hero (`components/Hero.jsx`, `HoloFigure.jsx`)
+## The hero (`components/Hero.jsx`)
 
 Vidyut, Nov 16: "If I'm already doing 'Hey, I'm Vidyut', why is there an orbit right here
-that talks about projects? Isn't that the same as Builds?" The hero has no builds. It is the
+that talks about projects?" and "the hologram to start off with, then just an image of my
+face, because that's a real thing." The hero has no builds and no hologram. It is the
 status and the place, his name in two lines of the display face (`--fs-name`), the thesis,
-one plain sentence, the credentials and the actions. At its right, from 961px, the hologram
-stands again, smaller: `HoloFigure` draws the same `welcome.figure` with the same look in
-CSS (`.holo`: the picture's alpha as a mask, luminosity on the hologram's blue, scan lines,
-drop-shadow glow, cone and plate), so it is in the page without a script. A phone omits it.
-The sunset silhouette is gone; his studio headshot appears only in Contact. Do not put
-build cards, a ring or drifting thumbnails back in the hero.
+one plain sentence, the credentials and the actions, and at its right his real studio
+headshot (`hero.portrait`, a 4:5 crop, crisp, plainly framed; small above the name on a
+phone). This is the only place his photograph is shown. The hologram figure is everywhere
+else he appears: the welcome (the canvas) and Contact (`HoloFigure.jsx`, the same look in
+CSS: the picture's alpha as a mask, luminosity on the hologram's blue, scan lines, glow,
+cone and plate).
 
 ## The ring (`components/RingStage.jsx`, `Orbit.jsx`, `Drift.jsx`)
 

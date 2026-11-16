@@ -1,13 +1,11 @@
-import { hero, welcome } from '../data/content';
-import HoloFigure from './HoloFigure';
+import { hero } from '../data/content';
 import { GitHubIcon, LinkedInIcon } from './Icons';
 
 /* The hero: his name, set very large, lit from above by the beam field. On the
    left the status and the place, the name, the thesis, one plain sentence, the
-   credentials and the actions. On the right, on a wide window, the hologram from
-   the first screen stands again, smaller (HoloFigure: the same figure, the same
-   look, drawn in CSS so it is in the page with no script). A phone has no room
-   for it and has just seen it.
+   credentials and the actions. On the right his real photograph, crisp, in a
+   plain frame: the hologram greets, the person signs. A phone shows it small,
+   above the name.
 
    No figures, and no builds: the ring of builds is the index at the top of
    Builds. This screen says who he is and how to reach him.
@@ -21,7 +19,16 @@ export default function Hero() {
   return (
     <header className="hero" id="top">
       <div className="wrap hero-in">
-        <HoloFigure className="hero-holo" figure={welcome.figure} sizes="(max-width: 960px) 1px, 300px" />
+        <img
+          className="hero-photo"
+          src={hero.portrait.src2x}
+          srcSet={`${hero.portrait.src} 320w, ${hero.portrait.src2x} 640w`}
+          sizes="(max-width: 960px) 96px, 300px"
+          alt={hero.portrait.alt}
+          width="640"
+          height="800"
+          decoding="async"
+        />
         <div className="who-main">
           <div className="who-text">
             <span className="status">

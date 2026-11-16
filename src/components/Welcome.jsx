@@ -113,9 +113,7 @@ export default function Welcome() {
         {welcome.hub.map((item, k) => (
           <figure className="hub-panel" data-at={item.at} data-kind={item.kind} style={{ '--k': k }} key={item.at}>
             <span className="hub-pic">
-              {item.kind === 'fact' ? (
-                <b>{item.value}</b>
-              ) : (
+              {
                 /* Twice: once for its tones in the blue light, once for a share of its own colour. */
                 [0, 1].map((layer) => (
                   <img
@@ -129,13 +127,14 @@ export default function Welcome() {
                     fetchPriority="low"
                   />
                 ))
-              )}
+              }
             </span>
             <span className="hub-cone" />
             <figcaption>{item.label}</figcaption>
           </figure>
         ))}
       </div>
+      <p className="welcome-plate">{welcome.plate}</p>
       <p className="welcome-say">
         {welcome.lines.map((line, k) => (
           <span className="say" data-line={k + 1} style={{ '--n': line.length }} key={line}>

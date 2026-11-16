@@ -3757,17 +3757,6 @@ a.plaque:active::after {
   gap: 8px;
 }
 
-/* His headshot beside the ask: the one photograph of his face on the page. */
-.c-portrait {
-  width: clamp(72px, 7vw, 96px);
-  height: auto;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--hair-2);
-  background: var(--surface-2);
-}
-
 .c-avail {
   display: inline-flex;
   align-items: center;

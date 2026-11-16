@@ -8,6 +8,7 @@ import { useEffect, useRef } from 'react';
      the dusk    warm light low on the horizon, ember red at the ground, gold
                  above it, giving way to the page's deep blue. It is strongest
                  toward the sides: the middle belongs to the blue of the figure.
+     the sun     a low gold disc going down behind the range, left of him
      the range   two ridges in silhouette, the far one in dusk haze, the near one
                  ink with a gold rim where the light catches its peaks
 
@@ -82,6 +83,7 @@ export default function WelcomeBackdrop() {
   return (
     <div className="bg-room" ref={ref}>
       <span className="room-dusk" />
+      <span className="room-sun" />
       <svg className="room-range" viewBox="0 0 1600 220" preserveAspectRatio="xMidYMax slice" focusable="false">
         <path className="room-far" d={`${FAR}V220H0Z`} />
         <path className="room-near" d={`${NEAR}V220H0Z`} />
