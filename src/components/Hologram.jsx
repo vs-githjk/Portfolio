@@ -21,7 +21,8 @@ import { createHologram, parseFace } from '../lib/holoScene';
    - It draws only while some of it is on screen and the tab is visible: every
      frame while the scroll is moving or the face is being drawn, about 30 a
      second while it only breathes. DPR is capped (1.75, 1.5 on a phone) and a
-     phone draws a little over half the points.
+     phone draws half the points. The glow is a bloom pass in a third-size buffer.
+   - On a desktop he also looks a little toward the pointer (eased, a few degrees).
    - Under prefers-reduced-motion it is one still frame of the face that scrolls
      away with the page: no drawing in, no turn, no ball. */
 
@@ -67,6 +68,9 @@ export default function Hologram() {
     let faded = ''; // how far the greeting has faded (written to the welcome as --out)
     let spoke = ''; // the last state written for the ball's line
     let turned = ''; // the last head turn written (--head, -1 to 1)
+    let cleared = false; // the canvas has been wiped after the burst
+    const want = { x: 0, y: 0 }; // where the pointer is, -1 to 1
+    const gaze = { x: 0, y: 0 }; // and where he is looking, eased
 
     try {
       seen = window.sessionStorage.getItem(SEEN_KEY) === '1';
@@ -117,13 +121,26 @@ export default function Hologram() {
         canvas.style.transform = `translate3d(0, ${-y}px, 0)`;
         if (last === 0) {
           last = now;
-          scene.render({ ...pose(w, h, 0), time: 4, intro: 1, morph: 0, burst: 0, turn: -0.08, nod: 0.01, voice: 0, still: true, gain, flicker: 1 });
+          scene.render({ ...pose(w, h, 0), time: 4, intro: 1, morph: 0, burst: 0, turn: -0.08, nod: 0.01, voice: 0, speak: 0, still: true, gain, glow: 0.45 });
         }
         return;
       }
       canvas.style.transform = '';
 
       const gone = eased > 1.06 && p > 1.06;
+      if (gone && !cleared) {
+        // Past the hero (a jump from a nav link lands here in one step): leave nothing
+        // behind, neither the last frame of light nor a half-typed line.
+        cleared = true;
+        scene.render({ ...pose(w, h, 1), time: 0, intro: 1, morph: 1, burst: 1, turn: 0, nod: 0, voice: 0, speak: 0, still: false, gain: 0 });
+        const host = anchor.parentElement.style;
+        host.setProperty('--speak', '1');
+        host.setProperty('--speak-on', '0');
+        host.setProperty('--out', '1');
+        spoke = '';
+        faded = '';
+      }
+      if (!gone) cleared = false;
       const busy = moving || intro < 1 || since < VOICE[1];
       if (!gone && (busy || now - last >= IDLE_MS - 2)) {
         const t = now / 1000;
@@ -142,7 +159,10 @@ export default function Hologram() {
           host.setProperty('--ball-y', `${Math.round(at.cy + at.ball * 1.28)}px`);
         }
         // The panels wired to him drift a little with the turn of his head.
-        const look = Math.sin(t * 0.42) * (1 - span(0, 0.3, eased));
+        // He looks slowly from side to side, and a little toward the pointer.
+        gaze.x += (want.x - gaze.x) * 0.04;
+        gaze.y += (want.y - gaze.y) * 0.04;
+        const look = Math.max(-1, Math.min(1, Math.sin(t * 0.42) * 0.7 + gaze.x * 0.6)) * (1 - span(0, 0.3, eased));
         const head = look.toFixed(2);
         if (head !== turned) {
           turned = head;
@@ -164,12 +184,15 @@ export default function Hologram() {
           burst,
           // A slow look to one side and back: one eased swing every fifteen seconds.
           turn: look * 0.15,
-          nod: 0.02 + Math.sin(t * 0.27) * 0.02,
+          nod: 0.02 + Math.sin(t * 0.27) * 0.02 + gaze.y * 0.05 * (1 - span(0, 0.3, eased)),
           voice: talking ? 0.5 + 0.5 * Math.sin(t * 7.5) : 0,
+          // While the ball says its line a wave runs round its ring.
+          speak: word * (0.55 + 0.45 * Math.sin(t * 5.3) * Math.sin(t * 1.9)),
+          // The face keeps its features: less bloom on it than on the ball.
+          glow: 0.45 + 0.55 * ease(span(0.04, 0.34, eased)),
           still: false,
           // The burst starts with a flash, then the light thins out as it flies.
-          gain: gain * (1 + 0.8 * Math.sin(Math.PI * span(0, 0.3, burst)) + word * 0.18 * Math.sin(t * 9.5)) * (1 - span(0.9, 1.04, eased)),
-          flicker: 1,
+          gain: gain * (1 + 0.8 * Math.sin(Math.PI * span(0, 0.3, burst)) + word * 0.12 * Math.sin(t * 9.5)) * (1 - span(0.9, 1.04, eased)),
         });
         last = now;
       }
@@ -187,7 +210,8 @@ export default function Hologram() {
         cx: box.x,
         cy: home + (mid - home) * ease(span(0, 0.36, p)),
         size,
-        ball: Math.min(w, h) * (phone ? 0.25 : 0.18),
+        // The globe's radius; its ring reaches twice as far, so a phone gets a smaller one.
+        ball: Math.min(w, h) * (phone ? 0.18 : 0.15),
       };
     }
 
@@ -210,12 +234,18 @@ export default function Hologram() {
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))))
       .then((buffer) => {
         if (dead) return;
-        const cloud = parseFace(buffer, phone ? 0.58 : 1);
-        scene = createHologram(canvas, cloud, {
-          deep: triple(style, '--holo-deep'),
-          pale: triple(style, '--holo-pale'),
-          tint: triple(style, '--holo-deep'),
-        });
+        const cloud = parseFace(buffer, phone ? 0.5 : 1);
+        scene = createHologram(
+          canvas,
+          cloud,
+          {
+            deep: triple(style, '--holo-deep'),
+            pale: triple(style, '--holo-pale'),
+            tint: triple(style, '--holo-deep'),
+            hot: triple(style, '--holo-hot'),
+          },
+          Number(style.getPropertyValue('--holo-bloom')) || 0
+        );
         measure();
         seenAtStart = seen || rm.matches || window.scrollY > 40;
         seen = seenAtStart;
@@ -231,8 +261,16 @@ export default function Hologram() {
     document.addEventListener('visibilitychange', kick);
     canvas.addEventListener('webglcontextlost', onLost);
     rm.addEventListener('change', relayout);
+    const onPointer = (e) => {
+      want.x = (e.clientX / window.innerWidth) * 2 - 1;
+      want.y = (e.clientY / window.innerHeight) * 2 - 1;
+      kick();
+    };
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (fine) window.addEventListener('pointermove', onPointer, { passive: true });
 
     return () => {
+      window.removeEventListener('pointermove', onPointer);
       dead = true;
       cancelAnimationFrame(raf);
       window.removeEventListener('scroll', kick);

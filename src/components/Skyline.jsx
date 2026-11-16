@@ -51,7 +51,7 @@ export default function Skyline({ days, onReady }) {
     if (!ctx) return undefined;
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)');
     const phone = window.matchMedia('(max-width: 640px)');
-    const css = getComputedStyle(document.documentElement);
+    const css = getComputedStyle(canvas); // its own world's palette, not the page's
     const rgb = (name) => {
       ctx.fillStyle = css.getPropertyValue(name).trim();
       const s = ctx.fillStyle;

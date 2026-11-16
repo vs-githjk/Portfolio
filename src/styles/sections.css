@@ -245,6 +245,11 @@ html[data-world='on'] .sec::before {
   -webkit-mask-composite: source-in;
 }
 
+/* The crew's panel is its own ground. */
+html[data-world='on'] .crew::before {
+  content: none;
+}
+
 /* The contact section clips its own beams, so its ground stops at its foot. */
 html[data-world='on'] .contact::before {
   bottom: 0;
@@ -633,6 +638,10 @@ html[data-holo='off'] .welcome-ball {
   font-size: var(--fs-hello);
   line-height: 1;
   letter-spacing: var(--tr-display);
+  /* Room for the descenders inside the box: the typed light is a background
+     clipped to the text, and a background stops at the padding edge. */
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
 }
 
 .say[data-line='2'] {

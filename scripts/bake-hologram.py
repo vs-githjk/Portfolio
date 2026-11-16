@@ -34,8 +34,8 @@ SRC = Path(sys.argv[1])
 PREVIEW = Path(sys.argv[2]) if len(sys.argv) > 2 else None
 OUT = Path(__file__).resolve().parent.parent / 'public' / 'holo' / 'face.bin'
 
-ROW = 5.0  # px between scan rows in the 1200px source
-STEP = 2.7  # px between points along a row
+ROW = 4.72  # px between scan rows in the 1200px source (254 rows: the row index is one byte)
+STEP = 2.0  # px between points along a row (Nov 15 2026: denser, 22.5k to about 32k points)
 SEED = 7
 
 # Where the head sits in the 1200 x 1200 source (measured on the photo).

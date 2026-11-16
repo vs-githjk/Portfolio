@@ -105,7 +105,7 @@
   --sea-shallow: 15, 84, 96;
   --sea-mid: 6, 40, 50;
   --sea-abyss: 3, 17, 22;
-  --sea-warm: 96, 74, 58; /* water with the low sun in it, just before the shore */
+  --sea-warm: 44, 104, 106; /* water with the low sun in it, just before the shore */
   --sea-ray: 150, 232, 232;
   --sea-ray-warm: 255, 190, 120;
   --sea-foam: 214, 246, 244; /* the bright line of a surface seen in section */
@@ -130,7 +130,8 @@
   --dawn-low: 150, 78, 58;
   --sun: 255, 226, 178;
   --star: 255, 240, 222;
-  --ridge: 38, 22, 20;
+  --ridge: 38, 22, 20; /* the nearest ground */
+  --ridge-far: 140, 84, 106; /* the farthest range, seen through dusk air */
   --ember: 255, 150, 84;
   --moon-night: 10, 8, 8;
   --moon-day: 124, 108, 96;
@@ -165,7 +166,8 @@
   --ground-dawn: #3a211c;
 
   /* ---- THE WELCOME: his face in light, on the screen above the hero ---------- */
-  --holo-gain: 1; /* strength of the hologram's light */
+  --holo-gain: 0.92; /* strength of the hologram's light */
+  --holo-bloom: 1; /* strength of the glow around it (0 turns the bloom pass off) */
   --hub-w: clamp(84px, 11.5vw, 172px); /* a thought beside him on the welcome screen */
   --hub-dim: 0.62; /* and how lit it is at its brightest */
   --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
@@ -326,6 +328,10 @@ html[data-at='earth'] .nav {
   --glass-hi: rgba(255, 224, 196, 0.1);
   --shadow-ink: rgb(8, 3, 0);
   --grid-line: rgba(255, 214, 180, 0.045);
+  /* the bands of light that rise under the contact block: first light, not starlight */
+  --beam-a: 226, 120, 64;
+  --beam-b: 255, 190, 136;
+  --beam-c: 168, 78, 84;
 }
 
 /* Tokens built from other tokens are declared again in every realm, because a

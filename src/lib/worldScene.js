@@ -400,7 +400,7 @@ export function createWorld(canvas) {
     'sea-shallow', 'sea-mid', 'sea-abyss', 'sea-warm', 'sea-ray', 'sea-ray-warm', 'sea-foam', 'sea-snow-a', 'sea-snow-b',
     'giant-night', 'giant-day', 'giant-band', 'giant-rim', 'giant-ring',
     'jelly-a', 'jelly-b', 'jelly-c', 'manta-a', 'manta-rim',
-    'dusk-top', 'dusk-mid', 'dusk-low', 'night-top', 'night-low', 'dawn-low', 'sun', 'star', 'ridge', 'ember',
+    'dusk-top', 'dusk-mid', 'dusk-low', 'night-top', 'night-low', 'dawn-low', 'sun', 'star', 'ridge', 'ridge-far', 'ember',
     'moon-night', 'moon-day', 'moon-band', 'moon-rim',
     'earth-night', 'earth-day', 'earth-band', 'earth-rim',
     'gal-core', 'gal-a', 'gal-b',
@@ -443,6 +443,7 @@ export function createWorld(canvas) {
     uDawn: { value: 0 },
     uLand: { value: 0 },
     uDrift: { value: 0 },
+    uBase: { value: 0 },
     uDuskTop: V3('dusk-top'),
     uDuskMid: V3('dusk-mid'),
     uDuskLow: V3('dusk-low'),
@@ -484,7 +485,7 @@ export function createWorld(canvas) {
       new ShaderMaterial({
         vertexShader: LAND_VERT,
         fragmentShader: LAND_FRAG,
-        uniforms: { ...stage, uRidge: V3('ridge'), uEmber: V3('ember'), uFig: { value: 0 }, uFigShow: { value: 0 } },
+        uniforms: { ...stage, uRidge: V3('ridge'), uRidgeFar: V3('ridge-far'), uEmber: V3('ember'), uStar: V3('star'), uFig: { value: 0 }, uFigShow: { value: 0 } },
         transparent: true,
         depthWrite: false,
         depthTest: false,
@@ -900,6 +901,7 @@ export function createWorld(canvas) {
     const top = home.surf - scroll;
     stage.uTop.value = top;
     stage.uExit.value = exit;
+    stage.uBase.value = rise > 0 ? Math.max(0, Math.min(h, h - exit)) : 0;
     stage.uScroll.value = scroll;
     stage.uDusk.value = along(tracks.dusk, line);
     stage.uDawn.value = along(tracks.dawn, line);
@@ -911,7 +913,8 @@ export function createWorld(canvas) {
     land.material.uniforms.uFigShow.value = sm((stage.uLand.value - 0.62) / 0.2) * (1 - sm((stage.uDusk.value - 0.75) / 0.2));
     const sea = sm((line - home.surf) / (h * 0.5)) * (1 - rise);
     const night = sm((stage.uDusk.value - 0.7) / 0.3) * (1 - stage.uDawn.value);
-    zone.uShow.value = show(scroll) * sea;
+    // The medusae belong to the deep: they are gone well before the warm water.
+    zone.uShow.value = show(scroll) * sea * (1 - sm((line - (home.shore - h * 1.5)) / (h * 0.6)));
 
     // The galaxy wakes as the reader comes to it: it spins up, brightens, and
     // leans toward the pointer. It belongs to the night, so it stays down until then.
