@@ -5,7 +5,10 @@ import { createDragon } from './dragon';
    ground, to judge the model, its clips and each place's light.
 
    ?clip=fly|glide|perch|roar   ?light=sea|dusk|night|dawn   ?yaw=deg (0 flies to the right, 90 toward the reader)
-   ?pitch=deg   ?bank=deg   ?size=px per unit   ?lite (the phone file)   ?still   ?t=seconds   ?bare (no label) */
+   ?pitch=deg   ?bank=deg   ?size=px per unit   ?lite (the phone file)   ?still   ?t=seconds   ?bare (no label)   ?bg=hex|none
+
+   public/dragon/perch.webp (the still that stands on the roost under reduced motion) is a
+   screenshot of ?clip=perch&light=night&yaw=145&look=-28&still&bare&bg=none with no page ground. */
 const q = new URLSearchParams(location.search);
 const root = document.documentElement;
 if (q.has('bare')) root.dataset.bare = '';
@@ -28,7 +31,8 @@ const LIGHT = {
 LIGHT.dawn = { ...LIGHT.dusk, keyDir: [-0.62, 0.12, -0.6], amb: v(30, 22, 20, 1.7) };
 live.light(LIGHT[q.get('light')] ?? LIGHT.night);
 const ground = { sea: '#0a3a44', dusk: '#b4705a', night: '#120d0c', dawn: '#1a1416' }[q.get('light') ?? 'night'];
-document.body.style.background = q.get('bg') ? '#' + q.get('bg') : ground;
+document.body.style.background = q.get('bg') === 'none' ? 'transparent' : q.get('bg') ? '#' + q.get('bg') : ground;
+if (q.get('bg') === 'none') root.style.background = 'transparent';
 document.getElementById('label').textContent = `dragon · ${live.bones} bones · ${live.triangles} triangles · clips ${live.clips.join(', ')}`;
 
 let w = 1;

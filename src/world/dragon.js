@@ -157,8 +157,8 @@ void main(){
   float beat = 0.72 + 0.28 * sin(uTime * 1.7 - along * 0.9);
   col += uGlow * uFire * chest * (0.04 + 1.1 * (1.0 - seam)) * beat;
   float eye = 0.0;
-  for (int i = 0; i < 2; i++) { vec3 d = vRest - uEye[i]; eye += smoothstep(0.26, 0.08, length(d)); }
-  col += (uGlow * 1.6 + 0.5) * eye * max(uFire, 0.35);
+  for (int i = 0; i < 2; i++) { vec3 d = vRest - uEye[i]; eye += smoothstep(0.15, 0.06, length(d * vec3(1.0, 1.7, 0.8))); }
+  col += (uGlow * 1.5 + 0.25) * eye * max(uFire, 0.35);
 
   // Under water the surface's net of light plays over its back.
   if (uCaust > 0.001) col += uRim * caustic(vW.xz * 0.0021 + vW.y * 0.0009, uTime * 0.3) * smoothstep(0.0, 0.7, N.y) * uCaust * (0.4 + 0.6 * dif);
@@ -191,7 +191,8 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
   gltf.scene.updateMatrixWorld(true);
   // The mesh is stored quantized: this takes a stored vertex to where it stands at rest, in model units.
   const restM = new Matrix4().multiplyMatrices(skinned.skeleton.bones[0].matrixWorld, skinned.skeleton.boneInverses[0]);
-  const eyeAt = (n) => (bone(n) ? new Vector3().setFromMatrixPosition(bone(n).matrixWorld) : new Vector3(0, 99, 0));
+  // The eye bones sit inside the skull: the eye itself is a little way out along x.
+  const eyeAt = (n, side) => (bone(n) ? new Vector3().setFromMatrixPosition(bone(n).matrixWorld).add(new Vector3(side * 0.2, 0, 0)) : new Vector3(0, 99, 0));
 
   const U = {
     uBox: { value: Array.from({ length: GUARD_BOXES }, () => new Vector4(-9e4, -9e4, -9e4, -9e4)) },
@@ -217,7 +218,7 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     uThin: { value: 1 },
     uSplit: { value: 0 },
     uPlates: { value: 5.2 },
-    uEye: { value: [eyeAt('eye.L'), eyeAt('eye.R')] },
+    uEye: { value: [eyeAt('eye.L', 1), eyeAt('eye.R', -1)] },
     uRestM: { value: restM },
     uSigmaW: wet?.uSigmaW ?? { value: new Vector3(1, 0.4, 0.3) },
     uWaterCol: wet?.uWaterCol ?? { value: new Vector3() },

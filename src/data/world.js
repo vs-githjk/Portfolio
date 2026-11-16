@@ -3,11 +3,7 @@ import { builds, contact, experience, hero, highlights, principles, proofOfWork,
 /* The world's own words and wiring for this site (lane A): place names, the
    labels of the shell's controls, the load lines, the receipt sentences, and how
    this world places its two waterlines. Counts are never typed here: every
-   number in a sentence is computed from content.js or the GitHub snapshot. */
-
-/* The same snapshot the commit graph draws (ProofOfWork.jsx, World.jsx). */
-const snaps = import.meta.glob('./github*.json', { eager: true, import: 'default' });
-const github = snaps['./github.local.json'] ?? snaps['./github.json'] ?? { days: [], total: 0 };
+   number in a sentence is computed from content.js. */
 
 /* The two waterlines, as the scene draws them (lib/worldScene.js): the surface is
    a place in the page, 36% down its vista; the shore's line comes down the window
@@ -113,7 +109,7 @@ const scene = (kind) => builds.flagships.find((f) => f.scene?.kind === kind);
 const ring = hero.carousel.slides.length;
 const crew = builds.building.crew.length;
 const wins = proofOfWork.wins.items.length;
-const SOURCE = { content: 'content.js', github: 'github.json' };
+const SOURCE = { content: 'content.js' };
 
 const facts = {
   orrery: () => ({ name: 'The Orrery', fact: `${ring} builds in orbit, one tick each`, source: SOURCE.content }),

@@ -78,6 +78,25 @@ export default function Footer() {
                 ))}
               </dl>
             </section>
+
+            <section className="credits-part" aria-labelledby="cr-borrowed">
+              <h3 className="eyebrow" id="cr-borrowed">
+                {k.borrowed.label}
+              </h3>
+              <dl className="credits-pairs">
+                {k.borrowed.rows.map((r) => (
+                  <div key={r.where}>
+                    <dt className="credits-role">{r.where}</dt>
+                    <dd className="credits-name">
+                      {r.what}{' '}
+                      <a href={r.href} target="_blank" rel="noopener noreferrer">
+                        {r.link}
+                      </a>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
             </div>
           </details>
 

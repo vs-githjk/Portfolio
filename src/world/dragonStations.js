@@ -92,14 +92,14 @@ export function createDragonStations({ live, phone, C }) {
       const bottom = Math.max(giant.bottom, row ? row.bottom + y : giant.bottom) + (phone ? 0 : h * 0.12);
       const sky = { el: giant.el, top, bottom, h: bottom - top };
       const clock = phone ? [giant.mid - h * 0.6, h * 1.05] : [giant.mid - h * 0.54, h * 1.1]; // across its face when the giant is in the middle of the window
-      st.pass = { rect: sky, size, R, a: R * (phone ? 1.2 : 1.42), b: R * 0.46, clock, boxes: boxesOf(sky, [top, bottom]), band: [top, bottom] };
+      st.pass = { rect: sky, size, R, a: R * (phone ? 0.95 : 1.42), b: R * 0.46, clock, boxes: boxesOf(sky, [top, bottom]), band: [top, bottom] };
     }
 
     // 2 The breach: up out of the water as the reader comes up through the surface, and away into the low sun.
     const shore = anchorRect('shore');
     st.breach = null;
     if (shore && shore.h > 300) {
-      const size = phone ? Math.min(17, (w * 0.74) / MODEL.span) : Math.max(30, Math.min(50, w / 30));
+      const size = phone ? Math.min(17, (w * 0.74) / MODEL.span) : Math.max(28, Math.min(44, w / 33));
       // x in window widths, y in window heights (both from the middle), z in px
       const way = phone
         ? [
@@ -112,11 +112,11 @@ export function createDragonStations({ live, phone, C }) {
             [0.2, -0.12, -1500],
           ]
         : [
-            [0.38, 0.95, 80],
-            [0.35, 0.55, 60],
-            [0.32, 0.2, 20],
-            [0.3, -0.06, -60],
-            [0.29, -0.2, -260],
+            [0.33, 0.95, 80],
+            [0.31, 0.55, 60],
+            [0.29, 0.2, 20],
+            [0.28, -0.06, -60],
+            [0.28, -0.2, -260],
             [0.26, -0.2, -700],
             [0.225, -0.12, -1300],
             [0.22, -0.08, -1900],
@@ -145,12 +145,12 @@ export function createDragonStations({ live, phone, C }) {
       // Head to the left and toward the reader, tail away to the right: about 12 units wide, 8.4 tall.
       const wide = 12.2;
       const reach = 4.6; // from the feet to the snout, on the screen
-      let size = Math.min((roost.h - 10) / MODEL.tall, (Math.min(roost.w, w - 2 * GUTTER) * (phone ? 0.98 : 0.6)) / wide);
+      let size = Math.min((roost.h - 10) / (MODEL.tall + 1.6), (Math.min(roost.w, w - 2 * GUTTER) * (phone ? 0.98 : 0.6)) / wide);
       const xFeet = phone ? roost.left + reach * size + 6 : roost.right - (wide - reach) * size - roost.w * 0.04;
       const open = !phone && (noteRight < 0 || noteRight + 28 < xFeet - reach * size);
       const top = open ? Math.min(roost.top, Math.max(ceiling, roost.top - 150)) : roost.top;
-      if (open) size = Math.min(size * 1.5, (roost.bottom - top - 10) / MODEL.tall);
-      const band = [top - 40, roost.bottom + 8];
+      if (open) size = Math.min(size * 1.5, (roost.bottom - top - 10) / (MODEL.tall + 1.6));
+      const band = [top - (open ? 40 : 6), roost.bottom + 8];
       const cols = graph ? columnsOf(graph.el, Number(graph.el.dataset?.weeks) || 53) : null;
       // The section's calm ground opens over the band (v3-sections.css reads these).
       const sec = roost.el.closest('section');

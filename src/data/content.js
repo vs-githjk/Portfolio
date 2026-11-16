@@ -1703,13 +1703,28 @@ export const contact = {
         { where: 'Contact', what: 'The studio headshot' },
       ],
     },
+    /* Work by other people that the site stands on. The dragon: source
+       https://opengameart.org/content/low-poly-ice-dragon , author xterryx, licence
+       CC0 1.0 (public domain; credit is a courtesy, not a condition). What was
+       done to it here is in scripts/bake-dragon.py. */
+    borrowed: {
+      label: 'Borrowed, with thanks',
+      rows: [
+        {
+          where: 'The dragon',
+          what: 'Began as the Low Poly Ice Dragon by xterryx, released to the public domain (CC0). I smoothed it, lengthened its wings and wrote its four animations; its hide and fire are a shader.',
+          link: 'The model on OpenGameArt',
+          href: 'https://opengameart.org/content/low-poly-ice-dragon',
+        },
+      ],
+    },
   },
   /* The colophon: how the site was made. `lighthouse` holds numbers measured on
      the production build on the date given, on Lighthouse's phone profile; leave
      it null rather than quote a number that was not measured that day. */
   colophon: {
     label: 'Colophon',
-    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
+    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene with a rigged, animated dragon in it, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
     measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {performance} at the median, {low} or more on {held} of them and {worst} on the first, cold run; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
     // Measured Nov 16 2026 on the production build of the round 6 fixes (npm run build, vite preview),
