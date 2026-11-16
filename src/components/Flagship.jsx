@@ -6,7 +6,7 @@ import Rich from './Rich';
 import ScenePlate from './ScenePlate';
 import Stack from './Stack';
 import Stills from './Stills';
-import { fill, pad2, place } from './counts';
+import { fill, place } from './counts';
 
 /* A flagship is a chapter of two parts.
 
@@ -20,7 +20,7 @@ import { fill, pad2, place } from './counts';
    Story: a calmer panel. The stills as one viewer, the other figures, the role
    line and what is being built now. The story itself and the stack open under
    "The full story" (a native <details>, so the text is in the HTML). */
-export default function Flagship({ item, index, count }) {
+export default function Flagship({ item, index }) {
   const { lead, stack } = item.media;
   const frames = [
     { ...lead, width: 1200, height: 750, steps: [640, 900] },
@@ -32,13 +32,6 @@ export default function Flagship({ item, index, count }) {
     <article className="ch" id={`build-${item.id}`} data-side={index % 2 ? 'right' : 'left'} data-build={item.id}>
       <div className="ch-arrival reveal">
         <p className="ch-index">
-          <span>
-            <span className="num">{pad2(index + 1)}</span>
-            <span aria-hidden="true"> / </span>
-            <span className="sr"> {builds.labels.of} </span>
-            {pad2(count)}
-          </span>
-          <i aria-hidden="true" />
           <span className="ch-kind">
             <span className="num">{place(item.id)}</span> {item.kind}
           </span>

@@ -86,7 +86,7 @@ export default function Builds() {
             </nav>
           </header>
           {builds.flagships.map((item, n) => (
-            <Flagship item={item} index={n} count={flagships} key={item.id} />
+            <Flagship item={item} index={n} key={item.id} />
           ))}
           <div className="fleet" ref={fleet} role="group" aria-label={builds.labels.fleet}>
             {pairs(builds.items).map((row) => (

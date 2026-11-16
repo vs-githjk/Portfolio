@@ -1441,7 +1441,7 @@ html[data-world='on'] .deep-head::before {
     gap: 4px 12px;
   }
 
-  .ch-index i + .ch-kind + i {
+  .ch-index i {
     display: none;
   }
 
