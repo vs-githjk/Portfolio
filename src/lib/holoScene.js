@@ -110,7 +110,10 @@ void main() {
   // the same line), and where it has arrived the points step back: at rest the
   // window shows the picture, crisp, and not one point.
   float line2 = uIntro * 2.05 - 0.75;
-  float pictured = uPicture * ease(1.0 - smoothstep(line2 - 0.2, line2, reach0 + 0.05));
+  // The whole window (backdrop and shoulders too) is already there in soft focus
+  // by then, so the points give way to it early: a face is never shown as a
+  // cut-out head with a crumbling edge.
+  float pictured = uPicture * max(ease(1.0 - smoothstep(line2 - 0.2, line2, reach0 + 0.05)), smoothstep(0.03, 0.26, uIntro));
   f = mix(vec3(f.xy * (1.12 + 0.2 * r2), f.z - 0.5 - 0.3 * r1), f, home);
   float faceSize = gap * uSize * SPREAD;
   // No light of our own on him: the photograph's is the flattering one. A point
@@ -303,6 +306,7 @@ uniform mediump vec2 uEye; // the middle of the eye line (the fragment shader re
 varying vec2 vUv;
 varying vec2 vAt;
 varying float vIn;
+varying float vBase;
 
 vec3 turn(vec3 p, float a, float b) {
   float c = cos(a), s = sin(a);
@@ -323,6 +327,9 @@ void main() {
   float line2 = uIntro * 2.05 - 0.75;
   float drawn = 1.0 - smoothstep(line2 - 0.2, line2, reach0 + 0.05);
   vIn = drawn * drawn * (3.0 - 2.0 * drawn);
+  // The window itself fades up whole and first; vIn is then how far each place
+  // has come into focus (his eyes first, the rim last).
+  vBase = smoothstep(0.03, 0.3, uIntro);
   float depth = 1.0 / (1.0 - f.z / 3.2);
   vec2 px = uCenter + vec2(f.x, -f.y) * uSize * depth;
   gl_Position = vec4(px.x / uRes.x * 2.0 - 1.0, 1.0 - px.y / uRes.y * 2.0, 0.0, 1.0);
@@ -340,6 +347,7 @@ uniform float uMorph, uShow, uRimA;
 varying vec2 vUv;
 varying vec2 vAt;
 varying float vIn;
+varying float vBase;
 void main() {
   // The order the points leave in (parseFace): the farther from his eyes, the
   // sooner. A point of order o starts to move when uMorph * 2.3 passes o * 1.3;
@@ -350,10 +358,22 @@ void main() {
   float stays = smoothstep(front - 0.06, front, order);
   float d = distance(gl_FragCoord.xy, uDisc.xy);
   float inside = 1.0 - smoothstep(uDisc.z - 0.75, uDisc.z + 0.75, d);
-  float a = vIn * stays * inside * uShow;
+  float a = vBase * stays * inside * uShow;
+  // Soft focus until a place has come in: twelve taps on two small circles, none at rest.
+  vec3 col = texture2D(uTex, vUv).rgb;
+  // (No branch around the taps: a texture read inside one loses its derivatives
+  // along the branch's edge and leaves a dotted ring where focus arrives.)
+  float soft = (1.0 - vIn) * 0.013;
+  vec3 sum = col * 2.0;
+  for (int i = 0; i < 12; i++) {
+    float ang = float(i) * 0.5236;
+    float rad = soft * (mod(float(i), 2.0) < 0.5 ? 1.0 : 0.5);
+    sum += texture2D(uTex, vUv + vec2(cos(ang), sin(ang)) * rad).rgb;
+  }
+  col = sum / 14.0;
   // One quiet hairline at the window's rim, no glow.
   float line = exp(-pow((d - uDisc.z) / 1.0, 2.0)) * 0.42 * uRimA;
-  gl_FragColor = vec4(texture2D(uTex, vUv).rgb * a + uRim * line, a);
+  gl_FragColor = vec4(col * a + uRim * line, a);
 }
 `;
 

@@ -64,7 +64,7 @@ export default function Chart({ places, groups, total, words, lineAt, openerSel 
     went.current = false;
     dialog.showModal();
     (dialog.querySelector('[aria-current]') ?? dialog.querySelector('.chart-close'))?.focus();
-  }, [open, map]);
+  }, [open, map, openerSel]);
 
   const close = () => setSwitch('chart', false);
   const leave = () => {

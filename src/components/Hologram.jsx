@@ -211,7 +211,7 @@ export default function Hologram() {
         }
         scene.render({
           ...at,
-          ...windowAt(at, morph, ease(span(0.25, 0.9, intro))),
+          ...windowAt(at, morph, ease(span(0, 0.3, intro))),
           ball: at.ball * pulse,
           time: t,
           intro: ease(intro),
