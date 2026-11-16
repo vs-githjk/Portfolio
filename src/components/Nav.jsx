@@ -23,11 +23,11 @@ import { setSwitch, useSwitch } from '../shell/switches';
    hydration, are aria-hidden and inert, and are display: none at any other time.
 
    The bar's tools (v3): a compass mark opens the Chart (key M), Receipts labels
-   every living thing with its fact (key R), Sound switches the synth. Below 960px
-   only the compass stays in the bar; the other two live in the Chart. */
+   every living thing with its fact (key R). Sound lives in the Chart with the
+   other switches (Nov 16: three toggles beside the one action a recruiter needs,
+   Email, was one too many). Below 960px only the compass stays in the bar. */
 function Tools({ tab }) {
   const receipts = useSwitch('receipts');
-  const sound = useSwitch('sound');
   const flip = (name, value) => () => {
     setSwitch(name, value);
     emit(EV.sound, { cue: 'tick' });
@@ -50,15 +50,6 @@ function Tools({ tab }) {
           <path d="M7.8 7h4.4M7.8 10.2h4.4" />
         </svg>
         <span className="nav-tool-label">{shell.receipts.label}</span>
-      </button>
-      <button className="nav-tool" data-tool="sound" type="button" tabIndex={tab} aria-pressed={sound} onClick={flip('sound')}>
-        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
-          <path d="M3 7.8h3l4-3.2v10.8l-4-3.2H3z" />
-          {sound ? <path d="M13 7.2a4 4 0 0 1 0 5.6M15.2 5a7 7 0 0 1 0 10" /> : <path d="m13.4 8 3.6 4M17 8l-3.6 4" />}
-        </svg>
-        <span className="nav-tool-label">
-          {shell.sound.label}: {sound ? shell.sound.on : shell.sound.off}
-        </span>
       </button>
     </div>
   );
