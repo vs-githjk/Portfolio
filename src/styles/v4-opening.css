@@ -293,8 +293,8 @@ html[data-plain] .obs,
 /* ================================= THE SKY ================================= */
 /* WelcomeBackdrop.jsx, in the fixed stack under the hologram's canvas: one soft
    band of aurora across a deep sky, gold and ember melting into the blue. No
-   shapes. --hz is about where the plate stands; the band hangs above it and is
-   strongest at the sides, so the figure's own blue leads in the middle. */
+   shapes. --hz is about where the plate stands; the band hangs above it, vivid
+   at the sides and along the horizon, and gives way to a dark column behind him. */
 .bg-room {
   --hz: var(--plate-y, 72svh);
   position: absolute;
@@ -312,27 +312,32 @@ html:not(.js) .bg-room {
   position: absolute;
   left: -8%;
   right: -8%;
-  top: calc(var(--hz) - 64svh);
-  height: 86svh;
-  filter: blur(28px);
+  top: calc(var(--hz) - 66svh);
+  height: 92svh;
+  filter: blur(26px) saturate(1.25);
   background:
     /* ribbons: thin, tilted, the brightest part of the band */
-    radial-gradient(34% 5% at 20% 63%, rgba(var(--room-gold), 0.5), transparent 100%),
-    radial-gradient(30% 4% at 80% 58%, rgba(var(--room-gold), 0.42), transparent 100%),
-    radial-gradient(24% 3.5% at 33% 50%, rgba(var(--room-ember), 0.34), transparent 100%),
-    /* clouds of ember, low at the sides */
-    radial-gradient(40% 22% at 6% 74%, rgba(var(--room-ember), 0.5), transparent 100%),
-    radial-gradient(38% 20% at 96% 70%, rgba(var(--room-ember), 0.44), transparent 100%),
-    /* gold above them */
-    radial-gradient(44% 24% at 18% 56%, rgba(var(--room-gold), 0.36), transparent 100%),
-    radial-gradient(40% 22% at 86% 50%, rgba(var(--room-gold), 0.3), transparent 100%),
-    /* violet haze that joins them to the blue, and blue rising above */
-    radial-gradient(70% 34% at 30% 44%, rgba(var(--room-haze), 0.42), transparent 100%),
-    radial-gradient(70% 34% at 74% 40%, rgba(var(--room-haze), 0.38), transparent 100%),
-    radial-gradient(60% 40% at 50% 24%, rgba(var(--holo-deep), 0.2), transparent 100%);
+    radial-gradient(30% 5% at 17% 62%, rgba(var(--room-gold), 0.9), transparent 100%),
+    radial-gradient(28% 4.5% at 84% 57%, rgba(var(--room-gold), 0.8), transparent 100%),
+    radial-gradient(22% 3.5% at 27% 49%, rgba(var(--room-ember), 0.6), transparent 100%),
+    radial-gradient(20% 3.5% at 76% 45%, rgba(var(--room-violet), 0.7), transparent 100%),
+    /* the horizon: ember low at the sides */
+    radial-gradient(38% 22% at 4% 76%, rgba(var(--room-ember), 0.85), transparent 100%),
+    radial-gradient(36% 20% at 98% 72%, rgba(var(--room-ember), 0.8), transparent 100%),
+    /* gold above it */
+    radial-gradient(40% 24% at 14% 57%, rgba(var(--room-gold), 0.55), transparent 100%),
+    radial-gradient(38% 22% at 90% 51%, rgba(var(--room-gold), 0.48), transparent 100%),
+    /* violet joining it to the blue, and blue rising above */
+    radial-gradient(54% 34% at 20% 40%, rgba(var(--room-violet), 0.62), transparent 100%),
+    radial-gradient(54% 34% at 84% 36%, rgba(var(--room-violet), 0.56), transparent 100%),
+    radial-gradient(40% 30% at 10% 18%, rgba(var(--holo-deep), 0.42), transparent 100%),
+    radial-gradient(40% 30% at 92% 14%, rgba(var(--holo-deep), 0.38), transparent 100%);
   transform: rotate(-4deg);
-  -webkit-mask-image: linear-gradient(to right, #000 0, #000 24%, rgba(0, 0, 0, 0.3) 44%, rgba(0, 0, 0, 0.3) 56%, #000 76%);
-  mask-image: linear-gradient(to right, #000 0, #000 24%, rgba(0, 0, 0, 0.3) 44%, rgba(0, 0, 0, 0.3) 56%, #000 76%);
+  /* A dark column behind him: his robe is a night sky, and reads against night. */
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 20%, transparent 39%, transparent 61%, #000 80%), linear-gradient(to bottom, transparent 0, #000 22%, #000 80%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, #000 0, #000 20%, transparent 39%, transparent 61%, #000 80%), linear-gradient(to bottom, transparent 0, #000 22%, #000 80%, transparent 100%);
+  mask-composite: intersect;
 }
 
 /* A fine grain over the band: painted light, not a gradient. */
@@ -401,17 +406,17 @@ html:not(.js) .bg-room {
   justify-content: flex-start;
 }
 
-/* His photograph: real, crisp, plainly framed. Small above the name on a phone. */
+/* His photograph: real, crisp, in a round frame. Small above the name on a phone. */
 .hero-photo {
   display: block;
   width: 96px;
   height: auto;
-  aspect-ratio: 64 / 81;
+  aspect-ratio: 1;
   object-fit: cover;
-  border-radius: var(--r-lg);
-  border: 1px solid color-mix(in srgb, var(--acc) 46%, transparent);
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--acc) 50%, transparent);
   box-shadow:
-    0 0 0 5px color-mix(in srgb, var(--acc) 9%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--acc) 9%, transparent),
     var(--elev-2);
   background: var(--surface-2);
 }
@@ -431,7 +436,7 @@ html:not(.js) .bg-room {
     grid-column: 2;
     grid-row: 1;
     /* Never taller than the room the hero has. */
-    width: min(100%, calc((100svh - var(--nav-h) - 220px) * 0.8));
+    width: min(100%, calc(100svh - var(--nav-h) - 260px));
     justify-self: end;
   }
 
@@ -660,47 +665,71 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
   margin-bottom: 8px;
 }
 
-/* =============================== THE PLAQUE ================================ */
-/* A gold plaque at the foot of the projector: the fact about him, under his own
-   feet, a crafted object and crisp. It sits in the page's flow between his
-   figure and the greeting, so nothing has to make room for it, and it leaves
-   with the greeting. */
+/* ============================= THE INSCRIPTION ============================= */
+/* The fact about him, written in the room's own language: gold light set into
+   the floor at the foot of the projector, lit like the runes round the plate.
+   Five small stars (drawn here, not typed), then the words, with a hairline of
+   the same light running out to each side. Not a pill and not a card. It sits in
+   the page's flow between his figure and the greeting and leaves with it. */
 .welcome {
   grid-template-rows: minmax(0, 1fr) auto auto auto;
 }
 
 .welcome-plate {
+  --gold: rgb(var(--room-gold));
   position: relative;
   z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin: 4px 0 0;
-  padding: 7px 16px 7px 13px;
-  border-radius: var(--r-sm);
-  background: linear-gradient(180deg, var(--plaque-hi), var(--win) 46%, var(--plaque-lo));
-  box-shadow:
-    inset 0 1px 0 var(--plaque-shine),
-    inset 0 -1px 0 var(--plaque-shade),
-    0 0 0 1px var(--plaque-shade),
-    0 10px 22px -10px var(--shadow-ink);
-  color: var(--plaque-ink);
+  margin: 6px 0 2px;
+  color: var(--gold);
   white-space: nowrap;
+  text-shadow:
+    0 0 10px rgba(var(--room-gold), 0.55),
+    0 0 2px var(--ink);
   opacity: calc(1 - var(--out, 0));
 }
 
+/* The hairlines of light at each side. */
+.welcome-plate::before,
+.welcome-plate::after {
+  content: '';
+  width: clamp(18px, 6vw, 84px);
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(var(--room-gold), 0.8));
+}
+
+.welcome-plate::after {
+  transform: scaleX(-1);
+}
+
+/* "5×" stands as five stars and the numeral: the stars are one small shape, repeated. */
 .welcome-plate b {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-read);
-  font-weight: 600;
-  font-size: 20px;
+  font-weight: 500;
+  font-size: 19px;
   line-height: 1;
+}
+
+.welcome-plate b::before {
+  content: '';
+  width: 62px;
+  height: 10px;
+  background: var(--gold);
+  -webkit-mask: var(--star) 0 0 / 13px 10px repeat-x;
+  mask: var(--star) 0 0 / 13px 10px repeat-x;
+  filter: drop-shadow(0 0 4px rgba(var(--room-gold), 0.8));
 }
 
 .welcome-plate span {
   font-family: var(--font-mono);
-  font-size: clamp(9.5px, 2.5vw, 11px);
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: clamp(9.5px, 2.5vw, 11.5px);
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -709,24 +738,38 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
   opacity: 0.6;
 }
 
+@media (max-width: 460px) {
+  .welcome-plate::before,
+  .welcome-plate::after {
+    display: none;
+  }
+
+  .welcome-plate {
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .welcome-plate b {
+    gap: 7px;
+    font-size: 16px;
+  }
+
+  .welcome-plate b::before {
+    width: 39px;
+    height: 6.2px;
+    -webkit-mask-size: 8px 6.2px;
+    mask-size: 8px 6.2px;
+  }
+
+  .welcome-plate span {
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+  }
+}
+
 .welcome[data-run] .welcome-plate {
   opacity: 0;
   transition: opacity 0.25s var(--ease);
-}
-
-/* ================================= TOOLKIT ================================= */
-/* A picked tool answers in a sentence, with the builds' names as text links. */
-.tk-answer p a {
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--acc) 70%, transparent);
-  text-underline-offset: 0.22em;
-  /* A 44px touch area without moving the line. */
-  padding-block: 12px;
-}
-
-.tk-answer p a:hover {
-  color: var(--acc-text);
 }
 
 /* ================================= THE FOOT ================================ */
@@ -775,4 +818,10 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
 .credits-roll[open] {
   order: 4;
   flex-basis: 100%;
+}
+
+/* ================================= TOOLKIT ================================= */
+/* A plain line of tools per group: text, nothing to press. */
+.tk-row li {
+  color: var(--text);
 }

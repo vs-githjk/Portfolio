@@ -230,7 +230,7 @@
      Not the award gold (--win), which stays for awards. */
   --room-gold: 255, 198, 112;
   --room-ember: 236, 98, 58;
-  --room-haze: 104, 72, 150; /* the far ridge, seen through dusk air */
+  --room-violet: 132, 84, 214; /* the violet that joins the warm light to the blue */
   --holo-gain: 1; /* strength of the hologram's light */
   --holo-warm: 0.36; /* how much of a picture's own colour stays in the blue light (0 is pure hologram, 1 the photograph) */
   --holo-foot: 0.035; /* the share of the figure's height that dissolves into the cone at its foot (0: it ends as the picture ends) */
@@ -241,11 +241,7 @@
   --card-rim: rgba(10, 14, 28, 0.9); /* the dark of the frame between its two edges */
   --card-edge: rgba(214, 224, 244, 0.14);
   --card-sheen: rgba(255, 255, 255, 0.1); /* glass: one soft reflection from the upper left */
-  --plaque-hi: #ffe7a6; /* the gold plaque: lit edge, body (--win), shaded edge, engraving */
-  --plaque-lo: #c9973a;
-  --plaque-shine: rgba(255, 255, 255, 0.6);
-  --plaque-shade: rgba(92, 62, 8, 0.7);
-  --plaque-ink: #2a1c02;
+  --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 10'%3E%3Cpath d='M5 0l1.2 3.6H10L6.9 5.9 8.1 9.6 5 7.3 1.9 9.6 3.1 5.9 0 3.6h3.8z'/%3E%3C/svg%3E"); /* one small star, the mask for the five on the inscription */
   --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
   --welcome-min: 500px; /* the welcome screen never gets shorter than this */
   --welcome-run: 16svh; /* empty scroll under the greeting: room for the beam to leave before the hero arrives */

@@ -75,8 +75,9 @@ export const welcome = {
      `width` and `height` are the desktop file's own pixels (the hero reserves its
      box from them): update them when the script prints new ones. To try a figure
      without editing this file, open the page with ?figure=/holo/<file>. */
-  /* A fact about him, on a gold plaque at the foot of the projector, under his own
-     feet, so it can never be read as a build's label. Both facts are on this page
+  /* A fact about him, as an inscription of gold light on the floor at the foot of
+     the projector, under his own feet (five small stars, then the words), so it
+     can never be read as a build's label. Both facts are on this page
      (Highlights, and the wins in Proof of work). */
   plate: { value: '5×', line: 'hackathon winner', more: '6 first places' },
   figure: {
@@ -1566,33 +1567,12 @@ export const value = {
    Browser Use, PostGIS, Expo) and Match Day's unconfirmed stack are left
    out. ElevenLabs is in because he wired it himself in NextRound's voiced
    interviewer. Groq stays out. */
-/* The section is a reverse index (Toolkit.jsx): a tool that appears in the stack
-   line of a build on this page is a button, and picking it lists those builds.
-   The index is computed from the `stack` lines above, never typed. `aliases`
-   maps a toolkit name to the exact spellings stack lines use for the same tool.
-   A tool with no stack line here (the resume, or work outside these builds) stays
-   plain text. `answer` never shows a bare count: it names the builds. */
+/* The section is a plain inventory (Toolkit.jsx): a label and a line of tools per
+   group. Nothing is picked and nothing answers. */
 export const toolkit = {
   eyebrow: 'Toolkit',
   heading: 'Shipped with,',
   headingEm: 'not read about.',
-  hint: 'Pick an underlined tool and the builds that list it in their stack answer.',
-  first: 'LangGraph',
-  answer: '{tool} is in the stack of {builds}.',
-  and: 'and',
-  aliases: {
-    'Anthropic API': ['Claude', 'Claude API', 'Claude Haiku 4.5', 'Claude tool use'],
-    'OpenAI API': ['OpenAI'],
-    'Tool calling': ['Claude tool use'],
-    RAG: ['retrieval'],
-    PostgreSQL: ['Postgres'],
-    'Row-level security': ['RLS on every table', 'forced RLS'],
-    'SSE / WebSockets': ['WebSockets'],
-    'Tailwind CSS': ['Tailwind 4'],
-    'Chrome extensions': ['Chrome extension'],
-    'GitHub CodeQL': ['CodeQL'],
-    Vercel: ['Vercel functions'],
-  },
   groups: [
     {
       name: 'Languages',

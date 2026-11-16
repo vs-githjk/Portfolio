@@ -4,7 +4,7 @@ import { GitHubIcon, LinkedInIcon } from './Icons';
 /* The hero: his name, set very large, lit from above by the beam field. On the
    left the status and the place, the name, the thesis, one plain sentence, the
    credentials and the actions. On the right his real photograph, crisp, in a
-   plain frame: the hologram greets, the person signs. A phone shows it small,
+   round frame: the hologram greets, the person signs. A phone shows it small,
    above the name.
 
    No figures, and no builds: the ring of builds is the index at the top of
@@ -26,7 +26,7 @@ export default function Hero() {
           sizes="(max-width: 960px) 96px, 300px"
           alt={hero.portrait.alt}
           width="640"
-          height="810"
+          height="640"
           decoding="async"
         />
         <div className="who-main">

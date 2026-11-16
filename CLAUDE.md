@@ -116,17 +116,20 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   `.hub-card`: the builds' own thumbnails, no tint, no scan lines, no blur, no plates) in a
   mirrored arc, three a side, each in a thin metal frame with its name and one word. A phone
   shows the first two. Never tint, blur or project a build again.
-- **The plaque.** `welcome.plate` ("5× hackathon winner · 6 first places") is a crafted gold
-  plaque at the foot of the projector, in the page's flow between the figure and the
-  greeting. As a gold panel among the builds it was read as DuelWise's label: a fact about
-  him never sits in a seat beside a build.
+- **The inscription.** `welcome.plate` ("5× hackathon winner · 6 first places") is gold
+  light set into the floor at the foot of the projector: five small stars, the words, a
+  hairline running out each side, lit like the runes. In the page's flow between the figure
+  and the greeting. It was a gold panel among the builds (read as DuelWise's label), then a
+  gold pill ("not thematic"): a fact about him never sits beside a build, and never as a UI
+  pill.
 - **The room is deliberately little** (`WelcomeScene.jsx`): a floor of light round the plate
   with a band of gold runes, and four faint constellations high at the sides (he likes
   them). Cut after being read as "incomplete ... still making it": circuit traces with
   numbered nodes, drifting glyphs, ember sparks, blue-tinted panels at three depths.
 - **The sky** (`WelcomeBackdrop.jsx`, in the fixed stack under the hologram's canvas, moved
-  with the scroll): one soft band of aurora, gold and ember melting into blue, with a fine
-  grain. No shapes: a mountain range and a setting sun were cut ("that doesn't make sense").
+  with the scroll): one band of aurora, vivid at the sides and along the horizon (gold, ember, violet, blue),
+  with a fine grain, and a dark column behind him so his robe of stars reads against
+  night. No shapes: a mountain range and a setting sun were cut ("that doesn't make sense").
   `--room-gold` and `--room-ember` live only there and in the runes; blue leads near him;
   `--win` is still for awards (the plaque). This is the one screen where rule 1's "one
   accent" is widened, on purpose.
@@ -154,13 +157,14 @@ that talks about projects?" and "the hologram to start off with, then just an im
 face, because that's a real thing." The hero has no builds and no hologram. It is the
 status and the place, his name in two lines of the display face (`--fs-name`), the thesis,
 one plain sentence, the credentials and the actions, and at its right his own photograph
-(`hero.portrait`: the one he chose, shirt and tie, cropped to head, chest and right arm;
-crisp, plainly framed; small above the name on a phone). This is the only place his
+(`hero.portrait`: the one he chose, shirt and tie, centred on him with both shoulders, in
+a round frame; small above the name on a phone). This is the only place his
 photograph is shown; the hologram figure is everywhere else he appears.
 
 ## Toolkit and the foot
 
-A picked tool answers in a sentence with the builds' names as text links: no pictures.
+Toolkit is a plain inventory: a label and a line of tools per group, nothing to pick and
+no answer line ("What's the point? They'll see the projects.").
 The footer is one quiet line (llms.txt, Roll the credits, Back to the top) so Contact is
 the last thing on the page; the credits open under it only when asked for.
 
