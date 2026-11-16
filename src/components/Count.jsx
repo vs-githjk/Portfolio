@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 /* A figure that counts up once, the first time it is seen, then never again.
-   The prerendered text is the final value, so the number is right with no script
-   and under reduced motion. Only the leading number moves ("43" in "43 of 48",
+   The prerendered text is the final value, so the number is right with no script,
+   under reduced motion and on phones (where it does not count). Only the leading number moves ("43" in "43 of 48",
    "100" in "100%"); the rest of the value stays put. */
 export default function Count({ value }) {
   const ref = useRef(null);
@@ -11,6 +11,10 @@ export default function Count({ value }) {
     const m = String(value).match(/^(\d[\d,]*)(.*)$/);
     if (!el || !m || typeof IntersectionObserver === 'undefined') return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    // Phones and touch screens: the figure is simply there. While it counted, its width
+    // changed, the label beside it wrapped differently and the page under the reader moved
+    // (48px at 360px wide).
+    if (window.matchMedia('(max-width: 760px), (pointer: coarse)').matches) return undefined;
     const end = Number(m[1].replace(/,/g, ''));
     if (end < 2) return undefined;
     let frame = 0;

@@ -80,7 +80,9 @@ export default function World() {
 
     window.dispatchEvent(new CustomEvent(EV.loaded, { detail: { stage: 'chunk' } }));
     if (import.meta.env.DEV) window.__world = world;
-    const idleMs = window.matchMedia('(max-width: 760px)').matches ? IDLE_PHONE_MS : IDLE_MS;
+    const phoneRest = window.matchMedia('(max-width: 760px)').matches;
+    const idleMs = phoneRest ? IDLE_PHONE_MS : IDLE_MS;
+    let nap = 0;
     let raf = 0;
     let cam = window.scrollY;
     let last = 0;
@@ -170,6 +172,13 @@ export default function World() {
           root.dataset.world = 'on';
           askDragon();
         }
+      }
+      // At rest a phone does not take a frame callback it will not draw in: it sleeps until
+      // the next still is due (a scroll, or anything that calls kick, wakes it at once).
+      if (phoneRest && !every) {
+        clearTimeout(nap);
+        nap = window.setTimeout(kick, Math.max(0, idleMs - 6));
+        return;
       }
       raf = requestAnimationFrame(frame);
     }
@@ -269,6 +278,7 @@ export default function World() {
     const onLost = (e) => {
       e.preventDefault();
       cancelAnimationFrame(raf);
+      clearTimeout(nap);
       root.dataset.world = 'off';
     };
 
@@ -293,6 +303,7 @@ export default function World() {
       gone = true;
       delete root.dataset.dragon;
       cancelAnimationFrame(raf);
+      clearTimeout(nap);
       clearTimeout(rsz);
       ro.disconnect();
       window.removeEventListener('scroll', kick);

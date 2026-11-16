@@ -1,4 +1,4 @@
-/* Pictures are there before the reader reaches them. Every picture below the
+/* Pictures and typefaces are there before the reader reaches them. Every picture below the
    first screen is marked loading="lazy" so the first paint pays for none of them;
    but a lazy picture is fetched only as it nears the window, and on a phone that
    read as cards popping in during a scroll (one, FireSight, was measured arriving
@@ -31,6 +31,13 @@ export function startEagerImages() {
     });
 
   async function run() {
+    // The typefaces too: each product stage brings its own, fetched only when the stage
+    // renders, and its text then reflowed under the reader (a 49px jump measured at 360px).
+    try {
+      for (const face of document.fonts ?? []) if (face.status === 'unloaded') face.load().catch(() => {});
+    } catch {
+      /* no FontFaceSet: the faces load as they are met */
+    }
     const queue = [...document.querySelectorAll('img[loading="lazy"]')];
     while (queue.length && !stopped) {
       const batch = [];

@@ -741,6 +741,14 @@
   color: var(--dw-mute);
 }
 
+/* On the narrowest phones the longest status takes two lines; the room for both is
+   kept, so the match never changes the height of the page under the reader. */
+@media (max-width: 460px) {
+  .duel-status {
+    min-height: 2.6em;
+  }
+}
+
 .duel-status[data-turn='you'] {
   color: var(--dw-action);
   font-weight: 600;

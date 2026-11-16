@@ -305,8 +305,13 @@ after, about 17ms and 16.8ms, 9 long tasks. Rules that keep it there:
   scroll, touch, key or pointer, the lazy pictures are promoted to eager in page order, three
   at a time. Nothing is asked for before that first sign, so the first paint is untouched.
   (FireSight's thumbnail was measured arriving after its card had passed; this fixed it.)
+- **Nothing changes height under the reader on a phone**: figures do not count up there
+  (`Count.jsx`: while one counted, the label beside it rewrapped and the page moved 48px at
+  360px), the DuelWise status keeps room for two lines below 460px, and the typefaces of the
+  product stages are fetched with the picture queue, before their stage is reached. A walk of
+  the whole page at 360 and 390 measured a layout shift of under 0.005 in total.
 - **The phone world is lighter**: canvas at 1.25 (not 1.5; the quality steps still lower it
-  on a slow phone), 300 snow points and 900 galaxy points, 15 frames a second at rest (every
+  on a slow phone), 300 snow points and 900 galaxy points, 15 frames a second at rest, asleep on a timer between them (every
   frame while the page moves, so set pieces keep their place), no blur behind the bar.
 - **The phone's moon is a picture** (`public/world/moon.webp`, a 256px still cut from a
   desktop render of the scene's own moon; `--moon-art`, `--moon-phone`; the rule is at the
