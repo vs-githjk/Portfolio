@@ -2529,10 +2529,18 @@ html[data-holo='off'] .welcome-face {
   position: relative;
   margin-top: calc(-1 * var(--dip));
   padding-block: calc(clamp(26px, 3vw, 44px) + var(--dip)) clamp(26px, 3vw, 44px);
+  isolation: isolate;
+  clip-path: polygon(0 var(--top-l), 100% var(--top-r), 100% 100%, 0 100%);
+}
+
+.hl-bed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background:
     repeating-linear-gradient(178.6deg, var(--bed-grain) 0 1px, transparent 1px 9px),
     var(--bed);
-  clip-path: polygon(0 var(--top-l), 100% var(--top-r), 100% 100%, 0 100%);
 }
 
 .hl-bed:first-child {
@@ -2594,19 +2602,42 @@ html[data-holo='off'] .welcome-face {
   color: var(--text);
 }
 
+/* The exposure wipes the bed's ground only, never its words: the ground is a
+   layer under the text, and the sentence fades up whole while its bed is still at
+   the foot of the window, so no line is ever cut by the wipe's edge. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .hl-bed {
+      view-timeline: --hl-bed block;
+    }
+
+    .hl-bed::before {
       animation: hl-expose linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 80%;
+      animation-timeline: --hl-bed;
+      animation-range: entry 0% entry 38%;
+    }
+
+    .hl-bed .wrap {
+      animation: hl-settle linear both;
+      animation-timeline: --hl-bed;
+      animation-range: entry 22% entry 62%;
     }
   }
 }
 
 @keyframes hl-expose {
   from {
-    clip-path: polygon(0 var(--top-l), 0% var(--top-l), 0% 100%, 0 100%);
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes hl-settle {
+  from {
+    opacity: 0;
   }
 }
 
