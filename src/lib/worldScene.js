@@ -649,7 +649,7 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
   const dry = { uSigmaW: wet.uSigmaW, uWaterCol: wet.uWaterCol, uWet: { value: 0 } };
 
   /* ---- Snow -------------------------------------------------------------- */
-  const nSnow = phone ? 420 : 1300;
+  const nSnow = phone ? 300 : 1300;
   const sp = new Float32Array(nSnow * 3);
   const ss = new Float32Array(nSnow * 3);
   for (let i = 0; i < nSnow; i++) {
@@ -748,7 +748,7 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
   const horizon = world({ paint: 'earth', bands: 5, seed: 23.1, light: [0.1, 0.36, -0.93], lit: 0.75, halo: 1.014, rimPow: 9, rimGain: 0.8, air: 0.7 });
 
   /* ---- Galaxy ------------------------------------------------------------ */
-  const nGal = phone ? 1300 : 4200;
+  const nGal = phone ? 900 : 4200;
   const gp = new Float32Array(nGal * 3);
   const gs = new Float32Array(nGal * 3);
   for (let i = 0; i < nGal; i++) {
@@ -961,7 +961,9 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
   function layout() {
     w = window.innerWidth;
     h = window.innerHeight;
-    const cap = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.75);
+    // A phone draws at 1.25 (it was 1.5: 30% fewer pixels to shade on every frame of a scroll; the
+    // quality steps below still take it lower on a slow one).
+    const cap = Math.min(window.devicePixelRatio || 1, phone ? 1.25 : 1.75);
     const ratio = Math.max(0.75, cap * [1, 0.82, 0.66][quality]);
     renderer.setPixelRatio(ratio);
     renderer.setSize(w, h, false);
@@ -1273,9 +1275,13 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
     moon.userData.light.set(-Math.sin(sun), 0.24, Math.cos(sun)).normalize();
     const mk2 = view(-2600);
     const pin = phone ? home.moonDoc : Math.max(home.value + h * 0.22, Math.min(home.valueEnd - h * 0.42, line - h * 0.2));
-    moon.visible = sky > 0.01 && Math.abs(pin - line) < h * 0.8;
+    const moonUp = sky > 0.01 && Math.abs(pin - line) < h * 0.8;
+    // A phone shows a still of this moon in the page (v4-opening.css): crisp at any
+    // canvas resolution and never behind the scroll. Its light on the ground stays.
+    moon.visible = moonUp && !phone;
     moonGlow.visible = moon.visible;
-    state.moon = moon.visible ? sm(1 - Math.abs(pin - line) / (h * 0.7)) * (0.35 + 0.65 * phase) : 0;
+    state.moonUp = moonUp;
+    state.moon = moonUp ? sm(1 - Math.abs(pin - line) / (h * 0.7)) * (0.35 + 0.65 * phase) : 0;
     if (moon.visible) {
       moon.position.set(camera.position.x + sizes.moonX * mk2, camY - (pin - line) * mk2, -2600);
       moon.scale.setScalar(sizes.mr * mk2);
@@ -1482,7 +1488,7 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
       // The fires are named only while the camp itself is in the window.
       put('fires', w * 0.8, h * 0.72, land.fires?.object.visible && state.lamp > 0.05 && line + h / 2 > home.crew + h * 0.25 && line - h / 2 < home.crewEnd - h * 0.25);
       put('stars', winStars.place.x, winStars.place.y - line + h / 2, winStars.object.visible);
-      put('moon', w / 2 + sizes.moonX, h * 0.3, moon.visible);
+      put('moon', w / 2 + sizes.moonX, h * 0.3, state.moonUp === true);
       return out;
     },
     /** What the scene is made of, counted from the pieces themselves (Receipts, credits, tests). */

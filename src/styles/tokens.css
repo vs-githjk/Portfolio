@@ -189,6 +189,9 @@
   --moon-day: 124, 108, 96;
   --moon-band: 186, 168, 150;
   --moon-rim: 246, 230, 210;
+  /* the phone's moon: a still of the scene's own moon (256px, cut from a desktop render), see v4-opening.css */
+  --moon-art: url('/world/moon.webp');
+  --moon-phone: 68px;
   --earth-night: 5, 7, 12;
   --earth-day: 20, 66, 96;
   --earth-band: 156, 130, 96;

@@ -882,3 +882,28 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
   content-visibility: auto;
   contain-intrinsic-size: auto 600px; /* its content box: 574px at 1440, 677px on a phone */
 }
+
+/* ============================ THE PHONE'S MOON ============================= */
+/* On a phone the scene's moon was 44px across, drawn at the canvas's reduced
+   resolution and a beat behind the scroll (Vidyut, Nov 16: "doesn't appear fine
+   enough on the phone, or it's slow"). There it is a picture instead: a still of
+   the same moon, at the screen's own pixels, in the page, above the Value
+   heading where the scene stood it. The scene does not draw its moon on a phone
+   (worldScene.js) but still lights the ground by it. */
+@media (max-width: 760px) {
+  html:is([data-world='on'], [data-world='still']) #value .sec-head {
+    position: relative;
+  }
+
+  html:is([data-world='on'], [data-world='still']) #value .sec-head::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    top: calc(var(--moon-phone) * -0.62);
+    width: var(--moon-phone);
+    height: var(--moon-phone);
+    background: var(--moon-art) center / contain no-repeat;
+    filter: drop-shadow(0 0 16px rgba(var(--moon-rim), 0.22));
+    pointer-events: none;
+  }
+}
