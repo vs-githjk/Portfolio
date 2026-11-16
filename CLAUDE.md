@@ -108,9 +108,17 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   frame or a box, never a row slip or any distortion of the picture (he read one as an eye
   glitch). The shimmer is brightness only. Check "friendly or eerie" with other model
   families, cold, against the plain photo as a control, before shipping a new figure.
-- **One visual language.** The panels at the sides (`welcome.hub`) are projections of the same
-  kind, in CSS (`v4-opening.css`): the same ramp, line pitch, frame split, cone and plate. They
-  take turns, never touch the figure, and are `aria-hidden`.
+- **One visual language.** The panels at the sides (`welcome.hub`, eight on a wide window:
+  builds, the paper, the crew and one gold "5×" plate) are projections of the same kind, in
+  CSS (`v4-opening.css`): the same ramp, line pitch, frame split, cone and plate, at three
+  depths. They never touch the figure and are `aria-hidden`. A phone shows four, taking turns.
+- **The room** (`WelcomeScene.jsx`; Vidyut, Nov 16: the screen with only the avatar was "very
+  empty"). Behind the panels: a floor of light round the plate (rings, spokes, a band of
+  glyphs; placed from `--plate-x/-y/-w`, faded out before the greeting), four small
+  constellations and drifting glyphs at the sides, the limb of a far world low on the left,
+  and motes rising in the beam (in the shader). The panels and the sky shift a few pixels
+  against the pointer (`--px`, `--py`). A phone gets the floor and two constellations.
+  Nothing touches the figure or sits on the greeting; under reduced motion it is all still.
 - **No second act.** There is no ball and no line of speech between him and his name. On Enter
   (a clock, `KNOTS` in `Welcome.jsx`) or on scroll, two curtains of light close over the figure
   (it turns to light as they come and is never squeezed), leave one vertical beam, and the

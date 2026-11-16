@@ -78,22 +78,25 @@ export const welcome = {
   figure: {
     src: '/holo/wizard-1.webp',
     phone: '/holo/wizard-1-phone.webp',
-    width: 617,
+    width: 619,
     height: 1200,
     alt: 'A hologram of Vidyut, smiling, in a long robe of stars, a wooden staff in one hand and a glowing crystal in the other',
   },
   /* His work, as small projections at the sides of the first screen, in the same
-     blue light as his own. They phase in and out in this order. `at` is the seat
-     (l1 to l3 down the left, r1 to r3 down the right). A build shows its ring thumbnail
+     blue light as his own, at different depths (a wide window shows all eight; a
+     phone four, taking turns). `at` is the seat (l1 to l4 down the left, r1 to r4
+     down the right). The fact is the one gold plate: gold is for awards. A build shows its ring thumbnail
      (/builds/ring/<id>-320.webp), the crew one Master Agents portrait, the fact the
      same "5× hackathon winner" the hero credential states. Decoration: aria-hidden. */
   hub: [
     { at: 'l1', kind: 'build', id: 'prismai', label: 'PrismAI' },
     { at: 'r1', kind: 'build', id: 'duelwise', label: 'DuelWise' },
-    { at: 'l2', kind: 'crew', id: 'orchestrator', label: 'Master Agents' },
+    { at: 'l2', kind: 'build', id: 'snapback', label: 'SNAPBACK' },
     { at: 'r2', kind: 'fact', value: '5×', label: 'hackathon winner' },
     { at: 'l3', kind: 'build', id: 'betterbill', label: 'BetterBill' },
     { at: 'r3', kind: 'build', id: 'terrametric', label: 'Terrametric' },
+    { at: 'l4', kind: 'build', id: 'paper', label: 'arXiv preprint' },
+    { at: 'r4', kind: 'crew', id: 'orchestrator', label: 'Master Agents' },
   ],
 };
 
