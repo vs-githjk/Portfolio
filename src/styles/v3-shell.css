@@ -1,1 +1,144 @@
-/* v3-shell: v3 partial (see scratchpad v3 spec). */
+/* v3 shell (lane A): the door, the Orrery, the Chart and everything that sits
+   over the page and the world. Loaded after sections.css, so a rule here wins a
+   tie with an older one. tokens.css is frozen for the night, so the tokens this
+   file needs are declared here, on :root, each one built from an existing token:
+
+     --plate-rim     how much wider the plate's outer rim is than the ring (a ratio)
+     --plate-line    the plate's engraved hairline
+     --plate-lit     the lit tick under the front card
+     --plate-from    the scale the plate settles from when the reader arrives
+*/
+:root {
+  --plate-rim: 0.06;
+  --plate-line: color-mix(in srgb, var(--acc-2) 26%, var(--hair-2));
+  --plate-lit: var(--acc);
+  --plate-from: 1.3;
+}
+
+/* ================================ THE ORRERY ============================== */
+/* The plate the ring cards stand on: two engraved rims and one tick per build,
+   drawn by Orbit.jsx from the projection that poses the cards. The SVG is a point
+   at the ring centre; everything in it is in px from there. */
+.plate,
+.readout-name {
+  display: none;
+}
+
+@media (min-width: 960px) and (min-height: 640px) {
+  .track {
+    display: none;
+  }
+
+  .plate {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: var(--oy);
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    pointer-events: none;
+    fill: none;
+    opacity: 0;
+    transform: scale(var(--plate-from));
+    transition:
+      opacity var(--dur) var(--ease),
+      transform var(--dur-slow) var(--ease);
+  }
+
+  .orbit[data-ready][data-land] .plate {
+    opacity: 1;
+    transform: none;
+  }
+
+  .plate-rim {
+    stroke: url(#plate-fade);
+    stroke-width: 1;
+  }
+
+  .plate-rim[data-rim='outer'] {
+    opacity: 0.6;
+  }
+
+  .plate-stop {
+    stop-color: var(--plate-line);
+  }
+
+  .plate-stop[data-end='far'] {
+    stop-opacity: 0;
+  }
+
+  .plate-tick {
+    stroke: var(--plate-line);
+    stroke-width: 1;
+    stroke-linecap: round;
+    transition:
+      stroke 0.2s var(--ease),
+      stroke-width 0.2s var(--ease);
+  }
+
+  .plate-tick[data-lit='near'] {
+    stroke: var(--text);
+  }
+
+  .plate-tick[data-lit='front'] {
+    stroke: var(--plate-lit);
+    stroke-width: 2;
+  }
+
+  /* A card that is landing fades in with its scale (--land, written per frame). */
+  .orbit[data-ready] .card {
+    opacity: calc(var(--vis, 1) * var(--land, 1));
+  }
+
+  /* One height for every card (--card-h, the tallest, set by Orbit.jsx): the
+     caption panel takes up the difference, so every foot stands on the plate. */
+  .orbit-scene .card {
+    height: var(--card-h, auto);
+  }
+
+  .orbit-scene .card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .orbit-scene .card-cap {
+    flex: 1;
+  }
+
+  /* In the hand: the ring is being turned, so nothing eases and nothing selects. */
+  .orbit-scene .card {
+    touch-action: pan-y;
+  }
+
+  .orbit[data-hand] .card {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  /* The front readout: the station number and the build standing on it. */
+  .readout {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .readout-name {
+    display: block;
+    min-width: calc(var(--name-ch, 12) * 1ch + 13px);
+    padding-left: 12px;
+    border-left: 1px solid var(--hair-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 500;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  .orbit-bar {
+    width: min(100%, 680px);
+  }
+}
