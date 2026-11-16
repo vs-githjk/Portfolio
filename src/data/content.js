@@ -894,10 +894,26 @@ export const builds = {
       outLabel: 'Out',
       out: 'a reviewed branch',
       gatesLabel: 'Stops only at my gates',
+      /* A gate may become { name, before: '<step>' } once Vidyut confirms where it
+         sits among the steps (TODO: ask him). Until then the run on the page holds
+         once, before the branch, and names all three. */
       gates: ['the plan', 'the design direction', 'the overnight build'],
+      /* The run you can press (CrewRun.jsx). It waits for the reader's own Go. */
+      run: {
+        start: 'Run it',
+        again: 'Run it again',
+        go: 'Go',
+        gate: 'my go',
+        given: 'go given',
+        rest: 'Press Run it. It will stop and wait for you.',
+        typing: 'One sentence in.',
+        step: 'The crew: {step}.',
+        hold: 'Stopped. A real run waits for me at each gate: {gates}. This one waits for you. Nothing moves until you say go.',
+        done: 'Out: a reviewed branch. Nothing was pushed.',
+      },
     },
     rosterLabel: 'The crew',
-    rosterHint: 'Fourteen characters, one job each. Pick one.',
+    rosterHint: '{Crew} characters, one job each. Pick one.', // {Crew} is crew.length, as a word
     of: 'of',
     crew: [
       { id: 'orchestrator', name: 'The Orchestrator', job: 'runs the room', does: 'Takes the one sentence, hands every task to the cheapest model that can do it well, and makes the final call.' },

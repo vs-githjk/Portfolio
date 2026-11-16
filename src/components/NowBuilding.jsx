@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
+import { EV } from '../kit/contract';
+import CrewRun from './CrewRun';
 import Metrics from './Metrics';
 import Rich from './Rich';
 import Stack from './Stack';
+import { fill } from './counts';
 
 /* The Now building panel (Master Agents), built like a character select screen.
 
-   - Head: the title at display size, and beside it the one sentence that starts
-     everything, drawn as a prompt that runs through the crew to a reviewed branch.
+   - Head: the title at display size, and beside it the one sentence and the lead.
    - Stage: one character large (their art lights the wall behind them, and the
      next and previous stand in the wings), a plate that says who they are, and
      the roster of fourteen. The roster is a tablist: arrow keys move, hover and
      click choose. Until someone touches it, the stage walks the roster by itself
      while it is on screen; it never does under prefers-reduced-motion.
+   - The run (CrewRun.jsx): the one sentence drawn as a prompt that runs through
+     the crew to a reviewed branch, and can be pressed.
    - System: how the crew is run (routing, the council, the loop), then the facts.
 
    Art is /agents/<id>.webp (294px) and /agents/<id>-148.webp. */
@@ -65,7 +69,7 @@ export default function NowBuilding({ item }) {
     const send = (hue) => {
       if (!live) return;
       document.documentElement.style.setProperty('--agent-hue', String(hue));
-      window.dispatchEvent(new CustomEvent('world:agent', { detail: { hue, id: whoId } }));
+      window.dispatchEvent(new CustomEvent(EV.agent, { detail: { hue, id: whoId } }));
     };
     if (HUES.has(whoId)) {
       send(HUES.get(whoId));
@@ -131,7 +135,7 @@ export default function NowBuilding({ item }) {
   const pad = (v) => String(v).padStart(2, '0');
 
   return (
-    <article className="nb reveal" id="build-master-agents" ref={root}>
+    <article className="nb reveal" id="build-master-agents" ref={root} data-world-anchor="camp">
       <div className="nb-in">
         <div className="nb-bar">
           <span className="now">
@@ -175,7 +179,7 @@ export default function NowBuilding({ item }) {
           </div>
 
           <div className="nb-roster">
-            <p className="nb-hint">{item.rosterHint}</p>
+            <p className="nb-hint">{fill(item.rosterHint, { crew: count })}</p>
             <div className="nb-grid" role="tablist" aria-label={item.rosterLabel} onKeyDown={onKey}>
               {item.crew.map((c, i) => (
                 <button
@@ -203,34 +207,7 @@ export default function NowBuilding({ item }) {
           </div>
         </div>
 
-        <div className="nb-run">
-          <div className="nb-prompt">
-            <span className="nb-tag">{item.prompt.label}</span>
-            <p>
-              <b aria-hidden="true">›</b>
-              {item.prompt.lines[0]}
-              <i className="nb-caret" aria-hidden="true" />
-            </p>
-            <p className="nb-alt">
-              <span>{item.prompt.or}</span> {item.prompt.lines[1]}
-            </p>
-          </div>
-          <ol className="nb-steps" aria-label={item.prompt.stepsLabel}>
-            {item.prompt.steps.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ol>
-          <p className="nb-out">
-            <span className="nb-tag">{item.prompt.outLabel}</span>
-            {item.prompt.out}
-          </p>
-          <p className="nb-gates">
-            <span>{item.prompt.gatesLabel}</span>
-            {item.prompt.gates.map((g) => (
-              <b key={g}>{g}</b>
-            ))}
-          </p>
-        </div>
+        <CrewRun prompt={item.prompt} />
 
         <div className="nb-sys">
           {item.system.map((s, i) => (

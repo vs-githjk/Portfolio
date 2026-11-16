@@ -921,6 +921,11 @@ html[data-world='on'] .deep-head::before {
   border-top: 1px solid var(--hair);
 }
 
+.plate:has(.fold-btn[aria-expanded='true']) .plate-handle {
+  border-top-color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 9%, transparent);
+}
+
 .plate-handle .fold-btn {
   width: calc(100% - var(--cut));
   justify-content: space-between;
@@ -940,6 +945,7 @@ html[data-world='on'] .deep-head::before {
   margin-top: 12px;
   padding: 20px 24px 22px;
   border-color: var(--hair-2);
+  border-top-color: var(--acc);
   background-color: var(--surface-2);
 }
 
@@ -1213,7 +1219,7 @@ html[data-world='on'] .deep-head::before {
 .mrow {
   position: relative;
   display: grid;
-  grid-template-columns: 62px 96px minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, auto) 124px;
+  grid-template-columns: 62px 96px minmax(0, 1fr) minmax(0, 1.15fr) 196px 124px;
   grid-template-rows: auto auto;
   column-gap: 20px;
   align-items: center;
@@ -1306,6 +1312,7 @@ html[data-world='on'] .deep-head::before {
 
 .mrow-links {
   flex-wrap: nowrap;
+  justify-content: flex-end;
   gap: 0 14px;
 }
 
@@ -1477,6 +1484,7 @@ html[data-world='on'] .deep-head::before {
   .mrow-links {
     grid-column: 1 / -1;
     flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .stills {
@@ -1602,5 +1610,352 @@ html[data-world='on'] .deep-head::before {
   .chart-groups {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px 0;
+  }
+}
+
+/* ================================= THE CAMP ================================= */
+/* The run: the sentence, the steps on a rail, the gate, the branch; under them
+   the control and what the crew is doing, and the gates by name. */
+.nb-run {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.62fr) minmax(0, 2fr) auto;
+  grid-template-areas:
+    'prompt track out'
+    'gates gates gates'
+    'console console console';
+  align-items: center;
+  gap: 22px 36px;
+  padding: 32px var(--nb-pad);
+  border-bottom: var(--rule);
+  font-family: var(--font-mono);
+}
+
+.nb-prompt {
+  grid-area: prompt;
+}
+
+.nb-track {
+  grid-area: track;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: 14px;
+}
+
+.nb-track > .nb-tag {
+  grid-column: 1 / -1;
+}
+
+/* Six steps on one rail: a node each, the name under it. */
+.nb-steps {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.nb-steps li {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding-top: 4px;
+  transition: color 0.2s var(--ease);
+}
+
+/* the rail runs through the nodes */
+.nb-steps li::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--hair-2);
+}
+
+.nb-steps li > i {
+  position: relative;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid var(--acc-text);
+  border-radius: 50%;
+  background: var(--surface);
+  transition:
+    background 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.nb-run[data-phase]:not([data-phase='idle']) .nb-steps li[data-state='wait'] {
+  color: var(--text-3);
+}
+
+.nb-steps li[data-state='wait'] > i {
+  border-color: var(--hair-2);
+}
+
+.nb-steps li[data-state='done'] > i {
+  background: var(--acc);
+  border-color: var(--acc);
+}
+
+.nb-steps li[data-state='done']::before {
+  background: var(--acc);
+}
+
+.nb-steps li[data-state='now'] {
+  color: var(--text);
+}
+
+.nb-steps li[data-state='now'] > i {
+  background: var(--acc-2);
+  border-color: var(--acc-2);
+  box-shadow: 0 0 0 5px var(--acc-glow);
+}
+
+/* The gate: two posts and what it waits for. It turns into the Go button only
+   while the run is holding at it. */
+.nb-gate {
+  display: inline-grid;
+  place-items: center;
+  min-width: 84px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-inline: 2px solid var(--hair-2);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  transition: border-color 0.2s var(--ease);
+}
+
+.nb-gate[data-state='hold'] {
+  padding: 0;
+  border-color: var(--acc);
+}
+
+.nb-gate[data-state='open'] {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.nb-steps .nb-gate {
+  position: absolute;
+  top: -40px;
+  left: -42px;
+}
+
+.nb-go {
+  position: relative;
+  min-width: 80px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: var(--acc-fill);
+  color: var(--acc-ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  animation: nb-wait 1.4s var(--ease) infinite;
+}
+
+/* Pressed, it fills from the left in 180ms. */
+.nb-go::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--acc-2);
+  mix-blend-mode: overlay;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s linear;
+}
+
+.nb-go:active::before {
+  transform: scaleX(1);
+}
+
+@keyframes nb-wait {
+  50% {
+    box-shadow: 0 0 0 5px var(--acc-glow);
+  }
+}
+
+.nb-out {
+  grid-area: out;
+  justify-self: start;
+  padding: 10px 16px 11px 18px;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-line);
+  border-left: 2px solid var(--acc-2);
+  border-radius: var(--r-xs);
+  transition:
+    opacity 0.3s var(--ease),
+    border-color 0.3s var(--ease);
+}
+
+.nb-out .nb-tag {
+  color: var(--badge-fg);
+}
+
+/* While a run is under way the branch does not exist yet. */
+.nb-run:is([data-phase='typing'], [data-phase='step'], [data-phase='hold']) .nb-out {
+  opacity: 0.45;
+}
+
+.nb-out[data-state='done'] {
+  border-color: var(--ok);
+  border-left-color: var(--ok);
+}
+
+.nb-console {
+  grid-area: console;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 60px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--hair-2);
+}
+
+.nb-start {
+  flex: none;
+  border-radius: var(--r-xs);
+  border-color: var(--acc);
+  color: var(--text);
+}
+
+.nb-start:disabled {
+  border-color: var(--hair-2);
+  color: var(--text-3);
+  cursor: default;
+  transform: none;
+}
+
+.nb-status {
+  max-width: 62ch;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+
+.nb-run[data-phase='hold'] .nb-status {
+  color: var(--text);
+}
+
+.nb-gates {
+  grid-area: gates;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.nb-gates span {
+  margin-right: 4px;
+}
+
+.nb-gates b {
+  padding: 4px 8px;
+  font-weight: 400;
+  color: var(--text-2);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-xs);
+}
+
+.nb-run[data-phase='hold'] .nb-gates b {
+  border-color: var(--acc);
+  color: var(--text);
+}
+
+@media (max-width: 960px) {
+  .nb-run {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'prompt'
+      'track'
+      'out'
+      'console'
+      'gates';
+    gap: 20px;
+  }
+
+  .nb-console {
+    flex-wrap: wrap;
+    min-height: 0;
+  }
+
+  .nb-gates span {
+    flex-basis: 100%;
+  }
+}
+
+/* On a phone the rail stands up: the steps are a list down its side. */
+@media (max-width: 560px) {
+  .nb-track {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 12px;
+  }
+
+  .nb-steps {
+    grid-auto-flow: row;
+  }
+
+  .nb-steps li {
+    grid-template-columns: 11px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    min-height: 34px;
+    padding-top: 0;
+  }
+
+  .nb-steps li::before {
+    top: 0;
+    bottom: 0;
+    left: 5px;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+
+  .nb-gate {
+    justify-self: start;
+  }
+
+  .nb-steps .nb-gate {
+    position: static;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nb-steps li,
+  .nb-steps li > i,
+  .nb-gate,
+  .nb-out,
+  .nb-go::before {
+    transition: none;
+  }
+
+  .nb-go {
+    animation: none;
   }
 }
