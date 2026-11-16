@@ -968,7 +968,7 @@ html[data-holo='off'] .welcome-face {
   white-space: nowrap;
 }
 
-.cred-it + .cred-it::before,
+.cred-it ~ .cred-it::before,
 .cred-g + .cred-g::before {
   content: '';
   display: inline-block;

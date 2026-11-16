@@ -53,6 +53,11 @@ export default function Hero() {
               {hero.credential.map((group, g) => (
                 <span className="cred-g" key={g}>
                   {group.flatMap((item, k) => [
+                    k > 0 || g > 0 ? (
+                      <span className="sr" key={`sep-${item}`}>
+                        ,
+                      </span>
+                    ) : null,
                     k > 0 ? ' ' : null,
                     <span className="cred-it" key={item}>
                       {item}
