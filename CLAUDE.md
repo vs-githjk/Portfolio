@@ -145,17 +145,22 @@ and the loop stops once the layer is invisible, when the tab is hidden, and unde
 The first screen (Nov 12 2026, Vidyut's idea: "a 3D face of me made of blue light" that greets
 the visitor, then becomes a ball of energy that gives way to the page). `Welcome.jsx` is the
 HTML: an empty box for the face, the greeting, the cue. `Hologram.jsx` draws the face into the
-fixed background stack with plain WebGL (no three.js: the chunk is about 5 KB gzipped).
+fixed background stack with plain WebGL (no three.js: the chunk measured 9.95 KB gzipped on Nov 15).
 
-- The points are baked offline by `scripts/bake-hologram.py` from the studio headshot into
-  `public/holo/face.bin` (Nov 15: about 32,200 points on 254 scan rows, 157 KB; position, depth, brightness).
-  The photo itself is not shipped. Re-run the script by hand if the portrait changes.
+- The points are baked offline by `scripts/bake-hologram.py` from the studio headshot
+  (`~/Portfolio-notes/design/portrait-1200.jpg`) into two files (round 3, Nov 15):
+  `public/holo/face-a.bin` (18,000 points, 141 KB, all a phone downloads) and `face-b.bin`
+  (24,000 more, 205 KB, the fill-in a desktop adds). Eight bytes a point: position, real depth,
+  a surface normal, a flattened tone, the spacing to its neighbours and a kind. The photo
+  itself is not shipped. Re-run the script by hand if the portrait changes (it needs torch and
+  transformers; the measurements at its top are for that 1200px source).
 - Scroll is the timeline, counted from the top of the page to the hero (`lib/origin.js`,
-  `heroOrigin()`): the face loosens into a ball of folded light (0.04 to 0.4), the ball has the
-  window to itself over the empty run under the greeting (`--welcome-run`), then bursts (0.56 to
-  0.98) and is gone when the hero sits under the nav. The canvas is fixed, so the light stays in
-  the window while the page leaves. The cue is a real link to `#top`; with scripts it glides
-  there in 2.8s and any wheel, touch or key hands the scroll back.
+  `heroOrigin()`): the face peels into a small planet of light (0.04 to 0.37), the planet has
+  the window to itself over the empty run under the greeting (`--welcome-run`) and says its
+  line (typed 0.41 to 0.57), then its light pours onto the orbit ring (0.70 to 0.95) and fades
+  (0.93 to 1.03), gone when the hero sits under the nav. The canvas is fixed, so the light
+  stays in the window while the page leaves. The cue is a real link to `#top`; with scripts it
+  glides there in 5.6s (`GLIDE_MS`) and any wheel, touch or key hands the scroll back.
 - The greeting is prerendered text and is the LCP element. It waits dim (`--say-idle`), and is
   typed in steps while the face draws (`html[data-holo='in']`; "seen" after, or at once for a
   visitor who watched it this session; "late" if the hologram says nothing for 3.6s; "off"
@@ -165,25 +170,54 @@ fixed background stack with plain WebGL (no three.js: the chunk is about 5 KB gz
   before. The beams are lit at `--welcome-beams` behind the face and rise to full as the hero
   arrives (`--bg-open`).
 - Budget: mounted when the page is idle, after first paint; DPR capped at 1.75 (1.5 on a
-  phone); a phone draws 58% of the points; it draws every frame only while the scroll moves or
-  the face is being drawn, about 30 a second otherwise, and not at all past the hero or in a
-  hidden tab. Mobile Lighthouse measured 99 with it (Nov 12).
+  phone); a phone fetches and draws the base tier only; it draws every frame only while the
+  scroll moves or the face is being drawn, about 30 a second otherwise, and not at all past the
+  hero or in a hidden tab. Mobile Lighthouse on the production build measured 98, 99 and 99
+  (three runs, Nov 15, round 3), and the greeting was the only LCP entry at 390 and 1440.
 - Under `prefers-reduced-motion` it is one still frame that scrolls away with the page: no
   drawing in, no typing, no ball, no empty run.
-- **Craft pass (Nov 15, "the hologram can be 10 times better").** Light: a fixed key from the
-  upper left and a rim on the silhouette, from a normal estimated from where a point sits on
-  the head, so the light moves across the face as it turns. Glow: a bloom (the points drawn
-  again, larger, into a third-size buffer, blurred twice and added back), desktop only; a
-  phone draws half the points with one wide faint point in ten instead, which is what keeps
-  mobile Lighthouse at 98. Draw-in: ahead of the scan line a point is a star on a wide field;
-  as the line passes it comes home, so the stars gather into his face. He looks a little
-  toward the pointer on a desktop (eased, added to the slow sine). `--holo-gain`,
-  `--holo-bloom`, `--holo-deep|pale|hot`.
-- **The ball is a small ringed world, not a noise sphere**: a globe whose points sit on 44
-  parallels that turn at their own speeds (as the face sits on scan rows), a flat ring with a
-  gap, and a hot core. When it speaks a wave runs round the ring like a voice on a scope
-  (`uSpeak`); in the burst the ring leaves first as a shock wave. It is the page in
-  miniature: the ring of builds round his name, the ringed giant in the sea.
+- **Round 3 (Nov 15): a relit relief, not a print of the photo.** The bake runs Depth
+  Anything V2 Small (Apache-2.0) on the headshot for real depth, takes normals from it, and
+  places the points by weighted Voronoi stippling (blue noise, no rows: he read scan rows as
+  noise), denser on the eyes, brows and lips. The tone has the photo's own light divided out;
+  the shader lights it: one key from the upper left (wrapped), a soft sheen, a front fill that
+  falls off with depth (so the nose is as bright as the cheeks, as in the photo), a rim. Each
+  point is a Gaussian splat 4.4 spacings wide (`SPREAD`), so neighbours add up to one surface;
+  a lens focused on the eyes softens what is nearer or farther. Rules that were learnt the
+  hard way and are easy to break:
+  - Teeth and the whites of the eyes are capped at skin level. A catchlight must sit on the
+    dark of the iris: the bright rim of the white beside it, marked hot, draws a white sliver
+    that reads as an eye glitch.
+  - Around the eyes and mouth the light sees only the broad form of the head (normals from a
+    much smoother depth). Lit by the fine relief, the upper lip goes dark: a moustache.
+  - The stubbled upper lip is lifted to the level of the lit cheeks (not the median, which is
+    what it already has).
+  - No glow on lit skin: the bloom pass draws the rim and the catchlights only, and the colour
+    pales linearly with the light. Either one, doubled, puts blown patches on the cheeks.
+  - A splat's size is the mean distance to its six nearest neighbours. Three leaves dark
+    holes; nothing may be removed from the surface to make haze (that was a pox on phones).
+  - `half` and `out` are reserved words in GLSL ES. A shader that fails to compile turns the
+    hologram off silently (`data-holo='off'`); in dev the reason is logged to the console.
+  Draw-in is a depth reveal: the nearest points (nose, brow, cheeks) come home first, so the
+  face is sculpted toward the viewer. He breathes, looks slowly from side to side and a
+  little toward the pointer on a desktop; the head turns on the neck down to the chin as one
+  piece. No flicker, no row slips, no colour split. `--holo-gain`, `--holo-bloom`,
+  `--holo-deep|pale|hot`.
+- **The ball is a small planet with no ring** (the one ringed planet on the page is the giant
+  in the sea): a shell of points lit by the same key as the face (a day side, a soft
+  terminator, a bright limb) round a faint core. The face peels into it from the outside in:
+  hair and shoulders first, the eyes last. When it speaks it swells with the words and a
+  ripple runs over it (`uSpeak`).
+- **The hand-off: the light lands on the builds.** `Orbit.jsx` publishes the ring's geometry
+  in `lib/ring.js` (centre, radii, tilt, perspective, card size, how far it has turned, and
+  each side card's turn and lean); that is the only thing the hologram knows about the hero.
+  The planet's points swing out in two curtains to the sides of the window (they never cross
+  his name), come back in under the copy and land on the edge of each front card's thumbnail,
+  framing it, then fade. The cards are solid and in front of the canvas, so light that landed
+  on a card would be hidden. Measured Nov 15 at 1600, 1440 and 1199: the landing formula puts
+  the thumbnail's corners within 0.3px of the real ones; re-run that check if the ring's
+  geometry or card count changes. On a phone the copy fills the window, so the light goes out
+  at the planet and comes up again on the two drifting rows (`.drift`).
 - Past the hero the canvas is cleared once (a nav jump used to leave the last frame of the
   ball and a half-typed line on screen).
 - Tried and dropped: the face inside the ring behind the hero copy (the shield hides it, or it
@@ -211,7 +245,7 @@ Run 4 (Nov 12 2026, Vidyut's notes while watching it live):
   or the greeting.
 - **The ball speaks.** Once the face is a ball, `welcome.ball` ("Here is what I have built.")
   types as a caption under it while the ball pulses with the words (`--speak`, `--speak-on`,
-  `--ball-y`, written by `Hologram.jsx`); then the ball bursts into the hero. The cue's glide
+  `--ball-y`, written by `Hologram.jsx`); then its light pours onto the ring of builds. The cue's glide
   slows for a beat on the line (`BEATS` in `Welcome.jsx`); `--welcome-run` is 70svh so the
   hero arrives under it. A version where the ball opened into the words was cut: it must read
   as speech.
