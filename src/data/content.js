@@ -1794,10 +1794,10 @@ export const proofOfWork = {
 /* --------------------------------------------------------------- CONTACT --- */
 export const contact = {
   eyebrow: 'Contact',
-  heading: 'Tell me what’s',
-  headingEm: 'broken.',
+  heading: 'Let’s build something',
+  headingEm: 'reliable.',
   blurb:
-    'Building agents that have to hold up with real users? Write to me. If you think I got something on this page wrong, tell me that too.',
+    'Building agents that have to hold up with real users? Write to me.',
   /* Mint means available. He graduates in Dec 2026 and can start in Jan 2027. */
   availability: 'Available from January 2027',
   email: 'vidyut0712@gmail.com',

@@ -21,21 +21,24 @@ export default function Footer() {
     <footer className="foot" data-realm="earth">
       <div className="wrap">
         <div className="credits">
-          <section className="credits-part credits-notes" aria-labelledby="cr-made">
-            <h3 className="eyebrow" id="cr-made">
-              {c.label}
-            </h3>
-            <p>
-              {c.made} {c.type}
-            </p>
-            {c.lighthouse && <p>{put(c.measured, c.lighthouse)}</p>}
+          <p className="credits-part credits-notes">
             <a href={c.llms.href}>{c.llms.label}</a>
-          </section>
+          </p>
 
           <details className="credits-roll fold">
             <summary>{k.open}</summary>
             <div className="credits-body">
               <h2 className="credits-title">{k.label}</h2>
+
+            <section className="credits-part" aria-labelledby="cr-made">
+              <h3 className="eyebrow" id="cr-made">
+                {c.label}
+              </h3>
+              <p>
+                {c.made} {c.type}
+              </p>
+              {c.lighthouse && <p>{put(c.measured, c.lighthouse)}</p>}
+            </section>
 
             <section className="credits-part" aria-labelledby="cr-cast">
               <h3 className="eyebrow" id="cr-cast">
