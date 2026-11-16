@@ -176,7 +176,12 @@ export function createWyrmStations({ live, phone }) {
         const full = Math.min(cols.pitch, (roost.h - 12) / 6.4);
         const ahead = w - cols.xs[N - 1] > live.neck * full + 16;
         const scale = ahead ? full : Math.min(cols.pitch, (roost.h - 12) / 13.2);
-        st.roost = { rect: roost, cols, scale, ahead, ground: roost.bottom - 8, boxes: boxesOf(roost), band: [roost.top - 2, roost.bottom + 2] };
+        // With the head out in front there is open ground over its shoulders (the note
+        // above it stops well short of them): the band rises so a half-raised wing and
+        // the lifted head have room. Any text in that taller band is a keep-out box.
+        const rise = ahead ? Math.min(124, scale * 8.4) : 0;
+        const band = [roost.top - 2 - rise, roost.bottom + 2];
+        st.roost = { rect: roost, cols, scale, ahead, lift: ahead ? scale * 2.5 : 0, ground: roost.bottom - 8, boxes: boxesOf(roost, band), band };
       }
     }
 
@@ -296,8 +301,12 @@ export function createWyrmStations({ live, phone }) {
           } else if (k < head) {
             const q = (neck - d) * sc; // px from the newest vertebra toward the snout
             if (s.ahead) {
-              out[0] = xLast + q;
-              out[1] = ground - live.radius(k) * sc;
+              // The head is held up off the ground on the neck, snout a little down:
+              // a dragon dozing with its head up, not a fish laid flat.
+              const along = q / (neck * sc); // 0 at the shoulders, 1 at the snout
+              const lift = sm(along / 0.55) * (1 - 0.3 * sm((along - 0.6) / 0.4));
+              out[0] = xLast + q * (1 - 0.1 * sm(along));
+              out[1] = ground - live.radius(k) * sc - lift * s.lift;
             } else if (q < Math.PI * R) {
               const a = q / R;
               out[0] = xLast + Math.sin(a) * R * 0.4;
@@ -316,7 +325,7 @@ export function createWyrmStations({ live, phone }) {
           }
         };
         guard(s, f);
-        draw({ ...base, scale: sc, at, sleep: 1, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
+        draw({ ...base, scale: sc, at, sleep: 1, fold: s.ahead ? 0.5 : 0.62, beat: 0, show: 1, solid: 0.4, air: 3, up: [0, 1, 0.22] });
         shown.station = 'roost';
         return 'roost';
       }

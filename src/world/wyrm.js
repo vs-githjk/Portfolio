@@ -27,8 +27,8 @@ import { definePiece } from './piece';
 
    The form: a skin of scales pinched at every week like a paper lantern, a spine of light through them, a swept
    sail along the back, two pairs of leaf fins (they are fins in water and wings
-   in air), a narrow lantern head with one eye light, two leaf crests and two
-   trailing barbels, and a leaf fluke at the tail.
+   in air), a narrow lantern head with one eye light, two swept horns and two
+   trailing barbels, and a barb at the tail.
 
    The piece knows nothing about where it lives. Each frame the caller gives it
    a pose: for every node, a point in window px (x and y from the middle of the
@@ -102,7 +102,7 @@ void main(){
   float head = step(0.5, vSkin.w) * step(vSkin.w, 1.5);
   float a = 0.035 + 0.5 * edge + scale * (0.1 + 0.26 * (1.0 - fres)) + seam * (0.07 + 0.2 * fres);
   a *= 0.55 + 0.45 * vSkin.z;
-  a = a * (1.0 + 0.9 * head) + 0.05 * head + vGlow * (0.5 + 0.5 * scale + 0.5 * edge);
+  a = a * (1.0 + 0.35 * head) + 0.03 * head + vGlow * (0.5 + 0.5 * scale + 0.5 * edge);
   float lv = clamp(0.2 + 0.45 * vSkin.z + 0.5 * edge + 0.25 * scale + vGlow, 0.0, 1.0);
   gl_FragColor = lit(ramp(lv, wf), min(a, 1.0), wf, p);
 }`;
@@ -174,16 +174,16 @@ void main(){
 
 /* Anatomy, in body units (one unit is the gap between two vertebrae). */
 const HEAD = [
-  [0, 0.78],
-  [1.0, 1.02],
-  [2.4, 1.08],
-  [3.9, 1.4],
-  [5.2, 2.15],
-  [6.5, 3.25],
-  [7.8, 3.55],
-  [9.2, 2.95],
-  [10.5, 2.05],
-]; // distance from the snout tip, radius: a long muzzle, a brow, a neck
+  [0, 0.5],
+  [1.0, 0.8],
+  [2.4, 0.98],
+  [3.9, 1.22],
+  [5.2, 1.62],
+  [6.5, 2.2],
+  [7.8, 2.5],
+  [9.2, 2.2],
+  [10.5, 1.9],
+]; // distance from the snout tip, radius: a long wedge of a muzzle, a brow no wider than the body, a neck
 const SKULL = 6; // the widest head node: the eye and the crests sit here
 const NECK = 11.7; // where the newest vertebra sits
 const BROW = [0, 1.75, -1.75]; // lantern ribs along the head: over the brow and down each cheek (rad from the back)
@@ -373,11 +373,16 @@ export const wyrm = definePiece({
       LEAVES.push(leaf(wingAt + 0.6, 19, 1.1, 0.56, side, 0.3, 1, 0.32, 1));
       LEAVES.push(leaf(wingAt + 1.2, 14, 1.2, 0.94, side, 0.6, 1, 0.34, 1));
       LEAVES.push(leaf(backHalf, 10, 1.5, 0.72, side, 1.6, 0.6, 0.3, 1)); // the hind pair
-      LEAVES.push(leaf(8.4, 12, 0.36, 0.72, side, 0.3, 0.1, 0.2)); // a crest behind each eye
+      // A horn behind each eye: long, narrow and swept back. (A broad crest here read
+      // as a fish's gill cover.)
+      LEAVES.push(leaf(8.4, 8, 0.2, 0.12, side, 0.3, 0.02, 0.1));
+      LEAVES.push(leaf(9.4, 6.5, 0.9, 1.1, side, 0.5, 0.05, 0.16)); // and a short frill under it
     }
     LEAVES.push(leaf(5.6, 6, 3.14159, 0.95, 1, 0.9, 0.12, 0.26)); // a leaf under the chin
-    LEAVES.push(leaf(length - 1.2, 6.5, 0.55, 1.15, 1, 2.4, 0.3, 0.34)); // the fluke: two leaves
-    LEAVES.push(leaf(length - 1.2, 6.5, 2.6, 1.15, 1, 2.9, 0.3, 0.34));
+    // The tail ends in a barb: two blades laid along the tail's line, back to back
+    // (each is broad on its outer side), so together they are one spearhead. (Two long leaves at a wide angle were a fish's fluke.)
+    LEAVES.push(leaf(length - 0.7, 4.8, 0, 1.45, 1, 2.4, 0.05, 0.42));
+    LEAVES.push(leaf(length - 0.7, 4.8, 3.14159, 1.45, 1, 2.4, 0.05, 0.42));
     const leafVerts = (LU + 1) * (2 * LV + 1);
     const JAW = 6;
     const nBand = M * 2 + M * 2 + 2 * (BARB + 1) * 2 + (JAW + 1) * 2 + BROW.length * HEAD.length * 2 + LEAVES.length * leafVerts;
@@ -492,6 +497,7 @@ export const wyrm = definePiece({
          cam        { x, y, z }  the camera in world units (z is the camera distance)
          beat       0 to 1: how hard the fins work (water about 0.35, air 1)
          sleep      0 to 1: folded and breathing slowly
+         fold       0 to 1: how far the wings are folded (default: as asleep as it is)
          show       0 to 1
          solid      0 pure light, 1 paints over what is behind it (in the air only)
          air        how much fuller it is drawn in the air (1 as in water)
@@ -510,6 +516,7 @@ export const wyrm = definePiece({
       state.shown = group.visible;
       if (!group.visible) return;
       const sleep = q.sleep ?? 0;
+      const wingFold = q.fold ?? sleep; // asleep it may still hold a wing half raised
       const beat = (q.beat ?? 0.4) * (1 - sleep);
       const breath = 1 + 0.035 * Math.sin(t * 0.9) * sleep;
 
@@ -712,7 +719,7 @@ export const wyrm = definePiece({
         const k = Math.min(M - 1, Math.round(f));
         const s0 = sc[k];
         sample(f, a, P); // root
-        const fold = L.fold * sleep; // the wings fold along the body in sleep
+        const fold = L.fold * wingFold; // the wings fold along the body in sleep
         const flap = Math.sin(t * (1.1 + 1.5 * beat) - L.ph) * (0.1 + 0.62 * beat) * L.beat;
         const spread = L.spread + flap - 0.25 * fold;
         const sweep = L.sweep + 0.5 * fold + 0.12 * flap;

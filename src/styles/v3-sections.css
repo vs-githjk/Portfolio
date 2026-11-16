@@ -2160,6 +2160,14 @@ html[data-world='on'] .deep-head::before {
   height: clamp(72px, 12svh, 132px);
 }
 
+/* On a phone the neck curls up and the head rests on its own back, so the band is
+   taller: at the old height the creature was a thin strip nobody could read. */
+@media (max-width: 560px) {
+  .pow-roost {
+    height: clamp(120px, 18svh, 160px);
+  }
+}
+
 html:not([data-world='on']) .pow-roost {
   display: none;
 }
