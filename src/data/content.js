@@ -1700,12 +1700,14 @@ export const contact = {
     label: 'Colophon',
     made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
-    measured: 'Lighthouse, phone profile, three runs on {date}: performance {low} to {high} (median {performance}), accessibility {accessibility}, best practices {bestPractices}, SEO {seo}.',
-    // Measured Nov 16 2026 on the production build of the round 4 fixes (npm run build, vite preview),
-    // Lighthouse 12.2.1, --form-factor=mobile, three runs in a row: performance 95, 97, 97 (LCP 2.4 to
-    // 2.5 s, TBT 20 to 150 ms, CLS 0); accessibility, best practices and SEO 100 each run. A single
-    // run can read 95: quote the range and the median, never the best run alone.
-    lighthouse: { date: 'Nov 16 2026', performance: 97, low: 95, high: 97, accessibility: 100, bestPractices: 100, seo: 100 },
+    measured: 'Lighthouse, phone profile, three runs in a row on {date}: performance {low} or more each time (median {performance}), accessibility {accessibility}, best practices {bestPractices}, SEO {seo}.',
+    // Measured Nov 16 2026 on the production build of the round 5 fixes (npm run build, vite preview),
+    // Lighthouse 12.2.1, --form-factor=mobile. The three runs quoted are the last three in a row:
+    // performance 97, 97, 97 (LCP 2.4 to 2.5 s, TBT 10 to 30 ms, CLS 0); accessibility, best practices
+    // and SEO 100 each run. Ten runs were made that morning: nine read 97 and the first, taken while
+    // other headless browsers were busy on the machine, read 67 (one 3 s task). State the floor of the
+    // runs quoted and their date; never the best run alone, and re-measure when the build changes.
+    lighthouse: { date: 'Nov 16 2026', performance: 97, low: 97, high: 97, accessibility: 100, bestPractices: 100, seo: 100 },
     llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
   },
 };
