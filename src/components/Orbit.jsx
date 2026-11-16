@@ -52,7 +52,10 @@ const NAME_CH = Math.max(...slides.map((s) => s.title.length));
    640 for a phone's row (cards up to 320px wide at 2x or more). */
 /* alt is empty on purpose: the card is one link whose visible text (title, badge,
    one-liner) already names it, and the descriptive alt lives on the Builds image. */
-function Shot({ slide, k }) {
+/* Every card is lazy: the ring is below the welcome screen, and on a phone it is
+   not shown at all (a lazy image in a hidden ring is never requested; the first
+   card used to be fetched at high priority there, beside the greeting). */
+function Shot({ slide }) {
   const src = slide.image.src;
   return (
     <img
@@ -62,7 +65,8 @@ function Shot({ slide, k }) {
       alt=""
       width="640"
       height="400"
-      {...(k === 0 ? { fetchPriority: 'high' } : { loading: 'lazy', decoding: 'async' })}
+      loading="lazy"
+      decoding="async"
     />
   );
 }
@@ -823,7 +827,7 @@ export default function Orbit({ stageRef, centreRef }) {
             >
               <a className="card-link" href={`#build-${s.id}`} tabIndex={k === 0 ? 0 : -1}>
                 <span className="card-media">
-                  <Shot slide={s} k={k} />
+                  <Shot slide={s} />
                   <span className="card-prog" aria-hidden="true">
                     <i />
                   </span>

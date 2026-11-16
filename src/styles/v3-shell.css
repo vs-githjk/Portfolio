@@ -441,7 +441,8 @@ html[data-entry='pre']:not([data-holo='off']) .hero .actions {
 
 /* Keyboard focus never sits on something invisible: Tab past Skip intro lands on
    Email me, so the copy and the ring's bar show at once when focus is inside. */
-html[data-entry='pre']:not([data-holo='off']) .hero .centre:focus-within :is(.portrait, .who-text, .hero-name, .identity, .identity-sub, .cred, .actions),
+html[data-entry='pre']:not([data-holo='off']) .hero .centre:focus-within > *,
+html[data-entry='pre']:not([data-holo='off']) .hero .centre:focus-within > .who-main > *,
 html[data-entry='pre']:not([data-holo='off']) .hero .orbit-bar:focus-within {
   opacity: 1;
   transform: none;
