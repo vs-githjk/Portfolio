@@ -506,7 +506,9 @@ export const builds = {
       /* Sources (Nov 15 2026): repo DevSingh05/snapback (README "Measured" and
          "Honest limits", 314 commits, 191 his), plan/devpost-final.md, live at
          snapback-navy.vercel.app. HackPrinceton Fall 2026, team of 4. No prize
-         (Vidyut, Nov 15): no award badge. */
+         (Vidyut, Nov 15): no award badge. The Houston renter and the $2,200 in the
+         one-liner: README "Why" and devpost-final.md, which cite ABC13 Houston,
+         Feb 15 2025. */
       id: 'snapback',
       // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
       scene: { kind: 'scan', photos: 48, placed: 43, decoys: 30, decoysPlaced: 0 },
@@ -884,7 +886,7 @@ export const builds = {
     descriptor: 'my own Claude Code crew',
     when: 'Oct 2026 to Present · private repo',
     oneLiner: 'One sentence in. A reviewed branch out.',
-    lead: 'An orchestrator, **twelve specialists** and a second model. They research, plan, design, build test first, review and judge, and they stop only where I told them to.',
+    lead: 'Fourteen in the crew: an orchestrator, **twelve specialists** and Codex as a second model. They research, plan, design, build test first, review and judge, and they stop only where I told them to.',
     prompt: {
       label: 'You',
       lines: ['I’m at <hackathon>', 'use the master playbook'],
@@ -1201,7 +1203,7 @@ export const highlights = {
     },
     {
       bed: 'Comcast · 2025',
-      text: 'Cut **~40% of recurring planning and coordination work** for a 40-person engineering team at Comcast.',
+      text: 'Cut **~40% of recurring planning and coordination work** for a 40‑person engineering team at Comcast.',
     },
   ],
 };
@@ -1507,7 +1509,7 @@ export const proofOfWork = {
   heading: 'Verify me in',
   headingEm: 'one click.',
   intro:
-    'Most of what is above leaves a public trail: every hackathon win links to its Devpost page, and the graph under them counts my private-repo work too.',
+    'Most of what is above leaves a public trail: every win with a Devpost page links to it, and the graph under them counts my private-repo work too.',
   github: {
     eyebrow: 'GitHub · last 12 months',
     handle: '@vs-githjk',
@@ -1606,7 +1608,9 @@ export const proofOfWork = {
     {
       kind: 'Devpost',
       value: 'vs-githjk',
-      detail: '6 prize wins across 3 projects',
+      /* {prizes} and {projects} are counted from wins.items whose href is a Devpost
+         page (ProofOfWork.jsx), so this line can never disagree with the plaques. */
+      detail: '{prizes} of the prizes above, across {projects} projects',
       href: 'https://devpost.com/vs-githjk',
     },
     {

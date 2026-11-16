@@ -1,7 +1,7 @@
 import { proofOfWork } from '../data/content';
 import { EV } from '../kit/contract';
 import Heatmap from './Heatmap';
-import PlaceName from './PlaceName';
+import { put } from './counts';
 
 /* The build writes a fresh snapshot to github.local.json (gitignored); the
    committed github.json is the fallback, so a plain build never dirties git. */
@@ -21,6 +21,11 @@ const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'
    - the checks: one row per public trail, showing the address it goes to.
    No totals are shown (Vidyut, Nov 16: commit totals are vanity). The graph is the
    evidence; a week's or a day's exact count is in its tooltip, read from github.json. */
+
+/* Counted from the plaques, never typed: the prizes whose link is a Devpost page,
+   and the distinct projects behind them. */
+const onDevpost = proofOfWork.wins.items.filter((w) => w.href.includes('devpost.com'));
+const devpost = { prizes: onDevpost.length, projects: new Set(onDevpost.map((w) => w.project)).size };
 
 const TZ = 'America/New_York'; // fixed, so the date reads the same for every viewer
 const bare = (href) => href.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
@@ -53,7 +58,6 @@ export default function ProofOfWork() {
         <div className="sec-head reveal">
           <span className="eyebrow">
             {proofOfWork.eyebrow}
-            <PlaceName section="verify" />
           </span>
           <h2>
             {proofOfWork.heading} <em>{proofOfWork.headingEm}</em>
@@ -130,7 +134,7 @@ export default function ProofOfWork() {
                 <a href={x.href} target="_blank" rel="noopener noreferrer">
                   <span className="pow-k">{x.kind}</span>
                   <span className="pow-v">{x.value}</span>
-                  <span className="pow-d">{x.detail}</span>
+                  <span className="pow-d">{put(x.detail, devpost)}</span>
                   <span className="pow-u">{bare(x.href)}</span>
                 </a>
               </li>
