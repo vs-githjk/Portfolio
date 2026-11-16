@@ -594,7 +594,6 @@ export function createWorld(canvas, { days } = {}) {
   let w = 1;
   let h = 1;
   let camZ = 1;
-  let navH = 64;
   const view = (z) => (camZ - z) / camZ; // how much more of the world a screen shows at depth z
 
   /* ---- The backdrop: water and sky, soft in a small target, sharp in the composite */
@@ -928,7 +927,7 @@ export function createWorld(canvas, { days } = {}) {
   comets.forEach(aim);
 
   /* ---- Layout: sizes and the set pieces' homes, read from the page --------- */
-  const home = { surf: 0, giant: 0, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, value: 0, valueEnd: 0, moonDoc: 0, contact: 0, foot: 0 };
+  const home = { surf: 0, giant: 0, giantH: 400, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, value: 0, valueEnd: 0, moonDoc: 0, contact: 0, foot: 0 };
   let journey = [];
   let vistas = [];
   /* Choreography: the reading sections are quiet. While the middle of the screen
@@ -989,7 +988,6 @@ export function createWorld(canvas, { days } = {}) {
     snowMat.uniforms.uCamZ.value = camZ;
     snowMat.uniforms.uH.value = h;
     snowMat.uniforms.uW.value = w;
-    navH = document.querySelector('.nav')?.offsetHeight ?? 64;
 
     const pad = Math.max(16, Math.min(w * 0.05, 72));
     colHalf = Math.min(600, w / 2) - pad;
@@ -1009,6 +1007,7 @@ export function createWorld(canvas, { days } = {}) {
     const work = rect('#work');
     home.surf = surf ? surf.top + surf.h * 0.36 : (work ? work.top : H * 0.1) - 60;
     home.giant = mid('.vista[data-set="giant"]', H * 0.2);
+    home.giantH = rect('.vista[data-set="giant"]')?.h ?? h * 0.44;
     const shore = rect('.vista[data-set="shore"]');
     const crew = rect('.crew');
     home.shore = shore ? shore.top : crew ? crew.top - h : H * 0.55;
@@ -1180,29 +1179,27 @@ export function createWorld(canvas, { days } = {}) {
       tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
     }
 
-    // The manta swims up and across the giant's vista as the page goes by: it starts
-    // inside the window, low and left of the planet, passes in front of the ring and
-    // leaves high on the left, always under the nav. It is nearer the camera than
-    // any part of the sphere and keeps left of its disc.
-    const mu = Math.max(0, Math.min(1, (line - (home.giant - h * 1.05)) / (h * 2.1)));
+    // The manta swims up and across the giant's vista while that vista is in the
+    // window. It stays inside the vista's band, so it never crosses a line of text
+    // and never slides under the nav; it is nearer the camera than any part of the
+    // sphere and keeps left of its disc.
+    const mu = Math.max(0, Math.min(1, (line - (home.giant - h * 0.42)) / (h * 0.74)));
     manta.visible = mu > 0.001 && mu < 0.999 && sea > 0.01;
     if (manta.visible) {
       const mz = 160;
       const mk = view(mz);
-      const size = phone ? 62 : 108;
+      const size = Math.min(phone ? 58 : 108, home.giantH * 0.27);
       const span = size * 1.75; // half a wingspan on screen
       const clear = w * (phone ? 0.2 : 0.27) - sizes.gr - span - 24;
       const x0 = Math.min(clear, w * 0.02);
       const x1 = -(w / 2) + span * 0.9 + 12;
-      const y0 = h * 0.3;
-      const y1 = -(h / 2) + navH + size * 0.9 + 28;
       const ease = mu * mu * (3 - 2 * mu);
       const sx = x0 + (x1 - x0) * ease;
-      const sy = y0 + (y1 - y0) * ease + Math.sin(t * 0.5) * 10;
-      manta.position.set(camera.position.x + sx * mk, camera.position.y - sy * mk, mz);
+      const sy = home.giant + home.giantH * (0.2 - 0.36 * ease) - line + Math.sin(t * 0.5) * 6;
+      manta.position.set(camera.position.x + sx * mk, camY - sy * mk, mz);
       manta.scale.setScalar(size * mk);
       manta.rotation.z = 0.7 + Math.sin(t * 0.4) * 0.05; // heading up and to the left
-      mantaMat.uniforms.uGlow.value = 0.9 * sm(mu / 0.1) * sm((1 - mu) / 0.12);
+      mantaMat.uniforms.uGlow.value = 0.94 * sm(mu / 0.14) * sm((1 - mu) / 0.16);
     }
     giant.visible = sea > 0.002 && Math.abs(line - home.giant) < h * 1.6 + sizes.gr * 3;
 

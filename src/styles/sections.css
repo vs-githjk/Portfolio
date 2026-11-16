@@ -4350,7 +4350,7 @@ html[data-world='on'] .vista-text::before {
   position: absolute;
   z-index: -1;
   inset: -34px -96px;
-  background: color-mix(in srgb, var(--vista-shade) 46%, transparent);
+  background: color-mix(in srgb, var(--vista-shade) 54%, transparent);
   pointer-events: none;
   mask-image:
     linear-gradient(to right, transparent, var(--ink) 96px, var(--ink) calc(100% - 96px), transparent),
