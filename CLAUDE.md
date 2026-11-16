@@ -61,7 +61,7 @@ Three rules encode the thesis:
 | Welcome | His face drawn in light says hello (two lines and a cue); one scroll or a click plays it into the hero |
 | Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of ten builds |
 | Experience | Where he has worked; every result is a complete statement |
-| Builds | Two flagship panels (PrismAI, then DuelWise), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (19 in all), then the Now building panel (Master Agents, a character select screen with the crew's art) |
+| Builds | Three flagship panels (PrismAI, DuelWise, SNAPBACK), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (20 in all), then the Now building panel (Master Agents, a character select screen with the crew's art) |
 | Highlights | Four one-line statements, after the stories they summarize |
 | Proof of work | GitHub commit graph, the nine wins (each hackathon win with a Devpost page links to it), four verification links |
 | Principles | How he thinks about building (2x2 tiles) |
@@ -74,9 +74,9 @@ not read as the same module twice. Keep them visually distinct.
 
 ## The orbit ring (`components/Orbit.jsx`)
 
-Eleven glass cards on an elliptical CSS 3D ring around the name, his strongest, in
+Twelve glass cards on an elliptical CSS 3D ring around the name, his strongest, in
 Vidyut's order: PrismAI, DuelWise, BetterBill, MVR, Vytal, Match Day, Terrametric, the paper,
-PrismKeep, FireSight, Fish Market (DuelWise added Nov 12). Everything else lives only in Builds (Oct 28: fourteen
+PrismKeep, FireSight, Fish Market, with SNAPBACK third (DuelWise added Nov 12, SNAPBACK Nov 15). Everything else lives only in Builds (Oct 28: fourteen
 was too crowded). Each card is one link to its Builds entry (`#build-<id>`); a slide
 `id` in `hero.carousel.slides` must equal the Builds entry id.
 
