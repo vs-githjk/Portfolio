@@ -2752,6 +2752,38 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   background: var(--acc-2);
 }
 
+/* The skyline stage (SkyStage.jsx): the flat graph is the picture until the 3D
+   canvas has drawn its first frame over it, then it fades out under it. The box
+   is the flat graph's own, so nothing moves when it does. */
+.sky .heat {
+  transition: opacity var(--dur) var(--ease);
+}
+
+.sky[data-ready] .heat {
+  opacity: 0;
+}
+
+.sky-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  touch-action: pan-y;
+}
+
+.sky[data-ready] .sky-canvas {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky .heat,
+  .sky-canvas {
+    transition: none;
+  }
+}
+
 .heat-tip {
   z-index: 1;
   position: absolute;

@@ -27,9 +27,11 @@ const fill = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
    week is under the pointer, or chosen with the keyboard on the range control
    below the graph, is announced to the world scene as a `world:week` event
    ({ detail: { index } }, index null when nothing is chosen) so the matching
-   butte can light. On phones the SVG crops to the most recent half year
+   butte can light. `children` are laid over the picture (the 3D skyline, see
+   SkyStage.jsx); this graph then stays as the accessible image, the keyboard's
+   range control and the scene's anchor. On phones the SVG crops to the most recent half year
    (right-aligned); wider, the whole year fits. */
-export default function Heatmap({ days, label, copy }) {
+export default function Heatmap({ days, label, copy, children }) {
   const phone = useMediaQuery('(max-width: 640px)');
   const svg = useRef(null);
   const [tip, setTip] = useState(null);
@@ -143,6 +145,7 @@ export default function Heatmap({ days, label, copy }) {
 
   const show = (e) => {
     const el = svg.current;
+    if (!el.contains(e.target)) return; // something laid over the picture (the skyline) answers for itself
     const m = el.getScreenCTM();
     if (!m) return;
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
@@ -207,6 +210,7 @@ export default function Heatmap({ days, label, copy }) {
             <path key={level} className={`cell c${level}`} d={d} />
           ))}
         </svg>
+        {children}
         {tip && (
           <span className="heat-tip" data-side={tip.side} style={{ left: tip.left, top: tip.top }} aria-hidden="true">
             {tip.text}

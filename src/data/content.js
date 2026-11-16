@@ -1658,11 +1658,13 @@ export const proofOfWork = {
        commits in three days, so a total says nothing). The graph is the evidence. */
     graphLabel: 'My GitHub contribution graph for the last 12 months, one column per week',
     note: '',
-    /* The ridge above the calendar: one butte per week. The same record stands on
-       the night horizon behind this section (the world scene). */
-    ridge: 'Each butte is one week; its height follows that week’s contributions.',
+    /* The line under the graph. The graph is the 3D skyline (one tower a day,
+       brought back Nov 16); the flat calendar with its ridge of weekly buttes is
+       underneath as the accessible image. */
+    ridge: 'Each tower is one day; its height follows that day’s contributions. Point at one, or tap it, for the exact count.',
     weekTip: 'Week of {date}: {n} contributions',
     dayTip: '{n} contributions on {date}',
+    dayTipOne: '1 contribution on {date}',
     scrub: 'Step through the weeks of the graph',
     updated: 'Updated',
     keyLess: 'Less',

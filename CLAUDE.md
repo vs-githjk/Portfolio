@@ -358,12 +358,21 @@ separate ring inside it, so a focused and chosen tile shows two rings. Art is
 building", has no link (private repo), sits beside no build, and never compares the crew
 with anyone else's agents.
 
-## Proof of work (`components/ProofOfWork.jsx`, `Heatmap.jsx`)
+## Proof of work (`components/ProofOfWork.jsx`, `SkyStage.jsx`, `Skyline.jsx`, `Heatmap.jsx`)
 
 The graph is drawn from a build-time snapshot: `scripts/fetch-github.mjs` (prebuild) writes
 `src/data/github.local.json` (gitignored); the committed `github.json` is the fallback. No
 runtime third-party calls. Every GitHub figure is computed from that JSON, and there is no
-total. A ridge of buttes stands over the calendar, one a week. A phone crops the graph to
+total. The graph is the 3D commit skyline again (Vidyut, Nov 16: "I like the old GitHub, we
+had more: it told me what commits, it gave me the numbers"): `Skyline.jsx`, one 2D canvas, no
+WebGL, every day a tower (height count^0.4, colour ranked within the year), laid by
+`SkyStage.jsx` exactly over the flat graph once its first frame is drawn. Pointing at a tower,
+or tapping it, gives that day's exact count; the week under the pointer is sent to the scene
+(`world:week`) so the dragon on the roost glances at it. It rises as the card scrolls in on a
+desktop and simply stands on phones and under reduced motion. The flat `Heatmap` (a ridge of
+weekly buttes over the calendar) stays underneath as the accessible image, the keyboard range
+control and the scene's "graph" anchor. Headline totals, streaks and month counts did NOT come
+back with it (rule 4). A phone crops the graph to
 the latest half year and its label says "last 6 months" (only with the script: without it
 the graph is whole and the label stays twelve). Choosing a week makes the dragon on the roost look at that column.
 

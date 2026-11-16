@@ -1,6 +1,6 @@
 import { proofOfWork } from '../data/content';
 import { EV } from '../kit/contract';
-import Heatmap from './Heatmap';
+import SkyStage from './SkyStage';
 import { put } from './counts';
 
 /* The build writes a fresh snapshot to github.local.json (gitignored); the
@@ -14,8 +14,10 @@ const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'
      the focus is announced to the scene, `world:focus`, kind "win", id its place
      in the list, so its star can flare);
    - the record: the commit graph (a build-time snapshot, no runtime calls) as a
-     ridge of weekly buttes over the day calendar; the same weeks stand on the
-     night horizon behind the section, and the week under the pointer lights there;
+     skyline: every day a tower, standing up in 3D over the flat calendar as the
+     card scrolls in (SkyStage.jsx, Skyline.jsx; the flat graph with its ridge of
+     weekly buttes stays underneath as the accessible image). The day under the
+     pointer or the tap gives its exact count; its week lights in the scene;
    - the roost: an empty band over the card, the width of the graph, where the
      scene lays its creature along the weeks (data-world-anchor="roost");
    - the checks: one row per public trail, showing the address it goes to.
@@ -109,7 +111,7 @@ export default function ProofOfWork() {
               {g.handle}
             </a>
           </div>
-          <Heatmap days={github.days} label={g.graphLabel} copy={g} />
+          <SkyStage days={github.days} label={g.graphLabel} copy={g} />
           <div className="pow-foot">
             <span>
               {g.ridge} {g.note ? `${g.note} ` : ''}
