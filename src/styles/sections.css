@@ -3299,11 +3299,27 @@ a.plaque .plaque-project {
   padding-right: 18px;
 }
 
-a.plaque:hover {
+/* Only a pointer that can hover gets the hover fill: on touch it stuck to the last
+   plaque tapped. The keyboard gets the same state with its focus ring, and a
+   press flashes it. */
+@media (hover: hover) and (pointer: fine) {
+  a.plaque:hover {
+    background-color: color-mix(in srgb, var(--win) 20%, var(--surface));
+  }
+
+  a.plaque:hover::after {
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+}
+
+a.plaque:focus-visible,
+a.plaque:active {
   background-color: color-mix(in srgb, var(--win) 20%, var(--surface));
 }
 
-a.plaque:hover::after {
+a.plaque:focus-visible::after,
+a.plaque:active::after {
   opacity: 1;
   transform: translate(2px, -2px);
 }
@@ -3938,7 +3954,7 @@ a.plaque:hover::after {
 .tk-row ul:not(.tk-plates) {
   --tk-mark: 31px;
   margin-left: calc(var(--tk-mark) * -1);
-  clip-path: inset(-8px -8px -8px calc(var(--tk-mark) - 5px));
+  clip-path: inset(-8px -8px -8px calc(var(--tk-mark) - 9px));
 }
 
 .tk-row ul:not(.tk-plates) > li::before {
@@ -3957,6 +3973,8 @@ a.plaque:hover::after {
 
 .tk-tool {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -3978,7 +3996,7 @@ a.plaque:hover::after {
 .tk-tool::before {
   content: '';
   position: absolute;
-  inset: 0 -7px;
+  inset: 0 -9px;
 }
 
 .tk-tool:hover {

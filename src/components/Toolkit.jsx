@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { builds, toolkit } from '../data/content';
 import { EV } from '../kit/contract';
 
@@ -40,8 +40,18 @@ export default function Toolkit() {
      (`world:focus`, kind "tool"; `builds` is the list of their ids). */
   const pick = (it) => {
     setTool(it);
+    setSaid(toolkit.answer.replace('{tool}', it).replace('{builds}', list((INDEX[it] ?? []).map((b) => b.title))));
     window.dispatchEvent(new CustomEvent(EV.focus, { detail: { kind: 'tool', id: it, builds: (INDEX[it] ?? []).map((b) => b.id) } }));
   };
+  /* The answer is on screen in its row; the hidden status only announces a pick,
+     then empties, so a screen reader hears the sentence once and never finds it
+     twice when reading the page. */
+  const [said, setSaid] = useState('');
+  useEffect(() => {
+    if (!said) return undefined;
+    const t = setTimeout(() => setSaid(''), 2500);
+    return () => clearTimeout(t);
+  }, [said]);
   const sentence = toolkit.answer.replace('{tool}', tool).replace('{builds}', list(hits.map((b) => b.title)));
 
   return (
@@ -94,7 +104,7 @@ export default function Toolkit() {
           ))}
         </div>
         <p className="sr" role="status">
-          {sentence}
+          {said}
         </p>
       </div>
     </section>
