@@ -229,7 +229,9 @@ export default function Hologram() {
           still: false,
           // The light lands on the builds, then leaves them to it: it is all gone by the
           // time the hero sits under the nav, where the cue's glide (and many readers) stop.
-          gain: gain * (1 + word * 0.1 * Math.sin(t * 9.5)) * (1 - ease(span(0.92, 1, eased))),
+          // A phone has no cards for it to frame, so there it thins out on the way down
+          // (landed in a row it read as two bands of static).
+          gain: gain * (1 + word * 0.1 * Math.sin(t * 9.5)) * (1 - ease(phone ? span(0.72, 0.88, eased) : span(0.92, 1, eased))),
         });
         last = now;
       }

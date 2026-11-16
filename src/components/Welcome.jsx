@@ -52,7 +52,7 @@ const KNOTS = [
   [1950, 0.585, 'linear'],
   [2850, 1],
 ];
-const SPANS = { face: [0.04, 0.34], open: [0.6, 0.98], plate: 0.84, land: 0.995, back: 0.6 };
+const SPANS = { face: [0.04, 0.34], open: [0.6, 0.98], plate: 0.78, land: 0.8, back: 0.6 };
 const LATE_MS = 3600;
 
 /* The Sill and the ring that opens are the same drawing as the Orrery's plate:

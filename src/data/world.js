@@ -52,7 +52,7 @@ export const entry = {
 export const loadLines = {
   beams: 'Lighting the stars',
   chunk: 'Filling the sea',
-  compiled: 'Waking the dragon', // the scene's programs are compiled (the dragon is lane B's wyrm)
+  compiled: 'The world is ready', // the scene's programs are compiled
   plain: 'Plain view',
 };
 

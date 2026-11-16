@@ -4,10 +4,12 @@ import { on } from '../kit/bus';
 
 /* The load line: one quiet mono line that says what is arriving, driven by real
    events (EV.loaded, { stage }) and nothing else. `lines` maps a stage to its
-   sentence; a line leaves `hold` ms after it was said unless the next has come.
+   sentence; a line leaves `hold` ms after it was said unless the next has come
+   (short, so the last line is gone before the reader has settled on the face;
+   under reduced motion the stylesheet never shows it: nothing is arriving).
    If the world cannot run, `lines.plain` is the last thing it says.
    Decoration: aria-hidden. */
-export default function LoadLine({ lines, hold = 3200 }) {
+export default function LoadLine({ lines, hold = 1500 }) {
   const [stage, setStage] = useState('');
   useEffect(() => {
     let timer = 0;

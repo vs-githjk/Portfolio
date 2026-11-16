@@ -242,6 +242,13 @@ html.js .sill .plate-arc-tick {
   opacity: 1;
 }
 
+/* A still page has nothing arriving to announce; plain view keeps its one word. */
+@media (prefers-reduced-motion: reduce) {
+  .load-line:not([data-stage='plain']) {
+    display: none;
+  }
+}
+
 .load-line i {
   width: 5px;
   height: 5px;
@@ -309,7 +316,7 @@ html[data-holo='off'] .door-skip {
 /* The ball's line is typed in whole letters (--n of them), not wiped. */
 @supports (width: round(down, 1px, 1px)) {
   .welcome-ball span {
-    clip-path: inset(-10% calc(100% - round(down, var(--speak, 0) * 100%, 100% / var(--n, 24))) -10% -2%);
+    clip-path: inset(-10% calc(100% - round(down, var(--speak, 0) * 100% + 1%, 100% / var(--n, 24))) -10% -2%);
   }
 }
 

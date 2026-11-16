@@ -659,12 +659,12 @@ html.js:not([data-holo]) .say {
 html[data-holo='in'] .say {
   --lit: var(--text);
   background:
-    linear-gradient(var(--lit), var(--lit)) no-repeat 0 0 / 0% 100%,
+    linear-gradient(90deg, var(--lit) calc(100% - 0.7em), transparent) no-repeat 0 0 / 0% 100%,
     linear-gradient(var(--say-idle), var(--say-idle));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: say var(--say-dur-1) steps(var(--n), end) var(--say-delay-1) forwards;
+  animation: say var(--say-dur-1) linear var(--say-delay-1) forwards;
 }
 
 html[data-holo='in'] .say[data-line='2'] {
@@ -673,43 +673,14 @@ html[data-holo='in'] .say[data-line='2'] {
   animation-delay: var(--say-delay-2);
 }
 
-html[data-holo='in'] .say::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 12%;
-  width: 2px;
-  height: 76%;
-  background: var(--acc-2);
-  opacity: 0;
-  animation: say-caret var(--say-dur-1) steps(var(--n), end) var(--say-delay-1) forwards;
-}
-
-html[data-holo='in'] .say[data-line='2']::after {
-  animation-duration: var(--say-dur-2);
-  animation-delay: var(--say-delay-2);
-}
-
+/* No caret: letters differ in width and the first line wraps on a phone, so a bar
+   stepping in equal shares cut through the glyphs. The light has a soft front edge
+   instead, and washes across. */
 @keyframes say {
   to {
     background-size:
-      100% 100%,
+      calc(100% + 0.7em) 100%,
       auto;
-  }
-}
-
-@keyframes say-caret {
-  0% {
-    left: 0;
-    opacity: 1;
-  }
-  99% {
-    left: 100%;
-    opacity: 1;
-  }
-  100% {
-    left: 100%;
-    opacity: 0;
   }
 }
 
@@ -807,7 +778,6 @@ html[data-holo='off'] .welcome-face {
     animation: none;
   }
 
-  html[data-holo] .say::after,
   .welcome-cue i::after {
     animation: none;
     opacity: 0;
