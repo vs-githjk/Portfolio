@@ -181,6 +181,28 @@ html[data-entry='pre']:not([data-plate]):not([data-holo='off']) .drift-plate {
   opacity: 0.6;
 }
 
+/* The Sill counts its ticks in, one per ring build, left to right, as the
+   greeting is said; and its crest lights while the pointer is on the door. */
+html.js .sill .plate-arc-tick {
+  animation: sill-count 0.5s var(--ease) both;
+  animation-delay: calc(1.3s + var(--k) * 70ms);
+}
+
+@keyframes sill-count {
+  from {
+    opacity: 0;
+  }
+}
+
+.plate-arc-rim {
+  transition: stroke 0.25s var(--ease);
+}
+
+.door:hover ~ .threshold .plate-arc-rim,
+.door:focus-within ~ .threshold .plate-arc-rim {
+  stroke: var(--acc);
+}
+
 .door-skip,
 .load-line {
   position: absolute;
@@ -435,7 +457,8 @@ html[data-skip] .nav {
 @media (prefers-reduced-motion: reduce) {
   .door-enter svg,
   .load-line i,
-  .load-line span {
+  .load-line span,
+  html.js .sill .plate-arc-tick {
     animation: none;
   }
 

@@ -2,6 +2,7 @@
    them. `far` draws the far edge (a crest, as it shows over a horizon), otherwise
    the near edge (a bowl). The drawing is a 1000 by 100 box stretched to whatever
    the stylesheet makes it; hairlines keep their width (non-scaling strokes).
+   Each tick carries its place in the row as --k, so a stylesheet can count them in.
    Decoration: the count it draws is always stated in the page beside it. */
 const RIM = 1.06;
 const ARC = { cx: 500, cy: 118, rx: 452, ry: 96, sweep: 62, reach: 84 };
@@ -28,7 +29,7 @@ export default function PlateArc({ count, far = true, className = '' }) {
       <path className="plate-arc-rim" d={rim(1)} />
       <path className="plate-arc-rim" data-rim="outer" d={rim(RIM)} />
       {ticks.map(([a, b], k) => (
-        <line className="plate-arc-tick" key={k} x1={fix(a[0])} y1={fix(a[1])} x2={fix(b[0])} y2={fix(b[1])} />
+        <line className="plate-arc-tick" key={k} style={{ '--k': k }} x1={fix(a[0])} y1={fix(a[1])} x2={fix(b[0])} y2={fix(b[1])} />
       ))}
     </svg>
   );
