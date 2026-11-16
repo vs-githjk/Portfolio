@@ -4474,19 +4474,34 @@ a.plaque:active::after {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* On a phone the nine wins are a ledger, not nine cards: a slim plate each, the
-     placing in a narrow column, the event on the prize's line. */
+  /* On a phone the nine wins are one ledger, not nine cards: no boxes, a gold
+     hairline between the lines, the placing in a narrow gold column. */
   .plaques {
     grid-auto-rows: auto;
-    gap: 8px;
+    gap: 0;
+    border-top: 1px solid var(--win-line);
   }
 
   .plaque {
-    --cut: var(--cut-sm, 10px);
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 52px minmax(0, 1fr);
     column-gap: 14px;
-    padding: 12px 34px 12px 0;
+    padding: 11px 30px 11px 0;
+    border: 0;
+    border-bottom: 1px solid var(--win-line);
+    border-radius: 0;
+    background: none;
     box-shadow: none;
+    clip-path: none;
+  }
+
+  a.plaque::after {
+    top: 12px;
+    right: 4px;
+  }
+
+  .plaque-place {
+    place-items: center start;
+    border-right: 0;
   }
 
   .plaque-place {
