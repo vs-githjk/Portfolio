@@ -57,6 +57,7 @@ varying float vTone;
 varying float vHot;
 
 const vec3 KEY = vec3(-0.545, 0.39, 0.742); // upper left, toward the viewer
+const float SPREAD = 4.4; // a splat's width in spacings: wide enough that neighbours add up to one surface
 
 vec3 turn(vec3 p, float a, float b) {
   float c = cos(a), s = sin(a);
@@ -96,7 +97,10 @@ void main() {
   // surface turns away from the viewer.
   float key = clamp((dot(n, KEY) + 0.3) / 1.3, 0.0, 1.0);
   float rim = pow(1.0 - clamp(n.z, 0.0, 1.0), 2.4);
-  float lit = tone * (0.58 + 0.42 * key) + rim * mix(0.1, 0.2, isHair) * (1.0 - 0.5 * isBody);
+  // A soft sheen where the surface mirrors the key toward the viewer: the
+  // highlights are this light's, on the lit side, not the photograph's.
+  float sheen = pow(max(0.0, dot(n, normalize(KEY + vec3(0.0, 0.0, 1.0)))), 14.0) * (1.0 - isHair) * (1.0 - isBody);
+  float lit = tone * (0.46 + 0.54 * key + 0.2 * sheen) + rim * mix(0.05, 0.2, isHair) * (1.0 - 0.5 * isBody);
   lit = mix(lit, 0.8, isCatch);
   // One faint band of light climbs the figure every eleven seconds.
   float band = exp(-pow((aFace.y - (fract(t / 11.0) * 1.7 - 0.75)) * 4.5, 2.0)) * live;
@@ -114,9 +118,11 @@ void main() {
   float faceHot = isCatch * 0.7 * home + smoothstep(0.7, 1.0, lit) * 0.3 * home + front * 0.35;
   // The lens: sharp at the eyes, softer in front of and behind them.
   float soft = 1.0 + 5.0 * abs(f.z - uFocus) + 0.9 * isBody;
-  float faceSize = gap * uSize * 3.0 * soft * mix(1.0, 0.86, step(0.5, kind) * step(kind, 1.5));
-  // Feature points are drawn smaller, so each carries a little more light.
-  faceGlow *= mix(1.0, 1.35, step(0.5, kind) * step(kind, 1.5)) / (soft * soft);
+  float faceSize = gap * uSize * SPREAD * soft;
+  // The wider the splats, the more of them overlap: each carries less, so the
+  // surface is as bright as the tone says, whatever SPREAD is.
+  faceGlow *= 9.0 / (SPREAD * SPREAD);
+  faceGlow /= soft * soft;
   float faceBloom = (smoothstep(0.5, 0.95, lit) * 0.5 + rim * 0.7 + isCatch) * home;
 
   // ---- the planet -------------------------------------------------------------
@@ -206,10 +212,12 @@ void main() {
 
   gl_Position = vec4(px.x / uRes.x * 2.0 - 1.0, 1.0 - px.y / uRes.y * 2.0, 0.0, 1.0);
 
-  gl_PointSize = max(1.5, size * mix(1.0, 2.4, uPass));
-  // A splat this small cannot hold its light: below two pixels it dims instead.
-  float tiny = min(1.0, size / 2.0);
-  vGlow = glow * mix(1.0, bloom, uPass) * tiny * tiny;
+  gl_PointSize = max(1.0, size * mix(1.0, 2.4, uPass));
+  // A small splat deposits its fair share of light on average, whatever its
+  // size (checked by simulation down to one pixel). Only one that would be
+  // narrower than a pixel is drawn a pixel wide, so it gives up the difference.
+  float share = min(1.0, size * size);
+  vGlow = glow * mix(1.0, bloom, uPass) * share;
   vHot = hot;
   vTone = glow;
 }

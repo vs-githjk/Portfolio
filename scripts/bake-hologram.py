@@ -79,8 +79,7 @@ NOSE_TIP = (604, 438)
 CHEEKS = [(492, 452), (722, 432)]
 HAIRLINE = 300.0  # above this row dark pixels are hair, not brow or lash
 CHIN = 690.0
-BUST_FADE = (800.0, 1030.0)  # the shoulders fade out between these rows
-SIDE_FADE = (330.0, 560.0)  # and beyond this distance from the head's centre line
+BUST_FADE = (730.0, 1040.0)  # the shoulders fade out between these rows, measured down the centre line
 HEAD_CX = 612.0
 
 
@@ -144,7 +143,9 @@ if n > 1:
     fore = labels == (1 + int(np.argmax(ndi.sum(fore, labels, range(1, n + 1)))))
 inside = ndi.distance_transform_edt(fore)
 alpha = smooth(inside, 0.0, 5.0)
-bust = (1 - smooth(yy, *BUST_FADE)) * (1 - smooth(np.abs(xx - HEAD_CX) - (yy - 700).clip(0) * 0.25, *SIDE_FADE))
+# The bust fades out in a round vignette below the collar, so it has no straight
+# edge; the head itself is never touched.
+bust = 1 - smooth(np.hypot(np.clip(np.abs(xx - HEAD_CX) - 250, 0, None) / 1.2, np.clip(yy - BUST_FADE[0], 0, None)), 40, BUST_FADE[1] - BUST_FADE[0])
 alpha = alpha * bust
 
 # ---- 3. re-level the depth ------------------------------------------------------
@@ -192,10 +193,14 @@ is_body = shirt > 0.5
 # The quiff stands forward in the model's depth; the skull must not push out.
 z = z_raw - 0.045 * hair_soft
 # Around the eyes and the mouth the tone already draws every fold. Lit again
-# from above, the sockets and the upper lip go black (a moustache of shadow), so
-# the relief is flattened there and the light sees only the broad form.
-calm = 1 - 0.8 * np.maximum(1 - smooth(eyes, 0.9, 1.9), 1 - smooth(ellipse(xx, yy, MOUTH, 1.0) - 0.25 * np.clip((MOUTH['cy'] - yy) / 60, 0, 1), 0.9, 1.7))
-gx, gy = gx * calm, gy * calm
+# from above, the sockets and the upper lip go black (a moustache of shadow). So
+# there the light sees only the broad form of the head (the same slope, taken
+# from a much smoother depth): the zone is lit like the cheek beside it, neither
+# darker nor flat.
+calm = 0.85 * np.maximum(1 - smooth(eyes, 0.9, 1.9), 1 - smooth(ellipse(xx, yy, MOUTH, 1.0) - 0.45 * np.clip((MOUTH['cy'] - yy) / 60, 0, 1), 0.9, 1.7))
+by, bx = np.gradient(ndi.gaussian_filter(z_raw, 45) * H)
+gx = gx * (1 - calm) + bx * SLOPE * calm
+gy = gy * (1 - calm) + by * SLOPE * calm
 nz = 1 / np.sqrt(1 + gx * gx + gy * gy)
 nx, ny = -gx * nz, gy * nz  # y up
 
@@ -213,26 +218,37 @@ skin_cap = float(np.percentile(tone[skin_tone], 80))
 pale = smooth(lum, 0.42, 0.6) * (1 - smooth(sat, 0.2, 0.34))
 teeth = pale * (1 - smooth(mouth, 0.85, 1.1))
 whites = (1 - smooth(sat, 0.16, 0.3)) * smooth(lum, 0.3, 0.5) * (1 - smooth(eyes, 0.8, 1.05))
-tone = tone * (1 - teeth) + skin_cap * 1.02 * teeth
-tone = tone * (1 - whites) + np.minimum(tone, skin_cap * 0.8) * whites
+tone = tone * (1 - teeth) + skin_cap * 0.92 * teeth
+tone = tone * (1 - whites) + skin_cap * 0.78 * whites
 # Stubble reads as a moustache once the colour is gone: lift the upper lip most
 # of the way to the skin around it, and the jaw a little.
-lip_top = np.exp(-(((xx - 604) / 80) ** 2 + ((yy - 493) / 17) ** 2))
+lip_top = np.clip(1.6 * np.exp(-(((xx - 604) / 95) ** 2 + ((yy - 490) / 22) ** 2)), 0, 1)
 jawline = smooth(yy, 560, 610) * (1 - shirt) * (1 - hair_soft)
 skin_mid = float(np.median(tone[skin_tone]))
-tone = tone + (np.maximum(tone, skin_mid * 0.92) - tone) * 0.7 * lip_top
+# The target is the level of the lit cheeks, not the median: the median is what
+# the stubbled lip already has, so lifting to it changes nothing.
+tone = tone + (np.maximum(tone, skin_cap * 0.97) - tone) * 0.9 * lip_top
 tone = tone + (np.maximum(tone, skin_mid * 0.8) - tone) * 0.45 * jawline
 # The catchlights: the few brightest pixels inside each eye.
 iris = np.minimum(np.hypot(xx - 515, yy - 380), np.hypot(xx - 682, yy - 357))
-catch = (lum > 0.66) & (iris < 17)
+bright = (lum > 0.6) & (iris < 15)
+labels, n = ndi.label(bright)
+catch = np.zeros_like(bright)
+for cx, cy in [(515, 380), (682, 357)]:
+    # One catchlight an eye: the largest bright spot on the iris.
+    here = [(ndi.sum(bright, labels, k), k) for k in np.unique(labels[int(cy) - 15:int(cy) + 16, int(cx) - 15:int(cx) + 16]) if k > 0]
+    if here:
+        catch |= labels == max(here)[1]
 # Hair: a low even level carrying its strands.
 strands = np.clip((soft - ndi.gaussian_filter(soft, 6)) * 5.0, -0.12, 0.34)
 hair_tone = 0.1 + strands + 0.5 * np.clip(soft - 0.08, 0, 0.3)
 tone = tone * (1 - hair_soft) + hair_tone * hair_soft
 # The shirt: one quiet level, its folds and placket carried by the normals.
-shirt_tone = 0.26 + 0.5 * np.clip(soft - ndi.gaussian_filter(soft, 9), -0.2, 0.12)
+shirt_tone = 0.24 + 0.5 * np.clip(soft - ndi.gaussian_filter(soft, 9), -0.2, 0.05)
 tone = tone * (1 - shirt) + shirt_tone * shirt
-tone = np.clip(tone, 0.03, 1.0) ** 0.88
+knee = skin_cap * 0.96
+tone = np.where(tone > knee, knee + (tone - knee) * 0.25, tone)  # the photo's own shine is not our light
+tone = np.clip(tone, 0.03, 1.0) ** 0.9
 tone = np.where(catch, 1.0, tone)
 
 # ---- 6. where the points go ------------------------------------------------------
