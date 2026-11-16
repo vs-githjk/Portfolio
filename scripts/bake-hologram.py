@@ -8,8 +8,10 @@ Run by hand when the portrait changes (it is not a build step):
 The source is ~/Portfolio-notes/design/portrait-1200.jpg (a 1200 x 1200 crop of
 the studio headshot). It writes two files into public/holo:
 
-    face-a.bin   the base tier, all a phone downloads (about 18,000 points)
-    face-b.bin   the fill-in a desktop adds after it (about 24,000 more)
+    face-a.bin      the base tier of points, all a phone downloads (about 18,000)
+    face-b.bin      the fill-in a desktop adds after it (about 24,000 more)
+    face-1024.webp  the picture the window shows at rest (desktop)
+    face-512.webp   the same for a phone
 
 The portrait is a round window of light with him in it, in his own colours
 (Nov 15 2026: every version of his face drawn in blue light, grainy or smooth,
@@ -18,8 +20,11 @@ it floated on the dark ground; what read as friendly was his own colouring in a
 lit, framed picture). So each point keeps a colour from the photograph, a real
 depth (Depth Anything V2 Small, Apache-2.0) so the head can turn, and how solid
 it is (the matte, feathered into the photo's own backdrop so the hair has a
-natural edge). The photo file itself is still not shipped; the points are a
-soft, lower-detail drawing of it.
+natural edge). And the picture itself: face-1024.webp (desktop) and
+face-512.webp (phone), the square the round window sits in, which the scene
+shows crisp at rest (Nov 16 2026, conductor's decision: the headshot is already
+public at Contact; the points alone were judged friendly but soft). The points
+are used to assemble him and to let his light go.
 
   depth    Depth Anything V2 Small run on the photo at 1036 px, re-levelled so
            the cheeks sit on the picture plane and the nose tip stands NOSE in
@@ -305,6 +310,28 @@ def pack(pts, space, path, tail=None):
 
 
 OUT.mkdir(parents=True, exist_ok=True)
+
+# ---- 7. the picture itself ----------------------------------------------------------
+# At rest the window shows the photograph, crisp: the square the round window
+# sits in, in the same grade as the points' colours, so the points can take over
+# from it without a change of colour. Where the window reaches past the photo's
+# top edge the backdrop is carried on (its top rows, blurred sideways).
+x0, y0, side = int(round(DISC['cx'] - DISC['r'])), int(round(DISC['cy'] - DISC['r'])), int(round(2 * DISC['r']))
+canvas = np.zeros((side, side, 3), dtype=np.float32)
+top = max(0, -y0)
+canvas[top:, :, :] = graded[max(0, y0):y0 + side, x0:x0 + side, :]
+if top:
+    lead = np.stack([ndi.gaussian_filter1d(graded[:6, x0:x0 + side, c].mean(0), 40) for c in range(3)], 1)
+    canvas[:top] = lead[None]
+    blend = min(40, side - top)  # and the first rows of the photo ease into it, so no line shows
+    k = np.linspace(0, 1, blend)[:, None, None]
+    canvas[top:top + blend] = lead[None] * (1 - k) + canvas[top:top + blend] * k
+picture = Image.fromarray((np.clip(canvas, 0, 1) * 255).astype(np.uint8))
+for size, quality in ((1024, 82), (512, 80)):
+    out_path = OUT / f'face-{size}.webp'
+    picture.resize((size, size), Image.LANCZOS).save(out_path, 'WEBP', quality=quality, method=6)
+    print(f'{size}px picture, {out_path.stat().st_size / 1024:.1f} KB -> {out_path}')
+
 order_a = pack(pts_a, space_a, OUT / 'face-a.bin')
 pack(pts_b, space_b, OUT / 'face-b.bin', tail=spacing[:N_A])
 
