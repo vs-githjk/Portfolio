@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { nav } from '../data/content';
 import { heroOrigin } from '../lib/origin';
+import { shell } from '../data/world';
+import { EV } from '../kit/contract';
+import { emit } from '../kit/bus';
+import { setSwitch, useSwitch } from '../shell/switches';
 
 /* Sticky, 60px, frosted. Section links collapse into a second row below 960px
    (the page is one scroll, no hamburger). On a phone that two-row bar slides away
@@ -16,7 +20,39 @@ import { heroOrigin } from '../lib/origin';
    from kit/signals.js) the bar wears two palettes cut exactly at the line
    (--w-line or --w-shore): a second, inert copy of the bar's face in the other
    realm's palette is clipped to its side of the line. The copies mount after
-   hydration, are aria-hidden and inert, and are display: none at any other time. */
+   hydration, are aria-hidden and inert, and are display: none at any other time.
+
+   The bar's tools (v3): a compass mark opens the Chart (key M), Receipts labels
+   every living thing with its fact (key R), Sound switches the synth. Below 960px
+   only the compass stays in the bar; the other two live in the Chart. */
+function Tools({ tab }) {
+  const receipts = useSwitch('receipts');
+  const sound = useSwitch('sound');
+  const flip = (name, value) => () => {
+    setSwitch(name, value);
+    emit(EV.sound, { cue: 'tick' });
+  };
+  return (
+    <div className="nav-tools">
+      <button className="nav-tool" data-tool="chart" type="button" tabIndex={tab} aria-haspopup="dialog" aria-keyshortcuts={shell.chart.key} onClick={flip('chart', true)}>
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+          <circle cx="10" cy="10" r="8.2" />
+          <path d="M10 3.6 12 10l-2 6.4L8 10z" />
+          <path d="M10 1.8v1.4M10 16.8v1.4M1.8 10h1.4M16.8 10h1.4" />
+        </svg>
+        <span>{shell.chart.open}</span>
+      </button>
+      <button className="nav-tool" data-tool="receipts" type="button" tabIndex={tab} aria-pressed={receipts} aria-keyshortcuts={shell.receipts.key} onClick={flip('receipts')}>
+        <i aria-hidden="true" />
+        {shell.receipts.label}
+      </button>
+      <button className="nav-tool" data-tool="sound" type="button" tabIndex={tab} aria-pressed={sound} onClick={flip('sound')}>
+        {shell.sound.label}: {sound ? shell.sound.on : shell.sound.off}
+      </button>
+    </div>
+  );
+}
+
 function Face({ tab }) {
   return (
     <div className="wrap">
@@ -33,6 +69,7 @@ function Face({ tab }) {
           </li>
         ))}
       </ul>
+      <Tools tab={tab} />
       <a className="btn btn-pri nav-cta" href={nav.cta.href} tabIndex={tab}>
         {nav.cta.label}
       </a>

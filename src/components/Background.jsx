@@ -4,6 +4,7 @@ import { beamFade, worldFade } from '../lib/beamFade';
 import { heroOrigin } from '../lib/origin';
 import { EV } from '../kit/contract';
 import { emit } from '../kit/bus';
+import { useSwitch } from '../shell/switches';
 
 /* One fixed layer stack behind the page: the vertical light-beam field.
 
@@ -23,7 +24,8 @@ import { emit } from '../kit/bus';
      so the chunk is requested on the first scroll past the welcome (and, on a
      desktop, after the page has been idle for a moment, so it is ready first).
    - Hologram (plain WebGL, a small chunk) is the face of light on the welcome
-     screen above the hero. It mounts with the beams, after first paint. */
+     screen above the hero. It mounts with the beams, after first paint.
+   - In plain view (shell/switches.js) none of the three canvases is mounted. */
 const BackgroundField = lazy(() => import('./BackgroundField'));
 const World = lazy(() =>
   import('./World').then((m) => {
@@ -39,6 +41,20 @@ export default function Background() {
   const [ready, setReady] = useState(false);
   const [deep, setDeep] = useState(false);
   const reduced = useReducedMotion();
+  // Plain view (the World switch, or ?plain): the page alone. No canvas is mounted
+  // and neither scene chunk is requested; the page says so the way it does when
+  // WebGL is missing, so the welcome closes up and the vistas collapse.
+  const plain = useSwitch('plain');
+  useEffect(() => {
+    if (!plain) return undefined;
+    const html = document.documentElement;
+    html.dataset.holo = 'off';
+    html.dataset.world = 'off';
+    return () => {
+      delete html.dataset.holo;
+      delete html.dataset.world;
+    };
+  }, [plain]);
   const onReady = useCallback(() => {
     setReady(true);
     emit(EV.loaded, { stage: 'beams' });
@@ -124,17 +140,17 @@ export default function Background() {
     <div className="bg" aria-hidden="true" data-ready={ready ? '' : undefined} ref={root}>
       <div className="bg-glow" />
       <div className="bg-static" />
-      {on && (
+      {on && !plain && (
         <Suspense fallback={null}>
           <BackgroundField onReady={onReady} />
         </Suspense>
       )}
-      {on && (
+      {on && !plain && (
         <Suspense fallback={null}>
           <Hologram />
         </Suspense>
       )}
-      {deep && (
+      {deep && !plain && (
         <Suspense fallback={null}>
           <World />
         </Suspense>

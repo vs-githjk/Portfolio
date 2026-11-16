@@ -1,7 +1,13 @@
+import { builds, contact, experience, hero, highlights, principles, proofOfWork, toolkit, value, welcome } from './content';
+
 /* The world's own words and wiring for this site (lane A): place names, the
    labels of the shell's controls, the load lines, the receipt sentences, and how
    this world places its two waterlines. Counts are never typed here: every
    number in a sentence is computed from content.js or the GitHub snapshot. */
+
+/* The same snapshot the commit graph draws (ProofOfWork.jsx, World.jsx). */
+const snaps = import.meta.glob('./github*.json', { eager: true, import: 'default' });
+const github = snaps['./github.local.json'] ?? snaps['./github.json'] ?? { days: [], total: 0 };
 
 /* The two waterlines, as the scene draws them (lib/worldScene.js): the surface is
    a place in the page, 36% down its vista; the shore's line comes down the window
@@ -41,7 +47,6 @@ export const entry = {
   skip: 'Skip intro',
 };
 
-export const places = [];
 /* The load line on the first screen: what is arriving, said as it arrives. Keys
    are the stages of EV.loaded. */
 export const loadLines = {
@@ -50,6 +55,91 @@ export const loadLines = {
   compiled: 'Waking the world',
   plain: 'Plain view',
 };
-export function receipts() {
-  return '';
+
+/* ------------------------------------------------------------- PLACES ---- */
+/* The descent, top to bottom. `id` is the element the Chart links to; where the
+   page has no id for it yet, `find` is how to reach the element (the Chart gives
+   it the id). `label` is the section's own name, from content.js. A `line` is a
+   waterline: drawn on the Chart, not a destination. */
+export const places = [
+  { id: 'welcome', name: 'The Threshold', label: welcome.label, realm: 'space' },
+  { id: 'top', name: 'The Orrery', label: hero.headline, realm: 'space' },
+  { line: 'surface', name: 'The Waterline' },
+  { id: 'work', name: 'The Sounding', label: experience.heading, realm: 'sea' },
+  { id: 'builds', name: 'The Deep', label: builds.heading, realm: 'sea' },
+  { line: 'shore', name: 'The Breach' },
+  { id: 'camp', find: '.crew', name: 'The Camp', label: builds.building.title, realm: 'earth' },
+  { id: 'highlights', find: '.hl', name: 'The Cut', label: highlights.eyebrow, realm: 'earth' },
+  { id: 'verify', name: 'The Ridge at night', label: proofOfWork.eyebrow, realm: 'earth' },
+  { id: 'principles', name: 'The Bench', label: principles.heading, realm: 'earth' },
+  { id: 'value', name: 'Moonrise', label: value.heading, realm: 'earth' },
+  { id: 'toolkit', name: 'The Inventory', label: toolkit.eyebrow, realm: 'earth' },
+  { id: 'contact', name: 'First Light', label: contact.eyebrow, realm: 'earth' },
+];
+
+/* Every build, in page order, in its four groups: the Chart's depth chart. */
+export const buildGroups = [
+  { id: 'flagships', label: 'Flagships', items: builds.flagships },
+  { id: 'featured', label: 'Featured', items: builds.items },
+  { id: 'paper', label: 'The paper', items: builds.research ? [builds.research] : [] },
+  { id: 'more', label: builds.more.heading, items: builds.more.items },
+].map((g) => ({ ...g, items: g.items.map((b) => ({ id: b.id, title: b.title })) }));
+export const buildCount = buildGroups.reduce((n, g) => n + g.items.length, 0);
+
+/* The shell's own labels (the Chart, the bar's tools, the switches). */
+export const shell = {
+  chart: { open: 'Chart', title: 'The Chart', lede: 'One world, top to bottom. Pick a place.', here: 'You are here', close: 'Close the chart', places: 'Places', builds: 'Builds', switches: 'Switches', key: 'M' },
+  receipts: { label: 'Receipts', hint: 'Label every living thing with the fact it is drawn from', key: 'R', ledger: 'Receipts' },
+  sound: { label: 'Sound', on: 'on', off: 'off', hint: 'Synthesized in the browser. Never plays by itself.' },
+  world: { label: 'World', on: 'on', off: 'plain', hint: 'Plain view is the page alone: no canvases.' },
+};
+
+/* ----------------------------------------------------------- RECEIPTS ---- */
+/* What each living thing in the world is, the count it is drawn from, and the
+   file the count comes from. Keys are contract.js BINDING ids. Every figure is
+   computed here from the data, so a change in the data changes the sentence. */
+const fmt = (n) => n.toLocaleString('en-US');
+const days = github.days ?? [];
+const weeks = days.length ? Math.ceil((new Date(`${days[0].date}T00:00:00Z`).getUTCDay() + days.length) / 7) : 0;
+const contributions = days.reduce((n, d) => n + d.count, 0);
+const scene = (kind) => builds.flagships.find((f) => f.scene?.kind === kind);
+const ring = hero.carousel.slides.length;
+const crew = builds.building.crew.length;
+const wins = proofOfWork.wins.items.length;
+const SOURCE = { content: 'content.js', github: 'github.json' };
+
+const facts = {
+  orrery: () => ({ name: 'The Orrery', fact: `${ring} builds in orbit, one tick each`, source: SOURCE.content }),
+  wyrm: () => ({ name: 'The dragon', fact: `${weeks} weeks, ${fmt(contributions)} contributions`, source: SOURCE.github }),
+  giant: () => ({ name: 'The giant', fact: `${buildCount} builds: ${builds.flagships.length} moons, ${buildCount - builds.flagships.length} ring lights`, source: SOURCE.content }),
+  prism: () => {
+    const f = scene('prism');
+    return f && { name: f.title, fact: `${f.scene.cells} lights, each in its own cell: ${f.scene.cells} beta users`, source: SOURCE.content };
+  },
+  board: () => {
+    const f = scene('board');
+    return f && { name: f.title, fact: `${f.scene.moons} moons for ${f.scene.moons} games, ${f.scene.lights} lights for ${f.scene.lights} players`, source: SOURCE.content };
+  },
+  scan: () => {
+    const f = scene('scan');
+    return f && { name: f.title, fact: `${f.scene.placed} of ${f.scene.photos} photos placed, ${f.scene.decoysPlaced} of ${f.scene.decoys} decoys`, source: SOURCE.content };
+  },
+  school: () => {
+    const f = [...builds.items, ...builds.more.items].find((b) => b.id === 'fishmarket');
+    return f && { name: 'The school', fact: `${f.title}: seller agents in lanes that never cross`, source: SOURCE.content };
+  },
+  fires: () => ({ name: 'The camp', fact: `${crew} fires, one per agent`, source: SOURCE.content }),
+  stars: () => ({ name: 'The constellation', fact: `${wins} gold stars, one per win`, source: SOURCE.content }),
+  moon: () => ({ name: 'The moon', fact: `full when the last of ${value.claims.length} rows is read`, source: SOURCE.content }),
+};
+
+/* { name, fact, source } for a binding id, or null when the data has no such thing. */
+export function receiptParts(id) {
+  return facts[id]?.() ?? null;
+}
+
+/* The same as one sentence: "The dragon · 53 weeks, 1,678 contributions · github.json". */
+export function receipts(id) {
+  const r = receiptParts(id);
+  return r ? `${r.name} · ${r.fact} · ${r.source}` : '';
 }

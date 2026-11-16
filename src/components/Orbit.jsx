@@ -4,6 +4,7 @@ import { useReducedMotion } from '../hooks/useMediaQuery';
 import Badge from './Badge';
 import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from './Icons';
 import { entryState, onEntry } from '../shell/entryState';
+import { registerBinding } from '../kit/bindings';
 
 /* "What I've built": the orbit ring. Eleven glass cards on an elliptical CSS 3D
    ring around the name. The front card is large and readable, the rest recede
@@ -258,6 +259,10 @@ export default function Orbit({ stageRef, centreRef }) {
       while (geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
       stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
       drawPlate();
+      // Where the plate is in the document, for its receipt (kit/bindings.js).
+      const box = stage.getBoundingClientRect();
+      geo.docX = box.left + box.width / 2;
+      geo.docY = box.top + window.scrollY + O;
     }
 
     function pose(now = performance.now()) {
@@ -609,6 +614,16 @@ export default function Orbit({ stageRef, centreRef }) {
         kick();
       }
     };
+    // The plate's receipt hangs off its outer rim, a step and a half round from the front.
+    const offBinding = registerBinding({
+      id: 'orrery',
+      project: () => {
+        if (!ringMode || geo.docY == null) return null;
+        const [x, y] = foot(STEP * 1.5, 1 + CFG.rim);
+        const at = { x: geo.docX + x, y: geo.docY - window.scrollY + y };
+        return { ...at, side: 'right', visible: at.y > 0 && at.y < window.innerHeight };
+      },
+    });
     const offEntry = onEntry(land);
     if (entryState() === 'pre') reasons.landing = true;
     else region.dataset.land = '';
@@ -725,6 +740,7 @@ export default function Orbit({ stageRef, centreRef }) {
       clearTimeout(liveT);
       clearTimeout(landT);
       offEntry();
+      offBinding();
       scene.removeEventListener('pointerdown', onDown);
       scene.removeEventListener('click', onClickCapture, true);
       scene.removeEventListener('dragstart', noDrag);
