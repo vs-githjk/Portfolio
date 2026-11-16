@@ -20,8 +20,8 @@ const tell = (id) => window.dispatchEvent(new CustomEvent(EV.focus, { detail: { 
    the cards in a row stay one height by construction. Without the script every
    dossier is simply open (the `.js` class is what folds them).
 
-   On a phone a plate is a row: a small thumbnail beside the name, the one-liner,
-   the first result, the links; its other results open with the dossier.
+   On a phone a plate is a row: a small thumbnail beside the name, the one-liner
+   and the links; its results open with the dossier.
 
    A plate tells the world which build has the reader's attention (world:focus). */
 export default function BuildCard({ item, anchor }) {
@@ -80,10 +80,12 @@ export default function BuildCard({ item, anchor }) {
               <Rich text={p} />
             </p>
           ))}
-          {(item.metrics || []).length > 1 && (
+          {/* On a phone the plate keeps no result line: every result opens here.
+              On a wide window the first one is on the plate, so it is not repeated. */}
+          {(item.metrics || []).length > 0 && (
             <ul className="plate-results dossier-results">
-              {item.metrics.slice(1).map((m) => (
-                <li key={m.label}>
+              {item.metrics.map((m, n) => (
+                <li key={m.label} data-first={n === 0 ? '' : undefined}>
                   <b>{m.value}</b> {m.label.replace(/\n/g, ' ')}
                 </li>
               ))}

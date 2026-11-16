@@ -1721,6 +1721,26 @@ html[data-holo='off'] .welcome-face {
   line-height: 1.65;
 }
 
+/* On a phone the outcomes come first and the story follows them: a recruiter
+   reads results before context, and Builds is a screen nearer. */
+@media (max-width: 760px) {
+  .xp-note {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .xp-note > p {
+    order: 2;
+    margin-top: 16px;
+    font-size: 15px;
+  }
+
+  .xp-note > .xp-wins {
+    order: 1;
+    margin-top: 0;
+  }
+}
+
 /* The outcomes: a short list of plain statements, each behind an accent tick.
    Not pills: three boxed pills under a paragraph read as clutter (Nov 12). */
 .xp-wins {

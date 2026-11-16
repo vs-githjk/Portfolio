@@ -48,6 +48,8 @@ export default function CompactRows({ more }) {
                 <span className="sr">{fill(more.readMoreSr, { title: c.title })}</span>
               </summary>
               <div className="fold-body">
+                {/* On a phone the row is its name and its links; the one-liner opens here. */}
+                <p className="text mrow-one-folded">{c.oneLiner}</p>
                 {c.role && <p className="role">{c.role}</p>}
                 {c.body.map((p) => (
                   <p className="text" key={p.slice(0, 24)}>

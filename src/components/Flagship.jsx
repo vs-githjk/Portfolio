@@ -76,8 +76,11 @@ export default function Flagship({ item, index }) {
             <span className="sr">{fill(builds.labels.storySr, { title: item.title })}</span>
           </summary>
           <div className="fold-body">
-            {/* On a phone the Now building box opens with the story (one copy shows at a time). */}
-            <div className="ch-now-folded">{now}</div>
+            {/* On a phone the role line and the Now building box open with the story (one copy shows at a time). */}
+            <div className="ch-now-folded">
+              <p className="role">{item.role}</p>
+              {now}
+            </div>
             {item.body.map((p) => (
               <p className="text" key={p.slice(0, 24)}>
                 <Rich text={p} />

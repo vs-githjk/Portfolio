@@ -996,15 +996,29 @@ html[data-world='on'] .deep-head::before {
   font-size: var(--fs-micro);
 }
 
-.dossier-results,
+.dossier-results [data-first],
+.mrow-one-folded,
 .ch-now-folded {
   display: none;
 }
 
+.dossier-results:not(:has(li:not([data-first]))) {
+  display: none;
+}
+
 @media (max-width: 560px) {
-  .dossier-results {
+  .dossier-results,
+  .dossier-results:not(:has(li:not([data-first]))) {
     display: grid;
     padding: 0;
+  }
+
+  .dossier-results [data-first] {
+    display: list-item;
+  }
+
+  .mrow-one-folded {
+    display: block;
   }
 
   .ch-now-folded {
@@ -1643,7 +1657,9 @@ html[data-world='on'] .deep-head::before {
     padding: 8px 0 0;
   }
 
-  .plate > .plate-results li:nth-child(n + 2) {
+  /* Builds ran to twelve phone screens: a plate keeps its name, its one-liner and
+     its links, and every result is one tap away in the dossier. */
+  .plate > .plate-results {
     display: none;
   }
 
@@ -1731,18 +1747,61 @@ html[data-world='on'] .deep-head::before {
     justify-content: flex-start;
   }
 
-  /* A flagship keeps one figure and its role line in sight; what is being built
-     now opens with the full story. */
-  .ch-tell > .now-box {
+  /* A flagship keeps its figures in sight; the role line and what is being built
+     now open with the full story. */
+  .ch-tell > .now-box,
+  .ch-tell > .role {
     display: none;
   }
 
   .ch-world {
-    --ch-window: clamp(150px, 21svh, 190px);
+    --ch-window: clamp(104px, 14svh, 124px);
   }
 
-  .depths-groups {
-    display: grid;
+  /* The chart of dots is a pointer's index (a dot names its build on hover): a
+     phone has the list itself one thumb away, so the chart stays off it. */
+  .depths {
+    display: none;
+  }
+
+  /* More builds is an index on a phone: place, name and kind, awards, the links.
+     The thumbnail and the one-liner open with Read more. */
+  .mrow {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 10px;
+  }
+
+  .mrow-thumb,
+  .mrow-one > p:not(.mrow-awards) {
+    display: none;
+  }
+
+  .mrow {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .mrow-num {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 5px 0 0;
+  }
+
+  .mrow-name {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .mrow > :not(.mrow-num, .mrow-name) {
+    grid-column: 1 / -1;
+  }
+
+  .mrow-one {
+    padding-top: 6px;
+  }
+
+  .mrow-one:not(:has(.mrow-awards)) {
+    display: none;
   }
 
   /* No hover on a phone, and a name wider than the gutter would widen the page. */
