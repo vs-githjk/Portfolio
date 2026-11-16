@@ -178,6 +178,7 @@ void main(){
   // The same bright line of surface the backdrop draws, so the cut has no stair.
   col = mix(col, uFoam, exp(-above / 2.0) * 0.8);
   col = 1.12 * col / (1.0 + 0.3 * col);
+  col = hush(col, c);
   col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.012;
   gl_FragColor = vec4(col, 1.0);
 }`;

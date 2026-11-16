@@ -611,6 +611,9 @@ export function createWorld(canvas, { days } = {}) {
     uShoreDoc: { value: 1e6 },
     uPitch: { value: 0 },
     uTanF: { value: tanF },
+    uColHalf: { value: 1e5 },
+    uVista: { value: new Vector2(-1e5, -1e5) },
+    uLmax: { value: 0.042 },
     uNight: { value: 0 },
     uDay: { value: 1 },
     uOrbit: { value: 0 },
@@ -927,6 +930,7 @@ export function createWorld(canvas, { days } = {}) {
   /* ---- Layout: sizes and the set pieces' homes, read from the page --------- */
   const home = { surf: 0, giant: 0, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, value: 0, valueEnd: 0, moonDoc: 0, contact: 0, foot: 0 };
   let journey = [];
+  let vistas = [];
   /* Choreography: the reading sections are quiet. While the middle of the screen
      is in (or near) one of them, the drifting things and the meteor are gone and
      only the snow (in the water) or the stars (over the land) are left. */
@@ -991,6 +995,11 @@ export function createWorld(canvas, { days } = {}) {
     colHalf = Math.min(600, w / 2) - pad;
     zone.uMid.value = (w / 2) * ratio;
     zone.uCol.value = phone ? 1e5 : colHalf * ratio;
+    stage.uColHalf.value = phone ? 1e5 : colHalf;
+    vistas = [...document.querySelectorAll('.vista')].map((el) => {
+      const r = el.getBoundingClientRect();
+      return [r.top + window.scrollY, r.top + window.scrollY + r.height];
+    });
     const H = document.documentElement.scrollHeight;
     quiet = QUIET.map((sel) => rect(sel))
       .filter(Boolean)
@@ -1114,6 +1123,16 @@ export function createWorld(canvas, { days } = {}) {
     stage.uNight.value = night;
     stage.uOrbit.value = orbit;
     stage.uBreak.value = dawn.now;
+    // The vista in the window, if any: the one place the world is not hushed.
+    let open = 0;
+    stage.uVista.value.set(-1e5, -1e5);
+    for (const [a, b] of vistas) {
+      const on = Math.min(b, scroll + h) - Math.max(a, scroll);
+      if (on > open) {
+        open = on;
+        stage.uVista.value.set(a - scroll, b - scroll);
+      }
+    }
     // The land's camera: the horizon stands on the waterline while the camera comes
     // up through it, then the camera tilts toward the sky as the land sinks to a
     // low band for reading, and travels sideways as the page goes by.

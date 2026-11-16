@@ -25,6 +25,8 @@ uniform float uTime, uTop, uExit, uScroll, uSurfDoc, uShoreDoc;
 uniform float uPitch, uTanF, uNight, uDay, uOrbit, uBreak;
 uniform vec3 uSunDir, uSunI;
 uniform vec3 uDuskTop, uDuskMid, uDuskLow, uNightTop, uNightLow, uDawnLow, uSun, uStar;
+uniform float uColHalf, uLmax;
+uniform vec2 uVista;
 
 float h1(float n){ return fract(sin(n * 127.1) * 43758.5453); }
 float n1(float x){ float i = floor(x); float f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(h1(i), h1(i + 1.0), f); }
@@ -36,6 +38,18 @@ float n2(vec2 p){
 }
 /* A waterline seen in section: three slow swells, a few pixels tall. */
 float swell(float x, float t){ return sin(x * 0.011 + t * 0.6) * 6.5 + sin(x * 0.027 - t * 0.9) * 3.0 + sin(x * 0.0041 + t * 0.23) * 10.0 + sin(x * 0.061 + t * 1.7) * 1.2; }
+/* Where the page sets text (the column, while a reading section is in the window)
+   the world keeps its hue and its shapes but gives up its brightest values: any
+   luminance over uLmax is pulled most of the way back to it. The vistas, the
+   margins and the gaps keep everything. uVista is the top and bottom of the vista
+   in the window, if there is one; c is in CSS px from the window's top left. */
+vec3 hush(vec3 col, vec2 c){
+  float vista = smoothstep(uVista.x - 130.0, uVista.x, c.y) * (1.0 - smoothstep(uVista.y, uVista.y + 130.0, c.y));
+  float inCol = (1.0 - smoothstep(uColHalf - 30.0, uColHalf + 90.0, abs(c.x - 0.5 * uView.x))) * (1.0 - vista);
+  float L = dot(col, vec3(0.2126, 0.7152, 0.0722));
+  float k = L > uLmax ? (uLmax + (L - uLmax) * 0.22) / L : 1.0;
+  return col * mix(1.0, k, inCol);
+}
 /* The ray through a pixel of the window, for the land's camera: it looks down -z
    and is pitched up by uPitch, so the sky turns with the ground under it. */
 vec3 viewDir(vec2 c){
@@ -267,6 +281,7 @@ void main(){
     col += uFoam * (0.26 * exp(-dTop / 26.0) + 0.5 * exp(-dTop / 1.3));
     col += uFoam * (0.26 * exp(-dExit / 26.0) + 0.5 * exp(-dExit / 1.3)) * open;
   }
+  col = hush(col, c);
   // A little grain, so the long grades never band.
   col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.014;
   gl_FragColor = vec4(col, 1.0);
