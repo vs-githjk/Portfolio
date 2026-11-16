@@ -437,10 +437,11 @@ export const builds = {
       },
       // duelwise.app owner dashboard, Nov 12 2026, human only (his own games and
       // automated test runs excluded): 135 players and 853 matches Oct 30 to Nov 12;
+      // Vidyut, Nov 15 2026: 151 people have played it since launch.
       // Sable won 96% of 82 matches against people over the last 7 days.
       metrics: [
-        { value: '135', label: 'people played it in its\nfirst two weeks' },
-        { value: '853', label: 'matches against the agents,\nnot counting mine or test runs' },
+        { value: '151', label: 'people have played it since\nit launched on Oct 30' },
+        { value: '853', label: 'matches in its first two weeks,\nnot counting mine or test runs' },
       ],
       stack:
         'TypeScript · TanStack Start · React 19 · Tailwind 4 · ONNX Runtime Web · Web Workers · PyTorch · Drizzle · Postgres (Neon) · Better Auth · Sentry · Vercel',
@@ -1167,7 +1168,7 @@ export const receipts = {
     '1st overall': 'prismkeep',
     'GPA 3.84 of 4.00': 'psu',
     "Dean's List, 6 of 6 semesters": 'psu',
-    '135 people played 853 matches': 'duelwise-play',
+    '151 people have played': 'duelwise-play',
     'no strength number it has not earned': 'duelwise-gate',
   },
   items: {
@@ -1217,7 +1218,7 @@ export const receipts = {
     },
     'duelwise-play': {
       measures:
-        'People who played DuelWise and their matches against its agents, Oct 30 to Nov 12 2026, counted on the site’s owner dashboard. My own games and automated test runs are left out.',
+        'People who have played DuelWise since it launched on Oct 30 2026 (151 as of Nov 15), and 853 matches against its agents in the first two weeks, counted on the site’s owner dashboard. My own games and automated test runs are left out.',
       links: [
         { label: 'DuelWise, live', href: 'https://duelwise.app' },
         { label: 'Source on GitHub', href: 'https://github.com/vs-githjk/duelwise' },
@@ -1322,7 +1323,7 @@ export const value = {
       tag: 'Owner',
       claim: 'I run what I build, from the first commit to the first users.',
       receipts: [
-        'PrismAI and DuelWise are **live, and I run both**: PrismAI has beta users in isolated workspaces, and **135 people played 853 matches** against DuelWise’s agents in its first two weeks.',
+        'PrismAI and DuelWise are **live, and I run both**: PrismAI has beta users in isolated workspaces, and **151 people have played** against DuelWise’s agents since it launched on Oct 30.',
         'Vytal and MVR are **solo builds**: Vytal is live in a controlled beta, MVR is a working proof of concept.',
       ],
     },
