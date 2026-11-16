@@ -71,7 +71,7 @@ void main(){
 }`;
 
 const FRAG = /* glsl */ `
-uniform vec3 uKeyDir, uKey, uLowDir, uLow, uAmb, uHide, uBelly, uRim, uGlow, uFog, uWaterCol, uSigmaW;
+uniform vec3 uKeyDir, uKey, uLowDir, uLow, uAmb, uHide, uBelly, uWing, uRim, uGlow, uFog, uWaterCol, uSigmaW;
 uniform vec3 uEye[2];
 uniform vec3 uRib[22];
 uniform float uTime, uFogK, uCaust, uRimGain, uFire, uThin, uSplit, uPlates;
@@ -160,16 +160,16 @@ void main(){
   }
   float under_ = smoothstep(0.15, -0.55, vRN.y) * body;   // belly, throat and the underside of the tail
   float back = smoothstep(0.35, 0.95, vRN.y) * body;
-  vec3 albedo = mix(uHide * (0.7 + 0.6 * shade) * (1.0 - 0.35 * back), mix(uHide, uBelly, 0.5) * (0.85 + 0.3 * shade), under_);
-  albedo = mix(albedo, uBelly * 1.3, point * 0.7);
+  vec3 albedo = mix(uHide * (0.7 + 0.6 * shade) * (1.0 - 0.3 * back), uBelly * (0.72 + 0.4 * shade), under_);
+  albedo = mix(albedo, uBelly * 1.25, smoothstep(0.12, 0.5, point));
   albedo *= mix(1.0, 0.3, (1.0 - seam));
   // Wing skin: thinner and warmer between the fingers than on them, with veins.
   float vein = 1.0;
   #ifdef PLATES
     vein = mix(1.0, 0.82 + 0.18 * plates(vRest * 1.7 + 7.3).x, fine2(vRest));
   #endif
-  albedo = mix(albedo, (uHide * 1.25 + uBelly * 0.14) * vein * (0.6 + 0.4 * web), skin);
-  albedo = mix(albedo, uHide * 0.45, rib * 0.9);
+  albedo = mix(albedo, uWing * vein * (0.6 + 0.4 * web), skin);
+  albedo = mix(albedo, uHide * 0.8, rib * 0.9);
 
   N = normalize(N + vRN.zxy * fold * 0.07);
   float ndl = dot(N, uKeyDir);
@@ -181,7 +181,7 @@ void main(){
   col += uKey * pow(max(dot(N, H), 0.0), 42.0) * 0.55 * seam * body * occ;
   // Light through the wing: the far side lit shows on the near side, most when the reader looks toward the light.
   float thru = max(-ndl, 0.0) * (0.45 + 0.55 * pow(max(dot(V, -uKeyDir), 0.0), 2.0));
-  col += uKey * uThin * mix(uBelly, uGlow, 0.55) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * (0.86 + 0.14 * vein) * (0.9 + 0.1 * fold) * (0.1 + 0.9 * web * web) * (1.0 - 0.85 * rib);
+  col += uKey * uThin * mix(uWing * 2.6, uGlow, 0.38) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * (0.86 + 0.14 * vein) * (0.9 + 0.1 * fold) * (0.1 + 0.9 * web * web) * (1.0 - 0.85 * rib);
   col += uKey * pow(max(dot(N, H), 0.0), 24.0) * 0.3 * rib * occ;
   // The rim: the place's own light on every edge turned away from the reader.
   float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
@@ -266,6 +266,7 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     uAmb: { value: new Vector3(0.1, 0.1, 0.1) },
     uHide: { value: new Vector3(0.1, 0.1, 0.1) },
     uBelly: { value: new Vector3(0.3, 0.3, 0.3) },
+    uWing: { value: new Vector3(0.4, 0.1, 0.1) },
     uRim: { value: new Vector3(1, 1, 1) },
     uGlow: { value: new Vector3(1, 0.6, 0.3) },
     uFog: { value: new Vector3() },
@@ -398,9 +399,9 @@ export async function createDragon({ url, tier = 'desktop', time, wet }) {
     if (pose.look) look(pose.look[0], pose.look[1]);
   }
 
-  /** p: { keyDir, key, lowDir, low, amb, hide, belly, rim, glow, fog (Vector3s or [r,g,b]), fogK, caust, rimGain, fire, thin, split } */
+  /** p: { keyDir, key, lowDir, low, amb, hide, belly, wing, rim, glow, fog (Vector3s or [r,g,b]), fogK, caust, rimGain, fire, thin, split } */
   function light(p) {
-    for (const k of ['keyDir', 'key', 'lowDir', 'low', 'amb', 'hide', 'belly', 'rim', 'glow', 'fog']) {
+    for (const k of ['keyDir', 'key', 'lowDir', 'low', 'amb', 'hide', 'belly', 'wing', 'rim', 'glow', 'fog']) {
       const v = p[k];
       if (!v) continue;
       const u = U['u' + k[0].toUpperCase() + k.slice(1)].value;

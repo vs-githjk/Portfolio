@@ -2,15 +2,14 @@
    draws with is named here as an "r, g, b" triple, the form the scene reads
    (lib/field.js `triple`). The realm accents they follow live in tokens.css. */
 :root {
-  /* The dragon is lit by the place it is in (src/world/dragonStations.js); these
-     are its own colours there: the hide, the paler belly and horn, and the fire
-     inside (eyes, the seams under the throat). Under water, then in the air. */
-  --dragon-sea-hide: 10, 46, 58;
-  --dragon-sea-belly: 72, 142, 144;
-  --dragon-sea-glow: 150, 240, 255;
-  --dragon-air-hide: 36, 23, 24;
-  --dragon-air-belly: 132, 78, 54;
-  --dragon-air-glow: 255, 140, 70;
+  /* The dragon is blue, yellow and red (Vidyut, Nov 16), lit by the place it is in
+     (src/world/dragonStations.js): a deep blue hide, yellow belly plates, horns and
+     claws, red wing skin, and the fire inside (eyes, the seams under the throat).
+     Its yellow is its own: --win stays the awards' gold. */
+  --dragon-hide: 16, 56, 156;
+  --dragon-belly: 226, 172, 52;
+  --dragon-wing: 150, 28, 24;
+  --dragon-glow: 255, 150, 60;
 }
 
 :root {

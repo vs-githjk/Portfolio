@@ -804,12 +804,10 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
      is in the air. Until it has arrived there is simply no dragon. */
   const overScene = new Scene();
   for (const [name, fallback] of [
-    ['dragon-sea-hide', [10, 44, 56]],
-    ['dragon-sea-belly', [70, 140, 142]],
-    ['dragon-sea-glow', [150, 240, 255]],
-    ['dragon-air-hide', [34, 22, 24]],
-    ['dragon-air-belly', [128, 76, 54]],
-    ['dragon-air-glow', [255, 140, 70]],
+    ['dragon-hide', [16, 56, 156]],
+    ['dragon-belly', [226, 172, 52]],
+    ['dragon-wing', [150, 28, 24]],
+    ['dragon-glow', [255, 150, 60]],
   ]) {
     C[name] = col(`--${name}`, fallback);
   }

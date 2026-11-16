@@ -24,9 +24,9 @@ const live = await createDragon({ url: q.has('lite') ? '/dragon/dragon-lite.glb'
 scene.add(live.object);
 const v = (r, g, b, k = 1) => new Vector3((r / 255) * k, (g / 255) * k, (b / 255) * k);
 const LIGHT = {
-  sea: { keyDir: [0.25, 0.9, 0.35], key: v(150, 232, 232, 0.95), lowDir: [0, -1, 0.2], low: v(15, 84, 96, 0.5), amb: v(15, 84, 96, 0.7), hide: v(12, 46, 58), belly: v(60, 128, 132), rim: v(150, 232, 232, 0.9), glow: v(150, 240, 255), fog: v(6, 40, 50), fogK: 0, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.5 },
-  dusk: { keyDir: [0.5, 0.22, -0.7], key: v(255, 226, 178, 1.5), lowDir: [-0.3, -0.8, 0.5], low: v(226, 120, 64, 0.4), amb: v(104, 52, 74, 0.95), hide: v(30, 20, 22), belly: v(120, 70, 50), rim: v(255, 190, 136), glow: v(255, 140, 70), fog: v(226, 120, 64), fogK: 0, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.72 },
-  night: { keyDir: [-0.5, 0.62, 0.6], key: v(246, 230, 210, 0.8), lowDir: [0.25, -0.85, 0.45], low: v(255, 150, 84, 0.34), amb: v(30, 22, 20, 2.6), hide: v(30, 20, 22), belly: v(120, 70, 50), rim: v(255, 150, 84, 0.8), glow: v(255, 140, 70), fog: v(30, 22, 20), fogK: 0, caust: 0, rimGain: 0.7, fire: 1.25, thin: 0.5 },
+  sea: { keyDir: [0.25, 0.9, 0.35], key: v(150, 232, 232, 0.95), lowDir: [0, -1, 0.2], low: v(15, 84, 96, 0.5), amb: v(15, 84, 96, 0.7), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(150, 232, 232, 0.9), glow: v(255, 150, 60), fog: v(6, 40, 50), fogK: 0, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.5 },
+  dusk: { keyDir: [0.5, 0.22, -0.7], key: v(255, 226, 178, 1.5), lowDir: [-0.3, -0.8, 0.5], low: v(226, 120, 64, 0.4), amb: v(104, 52, 74, 0.95), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(255, 190, 136), glow: v(255, 150, 60), fog: v(226, 120, 64), fogK: 0, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.72 },
+  night: { keyDir: [-0.5, 0.62, 0.6], key: v(246, 230, 210, 0.8), lowDir: [0.25, -0.85, 0.45], low: v(255, 150, 84, 0.34), amb: v(30, 22, 20, 2.6), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(255, 150, 84, 0.8), glow: v(255, 150, 60), fog: v(30, 22, 20), fogK: 0, caust: 0, rimGain: 0.7, fire: 1.25, thin: 0.5 },
 };
 LIGHT.dawn = { ...LIGHT.dusk, keyDir: [-0.62, 0.12, -0.6], amb: v(30, 22, 20, 1.7) };
 live.light(LIGHT[q.get('light')] ?? LIGHT.night);
