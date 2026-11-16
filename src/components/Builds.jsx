@@ -68,9 +68,11 @@ export default function Builds() {
                       <ol className="chart-dots">
                         {list.map((b) => (
                           <li key={b.id}>
-                            <a className="chart-dot" href={`#build-${b.id}`} data-win={b.awards.length > 0 ? '' : undefined}>
+                            <a className="chart-dot" href={`#build-${b.id}`} aria-label={b.title} data-win={b.awards.length > 0 ? '' : undefined}>
                               <i aria-hidden="true" />
-                              <span className="chart-tip">{b.title}</span>
+                              <span className="chart-tip" aria-hidden="true">
+                                {b.title}
+                              </span>
                             </a>
                           </li>
                         ))}
