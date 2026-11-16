@@ -706,10 +706,6 @@ html[data-travel='in'] .bg-world {
   stroke-linecap: round;
 }
 
-.nav-tool[data-tool='chart'] span {
-  display: none;
-}
-
 .nav-tool[data-tool='chart'] {
   justify-content: center;
   padding: 0;

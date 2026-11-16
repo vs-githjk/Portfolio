@@ -34,13 +34,12 @@ function Tools({ tab }) {
   };
   return (
     <div className="nav-tools">
-      <button className="nav-tool" data-tool="chart" type="button" tabIndex={tab} aria-haspopup="dialog" aria-keyshortcuts={shell.chart.key} onClick={flip('chart', true)}>
+      <button className="nav-tool" data-tool="chart" type="button" tabIndex={tab} aria-haspopup="dialog" aria-label={shell.chart.open} title={shell.chart.open} aria-keyshortcuts={shell.chart.key} onClick={flip('chart', true)}>
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
           <circle cx="10" cy="10" r="8.2" />
           <path d="M10 3.6 12 10l-2 6.4L8 10z" />
           <path d="M10 1.8v1.4M10 16.8v1.4M1.8 10h1.4M16.8 10h1.4" />
         </svg>
-        <span>{shell.chart.open}</span>
       </button>
       <button className="nav-tool" data-tool="receipts" type="button" tabIndex={tab} aria-pressed={receipts} aria-keyshortcuts={shell.receipts.key} onClick={flip('receipts')}>
         <i aria-hidden="true" />
