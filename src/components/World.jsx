@@ -27,7 +27,7 @@ import { EV } from '../kit/contract';
    The page talks to the world through the kit's events (src/kit/contract.js):
    - 'world:week' { index }: the dragon on the roost looks at that week's column
      of the commit graph for a moment.
-   - 'world:dawn': the sun comes over the limb at the foot and the dragon flies.
+   - 'world:dawn': the sun comes over the limb at the foot.
    - 'world:focus' { kind, id }: a win's star flares, a build's piece answers.
    - 'world:run' { state, step, gate }: the camp's lamp follows the run.
    - 'world:travel' { dir, phase }: the snow streaks along a hop.

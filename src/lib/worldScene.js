@@ -1080,14 +1080,12 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
     winStars.layout({ w, h });
     flagRects = lead.map((id) => anchorRect(`flag-${id}`));
     // The dragon's stations read the same page.
-    const sunX = w * (phone ? 0.2 : 0.17);
     stationEnv = {
       w,
       h,
       camZ,
       surf: home.surf,
       giant: { x: w * (phone ? 0.2 : 0.27), doc: home.giant + (phone ? 20 : 70), r: gr, k: gk },
-      sun: { x: sunX, doc: home.foot + 4 + (sunX * sunX) / (2 * hr), r: hr },
     };
     stations?.layout(stationEnv);
   }
@@ -1439,7 +1437,6 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
     setHue,
     breakDawn: () => {
       dawn.want = 1;
-      stations?.fly(time.value);
     },
     /** world:week { index }: the dragon on the roost looks at that week's column for a moment. */
     setWeek(index) {

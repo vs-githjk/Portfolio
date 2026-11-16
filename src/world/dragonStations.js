@@ -2,12 +2,13 @@ import { anchorRect, columnsOf } from './anchors';
 import { neighbourText } from './piece';
 import { MODEL } from './dragon';
 
-/* Where the dragon is, and what it is doing there. It has four stations and is
-   nowhere else: one lap round the giant under water, the breach at the shore,
-   the roost on the commit card (it sits there on watch), and the flight along the limb into the dawn.
-   Inside a station the scroll is the clock, with two exceptions that run on
-   time: the flight into the sun (once, when
-   the dawn is asked for). Between stations it is not drawn.
+/* Where the dragon is, and what it is doing there. It has three stations and is
+   nowhere else: one lap round the giant under water, the breach at the shore
+   with a long sweep across the low sun, and the roost on the commit card (it
+   sits there on watch). Inside a station the scroll is the clock; on the roost
+   it runs on time. Between stations it is not drawn. The page's last screen
+   (Contact and the limb) has no dragon: a pass there read as out of place
+   (Vidyut, Nov 16).
 
    Every place is written in window px from the middle of the window (y down)
    plus a depth, so it can be reasoned about against the page: each station is
@@ -41,14 +42,12 @@ function makePath(way) {
 
 export function createDragonStations({ live, phone, C }) {
   const env = { w: 1, h: 1 };
-  const st = { pass: null, breach: null, roost: null, flight: null };
+  const st = { pass: null, breach: null, roost: null };
   const cam = { x: 0, y: 0, z: 1 };
   const shown = { station: '', u: 0 };
   const a3 = [0, 0, 0];
   const b3 = [0, 0, 0];
   const fwd = [1, 0, 0];
-  let flightAt = -1; // seconds, when the dawn was asked for
-  let flown = false;
   let landAt = -1; // seconds, when the roost first came into the window
   let lookWeek = null; // { x (window px), until (seconds) }
   let lastScroll = 0;
@@ -60,7 +59,6 @@ export function createDragonStations({ live, phone, C }) {
     sea: { keyDir: [0.25, 0.9, 0.35], key: v('sea-ray', 0.95), lowDir: [0, -1, 0.2], low: v('sea-shallow', 0.5), amb: v('sea-shallow', 1.15), hide: v('dragon-hide', 1.25), belly: v('dragon-belly', 0.8), wing: v('dragon-wing', 0.9), rim: v('sea-ray', 0.9), glow: v('dragon-glow'), fogK: 0.0011, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.22, split: 0 },
     dusk: { keyDir: [0.5, 0.22, -0.7], key: v('sun', 1.5), lowDir: [-0.3, -0.8, 0.5], low: v('dusk-low', 0.4), amb: v('dusk-mid', 1.3), hide: v('dragon-hide', 1.6), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('earth-rim', 1), glow: v('dragon-glow'), fog: v('dusk-low', 0.82), fogK: 0.0009, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.42, split: 1 },
     night: { keyDir: [-0.5, 0.62, 0.6], key: v('moon-rim', 1.1), lowDir: [0.25, -0.85, 0.45], low: v('ember', 0.6), amb: v('night-low', 3.2), hide: v('dragon-hide'), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('ember', 1), glow: v('dragon-glow'), fog: v('night-low'), fogK: 0, caust: 0, rimGain: 1.1, fire: 1.4, thin: 0.22, split: 0 },
-    dawn: { keyDir: [-0.62, 0.12, -0.6], key: v('sun', 1.25), lowDir: [-0.3, -0.8, 0.5], low: v('earth-rim', 0.75), amb: v('night-low', 2.6), hide: v('dragon-hide'), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('earth-rim', 1), glow: v('dragon-glow'), fog: v('night-low', 1.4), fogK: 0.0004, caust: 0, rimGain: 1.3, fire: 1, thin: 0.42, split: 0 },
   };
   let lit = '';
   const light = (name) => {
@@ -71,7 +69,7 @@ export function createDragonStations({ live, phone, C }) {
 
   const boxesOf = (rect, band) => (rect ? neighbourText(rect.el, band ?? [rect.top - 40, rect.bottom + 40]) : []);
 
-  /* Read the page. `env` is { w, h, camZ, giant: { x, doc, r, k }, sun: { x, doc, r } }. */
+  /* Read the page. `env` is { w, h, camZ, giant: { x, doc, r, k } }. */
   function layout(e) {
     Object.assign(env, e);
     const { w, h } = env;
@@ -164,57 +162,6 @@ export function createDragonStations({ live, phone, C }) {
       }
       st.roost = { rect: roost, size, xFeet, ground: roost.bottom - 1, boxes: boxesOf(roost, [top, roost.bottom]), band, cols };
     }
-
-    // 4 The limb: a low pass over the horizon as the page ends, and the flight into the dawn.
-    const horizon = anchorRect('horizon');
-    st.flight = null;
-    if (horizon && env.sun) {
-      const contact = anchorRect('contact');
-      const size = phone ? Math.min(10, (w * 0.5) / MODEL.span) : Math.max(13, Math.min(19, w / 80));
-      const sx = env.sun.x;
-      const S = env.sun.doc; // the sun's place on the limb, document px
-      const limb = (x) => S - (sx * sx - x * x) / (2 * env.sun.r);
-      // x in px from the middle, y in document px, z in px
-      const dawnWay = phone
-        ? [
-            [w * 0.62, limb(w * 0.5) - 86, 0],
-            [w * 0.3, limb(w * 0.3) - 78, -20],
-            [0, limb(0) - 62, -80],
-            [sx + w * 0.16, S - 46, -260],
-            [sx + w * 0.05, S - 30, -700],
-            [sx, S - 16, -1500],
-          ]
-        : [
-            // in from the right, low along the limb under the column's last line, and into the sun
-            [w * 0.66, S - 84, 40],
-            [w * 0.5, S - 82, 20],
-            [w * 0.36, S - 74, -60],
-            [w * 0.26, S - 62, -260],
-            [sx + w * 0.05, S - 44, -900],
-            [sx, S - 14, -2000],
-          ];
-      const lowWay = [
-        [w * 0.5 + MODEL.length * size, limb(w * 0.5) - (phone ? 46 : 50), -60],
-        [w * 0.3, limb(w * 0.3) - (phone ? 44 : 48), -60],
-        [w * 0.1, limb(w * 0.1) - (phone ? 42 : 46), -90],
-        [-w * 0.12, limb(-w * 0.12) - (phone ? 40 : 44), -160],
-        [-w * 0.34, limb(-w * 0.34) - (phone ? 38 : 42), -300],
-        [-w * 0.5 - MODEL.length * size, limb(-w * 0.5) - 76, -520],
-      ];
-      const end = document.documentElement.scrollHeight - h;
-      const from = horizon.top - h * 0.92;
-      st.flight = {
-        rect: horizon,
-        size,
-        dawn: makePath(dawnWay),
-        low: makePath(lowWay),
-        clock: [from, Math.max(120, end - from)],
-        band: [phone ? horizon.top - 30 : horizon.top - 130, horizon.bottom],
-        boxes: boxesOf(contact, [horizon.top - 130, horizon.bottom]),
-        lowBand: [horizon.top - (phone ? 60 : 110), horizon.bottom],
-        lowBoxes: boxesOf(contact, [horizon.top - 110, horizon.bottom]),
-      };
-    }
   }
 
   function guard(s, f) {
@@ -249,48 +196,6 @@ export function createDragonStations({ live, phone, C }) {
     const ds = Math.abs(f.scroll - lastScroll);
     lastScroll = f.scroll;
     pace += (Math.min(1, ds / 14) - pace) * 0.08;
-
-    // 4 The limb.
-    if (st.flight) {
-      const s = st.flight;
-      const on = s.rect.top - f.scroll < h + 200 && s.rect.bottom - f.scroll > -200;
-      if (on && flightAt >= 0 && !flown) {
-        // Into the sun: once, on time.
-        const T = 6.4;
-        const u = still ? 0.42 : clamp01((f.t - flightAt) / T);
-        if (u >= 1) flown = true;
-        else {
-          const e = 1 - Math.pow(1 - u, 1.7);
-          s.dawn(e, a3);
-          const z = a3[2];
-          const x = a3[0];
-          const y = a3[1] - f.line;
-          heading(s.dawn, e, 0.02, (cam.z - z) / cam.z);
-          light('dawn');
-          guard(s, f);
-          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.1 : 1.15), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), look: [0, -0.55], clips: { fly: 1 }, lean: 1.2, beat: 0.62, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
-          shown.station = 'flight';
-          shown.u = u;
-          return 'flight';
-        }
-      }
-      if (on && flightAt < 0) {
-        // The low pass: the scroll is the clock.
-        const u = still ? 0.5 : (f.scroll - s.clock[0]) / s.clock[1];
-        if (u > 0.02 && u < 1.2) {
-          const e = clamp01(u) * 0.62 + 0.06;
-          s.low(e, a3);
-          const z = a3[2];
-          heading(s.low, e, 0.02, (cam.z - z) / cam.z);
-          light('dawn');
-          guard({ boxes: s.lowBoxes, band: s.lowBand }, f);
-          live.update({ ...base, x: a3[0], y: a3[1] - f.line + Math.sin(f.t * 0.7) * 5, z, size: s.size * 0.8, fwd: [...fwd], up: [0, 1, -0.3], bank: -0.1, look: [0, -0.55], clips: { fly: 1 }, lean: 1.25, beat: 0.5 + 0.15 * pace, show: sm((u - 0.02) / 0.1), phase: 0.5 });
-          shown.station = 'limb';
-          shown.u = u;
-          return 'limb';
-        }
-      }
-    }
 
     // 3 The roost.
     if (st.roost) {
@@ -382,10 +287,6 @@ export function createDragonStations({ live, phone, C }) {
     update,
     still: (f) => update(f, true),
     shown,
-    /** The dawn was asked for at time t (seconds): the flight plays once. */
-    fly(t) {
-      if (flightAt < 0) flightAt = t;
-    },
     /** A week of the graph was chosen (its column index), or none: it looks at it for a moment. */
     lookAt(index, t) {
       const c = st.roost?.cols;
