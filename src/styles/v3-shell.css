@@ -1303,10 +1303,14 @@ html[data-travel='in'] .bg-world {
     padding: 14px 16px 28px;
   }
 
-  .chart-map,
   .chart-group,
   .chart-switches button {
     grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  /* Wide enough that a waterline's name ends clear of the row numbers. */
+  .chart-map {
+    grid-template-columns: 100px minmax(0, 1fr);
   }
 
   .chart-switches button {
