@@ -226,23 +226,34 @@ html[data-world='on'] .sec::before {
   content: '';
   position: absolute;
   z-index: -1;
-  top: calc(var(--pad-top) - 56px);
-  bottom: -56px;
+  /* The fall-off is long and eased (five stops of a smooth step), and the corners
+     round off because the two ramps multiply: on bright water a short linear ramp
+     read as a dark box with soft edges. */
+  --feather: max(calc(var(--calm-bleed) * 2), 220px);
+  --feather-y: 200px;
+  --calm-x: linear-gradient(to right, transparent, rgb(0 0 0 / 0.1) calc(var(--feather) * 0.25), rgb(0 0 0 / 0.5) calc(var(--feather) * 0.5), rgb(0 0 0 / 0.9) calc(var(--feather) * 0.75), #000 var(--feather), #000 calc(100% - var(--feather)), rgb(0 0 0 / 0.9) calc(100% - var(--feather) * 0.75), rgb(0 0 0 / 0.5) calc(100% - var(--feather) * 0.5), rgb(0 0 0 / 0.1) calc(100% - var(--feather) * 0.25), transparent);
+  --calm-y: linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.1) calc(var(--feather-y) * 0.25), rgb(0 0 0 / 0.5) calc(var(--feather-y) * 0.5), rgb(0 0 0 / 0.9) calc(var(--feather-y) * 0.75), #000 var(--feather-y), #000 calc(100% - var(--feather-y)), rgb(0 0 0 / 0.9) calc(100% - var(--feather-y) * 0.75), rgb(0 0 0 / 0.5) calc(100% - var(--feather-y) * 0.5), rgb(0 0 0 / 0.1) calc(100% - var(--feather-y) * 0.25), transparent);
+  top: calc(var(--pad-top) - 56px - var(--feather-y) * 0.5);
+  bottom: calc(-56px - var(--feather-y) * 0.5);
   left: 50%;
-  width: min(100%, calc(var(--maxw) - 2 * var(--pad) + 2 * var(--calm-bleed)));
-  --feather: calc(var(--calm-bleed) * 2);
+  /* The half-way point of the ramp sits where the old ramp's did. */
+  width: min(100%, calc(var(--maxw) - 2 * var(--pad) + var(--feather)));
   transform: translateX(-50%);
   background: var(--ink);
   opacity: var(--world-calm);
   pointer-events: none;
-  mask-image:
-    linear-gradient(to right, transparent, var(--ink) var(--feather), var(--ink) calc(100% - var(--feather)), transparent),
-    linear-gradient(to bottom, transparent, var(--ink) 72px, var(--ink) calc(100% - 72px), transparent);
+  mask-image: var(--calm-x), var(--calm-y);
   mask-composite: intersect;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, var(--ink) var(--feather), var(--ink) calc(100% - var(--feather)), transparent),
-    linear-gradient(to bottom, transparent, var(--ink) 72px, var(--ink) calc(100% - 72px), transparent);
+  -webkit-mask-image: var(--calm-x), var(--calm-y);
   -webkit-mask-composite: source-in;
+}
+
+/* A phone has no margin to feather into: the ramp is short there. */
+@media (max-width: 760px) {
+  html[data-world='on'] .sec::before {
+    --feather: 28px;
+    width: 100%;
+  }
 }
 
 /* The crew's panel is its own ground. */

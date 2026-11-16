@@ -45,7 +45,7 @@ float swell(float x, float t){ return sin(x * 0.011 + t * 0.6) * 6.5 + sin(x * 0
    in the window, if there is one; c is in CSS px from the window's top left. */
 vec3 hush(vec3 col, vec2 c){
   float vista = smoothstep(uVista.x - 130.0, uVista.x, c.y) * (1.0 - smoothstep(uVista.y, uVista.y + 130.0, c.y));
-  float inCol = (1.0 - smoothstep(uColHalf - 30.0, uColHalf + 90.0, abs(c.x - 0.5 * uView.x))) * (1.0 - vista);
+  float inCol = (1.0 - smoothstep(uColHalf - 70.0, uColHalf + 190.0, abs(c.x - 0.5 * uView.x))) * (1.0 - vista); // a long ramp: a short one drew a box on bright water
   float L = dot(col, vec3(0.2126, 0.7152, 0.0722));
   float k = L > uLmax ? (uLmax + (L - uLmax) * 0.22) / L : 1.0;
   return col * mix(1.0, k, inCol);
