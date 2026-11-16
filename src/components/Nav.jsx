@@ -44,7 +44,7 @@ function Tools({ tab }) {
           {shell.chart.open}
         </span>
       </button>
-      <button className="nav-tool" data-tool="receipts" type="button" tabIndex={tab} aria-pressed={receipts} aria-keyshortcuts={shell.receipts.key} onClick={flip('receipts')}>
+      <button className="nav-tool" data-tool="receipts" type="button" tabIndex={tab} aria-label={shell.receipts.label} aria-pressed={receipts} aria-keyshortcuts={shell.receipts.key} onClick={flip('receipts')}>
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
           <path d="M5 2.6h10v14.8l-2.5-1.6-2.5 1.6-2.5-1.6L5 17.4z" />
           <path d="M7.8 7h4.4M7.8 10.2h4.4" />

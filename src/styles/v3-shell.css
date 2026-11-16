@@ -439,6 +439,15 @@ html[data-entry='pre']:not([data-holo='off']) .hero .actions {
   transform: translateY(8px);
 }
 
+/* Keyboard focus never sits on something invisible: Tab past Skip intro lands on
+   Email me, so the copy and the ring's bar show at once when focus is inside. */
+html[data-entry='pre']:not([data-holo='off']) .hero .centre:focus-within :is(.portrait, .who-text, .hero-name, .identity, .identity-sub, .cred, .actions),
+html[data-entry='pre']:not([data-holo='off']) .hero .orbit-bar:focus-within {
+  opacity: 1;
+  transform: none;
+  transition-duration: 0s;
+}
+
 /* The name sets: it arrives a little wide and closes to its true measure. A
    transform, so the block it sits in never moves while it does. */
 .hero .hero-name {
@@ -862,8 +871,14 @@ html[data-travel='in'] .bg-world {
     margin-left: auto;
   }
 
-  .nav-tool[data-tool='receipts'] {
+  /* Receipts stays on a phone, as its mark alone beside the Chart's. */
+  .nav-tool[data-tool='receipts'] .nav-tool-label {
     display: none;
+  }
+
+  .nav-tool[data-tool='receipts'] {
+    justify-content: center;
+    padding: 0;
   }
 }
 

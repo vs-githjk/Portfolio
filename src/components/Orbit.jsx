@@ -233,7 +233,9 @@ export default function Orbit({ stageRef, centreRef }) {
       const face = centre.querySelector('.portrait');
       if (who && face) {
         geo.copyL = face.offsetLeft - half;
-        geo.copyR = who.offsetLeft + who.offsetWidth - half;
+        // The right end is the widest line of the copy, not the name alone.
+        const right = Math.max(...Array.from(who.children, (c) => c.offsetLeft + c.offsetWidth));
+        geo.copyR = Math.max(who.offsetLeft + who.offsetWidth, right) - half;
       }
       const stageH = stage.clientHeight;
       geo.rz = Math.min(CFG.rz, Math.round(stageH * 0.46));

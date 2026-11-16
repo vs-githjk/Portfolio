@@ -414,7 +414,8 @@ html[data-at] .nav {
   --bed-4: var(--ink-2);
   --bed-grain: color-mix(in srgb, var(--text) 5%, transparent);
   --xp-rest: 0.78; /* a role the sounding weight has not reached yet: dimmer, still AA */
-  --win-bg: color-mix(in srgb, var(--win) 14%, var(--surface));
+  /* Gold is a line and a numeral, never a fill: the plate itself is ink. */
+  --win-bg: color-mix(in srgb, var(--win) 4%, var(--ink));
   --win-line: color-mix(in srgb, var(--win) 42%, transparent);
   --badge-bg: color-mix(in srgb, var(--acc) 20%, var(--surface));
   --badge-line: color-mix(in srgb, var(--acc-text) 42%, transparent);

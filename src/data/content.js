@@ -64,7 +64,7 @@ export const nav = {
    cue; the hero (his name, the ring) is one scroll or one click away. */
 export const welcome = {
   label: 'Welcome',
-  lines: ['Hey, I’m Vidyut.', 'Welcome to my portfolio.'],
+  lines: ['Hey, I’m Vidyut.', 'I build worlds. Reliable ones.'],
   cue: 'Scroll or click to see what happens next',
   /* What the ball of light says before it breaks into the page: a line of speech
      that types under it while it pulses. */
@@ -107,7 +107,9 @@ export const hero = {
      on a phone). "5× hackathon winner" = SF Startup Challenge, super{set} SF, Cal Hacks 13.0, LA Hacks,
      Bitcamp. Six first places = 1st overall (SF Startup Challenge) + Track 1 (super{set} SF) + Visa + Photon (LA Hacks AI
      Hackathon) + Real World + Data Science (Bitcamp). */
-  credential: 'Comcast · Sherlock AI · 5× hackathon winner · arXiv first author',
+  /* Written with \\u00a0 inside each item, so an item never splits across lines
+     (a line may break only after a dot). */
+  credential: 'Comcast\u00a0· Sherlock\u00a0AI\u00a0· 5×\u00a0hackathon\u00a0winner\u00a0· arXiv\u00a0first\u00a0author',
   locationNote: 'Penn State CS, graduating Dec 2026 · State College, PA',
   /* Buttons. Email is the one primary action. */
   actions: [
