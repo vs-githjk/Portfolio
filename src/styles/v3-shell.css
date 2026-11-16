@@ -247,9 +247,11 @@ html[data-holo='off'] .door-skip {
   display: none;
 }
 
-/* The ball's line stays on one line at any width, so it types left to right. */
+/* The ball's line stays on one line at any width, so it types left to right: the
+   type steps down until --n letters of the display face (about 0.7em each) fit
+   between the gutters. */
 .welcome-ball {
-  font-size: min(var(--fs-speak), 6vw);
+  font-size: min(var(--fs-speak), calc((100vw - 2 * var(--pad)) / (var(--n, 26) * 0.7)));
   white-space: nowrap;
 }
 

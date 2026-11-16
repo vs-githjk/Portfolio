@@ -59,8 +59,9 @@ export const loadLines = {
 /* ------------------------------------------------------------- PLACES ---- */
 /* The descent, top to bottom. `id` is the element the Chart links to; where the
    page has no id for it yet, `find` is how to reach the element (the Chart gives
-   it the id). `label` is the section's own name, from content.js. A `line` is a
-   waterline: drawn on the Chart, not a destination. */
+   it the id). `section` is the key the sections use for the same place when it
+   differs from the id. `label` is the section's own name, from content.js. A
+   `line` is a waterline: drawn on the Chart, not a destination. */
 export const places = [
   { id: 'welcome', name: 'The Threshold', label: welcome.label, realm: 'space' },
   { id: 'top', name: 'The Orrery', label: hero.headline, realm: 'space' },
@@ -68,7 +69,7 @@ export const places = [
   { id: 'work', name: 'The Sounding', label: experience.heading, realm: 'sea' },
   { id: 'builds', name: 'The Deep', label: builds.heading, realm: 'sea' },
   { line: 'shore', name: 'The Breach' },
-  { id: 'camp', find: '.crew', name: 'The Camp', label: builds.building.title, realm: 'earth' },
+  { id: 'camp', section: 'crew', find: '.crew', name: 'The Camp', label: builds.building.title, realm: 'earth' },
   { id: 'highlights', find: '.hl', name: 'The Cut', label: highlights.eyebrow, realm: 'earth' },
   { id: 'verify', name: 'The Ridge at night', label: proofOfWork.eyebrow, realm: 'earth' },
   { id: 'principles', name: 'The Bench', label: principles.heading, realm: 'earth' },
