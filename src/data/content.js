@@ -1670,7 +1670,21 @@ export const contact = {
   ],
   footerLeft: 'Vidyut Sriram · State College, PA',
   footerRight: 'Built from scratch · 2026',
-  footerTop: 'Back to top',
+  footerTop: 'Back to orbit',
+  /* The credits at the foot (Footer.jsx). {Crew} is the size of the crew, counted. */
+  credits: {
+    label: 'Credits',
+    cast: 'The crew · {Crew} agents, one job each',
+    world: 'In the world',
+    faces: {
+      label: 'The faces',
+      rows: [
+        { where: 'First screen', what: 'My portrait, drawn in light from one photograph' },
+        { where: 'Under my name', what: 'A silhouette on a beach at sunset' },
+        { where: 'Contact', what: 'The studio headshot' },
+      ],
+    },
+  },
   /* The colophon: how the site was made. `lighthouse` holds numbers measured on
      the production build on the date given, on Lighthouse's phone profile; leave
      it null rather than quote a number that was not measured that day. */

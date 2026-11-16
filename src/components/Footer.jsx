@@ -1,28 +1,87 @@
-import { contact } from '../data/content';
+import { builds, contact } from '../data/content';
+import { BINDING } from '../kit/contract';
+import { receipts } from '../data/world';
+import { fill, put } from './counts';
 
-const fill = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
-
-/* The foot of the page, and its colophon: how the site was made, what it is set
-   in, and what it measured (only when content.js holds numbers measured on the
-   production build; otherwise that sentence is left out). */
+/* The foot of the page ends like a film: credits. The cast is the crew, each
+   with their job (small portraits, in grey: their colours stay at the Camp).
+   Then whatever lives in the world, each with the fact it is drawn from (the
+   sentences come from data/world.js, one per binding in the kit contract; a
+   binding with no sentence yet is left out). Then the faces, what the page is
+   made with and set in, what it measured (only when content.js holds numbers
+   measured on the production build), and the way back up. Every count here is
+   computed. */
 export default function Footer() {
   const c = contact.colophon;
+  const k = contact.credits;
+  const crew = builds.building.crew;
+  const world = BINDING.map((id) => ({ id, line: receipts(id) })).filter((w) => w.line);
   return (
     <footer className="foot" data-realm="earth">
       <div className="wrap">
-        <div className="colophon">
-          <h2 className="eyebrow">{c.label}</h2>
-          <p>
-            {c.made} {c.type} {c.lighthouse ? fill(c.measured, c.lighthouse) : ''}
-          </p>
-          <a href={c.llms.href}>{c.llms.label}</a>
+        <div className="credits">
+          <h2 className="credits-title">{k.label}</h2>
+
+          <section className="credits-part" aria-labelledby="cr-cast">
+            <h3 className="eyebrow" id="cr-cast">
+              {fill(k.cast, { crew: crew.length })}
+            </h3>
+            <ul className="credits-cast">
+              {crew.map((m) => (
+                <li key={m.id}>
+                  <span className="credits-role">{m.job}</span>
+                  <img src={`/agents/${m.id}-148.webp`} alt="" width="48" height="48" loading="lazy" decoding="async" />
+                  <span className="credits-name">{m.name}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {world.length > 0 && (
+            <section className="credits-part" aria-labelledby="cr-world">
+              <h3 className="eyebrow" id="cr-world">
+                {k.world}
+              </h3>
+              <ul className="credits-lines">
+                {world.map((w) => (
+                  <li key={w.id}>{w.line}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <section className="credits-part" aria-labelledby="cr-faces">
+            <h3 className="eyebrow" id="cr-faces">
+              {k.faces.label}
+            </h3>
+            <dl className="credits-pairs">
+              {k.faces.rows.map((r) => (
+                <div key={r.where}>
+                  <dt className="credits-role">{r.where}</dt>
+                  <dd className="credits-name">{r.what}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <section className="credits-part credits-notes" aria-labelledby="cr-made">
+            <h3 className="eyebrow" id="cr-made">
+              {c.label}
+            </h3>
+            <p>
+              {c.made} {c.type}
+            </p>
+            {c.lighthouse && <p>{put(c.measured, c.lighthouse)}</p>}
+            <a href={c.llms.href}>{c.llms.label}</a>
+          </section>
+
+          <a className="credits-top" href="#top">
+            {contact.footerTop} <span aria-hidden="true">↑</span>
+          </a>
         </div>
         <div className="foot-line">
           <span>{contact.footerLeft}</span>
           <span>{contact.footerRight}</span>
-          <a className="foot-top" href="#top">
-            {contact.footerTop} <span aria-hidden="true">↑</span>
-          </a>
         </div>
       </div>
     </footer>

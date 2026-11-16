@@ -19,6 +19,9 @@ export const fill = (text, slots) =>
     return k === lower ? word(v) : Word(v);
   });
 
+/* The same, with every value written as it is (figures stay figures). */
+export const put = (text, slots) => String(text).replace(/\{(\w+)\}/g, (m, k) => (k in slots ? slots[k] : m));
+
 /* Every build in page order, with its group and its place in the list. */
 export const allBuilds = [
   ...builds.flagships.map((b) => ({ ...b, group: 'flagships' })),

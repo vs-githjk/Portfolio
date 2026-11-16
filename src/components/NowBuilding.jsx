@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { EV } from '../kit/contract';
 import CrewRun from './CrewRun';
 import Metrics from './Metrics';
+import PlaceName from './PlaceName';
 import Rich from './Rich';
 import Stack from './Stack';
 import { fill } from './counts';
@@ -141,6 +142,7 @@ export default function NowBuilding({ item }) {
           <span className="now">
             <i aria-hidden="true" />
             {item.eyebrow}
+            <PlaceName section="crew" />
           </span>
           <span className="eyebrow">{item.when}</span>
         </div>

@@ -1,5 +1,6 @@
 import { experience } from '../data/content';
 import Rich from './Rich';
+import PlaceName from './PlaceName';
 
 /* Time as depth. The roles hang off a sounding line that runs down the left of
    the section; its marks are the real dates of each role and nothing else. A
@@ -12,7 +13,10 @@ export default function Experience() {
     <section className="sec work" id="work" data-realm="sea">
       <div className="wrap">
         <div className="sec-head reveal">
-          <span className="eyebrow">{experience.eyebrow}</span>
+          <span className="eyebrow">
+            {experience.eyebrow}
+            <PlaceName section="work" />
+          </span>
           <h2>{experience.heading}</h2>
         </div>
         <div className="xp">

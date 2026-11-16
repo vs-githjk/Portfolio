@@ -4184,38 +4184,6 @@ a.plaque:hover::after {
   gap: 22px;
 }
 
-.colophon {
-  display: grid;
-  grid-template-columns: 178px minmax(0, 1fr);
-  gap: 8px clamp(28px, 4vw, 56px);
-  align-items: baseline;
-}
-
-.colophon p {
-  max-width: 78ch;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--text-2);
-}
-
-.colophon a {
-  grid-column: 2;
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  margin-block: -8px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--link);
-}
-
-.colophon a:hover {
-  color: var(--text);
-}
-
 .foot-line {
   display: flex;
   align-items: center;
@@ -4229,29 +4197,6 @@ a.plaque:hover::after {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-3);
-}
-
-.foot-top {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  margin-block: -12px;
-  color: var(--link);
-}
-
-.foot-top:hover {
-  color: var(--text);
-}
-
-@media (max-width: 760px) {
-  .colophon {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .colophon a {
-    grid-column: 1;
-  }
 }
 
 /* ============================== CUT CORNERS ================================ */
