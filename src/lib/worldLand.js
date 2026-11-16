@@ -80,7 +80,7 @@ void main(){
    normal by the slope of two layers of noise; sand ripples on low gentle ground only, fading
    before their period nears a pixel; rock with strata and streaks down the fall line; scrub on
    the gentler ground; snow above the line where the ground can hold it, lower in the gullies; a
-   worn path and turf; the camp's tints (cloth, rock, banner, canvas, pine, grass); sun, rim and glitter; the moon and the lamp; the inlet (a
+   worn path and turf; the camp's tints (cloth, rock, banner, canvas, pine); sun, rim and glitter; the moon and the lamp; the inlet (a
    mirror for the sky, the bed near the shore, the sun's road, surf); wet sand; the air
    (extinction by distance, low mist, the sky's colour along the ray); the sea's surface seen at
    a glance at the beach with its foam; the bright line of the surface; tone, hush and grain. */
@@ -145,7 +145,7 @@ void main(){
   wet = smoothstep(0.0, 2.5, vDeep);
 #endif
 #ifdef CAMP
-  albedo = vTint < 0.5 ? uSandShade * 1.3 : vTint < 1.5 ? mix(uRock, uSand, 0.35) * (0.9 + 0.4 * h2(floor(vW.xz * 0.2))) : vTint < 2.5 ? uAccent * 0.8 : vTint < 3.5 ? uSand * 0.9 + 0.12 : vTint < 4.5 ? uGreen * (0.7 + 0.4 * h2(floor(vW.xz * 0.05))) : uGreen * (0.9 + 0.5 * h2(floor(vW.xz * 0.7)));
+  albedo = vTint < 0.5 ? uSandShade * 1.3 : vTint < 1.5 ? mix(uRock, uSand, 0.35) * (0.9 + 0.4 * h2(floor(vW.xz * 0.2))) : vTint < 2.5 ? uAccent * 0.8 : vTint < 3.5 ? uSand * 0.9 + 0.12 : uGreen * (0.7 + 0.4 * h2(floor(vW.xz * 0.05)));
 #endif
   float ndl = dot(N, uSunDir);
   float sh = smoothstep(vHor - 0.025, vHor + 0.045, uSunTan);
@@ -506,7 +506,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
   const cn = [];
   const ce = [];
   const ct = [];
-  let tint = 0; // 0 dark cloth, 1 rock, 2 banner, 3 pale canvas, 4 pine, 5 grass
+  let tint = 0; // 0 dark cloth, 1 rock, 2 banner, 3 pale canvas, 4 pine
   const tri = (a, b, c, e) => {
     const ux = b[0] - a[0];
     const uy = b[1] - a[1];
@@ -616,9 +616,12 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     if (Math.hypot(x - CAMP.x, z - CAMP.z) < 30 || z > -60) continue;
     rock(x, z, 2.5 + rnd() * rnd() * 11);
   }
-  /* Greenery (Vidyut, Nov 16): stands of pine on the lower slopes and round the bay,
-     grass in tufts by the camp and along the near shore. All of it is in this one
-     mesh with the camp, so it costs no draw call of its own. */
+  /* Greenery (Vidyut, Nov 16): stands of pine on the foothills and the lower
+     slopes, and nowhere else. The near shore, the beach and the camp's ground
+     are bare: tufts of grass and small pines there read as sharp spikes on a
+     desert, not as plants. The shore's green is the turf tint in the ground's
+     own shader. The pines are in this one mesh with the camp, so they cost no
+     draw call of their own. */
   tint = 4;
   const pine = (x, z, tall) => {
     const y = ground(x, z) - 1;
@@ -646,30 +649,14 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     const x = (rnd() - 0.5) * (900 + back * 1.5);
     const z = -back;
     const y = ground(x, z);
-    if (y < 16 || y > 330 || slopeAt(x, z) > 0.75) continue;
-    if (Math.hypot(x - CAMP.x, z - CAMP.z) < 230) continue; // the camp stands in the open
+    if (y < 44 || y > 330 || slopeAt(x, z) > 0.75) continue; // on the slopes, never down on the beach
+    if (Math.min(ground(x + 70, z), ground(x - 70, z), ground(x, z + 70), ground(x, z - 70)) < 14) continue; // and not at the water's edge
+    if (Math.hypot(x - CAMP.x, z - CAMP.z) < 320) continue; // the camp stands in the open
     if (back < 780 && Math.abs(x - CAMP.x - 60) < 520 - 0.35 * back) continue; // and nothing grows between the reader and the camp
     // stands, not a scatter: they grow where a slow noise is high
     if (noise(x * 0.0035 + 40.0, z * 0.0035) + 0.35 * noise(x * 0.012, z * 0.012 + 7.0) < 0.78 - 0.1 * sm((y - 60) / 120)) continue;
     pine(x, z, (26 + rnd() * 26) * (1 - 0.3 * sm((y - 200) / 130)));
     pines++;
-  }
-  // Grass: tufts of three blades, thick near the camp and the path, thinning toward the water.
-  tint = 5;
-  for (let i = 0; i < (phone ? 500 : 1400); i++) {
-    const far = rnd();
-    const x = CAMP.x + (rnd() - 0.5) * (300 + 1100 * far);
-    const z = CAMP.z + 190 - 560 * far - rnd() * 60;
-    const y = ground(x, z);
-    if (y < 7 || z > -70 || slopeAt(x, z) > 0.6) continue;
-    for (let b = 0; b < 3; b++) {
-      const a = rnd() * 6.3;
-      const w2 = 0.9 + rnd() * 0.8;
-      const tall = 4 + rnd() * 6;
-      const cx = x + (rnd() - 0.5) * 5;
-      const cz = z + (rnd() - 0.5) * 5;
-      tri([cx - Math.cos(a) * w2, y - 0.3, cz - Math.sin(a) * w2], [cx + Math.cos(a) * w2, y - 0.3, cz + Math.sin(a) * w2], [cx + Math.sin(a) * 2.2, y + tall, cz - Math.cos(a) * 2.2], 0);
-    }
   }
   tint = 0;
   const campGeo = keep(new BufferGeometry());

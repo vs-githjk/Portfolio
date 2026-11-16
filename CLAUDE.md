@@ -204,12 +204,14 @@ first waterline, the sea ends at the shore, then dusk, night and dawn over a des
 - **The earth is a coast** (`lib/worldLand.js`; Vidyut, Nov 16: the flat buttes were "bland and
   boring", the camp had "two tents"). One heightfield, sea level at y = 0: the beach with surf
   where the reader comes out of the water, the camp on a rise (nine tents, banners, crates,
-  eight figures, loose rock, a worn path, grass in tufts), an inlet of the sea running away toward the sun,
+  eight figures, loose rock, a worn path), an inlet of the sea running away toward the sun,
   foothills, then two ranges of ridged mountains, the far one snow-capped. The ranges part
   where the inlet runs, so the sun sets down the water; on a narrow window the inlet narrows
-  so the mountains stay in view. Pine stands grow on the lower slopes (never between the reader and the
-  camp), and the near shore is green. Rock, scrub, snow and green are `--land-rock`,
-  `--land-scrub`, `--land-snow`, `--land-green`. The camp, the pines and the grass are one mesh. Do not flatten it back to dunes and mesas.
+  so the mountains stay in view. Pine stands grow on the foothills and lower slopes only (never between the reader and the
+  camp, never on the beach or at the water's edge), and the near shore carries a green turf tint in the
+  ground's shader. There are no grass tufts and no small pines by the water or the camp front: Vidyut, Nov 16,
+  "next to the ocean they don't look like trees, just sharp spikes; they look like desert". Rock, scrub, snow and green are `--land-rock`,
+  `--land-scrub`, `--land-snow`, `--land-green`. The camp and the pines are one mesh. Do not flatten it back to dunes and mesas.
 - One unit is one CSS pixel on the plane z = 0; depth is parallax. The scene reads the page:
   an element marked `data-world-anchor="<name>"` (names in `ANCHOR`, `data/world.js`) is
   where a piece lives, and layout runs again whenever the page height changes.
