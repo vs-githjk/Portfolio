@@ -1,79 +1,138 @@
-import { useEffect } from 'react';
-import { welcome } from '../data/content';
+import { useEffect, useRef } from 'react';
+import { hero, welcome } from '../data/content';
+import { entry as words, loadLines } from '../data/world';
 import { heroOrigin } from '../lib/origin';
+import { createEntry } from '../shell/entry';
+import LoadLine from '../shell/LoadLine';
 
-/* The welcome: the first screen. His face in light (Hologram.jsx draws it into
+/* The Threshold: the first screen. His face in light (Hologram.jsx draws it into
    the fixed background, on the empty box marked data-holo-anchor here), a
-   greeting, and a quiet cue. Nothing waits on it: the text is in the HTML, the
-   nav works, and one scroll or a click on the cue plays the face into the hero.
+   greeting, and the door. Nothing waits on it: the text is in the HTML, the nav
+   works, and Enter is a real link to the hero.
 
    His work comes to him like thoughts: at the sides of the window, never touching
-   the head, small soft holograms (welcome.hub: four builds, the crew, one fact)
-   phase in one after another, hold a moment, bob, and phase out as the next
-   appears, two or three in sight at a time. All CSS; they drift a few pixels with
-   the head's turn (--head, written by Hologram). Decoration, aria-hidden; a phone
-   keeps four small ones in the corners, clear of the face.
+   the head, small soft holograms (welcome.hub) phase in one after another. All
+   CSS; they drift a few pixels with the head's turn (--head, written by Hologram).
 
-   When the face has become the ball, the ball speaks: welcome.ball types in a
-   caption under it (Hologram.jsx drives it with --speak, --speak-on, --ball-y).
+   The Sill is the door: a hairline arc at the foot of the screen with one tick
+   per ring build (hero.carousel.slides.length), the top edge of the Orrery below
+   showing over the horizon. Enter stands on its crest. Skip intro sits bottom
+   right, the load line bottom left.
 
-   The greeting is plain text. Each line carries its length as --n so the
-   stylesheet can type it in steps while the face draws (html[data-holo='in']).
-   If the hologram has not said anything after a few seconds, the greeting lights
-   up on its own.
+   The entry (shell/entry.js) plays on Enter, and the reader's own scroll scrubs
+   the same beats both ways:
 
-   The cue is a real link to the hero. With scripts it glides there slowly enough
-   for the face to turn into the ball, the ball to say its line and burst on the way; any wheel, touch or
-   key hands the scroll straight back to the reader. */
-/* The glide, as [share of the time, share of the way]: down to the words, a slow
-   beat while they are read, then on into the hero. */
-const GLIDE_MS = 5600;
-const BEATS = [
+     0.00 s  the door presses in; the greeting and the thoughts fade
+     0.25 s  the light lets go: the portrait gathers to the seed, the ringed world
+     1.05 s  it speaks: welcome.ball types under it
+     2.05 s  the ring opens: a plate rim grows out of the ball, past the window's edges
+     2.85 s  inside: the plate settles, the cards land, the name sets (Orbit, CSS)
+
+   KNOTS maps that clock onto the scroll (share of the way to the hero); SPANS says
+   where on the way each thing happens and mirrors the numbers Hologram.jsx uses
+   for its own morph, line and burst. Skip (the link, Escape, or any wheel, touch
+   or key while the clock runs) lands the hero at rest at once. Under reduced
+   motion, in plain view and without WebGL there are no beats: the Sill is a still
+   arc and Enter is a plain anchor.
+
+   The greeting is plain text and the LCP element. Each line carries its length as
+   --n so the stylesheet can type it in steps while the face draws. */
+/* The portrait eases after the scroll (about a tenth of a second behind), so the
+   middle knots sit that much ahead of the beats they play. */
+const KNOTS = [
   [0, 0],
-  [0.42, 0.59],
-  [0.76, 0.69],
-  [1, 1],
+  [250, 0.04, 'in'],
+  [900, 0.34, 'linear'],
+  [975, 0.4, 'linear'],
+  [1950, 0.585, 'linear'],
+  [2850, 1],
 ];
+const SPANS = { face: [0.04, 0.34], open: [0.6, 0.98], land: 0.995, back: 0.6 };
 const LATE_MS = 3600;
 
+/* The Sill and the ring that opens are the same drawing as the Orrery's plate:
+   two rims, the outer RIM wider, one tick per ring build between them. */
+const N = hero.carousel.slides.length;
+const RIM = 1.06;
+const SILL = { cx: 500, cy: 118, rx: 452, ry: 96, arc: 62 };
+const sill = (grow, deg) => {
+  const a = (deg * Math.PI) / 180;
+  return [SILL.cx + SILL.rx * grow * Math.sin(a), SILL.cy - SILL.ry * grow * Math.cos(a)];
+};
+const fix = (v) => v.toFixed(1);
+const sillArc = (grow) => {
+  const [x0, y0] = sill(grow, -84);
+  const [x1, y1] = sill(grow, 84);
+  return `M${fix(x0)} ${fix(y0)}A${fix(SILL.rx * grow)} ${fix(SILL.ry * grow)} 0 0 1 ${fix(x1)} ${fix(y1)}`;
+};
+const sillTicks = Array.from({ length: N }, (_, k) => {
+  const deg = -SILL.arc + ((k + 0.5) / N) * 2 * SILL.arc;
+  return [sill(1, deg), sill(RIM, deg)];
+});
+const ringTicks = Array.from({ length: N }, (_, k) => {
+  const a = (k / N) * 2 * Math.PI;
+  return [100 * Math.sin(a), 100 * Math.cos(a), 100 * RIM * Math.sin(a), 100 * RIM * Math.cos(a)];
+});
+const PARALLELS = [-56, -30, 0, 30, 56];
+/* The ball's radius as a share of the window's short side, and how far under its
+   centre the line of speech sits, in radii: Hologram.jsx's own numbers, today's
+   and the face lane's. The ring that opens starts just off the ball's limb and
+   widens to RING.grow times that. */
+const BALL = { now: { r: 0.15, phone: 0.18, drop: 1.28 }, next: { r: 0.17, phone: 0.2, drop: 1.22 } };
+const RING = { from: 1.22, grow: 14 };
+
 export default function Welcome() {
+  const host = useRef(null);
+  const ctl = useRef(null);
+
   useEffect(() => {
     const root = document.documentElement;
     const late = setTimeout(() => {
       if (!root.dataset.holo) root.dataset.holo = 'late';
     }, LATE_MS);
-    return () => clearTimeout(late);
+    const rm = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const phone = window.matchMedia('(max-width: 760px)').matches;
+    const query = new URLSearchParams(window.location.search);
+    // The portrait contract. A portrait that follows the scroll by itself is left to
+    // it; one with no dissolve of its own asks for the fallback (<html data-face="css">):
+    // --face-out is then written on <html> and the stylesheet gathers the canvas to
+    // the seed. ?face=css is the same switch for a test.
+    if (query.get('face') === 'css') root.dataset.face = 'css';
+    ctl.current = createEntry({
+      origin: heroOrigin,
+      host: host.current,
+      knots: KNOTS,
+      spans: SPANS,
+      ring: (w, h) => {
+        // The ball as Hologram.jsx poses it. The face lane's portrait (it publishes
+        // --face-seed-y) draws a larger planet with no ring of its own.
+        const ball = root.style.getPropertyValue('--face-seed-y') ? BALL.next : BALL.now;
+        const globe = Math.min(w, h) * (phone ? ball.phone : ball.r);
+        return { reach: (globe * RING.from) / 100, grow: RING.grow, globe: globe / 50, up: globe * ball.drop };
+      },
+      driveFace: () => root.dataset.face === 'css',
+      still: () => rm.matches || root.dataset.holo === 'off' || root.dataset.plain != null,
+    });
+    return () => {
+      clearTimeout(late);
+      ctl.current.dispose();
+      ctl.current = null;
+    };
   }, []);
 
-  const glide = (e) => {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const plainClick = (e) => e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
+  const enter = (e) => {
+    if (plainClick(e) || !ctl.current) return;
+    if (ctl.current.enter()) e.preventDefault();
+  };
+  const skip = (e) => {
+    if (plainClick(e) || !ctl.current) return;
     e.preventDefault();
-    const from = window.scrollY;
-    const to = heroOrigin();
-    const t0 = performance.now();
-    let raf = 0;
-    const stop = () => {
-      cancelAnimationFrame(raf);
-      ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach((type) => window.removeEventListener(type, stop));
-    };
-    const step = (now) => {
-      const t = Math.min(1, (now - t0) / GLIDE_MS);
-      const n = BEATS.findIndex((beat) => t <= beat[0]) || 1;
-      const [ta, ka] = BEATS[n - 1];
-      const [tb, kb] = BEATS[n];
-      const u = (t - ta) / (tb - ta);
-      const k = ka + (kb - ka) * (u * u * (3 - 2 * u));
-      window.scrollTo(0, from + (to - from) * k);
-      if (t < 1) raf = requestAnimationFrame(step);
-      else stop();
-    };
-    ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach((type) => window.addEventListener(type, stop, { passive: true }));
-    raf = requestAnimationFrame(step);
+    ctl.current.skip();
   };
 
   return (
-    <section className="welcome" id="welcome" aria-label={welcome.label}>
+    <section className="welcome" id="welcome" aria-label={welcome.label} ref={host}>
       <div className="welcome-face" data-holo-anchor="" aria-hidden="true" />
       <div className="hub" aria-hidden="true">
         {welcome.hub.map((item, k) => (
@@ -104,13 +163,50 @@ export default function Welcome() {
           </span>
         ))}
       </p>
-      <p className="welcome-ball">
+      <p className="welcome-ball" style={{ '--n': welcome.ball.length }}>
         <span>{welcome.ball}</span>
       </p>
-      <a className="welcome-cue" href="#top" onClick={glide}>
-        <span>{welcome.cue}</span>
-        <i aria-hidden="true" />
-      </a>
+      <div className="door">
+        <a className="door-enter" href="#top" onClick={enter}>
+          <span>{words.enter}</span>
+          <svg viewBox="0 0 12 14" width="12" height="14" aria-hidden="true" focusable="false">
+            <path d="M6 1v11M1.5 7.5 6 12l4.5-4.5" />
+          </svg>
+        </a>
+        <span className="door-hint" aria-hidden="true">
+          {words.hint}
+        </span>
+      </div>
+      <div className="threshold">
+        <svg className="sill" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path className="sill-rim" d={sillArc(1)} />
+          <path className="sill-rim" data-rim="outer" d={sillArc(RIM)} />
+          {sillTicks.map(([a, b], k) => (
+            <line className="sill-tick" key={k} x1={fix(a[0])} y1={fix(a[1])} x2={fix(b[0])} y2={fix(b[1])} />
+          ))}
+        </svg>
+        <LoadLine lines={loadLines} />
+        <a className="door-skip" href="#top" onClick={skip}>
+          {words.skip}
+        </a>
+      </div>
+      <svg className="seed" aria-hidden="true" focusable="false">
+        <g className="seed-ball">
+          <circle className="seed-globe" r="50" />
+          {PARALLELS.map((lat) => {
+            const r = 50 * Math.cos((lat * Math.PI) / 180);
+            return <ellipse className="seed-line" key={lat} cy={fix(-50 * Math.sin((lat * Math.PI) / 180))} rx={fix(r)} ry={fix(r * 0.3)} />;
+          })}
+          <circle className="seed-core" r="9" />
+        </g>
+        <g className="seed-ring">
+          <circle className="seed-rim" r="100" />
+          <circle className="seed-rim" data-rim="outer" r={100 * RIM} />
+          {ringTicks.map((t, k) => (
+            <line className="seed-tick" key={k} x1={fix(t[0])} y1={fix(t[1])} x2={fix(t[2])} y2={fix(t[3])} />
+          ))}
+        </g>
+      </svg>
     </section>
   );
 }

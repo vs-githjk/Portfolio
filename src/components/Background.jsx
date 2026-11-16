@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '../hooks/useMediaQuery';
 import { beamFade, worldFade } from '../lib/beamFade';
 import { heroOrigin } from '../lib/origin';
+import { EV } from '../kit/contract';
+import { emit } from '../kit/bus';
 
 /* One fixed layer stack behind the page: the vertical light-beam field.
 
@@ -23,7 +25,12 @@ import { heroOrigin } from '../lib/origin';
    - Hologram (plain WebGL, a small chunk) is the face of light on the welcome
      screen above the hero. It mounts with the beams, after first paint. */
 const BackgroundField = lazy(() => import('./BackgroundField'));
-const World = lazy(() => import('./World'));
+const World = lazy(() =>
+  import('./World').then((m) => {
+    emit(EV.loaded, { stage: 'chunk' });
+    return m;
+  })
+);
 const Hologram = lazy(() => import('./Hologram'));
 
 export default function Background() {
@@ -32,7 +39,30 @@ export default function Background() {
   const [ready, setReady] = useState(false);
   const [deep, setDeep] = useState(false);
   const reduced = useReducedMotion();
-  const onReady = useCallback(() => setReady(true), []);
+  const onReady = useCallback(() => {
+    setReady(true);
+    emit(EV.loaded, { stage: 'beams' });
+  }, []);
+
+  // The load line follows the world's own state: its first drawn frame, or its absence.
+  useEffect(() => {
+    const html = document.documentElement;
+    const said = { on: false, off: false };
+    const read = () => {
+      const world = html.dataset.world;
+      if (world === 'on' && !said.on) {
+        said.on = true;
+        emit(EV.loaded, { stage: 'compiled' });
+      } else if (world === 'off' && !said.off) {
+        said.off = true;
+        emit(EV.loaded, { stage: 'plain' });
+      }
+    };
+    const mo = new MutationObserver(read);
+    mo.observe(html, { attributes: true, attributeFilter: ['data-world'] });
+    read();
+    return () => mo.disconnect();
+  }, []);
 
   useEffect(() => {
     if ('requestIdleCallback' in window) {

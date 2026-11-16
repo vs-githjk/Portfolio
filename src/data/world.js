@@ -28,7 +28,14 @@ export const entry = {
 };
 
 export const places = [];
-export const loadLines = [];
+/* The load line on the first screen: what is arriving, said as it arrives. Keys
+   are the stages of EV.loaded. */
+export const loadLines = {
+  beams: 'Lighting the stars',
+  chunk: 'Filling the sea',
+  compiled: 'Waking the world',
+  plain: 'Plain view',
+};
 export function receipts() {
   return '';
 }

@@ -7,8 +7,8 @@ import { heroOrigin } from '../lib/origin';
    while the reader scrolls down and comes back on the first scroll up, so it never
    covers the cards being read; CSS applies `data-hide` only below 960px.
 
-   The welcome is a pure first screen: until the reader is about half way through
-   the hand-off to the hero, the bar is out of sight (CSS hides it while <html>
+   The welcome is a pure first screen: until the reader is all but inside (the
+   hero is about to land), the bar is out of sight (CSS hides it while <html>
    has no data-nav). It is still in the DOM and in the tab order: focus inside it,
    the skip link included, brings it straight back. */
 export default function Nav() {
@@ -20,7 +20,7 @@ export default function Nav() {
     let last = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
-      const shown = y >= heroOrigin() * 0.5;
+      const shown = y >= heroOrigin() * 0.99;
       if (shown !== (root.dataset.nav === 'on')) {
         if (shown) root.dataset.nav = 'on';
         else delete root.dataset.nav;

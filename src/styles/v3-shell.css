@@ -7,12 +7,412 @@
      --plate-line    the plate's engraved hairline
      --plate-lit     the lit tick under the front card
      --plate-from    the scale the plate settles from when the reader arrives
+     --sill-h        how much of the Sill shows over the foot of the first screen
+     --sill-w        how wide the Sill is (it leaves the corners to Skip and the load line)
+     --edge-row      the height of the first screen's corner row (Skip, the load line)
+     --land-dur      how long one thing takes to arrive in the hero
+     --land-step     the gap between one row arriving and the next
+     --light         the colour of drawn light (the seed, the ring that opens)
+     --ring-lie      how flat the opening ring lies (its height over its width, the plate's own)
 */
 :root {
   --plate-rim: 0.06;
   --plate-line: color-mix(in srgb, var(--acc-2) 26%, var(--hair-2));
   --plate-lit: var(--acc);
   --plate-from: 1.3;
+  --sill-h: clamp(52px, 8.5svh, 80px);
+  --sill-w: min(74%, 1080px);
+  --edge-row: 0px;
+  --land-dur: 0.42s;
+  --land-step: 60ms;
+  --light: rgb(var(--holo-pale));
+  --ring-lie: 0.29;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --sill-w: 100%;
+    --edge-row: 44px;
+  }
+}
+
+/* =============================== THE THRESHOLD ============================ */
+/* The first screen's foot: the door (Enter, standing on the crest of the Sill),
+   the Sill itself, and the corner row (the load line bottom left, Skip intro
+   bottom right). They leave with the greeting (--out, written by Hologram.jsx). */
+.welcome {
+  padding-bottom: calc(var(--sill-h) + var(--edge-row) + var(--welcome-run));
+}
+
+.door {
+  position: relative;
+  display: inline-flex;
+  margin-top: clamp(10px, 2.2svh, 22px);
+  opacity: calc(1 - var(--out, 0));
+}
+
+.door-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 22px 0 24px;
+  border: 1px solid var(--plate-line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--ink) 60%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text);
+  transition:
+    border-color 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    transform 0.12s var(--ease);
+}
+
+.door-enter:hover {
+  border-color: var(--acc);
+  background: color-mix(in srgb, var(--acc-fill) 26%, var(--ink));
+}
+
+/* The press: 2px in, 120 ms. */
+.door-enter:active {
+  transform: translateY(2px);
+}
+
+.door-enter svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: door-nod 2.6s var(--ease) 3.2s infinite;
+}
+
+@keyframes door-nod {
+  0%,
+  55%,
+  100% {
+    transform: none;
+  }
+
+  28% {
+    transform: translateY(3px);
+  }
+}
+
+.door-hint {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-left: 14px;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+.threshold {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100svh - var(--nav-h));
+  min-height: var(--welcome-min);
+  pointer-events: none;
+  opacity: calc(1 - var(--out, 0));
+}
+
+/* The Sill: the far edge of the plate below, showing over the horizon. Same
+   drawing as the plate: two rims and a tick per ring build. */
+.sill {
+  position: absolute;
+  left: 50%;
+  bottom: var(--edge-row);
+  width: var(--sill-w);
+  height: var(--sill-h);
+  transform: translateX(-50%);
+  fill: none;
+  overflow: hidden;
+}
+
+.sill-rim,
+.sill-tick {
+  stroke: var(--plate-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.sill-rim[data-rim='outer'] {
+  opacity: 0.6;
+}
+
+.door-skip,
+.load-line {
+  position: absolute;
+  bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+.door-skip {
+  right: max(var(--pad), env(safe-area-inset-right, 0px));
+  padding-left: 12px;
+  pointer-events: auto;
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+.door-skip:hover {
+  color: var(--text);
+}
+
+/* The load line: a small light and one sentence about what is arriving. */
+.load-line {
+  left: max(var(--pad), env(safe-area-inset-left, 0px));
+  gap: 10px;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.load-line[data-stage]:not([data-stage='done']) {
+  opacity: 1;
+}
+
+.load-line i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--acc);
+  animation: load-pulse 1.2s var(--ease) infinite alternate;
+}
+
+.load-line span {
+  animation: load-in 0.3s var(--ease);
+}
+
+@keyframes load-pulse {
+  to {
+    opacity: 0.3;
+  }
+}
+
+@keyframes load-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* On Enter the first beat is on a clock, not on the scroll: the greeting, the
+   thoughts, the door and the corner row are gone in a quarter of a second. */
+.welcome[data-run] .welcome-say,
+.welcome[data-run] .hub,
+.welcome[data-run] .door,
+.welcome[data-run] .threshold {
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+
+/* No portrait to stand under (no WebGL): the screen closes up, the door stays. */
+html[data-holo='off'] .threshold {
+  position: relative;
+  height: calc(var(--sill-h) + var(--edge-row));
+  min-height: 0;
+  margin: 0 calc(var(--pad) * -1);
+  width: auto;
+  justify-self: stretch;
+}
+
+html[data-holo='off'] .welcome {
+  padding-bottom: 0;
+}
+
+/* With no face there is nobody for the thoughts to come to, and no intro to skip. */
+html[data-holo='off'] .hub,
+html[data-holo='off'] .door-skip {
+  display: none;
+}
+
+/* The ball's line stays on one line at any width, so it types left to right. */
+.welcome-ball {
+  font-size: min(var(--fs-speak), 6vw);
+  white-space: nowrap;
+}
+
+/* The ball's line is typed in whole letters (--n of them), not wiped. */
+@supports (width: round(down, 1px, 1px)) {
+  .welcome-ball span {
+    clip-path: inset(-10% calc(100% - round(down, var(--speak, 0) * 100%, 100% / var(--n, 24))) -10% -2%);
+  }
+}
+
+/* ---- The seed and the ring that opens ------------------------------------ */
+/* A point fixed in the window on the ball's centre: Hologram.jsx writes where the
+   ball's line of speech sits (--ball-y) and shell/entry.js how far above it the
+   centre is (--seed-up). Its ring is the plate's drawing, 100 units in radius: it
+   appears just off the ball's limb, flat, and widens past the window's edges
+   (--ring-on, --ring-s). The globe is drawn only for a portrait with no dissolve
+   of its own (data-face="css"): the canvas shrinks into it and it stands in for
+   the ball. */
+.seed {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: calc(var(--ball-y, 60svh) - var(--seed-up, 20svh));
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+}
+
+html:not(.js) .seed,
+html[data-holo='off'] .seed,
+html[data-plain] .seed {
+  display: none;
+}
+
+.seed-ring {
+  opacity: var(--ring-on, 0);
+  transform: scale(var(--ring-s, 1), calc(var(--ring-s, 1) * var(--ring-lie)));
+}
+
+.seed-rim,
+.seed-tick,
+.seed-line,
+.seed-globe {
+  stroke: var(--light);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.seed-rim[data-rim='outer'],
+.seed-line {
+  opacity: 0.55;
+}
+
+.seed-ball {
+  display: none;
+}
+
+html[data-face='css'] .seed-ball {
+  display: block;
+  opacity: calc(var(--face-out, 0) * var(--face-out, 0) * (1 - var(--ring-open, 0)));
+  transform: scale(var(--seed-s, 1));
+}
+
+.seed-core {
+  fill: rgb(var(--holo-hot));
+}
+
+/* The fallback of the portrait contract: the canvas gathers to the seed. */
+html[data-face='css'] .bg-holo {
+  transform-origin: 50% 42%;
+  transform: scale(calc(1 - 0.8 * var(--face-out, 0)));
+  filter: blur(calc(12px * var(--face-out, 0)));
+  opacity: calc(1 - var(--face-out, 0) * var(--face-out, 0));
+  transition: none;
+}
+
+/* After a skip the portrait's canvas stays dark until the reader scrolls back. */
+html[data-cut] .bg-holo {
+  opacity: 0;
+  transition: none;
+}
+
+/* ================================= ARRIVAL ================================ */
+/* While the first screen is up (data-entry="pre") the hero waits unlit; when the
+   reader comes through (data-entry="land") the name sets, wide to true, and the
+   rows under it follow one step apart. Without scripts, at rest and after a skip
+   there is no attribute and everything simply stands. */
+.hero .portrait,
+.hero .who-text,
+.hero .hero-name,
+.hero .identity,
+.hero .identity-sub,
+.hero .cred,
+.hero .actions,
+.hero .orbit-bar,
+.hero .drift {
+  transition:
+    opacity var(--land-dur) var(--ease) calc(var(--land-i, 0) * var(--land-step)),
+    transform var(--land-dur) var(--ease) calc(var(--land-i, 0) * var(--land-step));
+}
+
+.hero .who-text { --land-i: 1; }
+.hero .identity { --land-i: 2; }
+.hero .identity-sub { --land-i: 3; }
+.hero .cred { --land-i: 4; }
+.hero .actions { --land-i: 5; }
+.hero .orbit-bar,
+.hero .drift { --land-i: 6; }
+
+html[data-entry='pre']:not([data-holo='off']) .hero .portrait,
+html[data-entry='pre']:not([data-holo='off']) .hero .who-text,
+html[data-entry='pre']:not([data-holo='off']) .hero .hero-name,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity-sub,
+html[data-entry='pre']:not([data-holo='off']) .hero .cred,
+html[data-entry='pre']:not([data-holo='off']) .hero .actions,
+html[data-entry='pre']:not([data-holo='off']) .hero .orbit-bar,
+html[data-entry='pre']:not([data-holo='off']) .hero .drift {
+  opacity: 0;
+  transition-duration: 0.15s;
+  transition-delay: 0s;
+}
+
+html[data-entry='pre']:not([data-holo='off']) .hero .who-text,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity,
+html[data-entry='pre']:not([data-holo='off']) .hero .identity-sub,
+html[data-entry='pre']:not([data-holo='off']) .hero .cred,
+html[data-entry='pre']:not([data-holo='off']) .hero .actions {
+  transform: translateY(8px);
+}
+
+/* The name sets: it arrives a little wide and closes to its true measure. A
+   transform, so the block it sits in never moves while it does. */
+.hero .hero-name {
+  transform-origin: 0 50%;
+}
+
+html[data-entry='pre']:not([data-holo='off']) .hero .hero-name {
+  transform: scaleX(1.045);
+}
+
+html[data-entry='pre']:not([data-holo='off']) .hero .portrait {
+  transform: scale(0.92);
+}
+
+html[data-skip] .hero *,
+html[data-skip] .nav {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door-enter svg,
+  .load-line i,
+  .load-line span {
+    animation: none;
+  }
+
+  .seed,
+  .door-skip {
+    display: none;
+  }
 }
 
 /* ================================ THE ORRERY ============================== */
