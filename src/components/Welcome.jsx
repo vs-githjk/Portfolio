@@ -5,6 +5,7 @@ import { heroOrigin } from '../lib/origin';
 import { measureFace } from '../lib/face';
 import { createEntry } from '../shell/entry';
 import LoadLine from '../shell/LoadLine';
+import WelcomeScene from './WelcomeScene';
 import { EV } from '../kit/contract';
 import { emit } from '../kit/bus';
 
@@ -14,9 +15,12 @@ import { emit } from '../kit/bus';
    the text is in the HTML, the nav works, and Enter is a real link to the hero.
 
    One visual language. The small panels at the sides (welcome.hub: builds, the
-   crew, one fact) are projections of the same kind, drawn in CSS: the same blue
-   ramp, the same scan lines, the same plate and cone under each. They take turns,
-   never touch his picture and are decoration (aria-hidden).
+   crew, one gold fact) are projections of the same kind, drawn in CSS: the same
+   blue ramp, the same scan lines, the same plate and cone under each, at
+   different depths. Behind them is the room (WelcomeScene): a floor of light
+   round the plate, constellations, drifting glyphs, the limb of a far world.
+   Nothing touches his figure or sits on the greeting; all of it is decoration
+   (aria-hidden).
 
    The hand-off is direct: on Enter, or as the reader scrolls, the greeting and
    the panels fade, curtains of light close over the projection and leave one
@@ -60,7 +64,25 @@ export default function Welcome() {
     const place = () => measureFace();
     place();
     window.addEventListener('resize', place, { passive: true });
+    // The room has depth: the panels and the sky shift a few pixels against the
+    // pointer (--px, --py, -1 to 1, on the section). A mouse only, and never under
+    // reduced motion; one write a frame.
+    let raf = 0;
+    let at = null;
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const lean = (e) => {
+      at = e;
+      if (raf || rm.matches || window.scrollY > window.innerHeight) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        host.current?.style.setProperty('--px', ((at.clientX / window.innerWidth) * 2 - 1).toFixed(3));
+        host.current?.style.setProperty('--py', ((at.clientY / window.innerHeight) * 2 - 1).toFixed(3));
+      });
+    };
+    if (fine) window.addEventListener('pointermove', lean, { passive: true });
     return () => {
+      window.removeEventListener('pointermove', lean);
+      cancelAnimationFrame(raf);
       clearTimeout(late);
       window.removeEventListener('resize', place);
       ctl.current.dispose();
@@ -86,6 +108,7 @@ export default function Welcome() {
   return (
     <section className="welcome" id="welcome" aria-label={welcome.label} ref={host}>
       <div className="welcome-face" data-holo-anchor="" aria-hidden="true" />
+      <WelcomeScene />
       <div className="hub" aria-hidden="true">
         {welcome.hub.map((item, k) => (
           <figure className="hub-panel" data-at={item.at} data-kind={item.kind} style={{ '--k': k }} key={item.at}>

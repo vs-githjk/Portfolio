@@ -11,7 +11,9 @@
    measureFace() reads the box, keeps the result here and writes it on <html>
    (and clears both when there is no projection: <html data-holo="off">):
 
-     --face-rect-x, --face-rect-y, --face-rect-w, --face-rect-h   the picture's box, document pixels */
+     --face-rect-x, --face-rect-y, --face-rect-w, --face-rect-h   the picture's box, document pixels
+     --plate-x, --plate-y, --plate-w   the plate's centre and half width, document pixels (the
+                                       floor of light on the first screen is drawn round it) */
 export const FACE_MAX = 620; // the picture is never wider or taller than this, CSS pixels
 export const CONE = 0.05; // from the picture's foot down to the plate, in units of its shorter side: the figure stands on it
 export const PLATE = 0.42; // the plate's half width, in the same units
@@ -23,7 +25,7 @@ export const face = {
   emit: null, // the plate: { x, y, w } its centre and half width, document pixels
 };
 
-const NAMES = ['--face-rect-x', '--face-rect-y', '--face-rect-w', '--face-rect-h'];
+const NAMES = ['--face-rect-x', '--face-rect-y', '--face-rect-w', '--face-rect-h', '--plate-x', '--plate-y', '--plate-w'];
 
 export function measureFace(anchor = document.querySelector('[data-holo-anchor]')) {
   if (!anchor) return null;
@@ -45,6 +47,6 @@ export function measureFace(anchor = document.querySelector('[data-holo-anchor]'
   const y = r.top + window.scrollY + (r.height - h - (CONE + FOOT) * base) / 2;
   face.rect = { x, y, w, h };
   face.emit = { x: x + w / 2, y: y + h + CONE * base, w: PLATE * base };
-  [x, y, w, h].forEach((v, k) => style.setProperty(NAMES[k], `${v.toFixed(1)}px`));
+  [x, y, w, h, face.emit.x, face.emit.y, face.emit.w].forEach((v, k) => style.setProperty(NAMES[k], `${v.toFixed(1)}px`));
   return face;
 }

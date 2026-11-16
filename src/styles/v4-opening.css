@@ -26,8 +26,9 @@
 }
 
 .hub-panel {
+  --w: calc(var(--hub-w) * var(--d, 1));
   position: absolute;
-  width: var(--hub-w);
+  width: var(--w);
   display: grid;
   justify-items: center;
   opacity: 0;
@@ -35,12 +36,16 @@
   animation-delay: calc(var(--k) * var(--think) / 6);
 }
 
-.hub-panel[data-at='l1'] { left: 9%; top: 9%; }
-.hub-panel[data-at='l2'] { left: 5%; top: 37%; --hub-w: clamp(84px, 8.4vw, 124px); }
-.hub-panel[data-at='l3'] { left: 11%; top: 60%; }
-.hub-panel[data-at='r1'] { right: 9%; top: 11%; }
-.hub-panel[data-at='r2'] { right: 6%; top: 38%; --hub-w: clamp(84px, 8.4vw, 124px); }
-.hub-panel[data-at='r3'] { right: 11%; top: 58%; }
+/* Seats, down each side, at three depths: --d is a panel's size (nearer is
+   larger), --lit how bright it is, --z how far it shifts against the pointer. */
+.hub-panel[data-at='l1'] { left: 19%; top: 7%; --d: 1; --lit: var(--hub-dim); --z: 16; }
+.hub-panel[data-at='l2'] { left: 4.5%; top: 17%; --d: 0.62; --lit: 0.6; --z: 6; }
+.hub-panel[data-at='l3'] { left: 11.5%; top: 41%; --d: 0.84; --lit: 0.8; --z: 11; }
+.hub-panel[data-at='l4'] { left: 3%; top: 63%; --d: 0.58; --lit: 0.55; --z: 5; }
+.hub-panel[data-at='r1'] { right: 18%; top: 9%; --d: 1; --lit: var(--hub-dim); --z: 16; }
+.hub-panel[data-at='r2'] { right: 5%; top: 23%; --d: 0.6; --lit: 0.82; --z: 7; }
+.hub-panel[data-at='r3'] { right: 11%; top: 44%; --d: 0.84; --lit: 0.8; --z: 11; }
+.hub-panel[data-at='r4'] { right: 4%; top: 64%; --d: 0.5; --lit: 0.55; --z: 5; }
 
 /* The pane. */
 .hub-pic {
@@ -50,7 +55,7 @@
   width: 100%;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-radius: calc(var(--hub-w) * 0.07);
+  border-radius: calc(var(--w) * 0.07);
   background: rgb(var(--holo-deep));
   box-shadow:
     -1.5px 0 0 rgba(var(--holo-fringe-r), 0.5),
@@ -104,14 +109,31 @@
   z-index: 2;
   font-family: var(--font-read);
   font-weight: 400;
-  font-size: calc(var(--hub-w) * 0.46);
+  font-size: calc(var(--w) * 0.46);
   line-height: 1;
   color: rgb(var(--holo-hot));
   text-shadow: 0 0 18px rgba(var(--holo-pale), 0.7);
 }
 
+/* The one gold plate: an award. */
 .hub-panel[data-kind='fact'] .hub-pic {
-  background: radial-gradient(closest-side, rgba(var(--holo-deep), 0.85), rgba(var(--holo-deep), 0.34));
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--win) 46%, transparent), color-mix(in srgb, var(--win) 14%, transparent));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--win) 70%, transparent),
+    0 0 26px color-mix(in srgb, var(--win) 26%, transparent);
+}
+
+.hub-panel[data-kind='fact'] .hub-pic::before {
+  content: none;
+}
+
+.hub-panel[data-kind='fact'] .hub-pic b {
+  color: var(--win);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--win) 60%, transparent);
+}
+
+.hub-panel[data-kind='fact'] figcaption {
+  color: var(--win);
 }
 
 /* Scan lines, and the band of light that rolls up. */
@@ -148,8 +170,8 @@
 .hub-cone {
   position: relative;
   width: 100%;
-  height: calc(var(--hub-w) * 0.15);
-  margin-bottom: calc(var(--hub-w) * 0.06 + 8px);
+  height: calc(var(--w) * 0.15);
+  margin-bottom: calc(var(--w) * 0.06 + 8px);
 }
 
 .hub-cone::before {
@@ -180,7 +202,8 @@
 
 .hub-panel figcaption {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: clamp(9px, calc(var(--w) * 0.07), 11px);
+  white-space: nowrap;
   font-weight: 500;
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
@@ -276,12 +299,15 @@ html[data-holo='off'] .hub {
 @media (max-width: 760px) {
   .hub .hub-panel[data-at] {
     --hub-w: 92px;
+    --d: 1;
     top: calc(var(--face-rect-y, 150px) - var(--nav-h) - 10px);
     transform: translateY(-100%);
   }
 
   .hub-panel[data-at='l2'],
-  .hub-panel[data-at='r2'] {
+  .hub-panel[data-at='r2'],
+  .hub-panel[data-at='l4'],
+  .hub-panel[data-at='r4'] {
     display: none;
   }
 
@@ -299,13 +325,241 @@ html[data-holo='off'] .hub {
     animation: none;
   }
 
-  .hub-panel:nth-child(-n + 3) {
-    opacity: var(--hub-dim);
+  .hub-panel {
+    opacity: var(--lit, var(--hub-dim));
   }
 
   html[data-holo='in'] .hub {
     animation: none;
     opacity: 1;
+  }
+}
+
+/* A wide window: every panel is lit at once. Each is scanned in once, one after
+   another, then floats a little on its own clock, and the whole room has depth:
+   a panel shifts against the pointer by its --z (Welcome.jsx writes --px, --py). */
+@media (min-width: 761px) {
+  .hub-panel {
+    transform: translate(calc(var(--px, 0) * var(--z, 0) * -1px), calc(var(--py, 0) * var(--z, 0) * -0.6px));
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
+
+@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
+  .hub-panel {
+    animation:
+      hub-arrive 0.7s var(--ease) calc(0.2s + var(--k) * 0.16s) both,
+      hub-float calc(7s + var(--k) * 0.9s) ease-in-out calc(var(--k) * -1.3s) infinite;
+  }
+
+  .hub-pic {
+    animation: hub-scan-once 0.8s linear calc(0.2s + var(--k) * 0.16s) both;
+  }
+}
+
+@keyframes hub-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: var(--lit, var(--hub-dim));
+  }
+}
+
+@keyframes hub-float {
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@keyframes hub-scan-once {
+  0% {
+    clip-path: inset(100% -4px 0 -4px);
+    filter: brightness(1.7);
+  }
+  70% {
+    clip-path: inset(0 -4px 0 -4px);
+    filter: brightness(1.25);
+  }
+  100% {
+    clip-path: inset(0 -4px 0 -4px);
+    filter: none;
+  }
+}
+
+/* A phone under reduced motion: one still panel in each corner. */
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .hub-panel[data-at='l3'],
+  .hub-panel[data-at='r3'] {
+    display: none;
+  }
+}
+
+/* ================================== THE ROOM =============================== */
+/* WelcomeScene.jsx: the observatory behind the first screen. Decoration, in the
+   hologram's blue: a floor of light round the plate, constellations and drifting
+   glyphs at the sides, the limb of a far world low in a corner. It leaves with
+   the greeting (--out) and is not there when the hologram is not. */
+.obs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100svh - var(--nav-h));
+  min-height: var(--welcome-min);
+  overflow: clip;
+  pointer-events: none;
+  opacity: calc(1 - var(--out, 0));
+}
+
+html.js:not([data-holo]) .obs > * {
+  opacity: 0;
+}
+
+.obs > * {
+  transition: opacity 1.2s var(--ease);
+}
+
+html[data-holo='off'] .obs,
+html[data-plain] .obs,
+.welcome[data-run] .obs {
+  display: none;
+}
+
+.obs-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  transform: translate(calc(var(--px, 0) * -5px), calc(var(--py, 0) * -3px));
+  transition:
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 1.2s var(--ease);
+}
+
+.obs-con path {
+  stroke: rgba(var(--holo-pale), 0.2);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.obs-con circle {
+  fill: rgba(var(--holo-hot), 0.85);
+}
+
+.obs-con {
+  animation: obs-twinkle 7s ease-in-out calc(var(--k) * -1.9s) infinite;
+}
+
+@keyframes obs-twinkle {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.obs-glyph {
+  stroke: rgba(var(--holo-pale), 0.5);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  animation: obs-drift 16s linear calc(var(--k) * -1.37s) infinite;
+}
+
+@keyframes obs-drift {
+  0% {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  18%,
+  78% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-46px);
+  }
+}
+
+/* The floor: centred on the plate and sized from it, lying flat. It fades out
+   sideways and before it reaches the greeting under the plate. */
+.obs-floor {
+  position: absolute;
+  left: var(--plate-x, -9999px);
+  top: calc(var(--plate-y, 0px) - var(--nav-h));
+  width: calc(var(--plate-w, 100px) * 9.6);
+  aspect-ratio: 5 / 1;
+  transform: translate(-50%, -50%);
+  fill: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 4%, #000 30%, #000 50%, transparent 68%), radial-gradient(closest-side, #000 45%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent 4%, #000 30%, #000 50%, transparent 68%), radial-gradient(closest-side, #000 45%, transparent 100%);
+  mask-composite: intersect;
+}
+
+.obs-ring {
+  stroke: rgba(var(--holo-pale), 0.66);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: calc(0.75 - var(--k) * 0.12);
+  animation: obs-pulse 6s ease-in-out calc(var(--k) * 0.45s) infinite;
+}
+
+@keyframes obs-pulse {
+  12% {
+    opacity: 1;
+  }
+  30% {
+    opacity: calc(0.75 - var(--k) * 0.12);
+  }
+}
+
+.obs-spoke {
+  stroke: rgba(var(--holo-pale), 0.36);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.obs-rune {
+  stroke: rgba(var(--holo-pale), 0.7);
+  stroke-width: 1;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The far world: only its lit limb shows, low on the left. */
+.obs-limb {
+  position: absolute;
+  left: -30vw;
+  top: 74%;
+  width: 54vw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 64% 6%, rgba(var(--holo-deep), 0.26), rgba(var(--holo-deep), 0.07) 26%, rgba(var(--holo-ink), 0.5) 52%);
+  box-shadow:
+    inset 0 1.5px 0 rgba(var(--holo-pale), 0.4),
+    0 -6px 44px rgba(var(--holo-deep), 0.16);
+}
+
+/* A phone: the floor and two constellations; no limb, no drifting glyphs. */
+@media (max-width: 760px) {
+  .obs-limb,
+  .obs-glyph,
+  .obs-con[data-side='b'] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-con,
+  .obs-ring {
+    animation: none;
+  }
+
+  .obs-glyph {
+    animation: none;
+    opacity: 0.5;
   }
 }
 

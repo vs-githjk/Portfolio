@@ -178,6 +178,22 @@ void main() {
   cone *= open * plateOff;
   col += mix(uDeep, uPale, 0.45) * cone * (1.0 - alpha * 0.8);
 
+  // ---- motes: small lights rising in the beam, behind and beside the figure --------
+  float motes = 0.0;
+  for (int k = 0; k < 2; k++) {
+    float fk = float(k);
+    vec2 cell = vec2(26.0 + 14.0 * fk, 34.0 + 18.0 * fk) * px;
+    vec2 gp = vec2(p.x - e.x, p.y + t * (16.0 + 11.0 * fk) * px) / cell;
+    vec2 id = floor(gp);
+    float h1 = fract(sin(dot(id + fk * 17.0, vec2(127.1, 311.7))) * 43758.5453);
+    float h2 = fract(h1 * 57.31);
+    vec2 at = (fract(gp) - vec2(0.2 + 0.6 * h2, 0.5)) * cell;
+    motes += step(0.74, h1) * smoothstep((1.3 + 1.4 * h2) * px, 0.0, length(at)) * (0.45 + 0.55 * sin(t * (1.0 + h2) + h1 * 40.0) * 0.5 + 0.275);
+  }
+  float column = smoothstep(size.x * 1.05, size.x * 0.3, abs(p.x - e.x));
+  float rise = smoothstep(top - 30.0 * px, top + 0.5 * size.y, p.y) * smoothstep(e.y, e.y - 0.3 * size.y, p.y);
+  col += mix(uPale, uHot, 0.4) * motes * column * rise * coneUp * open * plateOff * (1.0 - alpha) * 0.8;
+
   // ---- the plate ---------------------------------------------------------------
   vec2 r = vec2(uEmit.z, uEmit.z * 0.17);
   vec2 pe = (p - e) / r;
