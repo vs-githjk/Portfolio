@@ -115,7 +115,7 @@ export default function Receipt({ id, children }) {
           aria-label={`${receipts.open} ${text}`.trim()}
           {...(native ? { popoverTarget: uid } : { onClick: toggle })}
         >
-          <svg viewBox="0 0 12 14" width="12" height="14" aria-hidden="true">
+          <svg viewBox="0 0 12 14" aria-hidden="true">
             <path d="M1.5 1h9v8.5L7 13H1.5z" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
             <path d="M4 4.6h4M4 7.4h2.6" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
           </svg>

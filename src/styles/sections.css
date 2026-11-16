@@ -1592,7 +1592,7 @@ html[data-holo='off'] .welcome-face {
 
 .xp {
   position: relative;
-  --bob: 26px; /* height of the weight */
+  --bob: 36px; /* height of the weight */
 }
 
 .xp-line {
@@ -1608,7 +1608,7 @@ html[data-holo='off'] .welcome-face {
 .xp-line::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: 0 -0.5px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--acc-2) 30%, transparent), var(--acc-2));
   transform-origin: top;
 }
@@ -1616,9 +1616,9 @@ html[data-holo='off'] .welcome-face {
 /* the weight: a plumb bob, point down */
 .xp-line i {
   position: absolute;
-  left: -6px;
+  left: -9px;
   top: calc(100% - var(--bob));
-  width: 13px;
+  width: 19px;
   height: var(--bob);
   background: var(--acc-2);
   clip-path: polygon(50% 0, 62% 0, 62% 18%, 100% 34%, 100% 52%, 50% 100%, 0 52%, 0 34%, 38% 18%, 38% 0);
@@ -1646,11 +1646,12 @@ html[data-holo='off'] .welcome-face {
   position: relative;
   padding-left: 30px;
   font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.6;
   white-space: pre-line;
   text-wrap: balance;
 }
@@ -1666,6 +1667,8 @@ html[data-holo='off'] .welcome-face {
 }
 
 .xp-when span {
+  font-size: var(--fs-micro);
+  font-weight: 400;
   color: var(--text-3);
 }
 
@@ -3244,8 +3247,8 @@ html[data-holo='off'] .welcome-face {
 .rcpt-p {
   font-weight: 600;
   color: var(--text);
-  text-decoration: underline dashed color-mix(in srgb, var(--acc) 85%, transparent);
-  text-decoration-thickness: 1px;
+  text-decoration: underline dashed var(--acc);
+  text-decoration-thickness: max(1px, 0.06em);
   text-underline-offset: 0.22em;
   cursor: pointer;
 }
@@ -3258,14 +3261,16 @@ html[data-holo='off'] .welcome-face {
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
-  margin-left: 5px;
+  width: 1.05em;
+  height: 1.05em;
+  min-width: 18px;
+  min-height: 18px;
+  margin-left: 0.3em;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--acc-text);
-  vertical-align: 0.05em;
+  color: var(--acc-2);
+  vertical-align: -0.12em;
   border-radius: var(--r-xs);
   cursor: pointer;
   transition:
@@ -3733,6 +3738,7 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
 .plaques {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 14px;
   margin: 0;
   padding: 0;
@@ -3917,23 +3923,16 @@ a.plaque:hover::after {
 .p-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  gap: clamp(40px, 5vw, 64px) clamp(28px, 4vw, 56px);
 }
 
+/* No card around a principle: the bench is the only box (a card inside a card
+   was the most templated thing here), and the words stand on the ground. */
 .p-tile {
   position: relative;
-  padding: clamp(18px, 2vw, 24px) clamp(18px, 2vw, 24px) clamp(30px, 3.4vw, 44px);
-  background: var(--surface);
-  border: 1px solid var(--hair);
-  box-shadow: var(--elev-1);
   display: grid;
   gap: 14px;
   align-content: start;
-}
-
-.p-tile h3,
-.p-tile p {
-  padding-inline: clamp(4px, 1.2vw, 16px);
 }
 
 .p-tile h3 {
@@ -3953,13 +3952,17 @@ a.plaque:hover::after {
 
 /* the bench */
 .p-fig {
+  --cut: var(--cut-md);
   position: relative;
-  border: 1px solid var(--hair);
+  border: 1px solid var(--hair-2);
   border-radius: var(--r-xs);
   background:
+    linear-gradient(135deg, transparent calc(50% - 1px), var(--hair-2) calc(50% - 1px), var(--hair-2) calc(50% + 1px), transparent calc(50% + 1px)) bottom right / var(--cut) var(--cut) no-repeat border-box,
     linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 100% 26px,
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 26px 100%,
-    var(--ink-2);
+    var(--surface);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+  padding: clamp(6px, 1vw, 14px);
 }
 
 .pm {
@@ -4051,10 +4054,6 @@ a.plaque:hover::after {
 .pm-tick {
   stroke: var(--acc);
   stroke-dasharray: 1;
-}
-
-.pm[data-kind='decide'] .pm-tick {
-  transform: translate(0, 34px);
 }
 
 .pm[data-state='run'] .pm-old {
@@ -4839,8 +4838,7 @@ a.plaque:hover::after {
 .paper,
 .pow-card,
 .build,
-.mini,
-.p-tile {
+.mini {
   --cut-line: var(--hair-2);
   --cut-edge: linear-gradient(
     135deg,
@@ -4867,8 +4865,7 @@ a.plaque:hover::after {
 }
 
 .build,
-.mini,
-.p-tile {
+.mini {
   --cut: var(--cut-md);
   background-image: var(--cut-edge);
   background-position: bottom right;
@@ -5300,4 +5297,9 @@ a.plaque:hover::after {
   margin-right: 8px;
   color: var(--acc-text);
   font-variant-numeric: tabular-nums;
+}
+
+.rcpt-t svg {
+  width: 100%;
+  height: 100%;
 }

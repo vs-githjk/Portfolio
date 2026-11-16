@@ -65,7 +65,7 @@ const llms = [
   `Site: ${site}/`,
   '',
   `## ${c.experience.heading}`,
-  ...c.experience.roles.map((r) => `- ${r.org}, ${r.role} (${plain(r.when)}; ${r.where}): ${[r.note, ...r.wins].map(plain).join(' ')}`),
+  ...c.experience.roles.map((r) => `- ${r.org}, ${r.role} (${plain(r.when)}; ${r.where}): ${plain(r.note)}${r.wins.length ? ` Outcomes: ${r.wins.map(plain).join('; ')}.` : ''}`),
   '',
   `## ${c.builds.heading}`,
   ...[...c.builds.flagships, ...c.builds.items].map(entry),

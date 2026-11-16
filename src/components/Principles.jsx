@@ -18,7 +18,7 @@ function Decide({ d }) {
       <path className="pm-strike" d="M10 45H146" pathLength="1" />
       <text className="pm-l" x="158" y="20">{d.to}</text>
       <text className="pm-v pm-new" x="158" y="52">{d.toValue}</text>
-      <path className="pm-tick" d="M258 13l4 4 8-9" pathLength="1" />
+      <path className="pm-tick" d="M255 44l5 5 10-12" pathLength="1" />
       <path className="pm-rule" d="M12 72H268" />
       <text className="pm-l" x="12" y="91">{d.note}</text>
     </>
@@ -29,6 +29,7 @@ function Gate({ d }) {
   return (
     <>
       <path className="pm-rule" d="M12 54H268" />
+      <text className="pm-l" x="12" y="18">{d.note}</text>
       <text className="pm-l" x="140" y="18" textAnchor="middle">{d.gate}</text>
       <path className="pm-frame" d="M128 28H152M128 80H152" />
       <rect className="pm-bar" x="138" y="32" width="4" height="44" />
@@ -41,19 +42,18 @@ function Gate({ d }) {
       </g>
       <text className="pm-l pm-no" x="111" y="91" textAnchor="middle">{d.no}</text>
       <text className="pm-l pm-yes" x="229" y="91" textAnchor="middle">{d.yes}</text>
-      <text className="pm-l" x="12" y="91">{d.note}</text>
     </>
   );
 }
 
 function Measure({ d, uid }) {
-  const ticks = Array.from({ length: d.count }, (_, i) => `M${12 + i * 8.4} 30h5.4v20h-5.4z`).join('');
+  const ticks = Array.from({ length: d.count }, (_, i) => `M${12 + i * 7.6} 30h4.8v20h-4.8z`).join('');
   return (
     <>
       <text className="pm-l" x="12" y="20">{d.label}</text>
       <text className="pm-l" x="268" y="20" textAnchor="end">{d.source}</text>
       <clipPath id={uid}>
-        <rect className="pm-count" x="12" y="28" width={d.count * 8.4} height="24" />
+        <rect className="pm-count" x="12" y="28" width={d.count * 7.6} height="24" />
       </clipPath>
       <path className="pm-ticks" d={ticks} />
       <path className="pm-ticks pm-lit" d={ticks} clipPath={`url(#${uid})`} />
