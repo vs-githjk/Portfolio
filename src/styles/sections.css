@@ -2720,7 +2720,7 @@ html[data-holo='off'] .welcome-face {
     .hl-bed .wrap {
       animation: hl-settle linear both;
       animation-timeline: --hl-bed;
-      animation-range: entry 22% entry 62%;
+      animation-range: entry 4% entry 34%;
     }
   }
 }
