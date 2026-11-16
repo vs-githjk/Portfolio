@@ -101,13 +101,15 @@ export default function ProofOfWork() {
         <div className="pow-roost" data-world-anchor="roost" aria-hidden="true" />
         <div className="pow-card reveal">
           <div className="pow-top">
-            <span className="eyebrow">{g.eyebrow}</span>
+            <span className="eyebrow">
+              <span className="pow-wide">{g.eyebrow}</span>
+              <span className="pow-phone">{g.eyebrowPhone}</span>
+            </span>
             <a href={g.href} target="_blank" rel="noopener noreferrer">
               {g.handle}
             </a>
           </div>
           <Heatmap days={github.days} label={g.graphLabel} copy={g} />
-          <p className="pow-phone-note">{g.phoneNote}</p>
           <div className="pow-foot">
             <span>
               {g.ridge} {g.note ? `${g.note} ` : ''}

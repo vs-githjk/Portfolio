@@ -55,7 +55,9 @@ export default function Flagship({ item, index }) {
         </div>
         <div className="ch-intro">
           <p className="ch-desc">{item.descriptor}</p>
-          <p className="one">{item.oneLiner}</p>
+          <p className="one">
+            <Rich text={item.oneLiner} receipts />
+          </p>
           <p className="ch-figure">
             <Count value={figure.value} />
             <span>{figure.label.replace(/\n/g, ' ')}</span>

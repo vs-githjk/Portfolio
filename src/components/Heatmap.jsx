@@ -187,7 +187,7 @@ export default function Heatmap({ days, label, copy }) {
           viewBox={`0 0 ${width} ${H}`}
           preserveAspectRatio={phone ? 'xMaxYMid slice' : 'xMidYMid meet'}
           role="img"
-          aria-label={label}
+          aria-label={phone ? copy.graphLabelPhone : label}
           data-world-anchor="graph"
           data-weeks={weeks.length}
         >

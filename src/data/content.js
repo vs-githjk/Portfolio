@@ -455,7 +455,7 @@ export const builds = {
       descriptor: 'can you beat my agents?',
       when: 'Oct 2026 to Present · duelwise.app',
       oneLiner:
-        'Ten games, four AI opponents, and not one strength number they have not earned in games actually played. Sable, the champion, beats people 96% of the time.',
+        'Ten games, four AI opponents, and not one strength number they have not earned in games actually played. Sable, the champion, won **96% of its 82 matches against people** in the week to Nov 12.',
       awards: [],
       role: 'Solo build: the idea, the ten games, the agents and the site are mine.',
       body: [
@@ -1205,7 +1205,7 @@ export const highlights = {
     },
     {
       bed: 'PrismAI · 2026',
-      text: 'Took PrismAI from an empty repo to **14 beta users and 100+ meetings analyzed** in about six months, and shipped its agency release two months later.',
+      text: 'Took PrismAI from an empty repo in March to **14 beta users and 100+ meetings analyzed**, and shipped its agency release on Oct 20.',
     },
     {
       bed: 'Comcast · 2025',
@@ -1237,6 +1237,7 @@ export const receipts = {
     "Dean's List, 6 of 6 semesters": 'psu',
     '151 people have played': 'duelwise-play',
     'no strength number it has not earned': 'duelwise-gate',
+    '96% of its 82 matches against people': 'duelwise-sable',
   },
   items: {
     comcast: {
@@ -1289,6 +1290,14 @@ export const receipts = {
       links: [
         { label: 'DuelWise, live', href: 'https://duelwise.app' },
         { label: 'Source on GitHub', href: 'https://github.com/vs-githjk/duelwise' },
+      ],
+    },
+    'duelwise-sable': {
+      measures:
+        'Matches Sable, DuelWise’s top opponent, played against people in the seven days to Nov 12 2026: 82 matches, 96% of them won by Sable. Counted on the site’s owner dashboard, with my own games and automated test runs left out; there is no public page for it.',
+      links: [
+        { label: 'DuelWise, live', href: 'https://duelwise.app' },
+        { label: 'The build on this page', href: '#build-duelwise' },
       ],
     },
     'duelwise-gate': {
@@ -1518,13 +1527,15 @@ export const proofOfWork = {
     'Most of what is above leaves a public trail: every win with a Devpost page links to it, and the graph under them counts my private-repo work too.',
   github: {
     eyebrow: 'GitHub · last 12 months',
+    /* The phone graph is cropped to the latest half year (Heatmap.jsx), so its label says six. */
+    eyebrowPhone: 'GitHub · last 6 months',
+    graphLabelPhone: 'My GitHub contribution graph for the last 6 months, one column per week',
     handle: '@vs-githjk',
     href: 'https://github.com/vs-githjk',
     /* No totals, streaks or month counts here (Vidyut, Nov 16: he can make 333
        commits in three days, so a total says nothing). The graph is the evidence. */
     graphLabel: 'My GitHub contribution graph for the last 12 months, one column per week',
     note: '',
-    phoneNote: 'On a phone the graph shows the latest six months.',
     /* The ridge above the calendar: one butte per week. The same record stands on
        the night horizon behind this section (the world scene). */
     ridge: 'Each butte is one week; its height follows that week’s contributions.',

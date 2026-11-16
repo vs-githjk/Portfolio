@@ -1129,12 +1129,17 @@ html[data-travel='in'] .bg-world {
   transition: background-color 0.2s var(--ease);
 }
 
-.chart-places a:hover {
-  background: color-mix(in srgb, var(--acc) 12%, transparent);
+/* Hover only where there is a pointer that hovers: on a touch screen it sticks
+   after a tap and a second row looks chosen. */
+@media (hover: hover) {
+  .chart-places a:hover {
+    background: color-mix(in srgb, var(--acc) 12%, transparent);
+  }
 }
 
 .chart-places a[aria-current] {
   background: color-mix(in srgb, var(--text) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--acc);
 }
 
 .chart-n,

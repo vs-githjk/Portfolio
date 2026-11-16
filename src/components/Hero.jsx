@@ -40,7 +40,7 @@ export default function Hero() {
             <span className="where">{hero.locationNote}</span>
           </div>
           <div className="who-main">
-            <h1 className="hero-name">
+            <h1 className="hero-name" tabIndex={-1}>
               {first}
               <span className="br">
                 <br />

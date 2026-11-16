@@ -2343,8 +2343,8 @@ html[data-holo='off'] .welcome-face {
   filter: none;
 }
 
-/* The frame of the chosen one, and the focus ring: both inside the cut shape,
-   because an outline would be clipped away with the corners. */
+/* The frame of the chosen one. It and the focus ring are both inside the cut
+   shape, because an outline would be clipped away with the corners. */
 .nb-tab::after {
   content: '';
   position: absolute;
@@ -2361,8 +2361,17 @@ html[data-holo='off'] .welcome-face {
   outline: none;
 }
 
-.nb-tab:focus-visible::after {
-  border: 3px solid var(--focus);
+/* Focus is its own ring, drawn inside the selection frame with a dark gap on both
+   sides, so a focused and chosen tile shows two rings and neither hides the other. */
+.nb-tab:focus-visible::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  z-index: 1;
+  border: 2px solid var(--focus);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    inset 0 0 0 1px var(--bg);
 }
 
 /* System: how the crew is run. */
@@ -3050,17 +3059,18 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   position: relative;
 }
 
-/* On a phone the graph is cropped to the latest half year; say so. */
-.pow-phone-note {
+/* On a phone the graph is cropped to the latest half year, so its label says six months. */
+.pow-phone {
   display: none;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-3);
 }
 
 @media (max-width: 640px) {
-  .pow-phone-note {
-    display: block;
+  .pow-wide {
+    display: none;
+  }
+
+  .pow-phone {
+    display: inline;
   }
 }
 

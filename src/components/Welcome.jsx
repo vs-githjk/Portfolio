@@ -128,6 +128,8 @@ export default function Welcome() {
     if (plainClick(e) || !ctl.current) return;
     e.preventDefault();
     ctl.current.skip();
+    // Take keyboard and screen-reader users along: the next Tab starts from the name.
+    document.querySelector('.hero-name')?.focus({ preventScroll: true });
   };
 
   return (
