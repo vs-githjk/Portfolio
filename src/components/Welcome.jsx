@@ -162,7 +162,7 @@ export default function Welcome() {
           </span>
         ))}
       </p>
-      <p className="welcome-ball" style={{ '--n': welcome.ball.length }}>
+      <p className="welcome-ball" aria-hidden="true" style={{ '--n': welcome.ball.length }}>
         <span>{welcome.ball}</span>
       </p>
       <div className="door">

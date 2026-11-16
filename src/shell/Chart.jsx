@@ -14,7 +14,7 @@ import { setSwitch, useSwitch } from './switches';
    is a plain link; kit/travel.js turns a far one into a hop. */
 const ROW = 44;
 
-export default function Chart({ places, groups, total, words, lineAt }) {
+export default function Chart({ places, groups, total, words, lineAt, openerSel = '[aria-haspopup="dialog"]' }) {
   const open = useSwitch('chart');
   const receipts = useSwitch('receipts');
   const sound = useSwitch('sound');
@@ -22,6 +22,8 @@ export default function Chart({ places, groups, total, words, lineAt }) {
   const ref = useRef(null);
   const [map, setMap] = useState(null);
   const [pick, setPick] = useState(null);
+  const opener = useRef(null); // where focus goes back to when the chart closes
+  const went = useRef(false); // a place was picked: the jump owns the focus
 
   // Measure the descent when the chart opens: one pass, never per frame.
   useEffect(() => {
@@ -52,11 +54,27 @@ export default function Chart({ places, groups, total, words, lineAt }) {
   useEffect(() => {
     const dialog = ref.current;
     if (!open || !map || dialog.open) return;
+    /* Remember who opened it. The key can open it while focus is on the body or on
+       something long scrolled away (the first screen's controls); a native dialog
+       would hand focus back there, so the bar's own button stands in. */
+    const from = document.activeElement;
+    const box = from && from !== document.body ? from.getBoundingClientRect() : null;
+    const seen = box && box.width > 0 && box.bottom > 0 && box.top < window.innerHeight && from.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false && !from.closest('[aria-hidden="true"]');
+    opener.current = seen ? from : document.querySelector(openerSel);
+    went.current = false;
     dialog.showModal();
     (dialog.querySelector('[aria-current]') ?? dialog.querySelector('.chart-close'))?.focus();
   }, [open, map]);
 
   const close = () => setSwitch('chart', false);
+  const leave = () => {
+    close();
+    if (!went.current) opener.current?.focus({ preventScroll: true });
+  };
+  const go = () => {
+    went.current = true;
+    close();
+  };
   const stops = map ? map.rows.filter((r) => !r.line) : [];
   const lines = map ? map.rows.filter((r) => r.line) : [];
   const scaleH = stops.length * ROW;
@@ -73,7 +91,7 @@ export default function Chart({ places, groups, total, words, lineAt }) {
       className="chart"
       ref={ref}
       aria-labelledby="chart-title"
-      onClose={close}
+      onClose={leave}
       onClick={(e) => {
         if (e.target === ref.current) close();
       }}
@@ -119,7 +137,7 @@ export default function Chart({ places, groups, total, words, lineAt }) {
               <ol className="chart-places">
                 {stops.map((r, k) => (
                   <li key={r.id}>
-                    <a href={`#${r.id}`} data-realm={r.realm} aria-current={r.id === map.here ? 'location' : undefined} onClick={close}>
+                    <a href={`#${r.id}`} data-realm={r.realm} aria-current={r.id === map.here ? 'location' : undefined} onClick={go}>
                       <span className="chart-n" aria-hidden="true">
                         {String(k + 1).padStart(2, '0')}
                       </span>
@@ -142,7 +160,7 @@ export default function Chart({ places, groups, total, words, lineAt }) {
                 <ul>
                   {g.items.map((b) => (
                     <li key={b.id}>
-                      <a href={`#build-${b.id}`} aria-label={`${b.num} of ${total}: ${b.title}`} onClick={close} onPointerEnter={() => setPick(b)} onFocus={() => setPick(b)}>
+                      <a href={`#build-${b.id}`} aria-label={`${b.num} of ${total}: ${b.title}`} onClick={go} onPointerEnter={() => setPick(b)} onFocus={() => setPick(b)}>
                         <i aria-hidden="true" />
                       </a>
                     </li>
