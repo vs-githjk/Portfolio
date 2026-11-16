@@ -555,6 +555,7 @@ export function createWorld(canvas) {
     air.scale.setScalar(halo);
     g.add(body, air);
     g.userData.body = body;
+    g.userData.light = L; // shared by the body and its air: move it and both follow
     scene.add(g);
     return g;
   }
@@ -734,7 +735,7 @@ export function createWorld(canvas) {
   comets.forEach(aim);
 
   /* ---- Layout: sizes and the set pieces' homes, read from the page --------- */
-  const home = { surf: 0, giant: 0, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, moon: 0, contact: 0, foot: 0 };
+  const home = { surf: 0, giant: 0, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, moon: 0, moonEnd: 0, contact: 0, foot: 0 };
   /* Choreography: the reading sections are quiet. While the middle of the screen
      is in (or near) one of them, the drifting things and the meteor are gone and
      only the snow (in the water) or the stars (over the land) are left. */
@@ -812,6 +813,8 @@ export function createWorld(canvas) {
     home.crewEnd = crew ? crew.top + crew.h : home.crew + h;
     home.galaxy = mid('.vista[data-set="galaxy"]', H * 0.7);
     home.moon = mid('#value .sec-head', H * 0.84);
+    const value = rect('#value');
+    home.moonEnd = value ? value.top + value.h - h * 0.4 : home.moon + h;
     home.foot = mid('.vista[data-set="horizon"]', H - 120);
     home.contact = rect('#contact')?.top ?? home.foot - h * 0.8;
     stage.uSurfDoc.value = home.surf;
@@ -847,7 +850,7 @@ export function createWorld(canvas) {
     land.material.uniforms.uFig.value = (w * (phone ? 0.3 : 0.24)) / h + ((home.shoreH / 2 + h * 0.1) / h) * 0.1;
 
     const gr = Math.max(84, Math.min(w * 0.17, 225));
-    const mr = Math.max(34, Math.min(w * 0.05, 78));
+    const mr = Math.max(40, Math.min(w * 0.055, 84));
     const gal = Math.max(170, Math.min(w * 0.32, 480));
     galScale.value = gal / 480;
     // The school turns in the warm water just under the shore, and scatters on a scroll.
@@ -858,7 +861,11 @@ export function createWorld(canvas) {
     schoolMat.uniforms.uLoop.value.set(w * 0.4 * fk, (phone ? 40 : h * 0.14) * fk);
     place(giant, -220, home.giant + (phone ? 20 : 70), w * (phone ? 0.2 : 0.27), 0, gr);
     place(galaxy, -1400, home.galaxy - (phone ? 30 : 40), w * (phone ? 0 : 0.08), 0, gal);
-    place(moon, -500, home.moon, w * (phone ? 0.3 : 0.3), -10, mr);
+    // The moon is a long way back, so it crosses the window slowly while Value is
+    // read: high on the right, half in the margin, clear of the heading.
+    const margin = w / 2 - colHalf;
+    const fits = margin >= mr * 2 + 28;
+    place(moon, -2600, (home.moon + home.moonEnd) / 2, phone ? w * 0.3 : fits ? colHalf + 14 + mr : w / 2 - mr * 0.3, -h * 0.2, mr);
     // The lit limb crosses the horizon spacer; the body runs down under the footer.
     const hr = w * 1.7 + 500;
     place(horizon, -300, home.foot, 0, hr + 4, hr);
@@ -943,6 +950,11 @@ export function createWorld(canvas) {
     clock.scatter += (Math.min(1, speed / 36) - clock.scatter) * (speed > 2 ? 0.25 : 0.035);
     schoolMat.uniforms.uScatter.value = clock.scatter;
     school.visible = rise < 0.6;
+
+    // The moon fills as Value is read: a thin crescent at its heading, full by its last row.
+    const phase = sm((line - (home.moon - h * 0.35)) / Math.max(h * 0.6, home.moonEnd - home.moon));
+    const sun = 2.5 - 2.2 * phase;
+    moon.userData.light.set(-Math.sin(sun), 0.24, Math.cos(sun)).normalize();
 
     giant.userData.body.rotation.y = t * 0.012;
     moon.userData.body.rotation.y = t * 0.02;

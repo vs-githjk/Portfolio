@@ -181,7 +181,7 @@ void main(){
   // warm umber in the last light and almost black at night. Each layer pales
   // toward its foot, where the mist lies, so the ranges read as separate planes.
   vec3 near = uRidge * mix(2.1, 0.44, uDusk);
-  vec3 far = mix(uRidgeFar, uRidgeFar * 0.24 + uNightLow * 0.5, uDusk);
+  vec3 far = mix(uRidgeFar, uRidge * 0.5 + uNightLow * 0.9, uDusk);
   vec3 mist = mix(lowSky(), far, 0.5);
   vec3 rim = uSun * lit + uStar * 0.1 * uDusk * (1.0 - uDawn);
   vec3 col = near * 0.55;

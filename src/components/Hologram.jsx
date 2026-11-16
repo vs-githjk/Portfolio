@@ -21,7 +21,7 @@ import { createHologram, parseFace } from '../lib/holoScene';
    - It draws only while some of it is on screen and the tab is visible: every
      frame while the scroll is moving or the face is being drawn, about 30 a
      second while it only breathes. DPR is capped (1.75, 1.5 on a phone) and a
-     phone draws half the points. The glow is a bloom pass in a third-size buffer.
+     phone draws six tenths of the points. The glow is a bloom pass in a third-size buffer.
    - On a desktop he also looks a little toward the pointer (eased, a few degrees).
    - Under prefers-reduced-motion it is one still frame of the face that scrolls
      away with the page: no drawing in, no turn, no ball. */
@@ -55,7 +55,8 @@ export default function Hologram() {
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)');
     const phone = window.matchMedia('(max-width: 760px)').matches;
     const style = getComputedStyle(root);
-    const gain = Number(style.getPropertyValue('--holo-gain')) || 1;
+    // A phone draws fewer, smaller points, so each one burns a little brighter.
+    const gain = (Number(style.getPropertyValue('--holo-gain')) || 1) * (phone ? 1.35 : 1);
 
     let scene;
     let raf = 0;
@@ -234,7 +235,7 @@ export default function Hologram() {
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))))
       .then((buffer) => {
         if (dead) return;
-        const cloud = parseFace(buffer, phone ? 0.5 : 1);
+        const cloud = parseFace(buffer, phone ? 0.6 : 1);
         scene = createHologram(
           canvas,
           cloud,

@@ -126,7 +126,7 @@
   --dusk-mid: 104, 52, 74;
   --dusk-low: 226, 120, 64;
   --night-top: 7, 6, 10;
-  --night-low: 30, 21, 24;
+  --night-low: 30, 22, 20;
   --dawn-low: 150, 78, 58;
   --sun: 255, 226, 178;
   --star: 255, 240, 222;
@@ -147,6 +147,9 @@
   --holo-deep: 76, 118, 255; /* the hologram's own blue: the one place the first light lives */
   --holo-pale: 190, 214, 255;
   --holo-hot: 255, 244, 228; /* the white of its brightest points and of the ball's core */
+  --sound-x: clamp(14px, 2.6vw, 36px); /* how far into the gutter the Experience sounding line sits */
+  --shaft-r: 420px; /* the shaft of light that finds a build under the pointer */
+  --shaft-a: 0.1;
   --world-dim: 1; /* strength of the whole layer */
   --world-calm: 0.62; /* how much of the ground returns behind a text column */
   --calm-bleed: clamp(0px, 2vw, 28px); /* how far the calm ground feathers out past the column */

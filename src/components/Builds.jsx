@@ -15,9 +15,19 @@ import Vista from './Vista';
 export default function Builds() {
   const grid = useRef(null);
   useEqualRows(grid, 7);
+  /* A shaft of light finds the card under the pointer (sections.css reads --lx
+     and --ly). One listener for the whole section; mouse only. */
+  const light = (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const card = e.target.closest('.flag, .paper, .build, .mini');
+    if (!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--lx', `${Math.round(e.clientX - r.left)}px`);
+    card.style.setProperty('--ly', `${Math.round(e.clientY - r.top)}px`);
+  };
   return (
     <>
-    <section className="sec builds" id="builds" data-realm="sea">
+    <section className="sec builds" id="builds" data-realm="sea" onPointerMove={light}>
       <div className="wrap">
         <div className="sec-head reveal">
           <span className="eyebrow">{builds.eyebrow}</span>

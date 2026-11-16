@@ -175,7 +175,7 @@ html[data-world='on'] .bg-world {
 }
 
 .vista[data-set='shore'] .vista-line {
-  top: 16%;
+  top: 52%;
 }
 
 /* Still grounds: before the scene has loaded, without WebGL and under reduced
@@ -3836,6 +3836,188 @@ html[data-holo='off'] .welcome-face {
   .pow-card,
   .hl-slab {
     --cut: var(--cut-md);
+  }
+}
+
+/* ============================ SECTION MOMENTS ==============================
+   One signature per section, each from its own world (Nov 15 2026):
+   Experience has the waterline and the light under it (the scene); Builds has
+   the giant and the manta (the scene) and a shaft of light that finds the card
+   under the pointer; the crew has the command post at dusk; Highlights is cut
+   as four strata of rock; Proof of work stands its towers up under the galaxy;
+   Value has a moon that fills from crescent to full as its rows are read (the
+   scene); Toolkit's separators are stars; Contact ends at first light. */
+
+/* Builds: under water, light comes from above and moves. The card under the
+   pointer is the one a shaft has found (Builds.jsx writes --lx and --ly). */
+.flag,
+.paper,
+.build,
+.mini {
+  position: relative;
+}
+
+.flag::after,
+.paper::after,
+.build::after,
+.mini::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(var(--shaft-r) circle at var(--lx, 50%) var(--ly, 0%), rgba(var(--sea-ray), var(--shaft-a)), transparent 72%);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .flag:hover::after,
+  .paper:hover::after,
+  .build:hover::after,
+  .mini:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Experience: a sounding line. Just under the surface, a line of light runs down
+   the left of the roles, with a mark at each one, and a weight on it sinks as the
+   section is read (a scroll-driven animation; without support, or under reduced
+   motion, the weight rests at the top). In the gutter, so only from 761px up. */
+@media (min-width: 761px) {
+  .xp {
+    position: relative;
+  }
+
+  .xp::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--sound-x));
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--acc-2), color-mix(in srgb, var(--acc) 40%, transparent) 55%, transparent);
+  }
+
+  .xp::after {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--sound-x) - 4px);
+    top: 0;
+    width: 9px;
+    height: 9px;
+    background: var(--acc-2);
+    transform: rotate(45deg);
+    box-shadow: 0 6px 18px 2px var(--acc-glow);
+  }
+
+  .xp-row {
+    position: relative;
+  }
+
+  .xp-row::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--sound-x));
+    top: -1px;
+    width: 10px;
+    height: 1px;
+    background: var(--acc-2);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .xp::after {
+        animation: sound linear both;
+        animation-timeline: view();
+        animation-range: cover 22% cover 78%;
+      }
+    }
+  }
+}
+
+@keyframes sound {
+  to {
+    top: calc(100% - 9px);
+  }
+}
+
+/* Highlights: four statements, four strata. One column of full-width beds, the
+   palest on top, each with the fine lines of sediment; not a second grid of tiles. */
+.hl-slab {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.hl-cell {
+  --bed: 0%;
+  border-left: 0;
+  padding: 24px clamp(20px, 3.4vw, 44px);
+  font-size: clamp(16px, 1.3vw, 19px);
+  background:
+    repeating-linear-gradient(180deg, var(--grid-line) 0 1px, transparent 1px 7px),
+    color-mix(in srgb, var(--acc) var(--bed), transparent);
+}
+
+.hl-cell > span {
+  max-width: 78ch;
+}
+
+.hl-cell:nth-child(n + 2) {
+  border-top: 1px solid var(--hair-2);
+}
+
+.hl-cell:nth-child(1) {
+  --bed: 13%;
+}
+
+.hl-cell:nth-child(2) {
+  --bed: 8%;
+}
+
+.hl-cell:nth-child(3) {
+  --bed: 4%;
+}
+
+/* Toolkit: it is night over the desert, so the marks between tools are stars. */
+.tk-row li:not(:last-child)::after {
+  width: 8px;
+  height: 8px;
+  margin-inline: 12px;
+  border-radius: 0;
+  background: var(--acc-2);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  opacity: 0.6;
+  animation: tk-star 4.2s ease-in-out infinite;
+}
+
+.tk-row li:nth-child(3n)::after {
+  animation-delay: -1.4s;
+}
+
+.tk-row li:nth-child(3n + 1)::after {
+  animation-delay: -2.9s;
+}
+
+.tk-row li:nth-child(4n + 2)::after {
+  animation-duration: 5.6s;
+}
+
+@keyframes tk-star {
+  50% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tk-row li::after {
+    animation: none;
+  }
+
+  .flag::after,
+  .paper::after,
+  .build::after,
+  .mini::after {
+    transition: none;
   }
 }
 
