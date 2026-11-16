@@ -10,15 +10,30 @@ export default function CopyEmail({ onDone }) {
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const copy = async () => {
+    let ok = false;
     try {
       await navigator.clipboard.writeText(contact.email);
-      setDone(true);
-      onDone?.();
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => setDone(false), 2000);
+      ok = true;
     } catch {
-      /* Clipboard blocked: the mailto link still works. */
+      // No async clipboard (an insecure origin, or permission refused): the old way.
+      const box = document.createElement('textarea');
+      box.value = contact.email;
+      box.setAttribute('readonly', '');
+      box.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(box);
+      box.select();
+      try {
+        ok = document.execCommand('copy');
+      } catch {
+        ok = false;
+      }
+      box.remove();
     }
+    if (!ok) return; // still blocked: the mailto link beside it works
+    setDone(true);
+    onDone?.();
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setDone(false), 2000);
   };
 
   return (

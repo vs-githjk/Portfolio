@@ -3261,8 +3261,8 @@ html[data-holo='off'] .welcome-face {
   position: relative;
   display: inline-grid;
   place-items: center;
-  width: 1.05em;
-  height: 1.05em;
+  width: 0.82em;
+  height: 0.82em;
   min-width: 18px;
   min-height: 18px;
   margin-left: 0.3em;
@@ -3270,7 +3270,7 @@ html[data-holo='off'] .welcome-face {
   border: 0;
   background: none;
   color: var(--acc-2);
-  vertical-align: -0.12em;
+  vertical-align: -0.06em;
   border-radius: var(--r-xs);
   cursor: pointer;
   transition:
@@ -3281,7 +3281,7 @@ html[data-holo='off'] .welcome-face {
 .rcpt-t::before {
   content: '';
   position: absolute;
-  inset: -12px;
+  inset: -13px;
 }
 
 .rcpt:hover .rcpt-p,
@@ -3577,8 +3577,8 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
 .heat-scrub input {
   display: block;
   width: 100%;
-  height: 24px;
-  margin: 0;
+  height: 44px;
+  margin: -10px 0;
   appearance: none;
   background: linear-gradient(var(--hair), var(--hair)) center / 100% 1px no-repeat;
   cursor: ew-resize;
@@ -3660,6 +3660,14 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   color: var(--text);
   white-space: nowrap;
   pointer-events: none;
+}
+
+.heat-tip[data-side='end'] {
+  transform: translate(calc(-100% + 16px), calc(-100% - 12px));
+}
+
+.heat-tip[data-side='start'] {
+  transform: translate(-16px, calc(-100% - 12px));
 }
 
 .heat text {
@@ -4473,6 +4481,7 @@ a.plaque:hover::after {
 }
 
 .tk-tool {
+  position: relative;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -4487,6 +4496,14 @@ a.plaque:hover::after {
   transition:
     color var(--dur) var(--ease),
     text-decoration-color var(--dur) var(--ease);
+}
+
+/* a short name (RAG, MCP) still gets a 44px target: the hit area reaches into the
+   gap on each side, never as far as the next tool */
+.tk-tool::before {
+  content: '';
+  position: absolute;
+  inset: 0 -7px;
 }
 
 .tk-tool:hover {

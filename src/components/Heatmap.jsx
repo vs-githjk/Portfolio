@@ -114,6 +114,8 @@ export default function Heatmap({ days, label, copy }) {
     window.dispatchEvent(new CustomEvent('world:week', { detail: { index: week } }));
   }, [week]);
 
+  // Near an edge the tooltip hangs from its own end, so the card never clips it.
+  const side = (x, w) => (x > w - 150 ? 'end' : x < 150 ? 'start' : undefined);
   const weekText = (w) => fill(copy.weekTip, { date: weeks[w].from, n: weeks[w].total });
 
   const show = (e) => {
@@ -132,6 +134,7 @@ export default function Heatmap({ days, label, copy }) {
     setTip({
       left: e.clientX - box.left,
       top: e.clientY - box.top,
+      side: side(e.clientX - box.left, box.width),
       text: hit.day ? fill(copy.dayTip, { n: hit.day.count, date: hit.day.date }) : weekText(hit.w),
     });
   };
@@ -144,7 +147,7 @@ export default function Heatmap({ days, label, copy }) {
     setWeek(w);
     if (!m) return;
     const p = new DOMPoint(w * PITCH + CELL / 2, 0).matrixTransform(m);
-    setTip({ left: p.x - box.left, top: p.y - box.top + 10, text: weekText(w) });
+    setTip({ left: p.x - box.left, top: p.y - box.top + 10, side: side(p.x - box.left, box.width), text: weekText(w) });
   };
 
   const clear = () => {
@@ -180,7 +183,7 @@ export default function Heatmap({ days, label, copy }) {
           ))}
         </svg>
         {tip && (
-          <span className="heat-tip" style={{ left: tip.left, top: tip.top }} aria-hidden="true">
+          <span className="heat-tip" data-side={tip.side} style={{ left: tip.left, top: tip.top }} aria-hidden="true">
             {tip.text}
           </span>
         )}
