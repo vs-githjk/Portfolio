@@ -235,10 +235,14 @@ void main() {
   float gi = 1.0 - g;
   px = gi * gi * gi * px + 3.0 * gi * gi * g * c1 + 3.0 * gi * g * g * c2 + g * g * g * land;
   size = mix(size, plateSize, fl * goes);
-  // In the air a point burns bright; landed, it settles into the plate.
+  // In the air a point is a thin thread, not a cloud: it dims and shrinks on the
+  // way (the mid-flight frame read as a lumpy dome when it burned bright), so
+  // what the eye follows is the engraved ring opening, and the light is found
+  // again where it lands.
   float air = sin(fl * 3.14159);
   glow = mix(glow, plate, fl) * goes + glow * (1.0 - goes) * (1.0 - smoothstep(0.0, 0.5, uFlow));
-  glow += air * 0.18 * goes;
+  glow *= 1.0 - 0.62 * air * goes;
+  size *= 1.0 - 0.45 * air * goes;
   glow *= 1.0 - hidden * goes;
   hot = mix(hot, 0.1, fl) + air * 0.12;
   bloom = mix(bloom, 0.5, fl);
