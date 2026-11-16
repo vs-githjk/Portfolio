@@ -25,13 +25,17 @@ import { createHologram } from '../lib/holoScene';
      session), "off" when there is no WebGL or no picture (the welcome closes up).
    - It draws only while some of it is on screen and the tab is visible: every
      frame while the scroll is moving or it is starting, about 30 a second while
-     it only shimmers. DPR is capped (1.75, 1.5 on a phone), only the column the
+     it only shimmers. DPR is capped at 2 (a 2x screen gets its own pixels), only the column the
      light can reach is shaded, and a large picture is drawn down to TEX_MAX first.
    - Under prefers-reduced-motion it is one still frame that scrolls away with
      the page: no start, no shimmer, no beam. */
 
 /* The longest side of the picture as it is uploaded, in pixels: desktop, phone. */
 const TEX_MAX = [1536, 1024];
+/* The canvas is drawn at the screen's own pixels up to this ratio: a figure drawn at
+   1.5 and stretched to a 2x or 3x screen was soft all over. Only the column the
+   light reaches is shaded, so the cost is the figure, not the window. */
+const DPR_MAX = 2;
 const SEEN_KEY = 'holo-seen';
 const INTRO_MS = 1700;
 /* When the greeting has been typed, in ms after the projector starts: mirrors
@@ -95,7 +99,7 @@ export default function Hologram() {
     function measure() {
       measureFace(anchor);
       if (words) heroTop = words.getBoundingClientRect().top + window.scrollY + parseFloat(getComputedStyle(words).paddingTop || '0');
-      scene.resize(window.innerWidth, window.innerHeight, Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.75));
+      scene.resize(window.innerWidth, window.innerHeight, Math.min(window.devicePixelRatio || 1, DPR_MAX));
     }
 
     /* The projection in the window: its place in the page, less the share of the

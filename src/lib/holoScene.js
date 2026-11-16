@@ -12,10 +12,13 @@
                    on, faintly, behind it
      the figure    the picture in the page's blue light: its own tones mapped onto
                    the hologram's ramp with a little of its own colour left in
-                   (--holo-warm); more light along its edge and a soft glow in the
-                   air round it; the silhouette's red and blue a pixel and a half
-                   apart; fine scan lines; a slow band of brighter light rolling up
-                   it; the foot dissolving into lines
+                   (--holo-warm), at the screen's own resolution and a little
+                   sharper than the picture; a thin line of light along its edge
+                   and a soft glow in the air outside it only; a trace of red and
+                   blue at the silhouette; faint scan lines that leave the face
+                   alone; a slow band of brighter light rolling up it; the foot
+                   dissolving into lines. A crystal's glow or a ring of glyphs is
+                   added to the page as light, never laid over it
 
    Nothing ever moves a row of the picture sideways and nothing warps it: a slip
    of that kind was read as a glitch in his eyes. The shimmer is light only.
@@ -50,6 +53,7 @@ uniform float uTime, uOn, uOut, uGain, uWarm, uPitch, uFoot;
 uniform vec3 uFace;   // his face in the picture: centre (0 to 1 across and down) and reach (of the height); reach 0 is no face
 uniform vec3 uDeep, uPale, uHot;
 uniform sampler2D uTex;
+uniform sampler2D uAir;  // the silhouette, small and blurred: the light in the air round the figure
 
 float ease(float x) { return x * x * (3.0 - 2.0 * x); }
 float span(float a, float b, float x) { return clamp((x - a) / (b - a), 0.0, 1.0); }
@@ -86,23 +90,31 @@ void main() {
   vec4 tx = texture2D(uTex, uv);
   float a = A(uv);
   vec3 src = tx.a > 0.004 ? tx.rgb / tx.a : vec3(0.0);
+  // Fine detail, a little stronger than the picture has it (the mean of four
+  // neighbours a pixel away, taken off): cloth, hair and stars stay sharp in the light.
+  vec2 d1 = texel * 1.2;
+  vec4 n4 = texture2D(uTex, uv + vec2(d1.x, 0.0)) + texture2D(uTex, uv - vec2(d1.x, 0.0)) + texture2D(uTex, uv + vec2(0.0, d1.y)) + texture2D(uTex, uv - vec2(0.0, d1.y));
+  vec3 mean4 = n4.a > 0.016 ? n4.rgb / n4.a : src;
+  float solid = step(0.98, tx.a) * step(3.92, n4.a);
+  src = clamp(src + (src - mean4) * 0.7 * solid, 0.0, 1.0);
   float l = luma(src);
-  // How much of the figure lies around this pixel, near and wide: its edge from
-  // inside (where the light gathers) and the air just outside it (the halo).
+  // The figure's edge from inside (where the light gathers), read close by, and the
+  // air just outside it (the halo), read from the blurred silhouette: a smooth
+  // falloff, and never anything over the figure itself.
   float near = 0.0;
-  float wide = 0.0;
   for (int i = 0; i < 8; i++) {
     float ang = float(i) * 0.7854;
-    vec2 dir = vec2(cos(ang), sin(ang)) * texel * px;
-    near += A(uv + dir * 4.0);
-    wide += A(uv + dir * 13.0);
+    near += A(uv + vec2(cos(ang), sin(ang)) * texel * px * 2.4);
   }
   near /= 8.0;
-  wide /= 8.0;
-  float rim = a * clamp((1.0 - near) * 2.4, 0.0, 1.0);
-  float halo = (1.0 - a) * wide;
-  // The red and the blue of the silhouette sit a pixel and a half apart.
-  vec2 o = vec2(1.5 * px, 0.0) * texel;
+  float rim = a * clamp((1.0 - near) * 2.6, 0.0, 1.0);
+  float wide = texture2D(uAir, clamp(uv, 0.0, 1.0)).a * step(abs(q.x), 1.08) * step(abs(q.y), 1.04);
+  float halo = (1.0 - a) * wide * wide * 1.5;
+  // Light that is only light (a crystal's glow, a ring of glyphs: bright and not
+  // solid) is added to the page, never laid over it, so it has no dark disc.
+  float beamy = (1.0 - a) * smoothstep(0.3, 0.75, l);
+  // The red and the blue of the silhouette sit under a pixel apart.
+  vec2 o = vec2(0.8 * px, 0.0) * texel;
   float aR = A(uv + o);
   float aB = A(uv - o);
 
@@ -121,21 +133,21 @@ void main() {
   // A little of its own colour stays in the light.
   vec3 own = src * vec3(0.92, 0.98, 1.16) * 1.08;
   vec3 crisp = clamp((src - 0.36) * 1.28 + 0.36, 0.0, 1.0) * vec3(0.9, 1.0, 1.2) * 1.3;
-  vec3 pic = mix(mix(ramp, own, uWarm), mix(ramp * 1.15, crisp, 0.62), faceK);
-  // The edge of the figure carries more light than its middle.
-  pic = mix(pic, mix(uPale, uHot, 0.35), rim * 0.55 * (1.0 - 0.6 * faceK));
+  vec3 pic = mix(mix(ramp, own, uWarm), mix(ramp * 1.15, crisp, 0.74), faceK);
+  // The edge of the figure carries more light than its middle: a thin, sharp line.
+  pic = mix(pic, mix(uPale, uHot, 0.4), rim * 0.6 * (1.0 - 0.75 * faceK));
 
   // Scan lines, one every uPitch CSS pixels, and stronger toward the foot, where
   // the figure comes apart into them.
   float line = 0.5 + 0.5 * cos(p.y / (uPitch * px) * 6.2832);
   float low = smoothstep(1.0 - 2.6 * uFoot, 1.0, q.y) * step(0.001, uFoot);
-  pic *= 1.0 - (0.13 + 0.5 * low) * line * (1.0 - 0.7 * faceK);
+  pic *= 1.0 - (0.075 + 0.5 * low) * line * (1.0 - faceK);
   // A band of brighter light rolls slowly up the figure; now and then a second,
   // finer one crosses it. Brightness only.
   float roll = fract(uv.y + t * 0.085);
   pic *= 1.0 + 0.1 * exp(-pow((roll - 0.5) * 7.0, 2.0));
   float beat = smoothstep(0.86, 1.0, sin(t * 0.61) * sin(t * 0.23 + 1.3));
-  pic *= 1.0 + beat * 0.07 * sin(p.y / px * 1.9 + t * 24.0);
+  pic *= 1.0 + beat * 0.05 * sin(p.y / px * 1.9 + t * 24.0) * (1.0 - faceK);
   pic *= 1.0 + 0.012 * sin(t * 31.0) + 0.01 * sin(t * 12.7);
 
   // The foot dissolves; the scan-in runs from the foot to the crown with a bright edge.
@@ -161,12 +173,13 @@ void main() {
   float show = drawn * curtain * body;
   float figA = a * show;
   vec3 col = pic * figA;
-  // A little of the page shows through.
-  float alpha = figA * 0.9;
+  // A little of the page shows through him; pure light covers nothing.
+  float alpha = figA * 0.92 * (1.0 - beamy);
 
-  // The air round the figure glows, and its edge splits into red and blue.
-  col += mix(uDeep, uPale, 0.3) * halo * 0.6 * show;
-  col += vec3(max(0.0, aR - a) * 0.55, 0.0, max(0.0, aB - a) * 0.9) * mix(uPale, uDeep, 0.35) * show;
+  // The air round the figure glows, outside it only; its edge splits, very
+  // slightly, into red and blue (never round the head).
+  col += mix(uDeep, uPale, 0.35) * halo * 0.55 * show;
+  col += vec3(max(0.0, aR - a) * 0.5, 0.0, max(0.0, aB - a) * 0.7) * mix(uPale, uDeep, 0.35) * show * 0.4 * (1.0 - faceK);
   col += uPale * lead * (0.25 + 0.75 * a) * step(abs(q.x), 1.0) * 0.8;
   col += mix(uPale, uHot, 0.5) * fold * step(abs(q.y), 1.0) * (0.25 + 0.75 * max(a, wide)) * 0.8;
 
@@ -233,6 +246,11 @@ void main() {
 }
 `;
 
+/* The blurred silhouette the halo is read from: its height in pixels, and the reach
+   of each of its three box blurs (so the glow reaches about 5% of the figure's height). */
+const AIR_TALL = 160;
+const AIR_BLUR = 3;
+
 function compile(gl, type, source) {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, source);
@@ -268,7 +286,7 @@ export function createHologram(canvas, tones, look) {
   gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
   const u = {};
-  for (const name of ['uRes', 'uPane', 'uEmit', 'uPx', 'uKeep', 'uTime', 'uOn', 'uOut', 'uGain', 'uWarm', 'uPitch', 'uFoot', 'uFace', 'uDeep', 'uPale', 'uHot', 'uTex']) u[name] = gl.getUniformLocation(program, name);
+  for (const name of ['uRes', 'uPane', 'uEmit', 'uPx', 'uKeep', 'uTime', 'uOn', 'uOut', 'uGain', 'uWarm', 'uPitch', 'uFoot', 'uFace', 'uDeep', 'uPale', 'uHot', 'uTex', 'uAir']) u[name] = gl.getUniformLocation(program, name);
   gl.uniform3fv(u.uDeep, tones.deep);
   gl.uniform3fv(u.uPale, tones.pale);
   gl.uniform3fv(u.uHot, tones.hot);
@@ -277,19 +295,24 @@ export function createHologram(canvas, tones, look) {
   gl.uniform1f(u.uFoot, look.foot);
   gl.uniform3f(u.uFace, look.face ? look.face.x : 0, look.face ? look.face.y : 0, look.face ? look.face.r : 0);
   gl.uniform1i(u.uTex, 0);
+  gl.uniform1i(u.uAir, 1);
 
   // Until the picture is in there is no figure: one clear pixel.
   const texture = gl.createTexture();
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
-  for (const [key, value] of [
-    [gl.TEXTURE_MIN_FILTER, gl.LINEAR],
-    [gl.TEXTURE_MAG_FILTER, gl.LINEAR],
-    [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE],
-    [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE],
-  ])
-    gl.texParameteri(gl.TEXTURE_2D, key, value);
+  const smooth = () => {
+    for (const key of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, key, gl.LINEAR);
+    for (const key of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, key, gl.CLAMP_TO_EDGE);
+  };
+  smooth();
+  const air = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, air);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, 1, 1, 0, gl.ALPHA, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+  smooth();
+  gl.activeTexture(gl.TEXTURE0);
 
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
@@ -305,6 +328,49 @@ export function createHologram(canvas, tones, look) {
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      // The air: the silhouette at AIR_TALL pixels, blurred here (three box passes,
+      // a few thousand pixels), so the halo is one smooth falloff.
+      const w0 = image.naturalWidth || image.width;
+      const h0 = image.naturalHeight || image.height;
+      const h = AIR_TALL;
+      const w = Math.max(8, Math.round((w0 * h) / h0));
+      const small = document.createElement('canvas');
+      small.width = w;
+      small.height = h;
+      const ctx = small.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(image, 0, 0, w, h);
+      const rgba = ctx.getImageData(0, 0, w, h).data;
+      let from = new Float32Array(w * h);
+      let to = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) from[i] = rgba[i * 4 + 3];
+      for (let pass = 0; pass < 6; pass++) {
+        const across = pass % 2 === 0;
+        const n = across ? w : h;
+        const lines = across ? h : w;
+        const step = across ? 1 : w;
+        for (let j = 0; j < lines; j++) {
+          const start = across ? j * w : j;
+          for (let i = 0; i < n; i++) {
+            let sum = 0;
+            for (let k = -AIR_BLUR; k <= AIR_BLUR; k++) {
+              const at = i + k;
+              sum += at < 0 || at >= n ? 0 : from[start + at * step];
+            }
+            to[start + i * step] = sum / (2 * AIR_BLUR + 1);
+          }
+        }
+        [from, to] = [to, from];
+      }
+      const bytes = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) bytes[i] = Math.round(from[i]);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, air);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, w, h, 0, gl.ALPHA, gl.UNSIGNED_BYTE, bytes);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
     },
     resize(w, h, ratio) {
       dpr = ratio;
@@ -351,6 +417,7 @@ export function createHologram(canvas, tones, look) {
     },
     dispose() {
       gl.deleteTexture(texture);
+      gl.deleteTexture(air);
       gl.deleteBuffer(buffer);
       gl.deleteProgram(program);
     },
