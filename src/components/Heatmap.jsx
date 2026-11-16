@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { EV } from '../kit/contract';
 import { MONTHS } from '../lib/months';
 
 const CELL = 11; // cell size
@@ -111,8 +112,30 @@ export default function Heatmap({ days, label, copy }) {
 
   // Tell the world which week is chosen, so its butte on the horizon can light.
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent('world:week', { detail: { index: week } }));
+    window.dispatchEvent(new CustomEvent(EV.week, { detail: { index: week } }));
   }, [week]);
+
+  /* The scene lays one piece over each week, so the graph says where its columns
+     are: on the SVG (data-world-anchor="graph") `data-weeks` is how many there are,
+     `data-week-x0` the px from the SVG's left edge to the centre of the first week
+     (negative on a phone, where the oldest weeks are cropped away) and
+     `data-week-dx` the px from one week to the next. Written on resize only. */
+  useEffect(() => {
+    const el = svg.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    // The observer's box is the layout size, fractional and free of any transform.
+    const write = (w, h) => {
+      if (!w || !h) return;
+      const scale = phone ? Math.max(w / width, h / H) : Math.min(w / width, h / H);
+      const left = phone ? w - width * scale : (w - width * scale) / 2;
+      el.dataset.weekX0 = (left + (CELL / 2) * scale).toFixed(2);
+      el.dataset.weekDx = (PITCH * scale).toFixed(3);
+    };
+    write(el.clientWidth, el.clientHeight);
+    const ro = new ResizeObserver(([e]) => write(e.contentRect.width, e.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [phone, width]);
 
   // Near an edge the tooltip hangs from its own end, so the card never clips it.
   const side = (x, w) => (x > w - 150 ? 'end' : x < 150 ? 'start' : undefined);
@@ -165,6 +188,8 @@ export default function Heatmap({ days, label, copy }) {
           preserveAspectRatio={phone ? 'xMaxYMid slice' : 'xMidYMid meet'}
           role="img"
           aria-label={label}
+          data-world-anchor="graph"
+          data-weeks={weeks.length}
         >
           {week !== null && <rect className="heat-week" x={week * PITCH - 1} y="0" width={CELL + 2} height={H} />}
           {buttes.map((d, level) => (

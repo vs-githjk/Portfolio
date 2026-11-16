@@ -1,4 +1,5 @@
 import { value } from '../data/content';
+import PlaceName from './PlaceName';
 import Rich from './Rich';
 
 /* Hairline rows: [tag] [claim] [evidence]. Not cards, so it never reads as
@@ -10,8 +11,11 @@ export default function Value() {
   return (
     <section className="sec" id="value" data-realm="earth">
       <div className="wrap">
-        <div className="sec-head reveal">
-          <span className="eyebrow">{value.eyebrow}</span>
+        <div className="sec-head reveal" data-world-anchor="value">
+          <span className="eyebrow">
+            {value.eyebrow}
+            <PlaceName section="value" />
+          </span>
           <h2>{value.heading}</h2>
         </div>
         <div className="val">

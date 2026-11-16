@@ -1,5 +1,7 @@
 import { proofOfWork } from '../data/content';
+import { EV } from '../kit/contract';
 import Heatmap from './Heatmap';
+import PlaceName from './PlaceName';
 
 /* The build writes a fresh snapshot to github.local.json (gitignored); the
    committed github.json is the fallback, so a plain build never dirties git. */
@@ -10,7 +12,11 @@ const github = snaps['../data/github.local.json'] ?? snaps['../data/github.json'
    - the record: the commit graph (a build-time snapshot, no runtime calls) as a
      ridge of weekly buttes over the day calendar; the same weeks stand on the
      night horizon behind the section, and the week under the pointer lights there;
-   - the wins: gold plaques in order of placing, the one place gold is used;
+   - the roost: an empty band over the card, the width of the graph, where the
+     scene lays its creature along the weeks (data-world-anchor="roost");
+   - the wins: gold plaques in order of placing, the one place gold is used; the
+     plaque under the pointer or the focus is announced to the scene
+     (`world:focus`, kind "win", id its place in the list) so its star can flare;
    - the checks: one row per public trail, showing the address it goes to.
    Every GitHub number is computed here from github.json, never typed. */
 
@@ -18,6 +24,7 @@ const TZ = 'America/New_York'; // fixed, so the date reads the same for every vi
 const fmt = (n) => n.toLocaleString('en-US');
 const fill = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
 const bare = (href) => href.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+const tell = (id) => window.dispatchEvent(new CustomEvent(EV.focus, { detail: { kind: 'win', id } }));
 
 function when(iso) {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -55,13 +62,17 @@ export default function ProofOfWork() {
     <section className="sec" id="verify" data-realm="earth">
       <div className="wrap">
         <div className="sec-head reveal">
-          <span className="eyebrow">{proofOfWork.eyebrow}</span>
+          <span className="eyebrow">
+            {proofOfWork.eyebrow}
+            <PlaceName section="verify" />
+          </span>
           <h2>
             {proofOfWork.heading} <em>{proofOfWork.headingEm}</em>
           </h2>
           <p>{proofOfWork.intro}</p>
         </div>
 
+        <div className="pow-roost" data-world-anchor="roost" aria-hidden="true" />
         <div className="pow-card reveal">
           <div className="pow-top">
             <span className="eyebrow">{g.eyebrow}</span>
@@ -111,8 +122,8 @@ export default function ProofOfWork() {
             {wins.link.label}
           </a>
         </div>
-        <ol className="plaques reveal">
-          {wins.items.map((w) => {
+        <ol className="plaques reveal" data-world-anchor="wins">
+          {wins.items.map((w, i) => {
             const body = (
               <>
                 <b className="plaque-place" data-word={/^\d/.test(w.place) ? undefined : ''}>
@@ -124,7 +135,7 @@ export default function ProofOfWork() {
               </>
             );
             return (
-              <li key={`${w.project}${w.prize}`}>
+              <li key={`${w.project}${w.prize}`} onPointerEnter={() => tell(i)} onPointerLeave={() => tell(null)} onFocus={() => tell(i)} onBlur={() => tell(null)}>
                 {w.href ? (
                   <a className="plaque" href={w.href} target="_blank" rel="noopener noreferrer">
                     {body}

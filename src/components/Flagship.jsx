@@ -1,83 +1,93 @@
-import Badge from './Badge';
-import Media from './Media';
-import Metrics from './Metrics';
+import { builds } from '../data/content';
+import Count from './Count';
 import LinkRow from './LinkRow';
+import Metrics from './Metrics';
 import Rich from './Rich';
+import ScenePlate from './ScenePlate';
 import Stack from './Stack';
+import Stills from './Stills';
+import { fill, pad2, place } from './counts';
 
-/* The PrismAI panel, laid out on one grid so every edge is shared:
+/* A flagship is a chapter of two parts.
 
-     [ lead still + caption     ] [ kind, title, story, role ]
-     [ "Now building" box       ] [                          ]  (on a phone it follows the story)
-     [ three stills: one band, equal frames, full width      ]
-     [ metrics                  ] [ stack, links             ]
+   Arrival: its place among the flagships, the name at display size across the
+   whole column, then a window onto its own world on one side (left, right, left)
+   and, on the other, the one-liner and ONE figure with the label that says what
+   it measures. The window is empty space the scene draws into
+   (data-world-anchor="flag-<id>"); the engraved plate inside it is the same
+   counts as a hairline drawing, so the window is never bare without the scene.
 
-   The first row pairs the lead still and the "Now building" box with the story;
-   the two columns end on the same line (the left one spreads any difference
-   between its two blocks). The three stills are a full-width band of identical
-   frames with their captions on one baseline. The lead is the agency release,
-   in development, and is labelled as such. The lead still is found by light:
-   as the panel scrolls in it starts in the sea's own tint and a lamp sweep
-   restores its true colour (sections.css, FOUND BY LIGHT). `num` is the build's
-   place in the list, "01/20". */
-export default function Flagship({ item, num }) {
+   Story: a calmer panel. The stills as one viewer, the other figures, the role
+   line and what is being built now. The story itself and the stack open under
+   "The full story" (a native <details>, so the text is in the HTML). */
+export default function Flagship({ item, index, count }) {
   const { lead, stack } = item.media;
+  const frames = [
+    { ...lead, width: 1200, height: 750, steps: [640, 900] },
+    ...stack.map((s) => ({ ...s, width: 800, height: 500, steps: [320, 640] })),
+  ];
+  const figure = item.metrics[item.figure ?? 0];
+  const rest = item.metrics.filter((m) => m !== figure);
   return (
-    <article className="flag reveal" id={`build-${item.id}`}>
-      <div className="flag-media flag-lead">
-        <Media
-          image={lead.image}
-          alt={lead.alt}
-          badges={lead.badge ? <Badge dot>{lead.badge}</Badge> : null}
-          width={1200}
-          height={750}
-          sizes="(min-width: 960px) 540px, 92vw"
-        />
-        <p className="media-cap">{lead.caption}</p>
-      </div>
-      <div className="flag-now">
-        <div className="now-box">
-          <span className="now">
-            <i aria-hidden="true" />
-            {item.now.label}
+    <article className="ch" id={`build-${item.id}`} data-side={index % 2 ? 'right' : 'left'} data-build={item.id}>
+      <div className="ch-arrival reveal">
+        <p className="ch-index">
+          <span>
+            <span className="num">{pad2(index + 1)}</span>
+            <span aria-hidden="true"> / </span>
+            <span className="sr"> {builds.labels.of} </span>
+            {pad2(count)}
           </span>
-          <p className="text">
-            <Rich text={item.now.text} />
+          <i aria-hidden="true" />
+          <span className="ch-kind">
+            <span className="num">{place(item.id)}</span> {item.kind}
+          </span>
+          <i aria-hidden="true" />
+          <span className="ch-when">{item.when}</span>
+        </p>
+        <h3 className="ch-title">{item.title}</h3>
+        <div className="ch-world" data-world-anchor={`flag-${item.id}`}>
+          <ScenePlate scene={item.scene} />
+        </div>
+        <div className="ch-intro">
+          <p className="ch-desc">{item.descriptor}</p>
+          <p className="one">{item.oneLiner}</p>
+          <p className="ch-figure">
+            <Count value={figure.value} />
+            <span>{figure.label.replace(/\n/g, ' ')}</span>
           </p>
+          <LinkRow links={item.links} />
         </div>
       </div>
-      <div className="flag-body">
-        <div className="kind">
-          <span className="eyebrow">
-            <span className="num">{num}</span> {item.kind}
-          </span>
-          <span className="eyebrow">{item.when}</span>
+      <div className="ch-story reveal">
+        <Stills id={item.id} title={item.title} frames={frames} />
+        <div className="ch-tell">
+          <Metrics items={rest} />
+          <p className="role">{item.role}</p>
+          <div className="now-box">
+            <span className="now">
+              <i aria-hidden="true" />
+              {item.now.label}
+            </span>
+            <p className="text">
+              <Rich text={item.now.text} />
+            </p>
+          </div>
         </div>
-        <h3 className="flag-title">
-          {item.title} <span>{item.descriptor}</span>
-        </h3>
-        <p className="one">{item.oneLiner}</p>
-        {item.body.map((p) => (
-          <p className="text" key={p.slice(0, 24)}>
-            <Rich text={p} />
-          </p>
-        ))}
-        <p className="role">{item.role}</p>
-      </div>
-      <div className="flag-stack">
-        {stack.map((s) => (
-          <figure key={s.image}>
-            <Media image={s.image} alt={s.alt} ratio="16 / 9" width={800} height={500} steps={[320, 640]} sizes="(min-width: 960px) 340px, 92vw" />
-            <figcaption className="media-cap">{s.caption}</figcaption>
-          </figure>
-        ))}
-      </div>
-      <div className="flag-metrics">
-        <Metrics items={item.metrics} />
-      </div>
-      <div className="flag-facts">
-        <Stack text={item.stack} />
-        <LinkRow links={item.links} />
+        <details className="ch-more fold">
+          <summary>
+            {builds.labels.story}
+            <span className="sr">{fill(builds.labels.storySr, { title: item.title })}</span>
+          </summary>
+          <div className="fold-body">
+            {item.body.map((p) => (
+              <p className="text" key={p.slice(0, 24)}>
+                <Rich text={p} />
+              </p>
+            ))}
+            <Stack text={item.stack} />
+          </div>
+        </details>
       </div>
     </article>
   );

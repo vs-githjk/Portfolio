@@ -1,5 +1,6 @@
 import { highlights } from '../data/content';
 import Rich from './Rich';
+import PlaceName from './PlaceName';
 
 /* Four complete statements, each naming what changed, by how much, for whom and
    where. Never directly under the hero: a figure means nothing before the story
@@ -15,6 +16,7 @@ export default function Highlights() {
         </h2>
         <span className="eyebrow reveal" aria-hidden="true">
           {highlights.eyebrow}
+          <PlaceName section="highlights" />
         </span>
       </div>
       <ol className="hl-strata">

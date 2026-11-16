@@ -340,8 +340,28 @@ export const experience = {
 export const builds = {
   eyebrow: "What I've built",
   heading: 'Builds',
+  /* {Total} and {flagships} are counted from the lists below and written as words
+     (components/counts.js), so the sentence can never disagree with the page. */
   intro:
-    'Twenty builds, my three strongest first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+    '{Total} builds, my {flagships} strongest first: products, hackathon wins, a first-author paper and the smaller tools in between. Every number here has a source I can show you.',
+  /* The depth chart under the heading: one dot per build, in page order, each a
+     link to its entry. A gold dot is a build with an award. */
+  chart: {
+    label: 'Every build, in order',
+    groups: { flagships: 'Flagships', items: 'Featured', research: 'The paper', more: 'More builds' },
+    legend: 'Gold marks an award.',
+  },
+  /* Labels for the controls inside a build. */
+  labels: {
+    of: 'of',
+    story: 'The full story',
+    storySr: ' of {title}',
+    stills: 'Stills from {title}',
+    still: 'Still {n} of {total}',
+    dossier: 'Dossier',
+    dossierSr: ': role, story and stack of {title}',
+    fleet: 'Featured builds',
+  },
 
   /* ---- Flagship panels: PrismAI, then DuelWise ---------------------------- */
   /* Sources (Nov 12 2026): PrismAI's live site meetprismai.com, its README on
@@ -356,6 +376,7 @@ export const builds = {
       id: 'prismai',
       // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
       scene: { kind: 'prism', cells: 14 },
+      figure: 2, // which metric is the one large figure on its arrival screen
       kind: 'Product · live · free while in beta',
       title: 'PrismAI',
       descriptor: 'know who promised what',
@@ -422,6 +443,7 @@ export const builds = {
       id: 'duelwise',
       // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
       scene: { kind: 'board', moons: 10, lights: 151 },
+      figure: 0,
       kind: 'Product · live · solo',
       title: 'DuelWise',
       descriptor: 'can you beat my agents?',
@@ -488,6 +510,7 @@ export const builds = {
       id: 'snapback',
       // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
       scene: { kind: 'scan', photos: 48, placed: 43, decoys: 30, decoysPlaced: 0 },
+      figure: 0,
       kind: 'Hackathon · HackPrinceton 2026 · team of 4',
       title: 'SNAPBACK',
       descriptor: 'trust the home, not the ad',
@@ -826,6 +849,20 @@ export const builds = {
       line: 'CodeQL errors in CodeLlama 7B’s C code, before and after the repair loop, across 5,000 tasks.',
     },
     stack: 'Python · GCC · CodeQL · KLEE · retrieval · DeepSeek Coder · CodeLlama',
+    /* The repair loop, drawn (ResearchRow.jsx). `rounds` is the "up to three repair
+       rounds" of the story; the bar lengths are read from the first metric above,
+       never typed again (scripts/check-scenes.mjs checks both). */
+    loop: {
+      rounds: 3,
+      model: 'Model',
+      checks: ['GCC', 'CodeQL'],
+      final: 'KLEE',
+      back: 'findings go back',
+      lap: 'round',
+      before: 'before',
+      after: 'after the loop',
+      alt: 'The repair loop: the model writes C, GCC and CodeQL check it, and their findings go back to the model for up to three repair rounds, with KLEE as the final check. CodeQL errors in CodeLlama 7B’s C code fell from {before} to {after} across 5,000 tasks.',
+    },
     links: [
       { label: 'Read the paper', href: 'https://arxiv.org/abs/2607.21641' },
       { label: 'Source', href: '' }, // TODO
@@ -857,10 +894,26 @@ export const builds = {
       outLabel: 'Out',
       out: 'a reviewed branch',
       gatesLabel: 'Stops only at my gates',
+      /* A gate may become { name, before: '<step>' } once Vidyut confirms where it
+         sits among the steps (TODO: ask him). Until then the run on the page holds
+         once, before the branch, and names all three. */
       gates: ['the plan', 'the design direction', 'the overnight build'],
+      /* The run you can press (CrewRun.jsx). It waits for the reader's own Go. */
+      run: {
+        start: 'Run it',
+        again: 'Run it again',
+        go: 'Go',
+        gate: 'my go',
+        given: 'go given',
+        rest: 'Press Run it. It will stop and wait for you.',
+        typing: 'One sentence in.',
+        step: 'The crew: {step}.',
+        hold: 'Stopped. A real run waits for me at each gate: {gates}. This one waits for you. Nothing moves until you say go.',
+        done: 'Out: a reviewed branch. Nothing was pushed.',
+      },
     },
     rosterLabel: 'The crew',
-    rosterHint: 'Fourteen characters, one job each. Pick one.',
+    rosterHint: '{Crew} characters, one job each. Pick one.', // {Crew} is crew.length, as a word
     of: 'of',
     crew: [
       { id: 'orchestrator', name: 'The Orchestrator', job: 'runs the room', does: 'Takes the one sentence, hands every task to the cheapest model that can do it well, and makes the final call.' },
@@ -1617,7 +1670,21 @@ export const contact = {
   ],
   footerLeft: 'Vidyut Sriram · State College, PA',
   footerRight: 'Built from scratch · 2026',
-  footerTop: 'Back to top',
+  footerTop: 'Back to orbit',
+  /* The credits at the foot (Footer.jsx). {Crew} is the size of the crew, counted. */
+  credits: {
+    label: 'Credits',
+    cast: 'The crew · {Crew} agents, one job each',
+    world: 'In the world',
+    faces: {
+      label: 'The faces',
+      rows: [
+        { where: 'First screen', what: 'My portrait, drawn in light from one photograph' },
+        { where: 'Under my name', what: 'A silhouette on a beach at sunset' },
+        { where: 'Contact', what: 'The studio headshot' },
+      ],
+    },
+  },
   /* The colophon: how the site was made. `lighthouse` holds numbers measured on
      the production build on the date given, on Lighthouse's phone profile; leave
      it null rather than quote a number that was not measured that day. */
@@ -1638,4 +1705,24 @@ export const contact = {
 export const worlds = {
   surface: 'Under the surface: the work.',
   shore: 'On solid ground: the proof.',
+  /* The place each section is, shown beside its eyebrow (PlaceName.jsx) until the
+     shell's chart lists it in data/world.js. Keys are section ids. */
+  places: {
+    work: 'The Sounding',
+    builds: 'The Deep',
+    crew: 'The Camp',
+    highlights: 'The Cut',
+    verify: 'The Ridge at night',
+    principles: 'The Bench',
+    value: 'Moonrise',
+    toolkit: 'The Inventory',
+    contact: 'First Light',
+  },
 };
+
+/* Numbers as words, for sentences whose count is computed (components/counts.js). */
+export const numberWords = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+  'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five', 'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty',
+];
