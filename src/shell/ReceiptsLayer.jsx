@@ -15,7 +15,7 @@ import { localBindings } from '../kit/bindings';
    hairline. Anywhere else it goes to the margin on its side if the margin is
    wide enough, and to the ledger (one line each, along the foot) if not.
    Decoration: the same facts are already in the page, so the layer is aria-hidden. */
-const TAG = { w: 176, h: 64, gap: 18, edge: 12 };
+const TAG = { w: 168, h: 64, gap: 18, edge: 10 };
 
 function layout(items, parts, free, column, bar) {
   const w = window.innerWidth;
@@ -57,10 +57,16 @@ export default function ReceiptsLayer({ parts, free = [], title }) {
     let key = '';
     const wrap = document.querySelector('main .wrap');
     const nav = document.querySelector('.nav');
-    let column = wrap ? wrap.offsetWidth : window.innerWidth;
+    // The text column: the wrap without its gutters (read here and on a resize only).
+    const inner = () => {
+      if (!wrap) return window.innerWidth;
+      const cs = getComputedStyle(wrap);
+      return wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    };
+    let column = inner();
     let bar = nav ? nav.offsetHeight : 0;
     const onResize = () => {
-      column = wrap ? wrap.offsetWidth : window.innerWidth;
+      column = inner();
       bar = nav ? nav.offsetHeight : 0;
     };
     const update = (now) => {

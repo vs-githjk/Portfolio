@@ -872,7 +872,7 @@ html[data-travel='in'] .bg-world {
 .chart-scale {
   grid-column: 1;
   width: 100%;
-  height: 100%;
+  height: calc(var(--rows) * 44px);
   overflow: visible;
   fill: none;
 }
@@ -941,6 +941,13 @@ html[data-travel='in'] .bg-world {
   height: 8px;
   border-radius: 50%;
   background: var(--text);
+}
+
+.chart ol,
+.chart ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .chart-places {
