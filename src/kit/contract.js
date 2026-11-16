@@ -18,8 +18,6 @@ export const VAR = {
   line: '--w-line', // surface waterline, px from window top, -1 when off screen
   shore: '--w-shore', // second waterline, same
   depth: '--w-depth', // 0 to 1 down the page from heroOrigin()
-  px: '--px',
-  py: '--py', // pointer, -1 to 1, fine pointers only
 };
 
 /* The names of this site's anchors and bindings are site words: they live in

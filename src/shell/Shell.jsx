@@ -43,7 +43,7 @@ export default function Shell() {
       barH = nav ? nav.offsetHeight : 64;
     };
     window.addEventListener('resize', onResize, { passive: true });
-    const stop = startSignals({ lines: waterlines, origin: heroOrigin, bar: () => barH, realm: realmAt });
+    const stop = startSignals({ lines: waterlines, origin: heroOrigin, bar: () => barH, realm: realmAt, scope: { lines: '.nav', depth: '.rail' } });
     const travel = startTravel({ mark });
     configureSound({ beds: BEDS });
     startSwitches();
