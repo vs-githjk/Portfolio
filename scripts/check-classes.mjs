@@ -8,7 +8,7 @@
 // purpose).
 import { readFileSync } from 'node:fs';
 
-const SHARED = new Set(['hero', 'nav', 'nav-links', 'welcome', 'welcome-ball', 'orbit', 'orbit-bar', 'orbit-scene']);
+const SHARED = new Set(['hero', 'nav', 'nav-links', 'welcome', 'orbit', 'orbit-bar', 'orbit-scene']);
 const read = (name) => readFileSync(new URL(`../src/styles/${name}`, import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 /* Every class that is the first simple selector of a rule (so `.a .b` counts `.a`, and
    `html[data-x] .b` counts nothing): those are the names a sheet claims for itself. */

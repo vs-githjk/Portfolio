@@ -19,10 +19,10 @@ import { useReveal } from './hooks/useReveal';
 /* Page order. Reordering these lines reorders the site.
 
    The argument the page makes, in order:
-     Welcome       - his face in light says hello; one scroll plays it into the hero
-     Hero          - his name, lit from above, and a ring of what he has built
+     Welcome       - a hologram of him says hello; one scroll closes it to a beam
+     Hero          - his name, lit from above, beside his portrait; no builds here
      Experience    - where he has worked, every result a complete statement
-     Builds        - PrismAI, six featured builds, the paper, seven more
+     Builds        - the ring of builds as the index, the flagships, the fleet, the paper, more
      Highlights    - four one-line statements, after the stories they summarize
      ProofOfWork   - the commit graph, the wins, and where to check them
      Principles    - how he thinks about building (2x2 tiles)

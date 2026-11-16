@@ -21,7 +21,8 @@
      in Experience, Builds and the paper. `highlights` (below Builds) is the
      optional replacement: four complete one-line statements, not figures.
    - `hero.proofLine` is gone; `hero.credential` replaces it.
-   - `hero.carousel.slides` (the orbit ring) has 11 cards in Vidyut's order
+   - `hero.carousel.slides` (the ring of build cards, now the index at the top of
+     Builds) once had 11 cards in Vidyut's order
      (V4 SIGN-OFF, Oct 20): PrismAI, BetterBill, MVR, Vytal, Match Day,
      Yinzone, Terrametric, the paper, Quorum, FilingWatch, NextRound. Tune the
      ring geometry for 11; do not drop cards.
@@ -89,9 +90,11 @@ export const welcome = {
 };
 
 /* ---------------------------------------------------------------- HERO ---- */
-/* Centre: status row, name, identity, one plain line, credentials, actions.
-   Around it: the orbit ring. No figures in the hero except the live-status
-   badge on the PrismAI card, which says what it counts. */
+/* The hero: the name, identity, one plain line, credentials and actions, beside
+   a card with the portrait, the status and the place. No figures and no builds.
+   `carousel` below is the ring of build cards; it no longer stands in the hero
+   (it is the index at the top of Builds, or the ring of wins in Proof of work:
+   RING_HOME in data/world.js) but its words and slides are still kept here. */
 export const hero = {
   status: 'Forward-deployed and AI engineer',
   /* Vidyut's own photo (Oct 2026): his silhouette on a beach at sunset, 180px and
@@ -1696,7 +1699,7 @@ export const contact = {
   ],
   footerLeft: 'Vidyut Sriram · State College, PA',
   footerRight: 'Built from scratch · 2026',
-  footerTop: 'Back to orbit',
+  footerTop: 'Back to the top',
   /* The credits at the foot (Footer.jsx). {Crew} is the size of the crew, counted. */
   credits: {
     label: 'Credits',
@@ -1706,8 +1709,8 @@ export const contact = {
     faces: {
       label: 'The faces',
       rows: [
-        { where: 'First screen', what: 'My studio photograph in a round window; on Enter its light leaves the picture as points and gathers into the ball' },
-        { where: 'Under my name', what: 'A silhouette on a beach at sunset' },
+        { where: 'First screen', what: 'A hologram: one picture of me in blue light, on a projector plate; on Enter it closes to a single beam' },
+        { where: 'Beside my name', what: 'A silhouette on a beach at sunset' },
         { where: 'Contact', what: 'The studio headshot' },
       ],
     },
@@ -1717,7 +1720,7 @@ export const contact = {
      it null rather than quote a number that was not measured that day. */
   colophon: {
     label: 'Colophon',
-    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
+    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the hologram on the first screen is one picture and a small shader of my own: scan lines, a cone of light and a plate under it. When you enter, it closes to a single beam and the page begins.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
     measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {performance} at the median, {low} or more on {held} of them and {worst} on the first, cold run; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
     // Measured Nov 16 2026 on the production build of the round 6 fixes (npm run build, vite preview),
@@ -1728,7 +1731,11 @@ export const contact = {
     // Accessibility, best practices and SEO 100 on all nine. State every run's range, never a floor
     // that one of the quoted runs broke (round 6: "97 or more each time" was re-measured at 96), and
     // re-measure when the build changes.
-    lighthouse: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 92, held: 'eight', worst: 67, high: 97, accessibility: 100, bestPractices: 100, seo: 100 },
+    // Nov 16 2026, later: the opening was rebuilt (hologram, hero, the ring's move), so those nine runs
+    // describe a build that is gone. Null until it is measured again on a quiet machine. The last
+    // quoted set was: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 92, held: 'eight',
+    // worst: 67, high: 97, accessibility: 100, bestPractices: 100, seo: 100 }.
+    lighthouse: null,
     llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
   },
 };
