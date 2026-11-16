@@ -354,6 +354,8 @@ export const builds = {
   flagships: [
     {
       id: 'prismai',
+      // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
+      scene: { kind: 'prism', cells: 14 },
       kind: 'Product · live · free while in beta',
       title: 'PrismAI',
       descriptor: 'know who promised what',
@@ -418,6 +420,8 @@ export const builds = {
     },
     {
       id: 'duelwise',
+      // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
+      scene: { kind: 'board', moons: 10, lights: 151 },
       kind: 'Product · live · solo',
       title: 'DuelWise',
       descriptor: 'can you beat my agents?',
@@ -482,6 +486,8 @@ export const builds = {
          snapback-navy.vercel.app. HackPrinceton Fall 2026, team of 4. No prize
          (Vidyut, Nov 15): no award badge. */
       id: 'snapback',
+      // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
+      scene: { kind: 'scan', photos: 48, placed: 43, decoys: 30, decoysPlaced: 0 },
       kind: 'Hackathon · HackPrinceton 2026 · team of 4',
       title: 'SNAPBACK',
       descriptor: 'trust the home, not the ad',
