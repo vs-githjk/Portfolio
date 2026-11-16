@@ -1726,16 +1726,16 @@ export const contact = {
     label: 'Colophon',
     made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene with a rigged, animated dragon in it, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
-    measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {performance} at the median, {low} or more on {held} of them and {worst} on the first, cold run; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
-    // Measured Nov 16 2026 on the production build of the round 6 fixes (npm run build, vite preview),
+    measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {low} to {high}, {performance} at the median; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
+    // Measured Nov 16 2026 on the production build with the model dragon (npm run build, vite preview),
     // Lighthouse 12.2.1, --form-factor=mobile, nine runs in a row, all quoted:
-    // performance 67, 97, 95, 92, 97, 97, 96, 97, 97 (LCP 2.4 to 2.5 s, CLS 0; TBT 20 to 250 ms on
-    // eight runs and 2,500 ms on the first, which started seconds after the build finished: one 2.9 s
-    // task that did not come back in the next eight runs or after a restart of the preview server).
-    // Accessibility, best practices and SEO 100 on all nine. State every run's range, never a floor
-    // that one of the quoted runs broke (round 6: "97 or more each time" was re-measured at 96), and
-    // re-measure when the build changes.
-    lighthouse: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 92, held: 'eight', worst: 67, high: 97, accessibility: 100, bestPractices: 100, seo: 100 },
+    // performance 98, 97, 97, 97, 97, 97, 97, 97, 97 (LCP 2.1 to 2.5 s, CLS 0, TBT 10 to 40 ms).
+    // Accessibility, best practices and SEO 100 on all nine. Lighthouse does not scroll, so the world
+    // and the dragon (asked for after the first scroll on a phone) are not in these runs: they measure
+    // that neither costs the first screen anything. The build before this one had one cold run at 67
+    // (a 2.9 s task seconds after the build); it did not come back here. State every run's range,
+    // never a floor that one of the quoted runs broke, and re-measure when the build changes.
+    lighthouse: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 97, high: 98, accessibility: 100, bestPractices: 100, seo: 100 },
     llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
   },
 };
