@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { hero } from '../data/content';
 import { useReducedMotion } from '../hooks/useMediaQuery';
+import { ring } from '../lib/ring';
 import Badge from './Badge';
 import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from './Icons';
 
@@ -183,10 +184,13 @@ export default function Orbit({ stageRef, centreRef }) {
       geo.front = CFG.front;
       while (geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
       stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
+      // The welcome hologram lands its light on this ring (lib/ring.js).
+      Object.assign(ring, { el: scene, n: N, oy: O, rx: geo.rx, rz: geo.rz, sinT: geo.sinT, cosT: geo.cosT, persp: CFG.persp, cardW: geo.cardW, cardH, front: geo.front, side: CFG.side });
     }
 
     function pose() {
       const th = theta(vt);
+      ring.theta = th;
       const ranks = [];
       for (let k = 0; k < N; k++) {
         const w = k * STEP + th;
@@ -425,6 +429,7 @@ export default function Orbit({ stageRef, centreRef }) {
     function applyMode() {
       const wasRing = ringMode;
       ringMode = ringMq.matches;
+      ring.on = ringMode;
       region.dataset.mode = ringMode ? 'ring' : 'row';
       if (!ringMode) {
         if (raf) cancelAnimationFrame(raf);

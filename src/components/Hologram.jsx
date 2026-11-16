@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { heroOrigin } from '../lib/origin';
+import { ring } from '../lib/ring';
 import { createHologram, parseFace } from '../lib/holoScene';
 
 /* The welcome hologram (plain WebGL, its own small chunk; the scene itself is
@@ -9,27 +10,30 @@ import { createHologram, parseFace } from '../lib/holoScene';
      idle) and then fetches the point cloud, so the greeting text is the first
      thing painted and the face draws itself in a moment later.
    - The canvas is fixed, so the light stays in the window while the page scrolls
-     under it. Scroll is the timeline: over the welcome screen the face loosens
-     into a ball of folded light, the ball says one line (the caption in
-     Welcome.jsx types under it while the ball pulses with the words; this file
-     writes --speak, --speak-on and --ball-y on the welcome section), then the ball
-     bursts and the hero is what it leaves.
+     under it. Scroll is the timeline: over the welcome screen the face peels
+     into a small planet of light (the eyes go last), the planet says one line
+     (the caption in Welcome.jsx types under it while it swells with the words;
+     this file writes --speak, --speak-on and --ball-y on the welcome section),
+     then its light pours onto the orbit ring of builds as the hero arrives (the
+     ring's place comes from lib/ring.js, which Orbit.jsx keeps; on a phone the
+     light lands on the two drifting rows instead) and fades there.
    - It tells the page where it is with <html data-holo>: "in" while the face is
      being drawn (the greeting types in step, see sections.css), "seen" once it
      has (or at once for a visitor who has already watched it in this session),
      "off" when there is no WebGL (the welcome screen closes up).
    - It draws only while some of it is on screen and the tab is visible: every
      frame while the scroll is moving or the face is being drawn, about 30 a
-     second while it only breathes. DPR is capped (1.75, 1.5 on a phone) and a
-     phone draws half the points. The glow is a bloom pass in a third-size buffer
-     (desktop only; a phone gets one wide faint point in ten instead).
+     second while it only breathes. DPR is capped (1.75, 1.5 on a phone). A phone
+     downloads and draws the base tier only (face-a.bin); a desktop adds the
+     fill-in (face-b.bin). The glow is a bloom pass in a third-size buffer
+     (desktop only; a phone's soft splats do without it).
    - On a desktop he also looks a little toward the pointer (eased, a few degrees).
    - Under prefers-reduced-motion it is one still frame of the face that scrolls
-     away with the page: no drawing in, no turn, no ball. */
+     away with the page: no drawing in, no turn, no planet. */
 
-const FACE_URL = '/holo/face.bin';
+const FACE_URLS = ['/holo/face-a.bin', '/holo/face-b.bin'];
 const SEEN_KEY = 'holo-seen';
-const INTRO_MS = 1700;
+const INTRO_MS = 2000;
 /* When the greeting is being typed, in ms after the face starts to draw. These
    mirror --say-delay and --say-dur in tokens.css. */
 const VOICE = [500, 2700];
@@ -57,7 +61,7 @@ export default function Hologram() {
     const phone = window.matchMedia('(max-width: 760px)').matches;
     const style = getComputedStyle(root);
     // A phone draws fewer, smaller points, so each one burns a little brighter.
-    const gain = (Number(style.getPropertyValue('--holo-gain')) || 1) * (phone ? 1.7 : 1);
+    const gain = (Number(style.getPropertyValue('--holo-gain')) || 1) * (phone ? 1.15 : 1);
 
     let scene;
     let raf = 0;
@@ -67,10 +71,12 @@ export default function Hologram() {
     let eased = -1; // scroll progress, eased
     let last = 0;
     let box = null; // the anchor's place in the page
+    const drift = document.querySelector('.drift'); // where the light lands on a phone
+    const land = { on: false, x: 0, y: 0, rx: 1, rz: 1, sinT: 0, cosT: 1, persp: 1500, theta: 0, cardW: 1, cardH: 1, front: 0, side: 0 };
     let faded = ''; // how far the greeting has faded (written to the welcome as --out)
     let spoke = ''; // the last state written for the ball's line
     let turned = ''; // the last head turn written (--head, -1 to 1)
-    let cleared = false; // the canvas has been wiped after the burst
+    let cleared = false; // the canvas has been wiped after the hand-off
     const want = { x: 0, y: 0 }; // where the pointer is, -1 to 1
     const gaze = { x: 0, y: 0 }; // and where he is looking, eased
 
@@ -123,7 +129,7 @@ export default function Hologram() {
         canvas.style.transform = `translate3d(0, ${-y}px, 0)`;
         if (last === 0) {
           last = now;
-          scene.render({ ...pose(w, h, 0), time: 4, intro: 1, morph: 0, burst: 0, turn: -0.08, nod: 0.01, voice: 0, speak: 0, still: true, gain, glow: 0.45 });
+          scene.render({ ...pose(w, h, 0), ring: land, time: 4, intro: 1, morph: 0, flow: 0, turn: -0.07, nod: 0.01, voice: 0, speak: 0, still: true, gain, glow: 0.5 });
         }
         return;
       }
@@ -134,7 +140,7 @@ export default function Hologram() {
         // Past the hero (a jump from a nav link lands here in one step): leave nothing
         // behind, neither the last frame of light nor a half-typed line.
         cleared = true;
-        scene.render({ ...pose(w, h, 1), time: 0, intro: 1, morph: 1, burst: 1, turn: 0, nod: 0, voice: 0, speak: 0, still: false, gain: 0 });
+        scene.render({ ...pose(w, h, 1), ring: land, time: 0, intro: 1, morph: 1, flow: 1, turn: 0, nod: 0, voice: 0, speak: 0, still: false, gain: 0 });
         const host = anchor.parentElement.style;
         host.setProperty('--speak', '1');
         host.setProperty('--speak-on', '0');
@@ -147,20 +153,21 @@ export default function Hologram() {
       if (!gone && (busy || now - last >= IDLE_MS - 2)) {
         const t = now / 1000;
         const talking = !seenAtStart && since > VOICE[0] && since < VOICE[1];
-        const burst = span(0.76, 1, eased);
+        const flow = span(0.7, 0.95, eased);
         const at = pose(w, h, eased);
+        if (flow > 0) where();
         // The ball speaks: its line types as the page moves, and it pulses with it.
-        const typed = span(0.4, 0.58, eased);
-        const speaking = ease(span(0.38, 0.42, eased)) * (1 - ease(span(0.68, 0.75, eased)));
-        const said = `${typed.toFixed(3)}|${speaking.toFixed(2)}|${Math.round(at.cy + at.ball * 1.28)}`;
+        const typed = span(0.41, 0.57, eased);
+        const speaking = ease(span(0.39, 0.43, eased)) * (1 - ease(span(0.66, 0.72, eased)));
+        const said = `${typed.toFixed(3)}|${speaking.toFixed(2)}|${Math.round(at.cy + at.ball * 1.22)}`;
         if (said !== spoke) {
           spoke = said;
           const host = anchor.parentElement.style;
           host.setProperty('--speak', typed.toFixed(3));
           host.setProperty('--speak-on', speaking.toFixed(2));
-          host.setProperty('--ball-y', `${Math.round(at.cy + at.ball * 1.28)}px`);
+          host.setProperty('--ball-y', `${Math.round(at.cy + at.ball * 1.22)}px`);
         }
-        // The panels wired to him drift a little with the turn of his head.
+        // The thoughts beside him drift a little with the turn of his head.
         // He looks slowly from side to side, and a little toward the pointer.
         gaze.x += (want.x - gaze.x) * 0.04;
         gaze.y += (want.y - gaze.y) * 0.04;
@@ -182,19 +189,20 @@ export default function Hologram() {
           ball: at.ball * pulse,
           time: t,
           intro: ease(intro),
-          morph: ease(span(0.04, 0.34, eased)),
-          burst,
+          ring: land,
+          morph: span(0.04, 0.37, eased),
+          flow,
           // A slow look to one side and back: one eased swing every fifteen seconds.
-          turn: look * 0.15,
+          turn: look * 0.14,
           nod: 0.02 + Math.sin(t * 0.27) * 0.02 + gaze.y * 0.05 * (1 - span(0, 0.3, eased)),
           voice: talking ? 0.5 + 0.5 * Math.sin(t * 7.5) : 0,
-          // While the ball says its line a wave runs round its ring.
+          // While the planet says its line it swells and a ripple runs over it.
           speak: word * (0.55 + 0.45 * Math.sin(t * 5.3) * Math.sin(t * 1.9)),
-          // The face keeps its features: less bloom on it than on the ball.
-          glow: 0.45 + 0.55 * ease(span(0.04, 0.34, eased)),
+          // The face keeps its features: less bloom on it than on the planet.
+          glow: 0.5 + 0.5 * ease(span(0.04, 0.37, eased)),
           still: false,
-          // The burst starts with a flash, then the light thins out as it flies.
-          gain: gain * (1 + 0.8 * Math.sin(Math.PI * span(0, 0.3, burst)) + word * 0.12 * Math.sin(t * 9.5)) * (1 - span(0.9, 1.04, eased)),
+          // The light lands on the builds, then leaves them to it.
+          gain: gain * (1 + word * 0.1 * Math.sin(t * 9.5)) * (1 - ease(span(0.93, 1.03, eased))),
         });
         last = now;
       }
@@ -212,9 +220,22 @@ export default function Hologram() {
         cx: box.x,
         cy: home + (mid - home) * ease(span(0, 0.36, p)),
         size,
-        // The globe's radius; its ring reaches twice as far, so a phone gets a smaller one.
-        ball: Math.min(w, h) * (phone ? 0.18 : 0.15),
+        // The planet's radius.
+        ball: Math.min(w, h) * (phone ? 0.2 : 0.17),
       };
+    }
+
+    /* Where the light is to land, in the window, now. The orbit ring when it is
+       the layout (its centre moves with the page, so this is read per frame while
+       the light is in the air), else the two rows that drift under the name. */
+    function where() {
+      if (ring.on && ring.el) {
+        const r = ring.el.getBoundingClientRect();
+        Object.assign(land, ring, { on: true, x: r.left + r.width / 2, y: r.top + ring.oy });
+      } else if (drift) {
+        const r = drift.getBoundingClientRect();
+        Object.assign(land, { on: false, x: r.left + r.width / 2, y: r.top + r.height / 2, rx: r.width / 2, rz: r.height });
+      }
     }
 
     const kick = () => {
@@ -232,11 +253,12 @@ export default function Hologram() {
     };
     let seenAtStart = seen;
 
-    fetch(FACE_URL)
-      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))))
-      .then((buffer) => {
+    const load = (url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))));
+    // A phone stops at the base tier. A desktop that cannot get the fill-in still has a face.
+    Promise.all([load(FACE_URLS[0]), phone ? null : load(FACE_URLS[1]).catch(() => null)])
+      .then((files) => {
         if (dead) return;
-        const cloud = parseFace(buffer, phone ? 0.5 : 1);
+        const cloud = parseFace(files.filter(Boolean), ring.n);
         // Parsing and compiling are two tasks, not one long one.
         return new Promise((resolve) => setTimeout(() => resolve(cloud), 0));
       })
@@ -248,10 +270,9 @@ export default function Hologram() {
           {
             deep: triple(style, '--holo-deep'),
             pale: triple(style, '--holo-pale'),
-            tint: triple(style, '--holo-deep'),
             hot: triple(style, '--holo-hot'),
           },
-          // The bloom is a desktop pass; a phone gets the cheap haze instead.
+          // The bloom is a desktop pass.
           phone ? 0 : Number(style.getPropertyValue('--holo-bloom')) || 0
         );
         measure();
@@ -262,7 +283,10 @@ export default function Hologram() {
         canvas.dataset.ready = '';
         kick();
       })
-      .catch(off);
+      .catch((error) => {
+        if (import.meta.env.DEV) console.error(error);
+        off();
+      });
 
     window.addEventListener('scroll', kick, { passive: true });
     window.addEventListener('resize', relayout, { passive: true });

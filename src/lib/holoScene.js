@@ -1,41 +1,62 @@
-/* The welcome hologram: his face as a cloud of light, drawn with plain WebGL
+/* The welcome hologram: his face as a relief of light, drawn with plain WebGL
    (no library, so the chunk stays a few kilobytes).
 
-   The points come from public/holo/face.bin (scripts/bake-hologram.py): a
-   position on a scan row, a depth and a brightness each. Every point also has a
-   second home in the ball, which is a small world of light, not a noise sphere:
-   a globe whose points sit on parallels that turn at their own speeds (as the
-   face sits on scan rows), a flat ring around it with a gap, and a hot core.
-   When the ball speaks, a wave runs round the ring like a voice on a scope. It
-   is the page in miniature: the ring of builds round his name, the ringed giant
-   in the sea. The vertex shader moves every point between its homes:
+   The points come from public/holo/face-a.bin and face-b.bin
+   (scripts/bake-hologram.py): for each one a position, a real depth, a surface
+   normal, a flattened tone, the spacing to its neighbours and a kind. Nothing of
+   the photograph's own light is used: the face is lit here, by one key light
+   from the upper left (wrapped, so shadow keeps some light), a rim where the
+   surface turns away, and nothing else. The points are soft overlapping splats
+   sized by their spacing, so skin is one lit surface and the dense places (eyes,
+   brows, lips) stay sharp on top of it. A lens focused on the eyes softens what
+   is nearer or farther.
 
-     intro  0 to 1   stars gather into the face behind a scan line, hair first
-     morph  0 to 1   the face loosens and gathers into the ringed world
-     burst  0 to 1   the ring goes out as a shock wave, the globe flies apart
+   Every point has three homes, and the vertex shader moves it between them:
 
-   Light: a fixed key from the upper left and a rim on the silhouette, both from
-   a normal estimated from where a point sits on the head, so the light moves
-   across the face as it turns. Glow: the same points are drawn a second time,
-   larger, into a third-size buffer that is blurred and added back (a bloom), so
-   the light has air around it instead of a halo of big sprites.
+     intro  0 to 1   the face is sculpted toward the viewer: the nearest points
+                     (nose, brow, cheeks) arrive first, the ears, hair and
+                     shoulders last
+     morph  0 to 1   the face peels into a small planet of light from the
+                     outside in: hair and shoulders go first, the eyes last
+     flow   0 to 1   the planet pours onto the orbit ring of builds below it:
+                     each point lands on a card, then the light fades and the
+                     cards are what is left
+
+   The planet has no ring of its own (the one ringed planet on the page is the
+   giant in the sea). It is lit by the same key light as the face: a day side, a
+   soft terminator, a bright limb, a small hot core. When it speaks it swells
+   with the words and a ripple runs over it.
+
+   Glow: on a desktop the bright parts (rim, highlights, the core) are drawn a
+   second time into a third-size buffer that is blurred and added back. A phone
+   skips that pass: the overlapping splats are soft enough on their own.
 
    Colours are (r, g, b) triples read from the tokens by the caller. */
 
 const VERT = /* glsl */ `
 precision highp float;
-attribute vec3 aFace;   // x, y in units of the picture's height (y up), z toward the viewer
-attribute vec3 aBall;   // globe: longitude, latitude, 0. ring: angle, radius, lift. core: angle, height, radius
-attribute vec4 aData;   // brightness, two random numbers, scan row (0 at the top, 1 at the foot)
-attribute float aKind;  // 0 globe, 1 ring, 2 core
+attribute vec3 aFace;   // x, y in units of the picture's height (y up, the head's centre at 0), z toward the viewer
+attribute vec2 aNorm;   // the surface normal's x and y
+attribute vec4 aData;   // tone, spacing to the neighbours (picture heights), two random numbers
+attribute vec4 aBall;   // a direction on the unit sphere, and how far out along it (1 on the shell, less in the core)
+attribute vec4 aMore;   // peel order (0 leaves first, 1 last), ring slot angle, place across the card, kind + place down the card
 uniform vec2 uRes;      // target size in device pixels
 uniform vec2 uCenter;   // where the head's centre sits, device pixels from the top left
 uniform float uSize;    // the picture's height in device pixels
-uniform float uBall;    // the globe's radius in device pixels
-uniform float uDpr, uTime, uIntro, uMorph, uBurst, uTurn, uNod, uVoice, uSpeak, uStill, uWide, uHaze;
+uniform float uBall;    // the planet's radius in device pixels
+uniform vec4 uRingA;    // ring centre x, y (device pixels), radius across, radius deep
+uniform vec4 uRingB;    // sin and cos of the tilt, perspective, how far the ring has turned
+uniform vec4 uRingC;    // card width and height, front lift, side shrink
+uniform float uRingOn;  // 1 the orbit ring, 0 two level rows (a phone)
+uniform float uTime, uIntro, uMorph, uFlow, uTurn, uNod, uVoice, uSpeak, uStill;
+uniform float uBallGap; // spacing of the points on the planet, in radii
+uniform float uFocus;   // depth of the eyes: the plane the lens is focused on
+uniform float uPass;    // 0 the picture, 1 the glow
 varying float vGlow;
-varying float vMix;
+varying float vTone;
 varying float vHot;
+
+const vec3 KEY = vec3(-0.545, 0.39, 0.742); // upper left, toward the viewer
 
 vec3 turn(vec3 p, float a, float b) {
   float c = cos(a), s = sin(a);
@@ -44,130 +65,174 @@ vec3 turn(vec3 p, float a, float b) {
   return vec3(p.x, p.y * c - p.z * s, p.z * c + p.y * s);
 }
 
+float ease(float x) { return x * x * (3.0 - 2.0 * x); }
+
 void main() {
-  float lum = aData.x, r1 = aData.y, r2 = aData.z, row = aData.w;
+  float tone = aData.x, gap = aData.y, r1 = aData.z, r2 = aData.w;
+  float kind = floor(aMore.w);
   float t = uTime;
-
-  // ---- the face ------------------------------------------------------------
-  vec3 f = aFace;
-  // A word being spoken: the jaw eases down a hair's width, and only the jaw.
-  float jaw = (1.0 - smoothstep(-0.05, 0.0, f.y + 0.145)) * smoothstep(-0.34, -0.2, f.y) * (1.0 - smoothstep(0.05, 0.2, abs(f.x)));
-  f.y -= jaw * uVoice * 0.005;
-  // The head turns on the neck: the shoulders stay where they are, the neck
-  // follows part of the way, and the axis runs behind the face, not through it.
-  float above = smoothstep(-0.3, -0.13, f.y);
-  vec3 h = f + vec3(0.0, 0.0, 0.1);
-  h = turn(h, uTurn * above, uNod * above);
-  f = h - vec3(0.0, 0.0, 0.1);
-  // Where the point sits on the head gives a rough normal; it turns with the head.
-  vec3 n = normalize(vec3(aFace.x * 3.1, (aFace.y - 0.02) * 1.5, 0.6));
-  n = turn(n, uTurn * above, uNod * above);
-  float key = clamp(dot(n, normalize(vec3(-0.5, 0.36, 0.78))), 0.0, 1.0);
-  float edge = pow(1.0 - clamp(n.z, 0.0, 1.0), 2.2) * above;
-
-  // The scan line that draws it. Ahead of the line a point is still a star, far
-  // out on a wide field; as the line passes it comes home.
-  float line = uIntro * 1.34 - 0.17;
-  float drawn = 1.0 - smoothstep(line - 0.17, line, row);
-  float home = drawn * drawn * (3.0 - 2.0 * drawn);
-  float head = exp(-pow((row - line) * 26.0, 2.0)) * step(uIntro, 0.999);
-  vec3 star = vec3((r1 - 0.5) * 3.6, (r2 - 0.5) * 2.3 + 0.08, -0.5 - r1);
-  f = mix(star, f, home);
-  // A slow bright sweep keeps running down the finished face.
-  float sweep = exp(-pow((row - fract(t * 0.11 + 0.3) * 1.6 + 0.3) * 9.0, 2.0)) * (1.0 - uStill);
-  float lit = (0.1 + 0.8 * lum) * (0.66 + 0.46 * key) + edge * 0.26;
-  float twinkle = 0.5 + 0.5 * sin(t * (1.0 + r1 * 2.0) + r2 * 40.0);
-  float faceGlow = mix(0.16 * twinkle * step(0.55, r2), lit, home) + head * 0.9 + sweep * 0.24 * lum;
-  float faceHot = smoothstep(0.72, 1.0, lum) * 0.5 * home + head * 0.8 + sweep * 0.2 * lum;
-
-  // ---- the ball: a small ringed world ---------------------------------------
   float live = 1.0 - uStill;
-  vec3 b;
-  float ballGlow;
-  float ballHot;
-  float ballSize;
-  if (aKind < 0.5) {
-    // The globe: parallels that turn at their own speeds, like the bands of a giant.
-    float lat = aBall.y;
-    float lon = aBall.x + t * (0.2 + 0.12 * sin(lat * 5.0 + 1.0)) * live;
-    b = vec3(cos(lat) * sin(lon), sin(lat), cos(lat) * cos(lon)) * (1.0 + 0.03 * uSpeak * sin(t * 9.5));
-    float band = 0.5 + 0.5 * sin(lat * 13.0 + 0.6);
-    ballGlow = 0.2 + 0.62 * band * band;
-    ballHot = 0.0;
-    ballSize = 1.35;
-  } else if (aKind < 1.5) {
-    // The ring: nearer rock turns faster. When the ball speaks a wave runs round it.
-    float r = aBall.y;
-    float ang = aBall.x + t * 0.42 / pow(r, 1.5) * live;
-    float wave = sin(ang * 6.0 - t * 8.0) * 0.1 + sin(ang * 11.0 + t * 13.0) * 0.055;
-    b = vec3(cos(ang) * r, aBall.z + wave * uSpeak, sin(ang) * r);
-    ballGlow = 0.46 + 0.44 * r2 + 0.5 * uSpeak * abs(wave) * 6.0;
-    ballHot = 0.25 * uSpeak;
-    ballSize = 1.15;
-  } else {
-    // The core: a small hot star that the globe is wrapped round.
-    float y = aBall.y;
-    float q = sqrt(max(0.0, 1.0 - y * y));
-    float th = aBall.x + t * 0.6 * live;
-    b = vec3(cos(th) * q, y, sin(th) * q) * aBall.z * (1.0 + 0.12 * sin(t * 2.6 + r1 * 6.3) * live + 0.2 * uSpeak * sin(t * 9.5));
-    ballGlow = 0.8;
-    ballHot = 0.7;
-    ballSize = 1.7;
-  }
-  // The whole world leans toward the viewer and rolls a little, so the ring reads as a ring.
-  b = turn(b, 0.22 * sin(t * 0.13), 0.4);
-  b = vec3(b.x * 0.951 + b.y * 0.309, b.y * 0.951 - b.x * 0.309, b.z);
-  ballGlow *= mix(0.3, 1.0, smoothstep(-0.9, 0.5, b.z));
+  float isHair = step(1.5, kind) * step(kind, 2.5);
+  float isBody = step(2.5, kind) * step(kind, 3.5);
+  float isCatch = step(3.5, kind);
 
-  // ---- between them ----------------------------------------------------------
-  float m = clamp(uMorph * 1.55 - r1 * 0.55, 0.0, 1.0);
-  m = m * m * (3.0 - 2.0 * m);
+  // ---- the face --------------------------------------------------------------
+  vec3 f = aFace;
+  // He breathes: the whole figure swells a quarter of a percent about the chest.
+  f.xy = vec2(f.x, f.y + 0.45) * (1.0 + 0.0025 * sin(t * 1.25) * live) - vec2(0.0, 0.45);
+  // A word being spoken: the jaw eases down a hair's width, and only the jaw.
+  float jaw = (1.0 - smoothstep(-0.2, -0.12, f.y)) * smoothstep(-0.32, -0.24, f.y) * (1.0 - smoothstep(0.06, 0.2, abs(f.x)));
+  f.y -= jaw * uVoice * 0.004;
+  // The head turns on the neck: the whole head down to the chin turns as one,
+  // the neck follows part of the way, the shoulders stay where they are. The
+  // axis runs behind the face, where the spine is, not through it.
+  float above = smoothstep(-0.37, -0.255, f.y);
+  vec3 h = f + vec3(0.0, 0.0, 0.13);
+  h = turn(h, uTurn * above, uNod * above);
+  f = h - vec3(0.0, 0.0, 0.13);
+  vec3 n = vec3(aNorm, sqrt(max(0.0, 1.0 - dot(aNorm, aNorm))));
+  n = turn(n, uTurn * above, uNod * above);
+  // One key light, wrapped so the shadow side keeps a little; a rim where the
+  // surface turns away from the viewer.
+  float key = clamp((dot(n, KEY) + 0.3) / 1.3, 0.0, 1.0);
+  float rim = pow(1.0 - clamp(n.z, 0.0, 1.0), 2.4);
+  float lit = tone * (0.58 + 0.42 * key) + rim * mix(0.1, 0.2, isHair) * (1.0 - 0.5 * isBody);
+  lit = mix(lit, 0.8, isCatch);
+  // One faint band of light climbs the figure every eleven seconds.
+  float band = exp(-pow((aFace.y - (fract(t / 11.0) * 1.7 - 0.75)) * 4.5, 2.0)) * live;
+  lit *= 1.0 + 0.22 * band;
+
+  // Sculpted toward the viewer: the nearest points come home first. Until its
+  // turn a point waits far behind its place, unlit.
+  float nearness = clamp((aFace.z + 0.13) / 0.2, 0.0, 1.0) * (1.0 - 0.6 * isBody);
+  float line = uIntro * 1.5 - 0.25;
+  float drawn = 1.0 - smoothstep(line - 0.25, line, 1.0 - nearness + r1 * 0.1);
+  float home = ease(drawn);
+  float front = exp(-pow((1.0 - nearness + r1 * 0.1 - line) * 9.0, 2.0)) * step(uIntro, 0.999);
+  f = mix(vec3(f.xy * (1.12 + 0.2 * r2), f.z - 0.5 - 0.3 * r1), f, home);
+  float faceGlow = lit * home * home + front * 0.25 * home;
+  float faceHot = isCatch * 0.7 * home + smoothstep(0.7, 1.0, lit) * 0.3 * home + front * 0.35;
+  // The lens: sharp at the eyes, softer in front of and behind them.
+  float soft = 1.0 + 5.0 * abs(f.z - uFocus) + 0.9 * isBody;
+  float faceSize = gap * uSize * 3.0 * soft * mix(1.0, 0.86, step(0.5, kind) * step(kind, 1.5));
+  // Feature points are drawn smaller, so each carries a little more light.
+  faceGlow *= mix(1.0, 1.35, step(0.5, kind) * step(kind, 1.5)) / (soft * soft);
+  float faceBloom = (smoothstep(0.5, 0.95, lit) * 0.5 + rim * 0.7 + isCatch) * home;
+
+  // ---- the planet -------------------------------------------------------------
+  float shell = step(0.99, aBall.w);
+  vec3 s = aBall.xyz;
+  float spin = t * 0.16 * live;
+  s = vec3(s.x * cos(spin) + s.z * sin(spin), s.y, s.z * cos(spin) - s.x * sin(spin));
+  float lat = s.y;
+  s = turn(s, 0.0, 0.32);
+  s = vec3(s.x * 0.966 + s.y * 0.259, s.y * 0.966 - s.x * 0.259, s.z);
+  // Speaking: it swells with the words and a ripple runs from pole to pole.
+  float ripple = sin(lat * 7.0 - t * 6.5) * uSpeak;
+  float rad = aBall.w * (1.0 + 0.045 * uSpeak * sin(t * 9.5) * shell + 0.028 * ripple * shell);
+  rad *= mix(1.0 + 0.1 * sin(t * 2.6 + r1 * 6.3) * live + 0.3 * uSpeak, 1.0, shell);
+  vec3 b = s * rad;
+  float day = clamp((dot(s, KEY) + 0.22) / 1.22, 0.0, 1.0);
+  float limb = pow(1.0 - abs(s.z), 2.2);
+  float weather = 0.86 + 0.14 * sin(lat * 9.0 + 0.8 + 1.3 * sin(lat * 23.0));
+  float facing = smoothstep(-0.35, 0.25, s.z);
+  float ballGlow = mix(0.035, (0.03 + 0.42 * day * day * weather + 0.3 * limb * (0.25 + 0.75 * day) + 0.12 * ripple * day) * mix(0.06, 1.0, facing), shell);
+  float ballHot = mix(0.2, 0.25 * limb * day, shell);
+  float ballSize = uBall * uBallGap * mix(3.6, 3.0, shell);
+  float ballBloom = mix(0.3, (0.6 * limb + 0.15) * day, shell);
+
+  // ---- between them: the peel ---------------------------------------------------
+  float m = clamp(uMorph * 2.3 - aMore.x * 1.3, 0.0, 1.0);
+  m = ease(m);
   vec3 p = mix(f * uSize, b * uBall, m);
-  float loose = sin(m * 3.14159);
-  p += vec3(sin(r1 * 40.0 + t * 0.9), cos(r2 * 33.0 + t * 1.1), sin(r1 * 17.0 - t)) * uSize * 0.045 * loose;
-
-  // The burst: the ring leaves first, as a wave; the globe and the core follow.
-  float lead = aKind > 0.5 && aKind < 1.5 ? 0.12 : 0.36;
-  float bu = clamp(uBurst * (1.0 + lead) - r2 * lead, 0.0, 1.0);
-  float fly = bu * bu * (aKind > 0.5 && aKind < 1.5 ? 1.5 : 0.35 + 1.25 * r1);
-  vec3 dir = normalize(b + 0.0001);
-  p += dir * fly * max(uRes.x, uRes.y) * 0.62;
+  // On the way the points sweep round the centre, a slow vortex, not a jitter.
+  float sweep = sin(m * 3.14159) * (0.7 + 0.5 * r1);
+  p.xy = vec2(p.x * cos(sweep) - p.y * sin(sweep), p.x * sin(sweep) + p.y * cos(sweep));
+  p.z += sin(m * 3.14159) * uSize * 0.08 * (r2 - 0.5);
 
   float depth = 1.0 / (1.0 - p.z / (uSize * 3.2));
   vec2 px = uCenter + vec2(p.x, -p.y) * depth;
+  float size = mix(faceSize, ballSize, m) * depth;
+  float glow = mix(faceGlow, ballGlow, m);
+  float hot = mix(faceHot, ballHot, m);
+  float bloom = mix(faceBloom, ballBloom, m);
+
+  // ---- the hand-off: the planet pours onto the ring of builds -------------------
+  float fl = ease(clamp(uFlow * 1.75 - 0.75 * r2, 0.0, 1.0));
+  float w = aMore.y + uRingB.w;
+  float sw = sin(w), cw = cos(w);
+  float across = aMore.z, down = fract(aMore.w) - 0.5;
+  vec2 land;
+  float plate;
+  float plateSize;
+  if (uRingOn > 0.5) {
+    float lead = pow(max(0.0, (cw - 0.7) / 0.3), 2.0);
+    vec3 rp = vec3(uRingA.z * sw, uRingA.w * cw * uRingB.x, uRingA.w * uRingB.y * (cw - 1.0) + uRingC.z * lead);
+    float shrink = 1.0 - uRingC.w * sw * sw;
+    // The thumbnail: the top of the card, five eighths as tall as it is wide.
+    vec2 on = vec2(across * uRingC.x, -0.5 * uRingC.y + (down + 0.5) * uRingC.x * 0.625) * shrink;
+    float ps = uRingB.z / (uRingB.z - rp.z);
+    land = uRingA.xy + (rp.xy + on) * ps;
+    // Cards at the back of the ring are dark and small: so is their light.
+    plate = 0.6 * smoothstep(-0.25, 0.8, cw);
+    plateSize = uRingC.x * 0.045 * ps * shrink;
+  } else {
+    // A phone: two level rows, where the thumbnails drift.
+    float row = step(3.14159, mod(aMore.y, 6.28318)) - 0.5;
+    land = uRingA.xy + vec2(across * uRingA.z * 2.3, row * uRingA.w * 0.52 + down * uRingA.w * 0.34);
+    plate = 0.4;
+    plateSize = uRingA.w * 0.03;
+  }
+  // On a phone the copy fills the window, so nothing may cross it: the light
+  // goes out at the planet and comes up again on the rows.
+  float hidden = (1.0 - uRingOn) * smoothstep(0.0, 0.22, fl) * (1.0 - smoothstep(0.78, 1.0, fl));
+  // The core does not travel: it flares and is gone.
+  float goes = shell;
+  // The light never crosses his name: it swings out to the sides of the window
+  // in two curtains and comes back in under the copy, onto the cards.
+  float reach = land.x - uCenter.x;
+  float dirn = abs(reach) > uRes.x * 0.04 ? sign(reach) : sign(across);
+  vec2 bend = vec2(uCenter.x + dirn * max(abs(reach) * 1.25, uRes.x * (0.62 + 0.1 * r1)), mix(px.y, land.y, 0.3));
+  float g = fl * goes;
+  px = mix(mix(px, bend, g), mix(bend, land, g), g);
+  size = mix(size, plateSize, fl * goes);
+  // In the air a point burns bright; landed, it settles into the plate.
+  float air = sin(fl * 3.14159);
+  glow = mix(glow, plate, fl) * goes + glow * (1.0 - goes) * (1.0 - smoothstep(0.0, 0.5, uFlow));
+  glow += air * 0.18 * goes;
+  glow *= 1.0 - hidden * goes;
+  hot = mix(hot, 0.1, fl) + air * 0.12;
+  bloom = mix(bloom, 0.5, fl);
+
   gl_Position = vec4(px.x / uRes.x * 2.0 - 1.0, 1.0 - px.y / uRes.y * 2.0, 0.0, 1.0);
 
-  float size = mix(mix(0.9, 1.25 + 0.95 * lum, home), ballSize, m);
-  size *= 1.0 + bu * 1.4 * max(dir.z, 0.0);
-  // Nearer points are a little larger: the cloud has a front and a back.
-  size *= depth * clamp(uSize / (540.0 * uDpr), 0.92, 1.25);
-  // Without the bloom pass (a phone), one point in ten is a wide, faint one:
-  // together they are the air around the light, for the price of nothing.
-  float haze = uHaze * step(0.9, r1);
-  gl_PointSize = max(1.0, size * uDpr * uWide * mix(1.0, 6.0, haze));
-  vGlow = mix(faceGlow, ballGlow, m) * pow(1.0 - bu, 1.15) * mix(1.0, 0.06, haze);
-  vHot = mix(faceHot, ballHot, m);
-  vMix = mix(lum * (0.6 + 0.4 * home), 0.3 + 0.7 * ballGlow, m);
+  gl_PointSize = max(1.5, size * mix(1.0, 2.4, uPass));
+  // A splat this small cannot hold its light: below two pixels it dims instead.
+  float tiny = min(1.0, size / 2.0);
+  vGlow = glow * mix(1.0, bloom, uPass) * tiny * tiny;
+  vHot = hot;
+  vTone = glow;
 }
 `;
 
 const FRAG = /* glsl */ `
 precision mediump float;
-uniform vec3 uDeep, uPale, uTint, uHot;
+uniform vec3 uDeep, uPale, uHot;
 uniform float uGain;
 varying float vGlow;
-varying float vMix;
+varying float vTone;
 varying float vHot;
 void main() {
-  float d = length(gl_PointCoord - 0.5);
-  float a = pow(1.0 - smoothstep(0.0, 0.5, d), 1.5) * vGlow * uGain;
-  vec3 col = mix(mix(uTint, uDeep, smoothstep(0.0, 0.4, vMix)), uPale, smoothstep(0.35, 1.0, vMix));
+  vec2 d = gl_PointCoord - 0.5;
+  // A Gaussian splat: neighbours overlap and add up to one even surface.
+  float a = exp(-dot(d, d) * 18.0) * vGlow * uGain * 0.6;
+  vec3 col = mix(uDeep, uPale, smoothstep(0.0, 0.62, vTone));
   col = mix(col, uHot, clamp(vHot, 0.0, 1.0));
   gl_FragColor = vec4(col * a, a * 0.55);
 }
 `;
 
-/* The bloom: a full-target triangle pair, a nine-tap blur and a plain copy. */
+/* The glow: a full-target triangle pair, a nine-tap blur and a plain copy. */
 const QUAD_VERT = /* glsl */ `
 attribute vec2 aPos;
 varying vec2 vUv;
@@ -188,63 +253,86 @@ void main() {
 `;
 
 const TAU = Math.PI * 2;
+const STRIDE = 8; // bytes a point
+const HEADER = 16;
+const Z_RANGE = 0.3; // picture heights covered by 127 depth steps (bake-hologram.py)
+const RELIEF = 1; // how much of the baked depth is used
+// The head's centre is the pivot: 0.51 across and 0.327 down the picture.
+const PIVOT = [0.51, 0.327];
 
-/* Read the baked file into typed arrays. `share` is the part of the points to
-   keep (the file is shuffled, so a prefix is an even sample). */
-export function parseFace(buffer, share = 1) {
-  const view = new DataView(buffer);
-  const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
-  if (magic !== 'HOLO') throw new Error('hologram: not a face file');
-  const total = view.getUint32(4, true);
-  const rows = view.getUint16(8, true);
-  const aspect = view.getUint16(10, true) / 1000;
-  if (buffer.byteLength < 12 + total * 5) throw new Error('hologram: face file is cut short');
-  const n = Math.max(1, Math.floor(total * share));
+/* Read the baked files into typed arrays. `buffers` is the base tier and,
+   on a desktop, the fill-in after it. `slots` is how many cards the orbit ring
+   holds: each point is given one to land on. */
+export function parseFace(buffers, slots = 12) {
+  const heads = buffers.map((buffer) => {
+    const view = new DataView(buffer);
+    const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
+    if (magic !== 'HOL2') throw new Error('hologram: not a face file');
+    const count = view.getUint32(4, true);
+    if (buffer.byteLength < HEADER + count * STRIDE) throw new Error('hologram: face file is cut short');
+    return { view, count };
+  });
+  const n = heads.reduce((sum, h) => sum + h.count, 0);
+  const first = heads[0].view;
+  const aspect = first.getUint16(8, true) / 1000;
+  const eye = [(first.getUint16(10, true) / 65535 - PIVOT[0]) * aspect, PIVOT[1] - first.getUint16(12, true) / 65535];
+  const focus = ((first.getUint8(14) - 128) / 127) * Z_RANGE * RELIEF;
+
   const face = new Float32Array(n * 3);
-  const ball = new Float32Array(n * 3);
+  const norm = new Float32Array(n * 2);
   const data = new Float32Array(n * 4);
-  const kind = new Float32Array(n);
+  const ball = new Float32Array(n * 4);
+  const more = new Float32Array(n * 4);
   // A tiny seeded generator: the same cloud on every load.
-  let s = 20261112;
+  let s = 20261115;
   const rnd = () => {
     s = (s * 1664525 + 1013904223) >>> 0;
     return s / 4294967296;
   };
-  const BANDS = 44; // the globe's parallels
-  for (let i = 0, o = 12; i < n; i += 1, o += 5) {
-    const row = (view.getUint8(o + 2) + 0.5) / rows;
-    // The head's centre is the pivot: 0.51 across and 0.327 down the picture.
-    face[i * 3] = (view.getUint16(o, true) / 65535 - 0.51) * aspect;
-    face[i * 3 + 1] = 0.327 - row;
-    // A shallow relief: enough depth to feel solid in a slow turn, not enough to
-    // push the head out from the neck.
-    face[i * 3 + 2] = ((view.getUint8(o + 3) - 128) / 100) * 0.09;
-    const pick = rnd();
-    if (pick < 0.55) {
-      // Globe: equal-area parallels, so no pole is crowded.
-      const y = 1 - (2 * (Math.floor(rnd() * BANDS) + 0.5)) / BANDS;
-      ball[i * 3] = rnd() * TAU;
-      ball[i * 3 + 1] = Math.asin(y);
-    } else if (pick < 0.88) {
-      // Ring: 1.42 to 2.02 globe radii, denser inside, with one clear gap.
-      kind[i] = 1;
-      let r = 1.42 + Math.pow(rnd(), 1.25) * 0.6;
-      if (Math.abs(r - 1.76) < 0.035) r += 0.075;
-      ball[i * 3] = rnd() * TAU;
-      ball[i * 3 + 1] = r;
-      ball[i * 3 + 2] = (rnd() - 0.5) * 0.02;
-    } else {
-      kind[i] = 2;
-      ball[i * 3] = rnd() * TAU;
-      ball[i * 3 + 1] = rnd() * 2 - 1;
-      ball[i * 3 + 2] = 0.05 + 0.2 * Math.sqrt(rnd());
+  let i = 0;
+  let shell = 0;
+  // The base tier's spacings were measured on its own. With the fill-in between
+  // them its points stand closer: the fill-in file carries those spacings at its end.
+  const fill = heads[1];
+  const closer = fill && fill.view.byteLength >= HEADER + fill.count * STRIDE + heads[0].count ? HEADER + fill.count * STRIDE : -1;
+  for (const [tier, { view, count }] of heads.entries()) {
+    for (let k = 0, o = HEADER; k < count; k += 1, o += STRIDE, i += 1) {
+      const xy = (view.getUint8(o) << 16) | (view.getUint8(o + 1) << 8) | view.getUint8(o + 2);
+      const x = ((xy >>> 12) / 4095 - PIVOT[0]) * aspect;
+      const y = PIVOT[1] - (xy & 4095) / 4095;
+      const meta = view.getUint8(o + 7);
+      const kind = meta >> 5;
+      face[i * 3] = x;
+      face[i * 3 + 1] = y;
+      face[i * 3 + 2] = ((view.getUint8(o + 3) - 128) / 127) * Z_RANGE * RELIEF;
+      norm[i * 2] = view.getInt8(o + 4) / 127;
+      norm[i * 2 + 1] = view.getInt8(o + 5) / 127;
+      data[i * 4] = view.getUint8(o + 6) / 255;
+      data[i * 4 + 1] = (tier === 0 && closer >= 0 ? fill.view.getUint8(closer + k) & 31 : meta & 31) / 3 / 1200;
+      data[i * 4 + 2] = rnd();
+      data[i * 4 + 3] = rnd();
+      // The planet: most points on its shell, one in seven in the core.
+      const up = rnd() * 2 - 1;
+      const round = rnd() * TAU;
+      const q = Math.sqrt(1 - up * up);
+      const core = rnd() < 0.08;
+      if (!core) shell += 1;
+      ball[i * 4] = q * Math.cos(round);
+      ball[i * 4 + 1] = up;
+      ball[i * 4 + 2] = q * Math.sin(round);
+      ball[i * 4 + 3] = core ? 0.03 + 0.13 * Math.cbrt(rnd()) : 1;
+      // The peel: the farther from the eyes, the sooner a point leaves. The eyes
+      // themselves are the last lights to fold in.
+      const far = Math.min(1, Math.hypot((x - eye[0]) / 0.3, (y - eye[1]) / 0.42));
+      const inEye = Math.abs(y - eye[1]) < 0.035 && Math.abs(x - eye[0]) < 0.13 && Math.abs(x - eye[0]) > 0.03;
+      more[i * 4] = kind === 4 ? 1 : inEye && kind === 1 ? 0.9 + 0.08 * rnd() : (1 - far) * 0.8 + 0.06 * rnd();
+      // Its card on the ring, and its place on that card's thumbnail.
+      more[i * 4 + 1] = (Math.floor(rnd() * slots) / slots) * TAU;
+      more[i * 4 + 2] = rnd() - 0.5;
+      more[i * 4 + 3] = kind + 0.02 + 0.96 * rnd();
     }
-    data[i * 4] = view.getUint8(o + 4) / 255;
-    data[i * 4 + 1] = rnd();
-    data[i * 4 + 2] = rnd();
-    data[i * 4 + 3] = row;
   }
-  return { n, face, ball, data, kind };
+  return { n, base: heads[0].count, face, norm, data, ball, more, focus, ballGap: Math.sqrt((4 * Math.PI) / Math.max(1, shell)) };
 }
 
 function compile(gl, type, source) {
@@ -265,8 +353,8 @@ function link(gl, vert, frag) {
 }
 
 /* Build the scene on a canvas. Throws if WebGL is not there. `colors` holds
-   four [r, g, b] arrays in 0 to 1: deep, pale, tint and hot. `bloom` is the
-   strength of the glow (0 turns the second pass off). */
+   three [r, g, b] arrays in 0 to 1: deep, pale and hot. `bloom` is the strength
+   of the glow (0 turns the second pass off). */
 export function createHologram(canvas, cloud, colors, bloom = 1) {
   const gl = canvas.getContext('webgl', { alpha: true, antialias: false, depth: false, stencil: false, powerPreference: 'low-power' });
   if (!gl) throw new Error('hologram: no WebGL');
@@ -283,9 +371,10 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     attrs.push({ at: gl.getAttribLocation(program, name), buffer, size });
   };
   attribute('aFace', cloud.face, 3);
-  attribute('aBall', cloud.ball, 3);
+  attribute('aNorm', cloud.norm, 2);
   attribute('aData', cloud.data, 4);
-  attribute('aKind', cloud.kind, 1);
+  attribute('aBall', cloud.ball, 4);
+  attribute('aMore', cloud.more, 4);
   const quad = gl.createBuffer();
   buffers.push(quad);
   gl.bindBuffer(gl.ARRAY_BUFFER, quad);
@@ -293,23 +382,23 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   const quadAt = gl.getAttribLocation(blur, 'aPos');
 
   const u = {};
-  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uDpr', 'uTime', 'uIntro', 'uMorph', 'uBurst', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uWide', 'uHaze', 'uDeep', 'uPale', 'uTint', 'uHot', 'uGain']) {
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingOn', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uFocus', 'uPass', 'uDeep', 'uPale', 'uHot', 'uGain']) {
     u[name] = gl.getUniformLocation(program, name);
   }
   const ub = { uTex: gl.getUniformLocation(blur, 'uTex'), uStep: gl.getUniformLocation(blur, 'uStep'), uGain: gl.getUniformLocation(blur, 'uGain') };
   gl.useProgram(program);
   gl.uniform3fv(u.uDeep, colors.deep);
   gl.uniform3fv(u.uPale, colors.pale);
-  gl.uniform3fv(u.uTint, colors.tint);
   gl.uniform3fv(u.uHot, colors.hot);
-  gl.uniform1f(u.uHaze, bloom > 0 ? 0 : 1);
+  gl.uniform1f(u.uBallGap, cloud.ballGap);
+  gl.uniform1f(u.uFocus, cloud.focus);
 
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE);
   gl.clearColor(0, 0, 0, 0);
 
-  // Two third-size targets for the bloom: the points go into one, the blur
+  // Two third-size targets for the glow: the points go into one, the blur
   // ping-pongs between them.
   const SHRINK = 3;
   const targets = [0, 1].map(() => ({ fbo: gl.createFramebuffer(), tex: gl.createTexture(), w: 1, h: 1 }));
@@ -337,7 +426,9 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     if (bloom > 0) sizeTargets();
   }
 
-  function points(s, scale, wide) {
+  function points(s, scale, pass) {
+    const k = dpr * scale;
+    const r = s.ring;
     gl.useProgram(program);
     for (const a of attrs) {
       gl.bindBuffer(gl.ARRAY_BUFFER, a.buffer);
@@ -345,15 +436,18 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
       gl.vertexAttribPointer(a.at, a.size, gl.FLOAT, false, 0, 0);
     }
     gl.uniform2f(u.uRes, canvas.width * scale, canvas.height * scale);
-    gl.uniform2f(u.uCenter, s.cx * dpr * scale, s.cy * dpr * scale);
-    gl.uniform1f(u.uSize, s.size * dpr * scale);
-    gl.uniform1f(u.uBall, s.ball * dpr * scale);
-    gl.uniform1f(u.uDpr, dpr * scale);
-    gl.uniform1f(u.uWide, wide);
+    gl.uniform2f(u.uCenter, s.cx * k, s.cy * k);
+    gl.uniform1f(u.uSize, s.size * k);
+    gl.uniform1f(u.uBall, s.ball * k);
+    gl.uniform4f(u.uRingA, r.x * k, r.y * k, r.rx * k, r.rz * k);
+    gl.uniform4f(u.uRingB, r.sinT, r.cosT, r.persp * k, r.theta);
+    gl.uniform4f(u.uRingC, r.cardW * k, r.cardH * k, r.front * k, r.side);
+    gl.uniform1f(u.uRingOn, r.on ? 1 : 0);
+    gl.uniform1f(u.uPass, pass);
     gl.uniform1f(u.uTime, s.time);
     gl.uniform1f(u.uIntro, s.intro);
     gl.uniform1f(u.uMorph, s.morph);
-    gl.uniform1f(u.uBurst, s.burst);
+    gl.uniform1f(u.uFlow, s.flow);
     gl.uniform1f(u.uTurn, s.turn);
     gl.uniform1f(u.uNod, s.nod);
     gl.uniform1f(u.uVoice, s.voice);
@@ -385,7 +479,8 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   }
 
   /* One frame. Lengths are CSS pixels; `s` is the state:
-     { time, intro, morph, burst, turn, nod, voice, speak, still, gain, glow, cx, cy, size, ball } */
+     { time, intro, morph, flow, turn, nod, voice, speak, still, gain, glow, cx, cy, size, ball,
+       ring: { on, x, y, rx, rz, sinT, cosT, persp, theta, cardW, cardH, front, side } } */
   function render(s) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -396,7 +491,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, a.fbo);
       gl.viewport(0, 0, a.w, a.h);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      points(s, 1 / SHRINK, 2.4);
+      points(s, 1 / SHRINK, 1);
       pass(a, b, 1.2, 0, 1);
       pass(b, a, 0, 1.2, 1);
       pass(a, b, 2.4, 0, 1);
@@ -407,7 +502,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);
-    points(s, 1, 1);
+    points(s, 1, 0);
   }
 
   function dispose() {
