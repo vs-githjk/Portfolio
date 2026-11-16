@@ -211,6 +211,21 @@ export default function World() {
       world.setFocus(e.detail?.kind, e.detail?.id ?? null, e.detail?.builds);
       hurry();
     };
+    const onTravel = (e) => {
+      if (e.detail?.phase !== 'in') world.setTravel(e.detail?.dir ?? 1);
+      hurry();
+    };
+    // Receipts: while on, say where each piece is, ten times a second at most.
+    let tell = 0;
+    const onReceipts = (e) => {
+      clearInterval(tell);
+      tell = 0;
+      if (e.detail?.on) {
+        tell = window.setInterval(() => {
+          if (!document.hidden && drawn) window.dispatchEvent(new CustomEvent(EV.bindings, { detail: world.bindings() }));
+        }, 100);
+      }
+    };
     const onRun = (e) => {
       world.setRun(e.detail?.state);
       hurry();
@@ -235,6 +250,9 @@ export default function World() {
     window.addEventListener(EV.agent, onAgent);
     window.addEventListener(EV.focus, onFocus);
     window.addEventListener(EV.run, onRun);
+    window.addEventListener(EV.travel, onTravel);
+    window.addEventListener(EV.receipts, onReceipts);
+    world.setLamp(fine);
     kick();
 
     return () => {
@@ -252,6 +270,9 @@ export default function World() {
       window.removeEventListener(EV.agent, onAgent);
       window.removeEventListener(EV.focus, onFocus);
       window.removeEventListener(EV.run, onRun);
+      window.removeEventListener(EV.travel, onTravel);
+      window.removeEventListener(EV.receipts, onReceipts);
+      clearInterval(tell);
       if ('cancelIdleCallback' in window) window.cancelIdleCallback(warm);
       else clearTimeout(warm);
       probe.remove();

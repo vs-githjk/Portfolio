@@ -161,7 +161,7 @@ export const constellation = definePiece({
       binding: {
         id: 'stars',
         count: () => n,
-        project: () => ({ x: place.x, y: place.y - (place.scroll ?? 0), visible: group.visible }),
+        project: () => ({ x: place.x, y: place.y, visible: group.visible }), // y in document px
       },
       place,
     };

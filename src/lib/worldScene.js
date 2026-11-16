@@ -199,8 +199,9 @@ void main(){
 /* ---- Marine snow that is also the stars ------------------------------------- */
 const SNOW_VERT = /* glsl */ `
 attribute vec3 aSeed;
-uniform float uCamY, uCamZ, uH, uW, uTime, uDpr, uTop, uExit;
-varying float vA; varying float vMix;
+uniform float uCamY, uCamZ, uH, uW, uTime, uDpr, uTop, uExit, uStreak;
+uniform vec3 uLamp; // the pointer in window px, and how much it is on
+varying float vA; varying float vMix; varying float vStreak;
 void main(){
   float k = (uCamZ - position.z) / uCamZ;
   float L = uH * k * 1.3;
@@ -209,18 +210,27 @@ void main(){
   float x = position.x * uW * k * 1.15 + sin(uTime * 0.11 + aSeed.z * 6.283) * 16.0 * k;
   gl_Position = projectionMatrix * viewMatrix * vec4(x, y, position.z, 1.0);
   float tw = 0.62 + 0.38 * sin(uTime * (0.5 + aSeed.z) + aSeed.z * 40.0);
-  gl_PointSize = max(1.2, aSeed.x * uDpr / k);
+  // A hop between places: the snow runs along the way of travel for half a second.
+  vStreak = abs(uStreak);
+  gl_PointSize = max(1.2, aSeed.x * uDpr / k) * (1.0 + 7.0 * vStreak);
   // Marine snow lives in the water: nothing above either waterline.
   float sy = (1.0 - gl_Position.y / gl_Position.w) * 0.5 * uH;
   float wet = smoothstep(uTop + 6.0, uTop + 70.0, sy) * smoothstep(uExit + 6.0, uExit + 70.0, sy);
   vA = tw * wet * clamp(1.5 - k * 0.24, 0.3, 1.0) * clamp(3.4 / aSeed.x, 0.1, 1.0);
+  // The pointer is a lamp: what drifts near it catches the light.
+  vec2 at = vec2((gl_Position.x / gl_Position.w * 0.5 + 0.5) * uW, sy);
+  float near = exp(-dot(at - uLamp.xy, at - uLamp.xy) / 26000.0) * uLamp.z;
+  vA *= 1.0 + 2.2 * near;
+  gl_PointSize *= 1.0 + 0.5 * near;
   vMix = aSeed.z;
 }`;
 const SNOW_FRAG = /* glsl */ `
 uniform vec3 uA, uB, uTint;
-varying float vA; varying float vMix;
+varying float vA; varying float vMix; varying float vStreak;
 void main(){
-  float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
+  vec2 q = gl_PointCoord - 0.5;
+  q.x *= 1.0 + 7.0 * vStreak;
+  float a = smoothstep(0.5, 0.0, length(q)) * (1.0 - 0.45 * vStreak);
   gl_FragColor = vec4(mix(uA, uB, vMix) * uTint, a * a * vA);
 }`;
 
@@ -295,9 +305,11 @@ void main(){
 }`;
 const GALAXY_FRAG = /* glsl */ `
 uniform vec3 uCore, uA, uB;
-varying float vA; varying float vMix;
+varying float vA; varying float vMix; varying float vStreak;
 void main(){
-  float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
+  vec2 q = gl_PointCoord - 0.5;
+  q.x *= 1.0 + 7.0 * vStreak;
+  float a = smoothstep(0.5, 0.0, length(q)) * (1.0 - 0.45 * vStreak);
   vec3 c = mix(uCore, mix(uA, uB, step(0.5, fract(vMix * 7.0))), smoothstep(0.1, 0.6, vMix));
   gl_FragColor = vec4(c, a * a * vA);
 }`;
@@ -629,7 +641,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
 
   /* ---- The land: its own scene and camera, drawn last ------------------------ */
   // The commit buttes are retired: the wyrm's roost and the page's own graph carry the weeks now.
-  const land = createLand({ C, stage, time, dpr, phone, aspect: window.innerWidth / Math.max(1, window.innerHeight), days, crew: counts.crew ?? [], buttes: false });
+  const land = createLand({ C, stage, time, dpr, phone, aspect: window.innerWidth / Math.max(1, window.innerHeight), crew: counts.crew ?? [] });
   const sunAz = land.sunAz;
 
   /* ---- In the water: one uniform set for everything the sea is seen through --- */
@@ -656,7 +668,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     new ShaderMaterial({
       vertexShader: SNOW_VERT,
       fragmentShader: SNOW_FRAG,
-      uniforms: { uCamY: { value: 0 }, uCamZ: { value: 1 }, uH: { value: 1 }, uW: { value: 1 }, uTime: time, uDpr: dpr, uTop: { value: 0 }, uExit: { value: -1e5 }, uA: { value: C['sea-snow-a'] }, uB: { value: C['sea-snow-b'] }, uTint: { value: C['sea-tint'].clone().multiplyScalar(0.8) } },
+      uniforms: { uCamY: { value: 0 }, uCamZ: { value: 1 }, uH: { value: 1 }, uW: { value: 1 }, uTime: time, uDpr: dpr, uTop: { value: 0 }, uExit: { value: -1e5 }, uStreak: { value: 0 }, uLamp: { value: new Vector3(0, 0, 0) }, uA: { value: C['sea-snow-a'] }, uB: { value: C['sea-snow-b'] }, uTint: { value: C['sea-tint'].clone().multiplyScalar(0.8) } },
       ...additive,
     })
   );
@@ -1059,6 +1071,8 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   let camY = 0;
   let flagRects = [];
   const run = { pulse: 0, hold: 0 };
+  const hop = { dir: 0, until: 0 };
+  let lampOn = 0;
   const gq = new Quaternion();
   const yAxis = new Vector3(0, 1, 0);
   const clock = { t: 0, s: 0, scatter: 0 };
@@ -1202,6 +1216,11 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       if (r && r.top - scroll < h * 0.7 && r.bottom - scroll > h * 0.2) front = lead[i];
     }
     carried.update({ px: sizes.gr * dpr.value, front });
+    // The lamp at the pointer, and the streak of a hop.
+    snowMat.uniforms.uLamp.value.set(((px + 1) / 2) * w, ((py + 1) / 2) * h, lampOn * sea);
+    const su = snowMat.uniforms.uStreak;
+    su.value += ((t < hop.until ? hop.dir : 0) - su.value) * 0.22;
+    if (Math.abs(su.value) > 0.01) snowMat.uniforms.uCamY.value = camY + hop.dir * (hop.until - t) * h * 1.6;
     run.pulse *= Math.exp(-dt / 0.35);
     state.pulse = run.pulse;
     state.hold += (run.hold - state.hold) * 0.12;
@@ -1384,7 +1403,6 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       stations.fly(time.value);
     },
     setWeek(index) {
-      land.setWeek(index);
       dragon.setLit(index);
     },
     station: () => stations.shown,
@@ -1403,7 +1421,34 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     setAgent(id) {
       land.fires?.choose(id ?? -1, id == null ? null : hue.want);
     },
+    /** world:travel { dir }: the snow streaks along the hop for half a second. */
+    setTravel(dir) {
+      hop.dir = dir < 0 ? -1 : 1;
+      hop.until = time.value + 0.5;
+    },
+    /** A fine pointer lights what drifts near it. */
+    setLamp(on) {
+      lampOn = on ? 1 : 0;
+    },
+    /** Where each piece is in the window, for the labels of Receipts: [{ id, x, y, side, visible }]. */
+    bindings() {
+      const line = -camY;
+      const out = [];
+      const put = (id, x, y, visible) => out.push({ id, x: Math.round(x), y: Math.round(y), side: x < w / 2 ? 'left' : 'right', visible: !!visible && y > 0 && y < h && x > -40 && x < w + 40 });
+      const d = dragon.binding.project();
+      put('wyrm', d.x + w / 2, d.y + h / 2, d.visible);
+      put('giant', w / 2 + w * (phone ? 0.2 : 0.27), (home.giant + (phone ? 20 : 70) - line) / view(-220) + h / 2, giant.visible);
+      for (const b of flags.binding) {
+        const p = b.project();
+        put(b.id, p.x, p.y, p.visible);
+      }
+      put('school', w / 2, home.shore - h * 0.42 - line + h / 2, school.visible);
+      put('fires', w * 0.8, h * 0.72, land.fires?.object.visible && state.lamp > 0.05 && -camY > home.shore);
+      put('stars', winStars.place.x, winStars.place.y - line + h / 2, winStars.object.visible);
+      put('moon', w / 2 + sizes.moonX, h * 0.3, moon.visible);
+      return out;
+    },
     pieces: () => ({ dragon, flags, winStars, carried, fires: land.fires }),
-    weeks: land.weeks,
+    weeks: dragon.count(),
   };
 }

@@ -2,14 +2,11 @@ import {
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
-  DynamicDrawUsage,
   InstancedBufferAttribute,
   InstancedMesh,
-  Matrix4,
   Mesh,
   PerspectiveCamera,
   PlaneGeometry,
-  Quaternion,
   Scene,
   ShaderMaterial,
   Vector2,
@@ -40,8 +37,8 @@ import { COMMON, SKY } from './worldBackdrop';
    no seam.
 
    On it stand the crew's base camp (a mast with a lamp, three tents lit from
-   inside, one figure) and the commit record: one butte for every week of the
-   GitHub snapshot, its height that week's commits to the power 0.4. */
+   inside, one figure, a fire for every member of the crew). The commit buttes that
+   stood on the playa are retired: the weeks are the wyrm's body now (src/world/wyrm.js). */
 
 export const LAND_FOV = 38;
 const X0 = -4700;
@@ -49,7 +46,6 @@ const X1 = 4700;
 const Z0 = 90;
 const ZD = 4150;
 const ZPOW = 1.5;
-const ROW = { x: 300, zNear: -1120, zFar: -2020 };
 
 const LAND_VERT = /* glsl */ `
 #ifdef SAND
@@ -57,9 +53,6 @@ attribute float aHor;
 #endif
 #ifdef CAMP
 attribute float aEmis;
-#endif
-#ifdef BUTTE
-attribute float aGlow;
 #endif
 varying vec3 vW, vN;
 varying float vHor, vEmis, vGlow, vUp;
@@ -72,11 +65,6 @@ void main(){
 #endif
 #ifdef CAMP
   vEmis = aEmis;
-#endif
-#ifdef BUTTE
-  wp = instanceMatrix * wp;
-  n = normalize(mat3(instanceMatrix) * n);
-  vGlow = aGlow;
 #endif
   vW = wp.xyz;
   vN = n;
@@ -119,10 +107,6 @@ void main(){
   // Grain underfoot: it is sand, not paint, wherever it is near enough to see.
   albedo *= 1.0 + (n2(vW.xz * 0.9) - 0.5) * 0.2 * (1.0 - smoothstep(180.0, 800.0, d)) * uFine;
 #endif
-#ifdef BUTTE
-  float strata = 0.5 + 0.5 * sin(vW.y * 0.2 + vW.x * 0.02);
-  albedo = mix(uSandShade * 1.9, uSand * 0.8, strata * 0.6 + 0.2) * (0.8 + 0.4 * h1(floor(vW.x * 0.03)));
-#endif
 #ifdef CAMP
   albedo = uSandShade * 1.3;
 #endif
@@ -134,10 +118,6 @@ void main(){
   float rim = pow(1.0 - max(dot(N, V), 0.0), 4.0) * smoothstep(-0.15, 0.4, ndl);
   float spec = pow(max(dot(N, normalize(uSunDir + V)), 0.0), 60.0) * 0.16;
   col += sunC * max(rim * 0.3, spec) * sh * albedo;
-#ifdef BUTTE
-  // Backlit rock: the sun wraps round the edges that face it.
-  col += sunC * albedo * pow(1.0 - abs(dot(N, V)), 2.0) * smoothstep(-0.5, 0.3, ndl) * 0.7;
-#endif
 #ifdef SAND
   vec2 cell = floor(vW.xz * 1.3);
   float gl = step(0.992, h2(cell + floor(uTime * 1.5))) * pow(max(dot(reflect(-uSunDir, N), V), 0.0), 6.0);
@@ -149,10 +129,6 @@ void main(){
   float ld = length(Lp);
   col += albedo * uLampCol * uLampOn * (3.6 / (1.0 + ld * ld * 0.00042)) * (0.22 + 0.78 * max(dot(N, Lp / ld), 0.0));
   col = mix(col, uLampCol * (0.95 + 0.4 * uLampOn), vEmis * (0.5 + 0.5 * uLampOn));
-#ifdef BUTTE
-  // The week under the pointer: its butte takes the accent from the foot up.
-  col += uAccent * vGlow * (0.7 + 0.8 * vUp);
-#endif
   // The air: extinction by distance (blue goes first), a mist that pools low, and
   // the colour of the sky along this very ray, so the far ground has no edge.
   vec3 rd = -V;
@@ -231,18 +207,7 @@ const sm = (t) => {
   return c * c * (3 - 2 * c);
 };
 
-/* A week of the commit graph is a column of it: the same indexing as Heatmap.jsx. */
-export function weeksOf(days) {
-  if (!days || !days.length) return [];
-  const start = new Date(`${days[0].date}T00:00:00Z`).getUTCDay();
-  const out = new Array(Math.ceil((days.length + start) / 7)).fill(0);
-  days.forEach((d, n) => {
-    out[Math.floor((n + start) / 7)] += d.count;
-  });
-  return out;
-}
-
-export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = [], buttes: withButtes = true }) {
+export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
   const rnd = seeded(733);
   const disposables = [];
   const keep = (x) => {
@@ -342,29 +307,9 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = []
     const k = j * (gx + 1) + i;
     return (hs[k] * (1 - u) + hs[k + 1] * u) * (1 - v) + (hs[k + gx + 1] * (1 - u) + hs[k + gx + 2] * u) * v;
   }
-  /* The commit row: where each week's butte stands and how tall it is. The row runs
-     away from the reader, the oldest week far off on the left, the newest nearest
-     on the right. Heights are that week's commits to the power 0.4 (the tallest
-     week stands `top` units high), on a low mound so an empty week is still a place. */
-  const weeks = weeksOf(days);
-  const nB = weeks.length;
   const tanF = Math.tan((LAND_FOV * Math.PI) / 360);
-  function row(asp) {
-    const peak = Math.max(1, ...weeks);
-    const top = 118;
-    const half = (z) => -z * tanF * asp * 0.84;
-    const dz = ROW.zNear - ROW.zFar;
-    const dx = half(ROW.zNear) + half(ROW.zFar);
-    const r = (Math.hypot(dx, dz) / Math.max(1, nB)) * 0.92;
-    return weeks.map((n, i) => {
-      const t = nB > 1 ? i / (nB - 1) : 1;
-      const z = ROW.zFar + dz * t;
-      const x = ROW.x - half(ROW.zFar) + dx * t;
-      return { x, z, r, y: ground(x, z) - 2, tall: 6 + top * Math.pow(n / peak, 0.4) };
-    });
-  }
-  // What stands on the ground shades it: the buttes and the camp's tents.
-  const casters = withButtes ? row(aspect).map((b) => ({ x: b.x, z: b.z, r: b.r * 0.8, top: b.y + b.tall * 0.92 })) : [];
+  // What stands on the ground shades it: the camp's tents.
+  const casters = [];
   for (const [dx, dz, r, tall] of [[-46, 10, 24, 22], [40, -22, 16, 15], [74, 8, 15, 14], [-12, 17, 9, 8]]) {
     casters.push({ x: CAMP.x + dx, z: CAMP.z + dz, r, top: ground(CAMP.x + dx, CAMP.z + dz) + tall });
   }
@@ -531,78 +476,6 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = []
   const fires = crew.length ? campPiece.create({ crew, at: on, ember: C.ember, time }) : null;
   if (fires) scene.add(fires.object);
 
-  /* ---- Commit buttes: one for every week, on the playa ------------------------ */
-  let buttes = null;
-  let glowAttr = null;
-  const beacon = new Mesh(plane, glow(1));
-  beacon.visible = false;
-  const tops = [];
-  if (nB && withButtes) {
-    // A table of rock: a talus skirt, a cliff, a cap. Eight uneven sides, flat shaded.
-    const prof = [
-      [1.55, 0],
-      [1.0, 0.26],
-      [0.7, 0.4],
-      [0.5, 0.9],
-      [0.54, 0.935],
-      [0.36, 1],
-    ];
-    const SIDES = 8;
-    const bp = [];
-    const bn = [];
-    const jit = Array.from({ length: SIDES }, () => 0.74 + rnd() * 0.52);
-    const pt = (s, l) => {
-      const a = (s / SIDES) * Math.PI * 2;
-      const r = prof[l][0] * jit[s % SIDES];
-      return [Math.cos(a) * r, prof[l][1], Math.sin(a) * r];
-    };
-    const push = (a, b, c) => {
-      const n = [(b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]), (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]), (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])];
-      const l = Math.hypot(...n) || 1;
-      for (const p of [a, b, c]) {
-        bp.push(...p);
-        bn.push(n[0] / l, n[1] / l, n[2] / l);
-      }
-    };
-    for (let s = 0; s < SIDES; s++) {
-      for (let l = 0; l < prof.length - 1; l++) {
-        const a = pt(s, l);
-        const b = pt(s + 1, l);
-        const c = pt(s + 1, l + 1);
-        const d = pt(s, l + 1);
-        push(a, c, b);
-        push(a, d, c);
-      }
-      push([0, 1, 0], pt(s + 1, prof.length - 1), pt(s, prof.length - 1));
-    }
-    const butteGeo = keep(new BufferGeometry());
-    butteGeo.setAttribute('position', new BufferAttribute(new Float32Array(bp), 3));
-    butteGeo.setAttribute('normal', new BufferAttribute(new Float32Array(bn), 3));
-    glowAttr = new InstancedBufferAttribute(new Float32Array(nB), 1);
-    glowAttr.setUsage(DynamicDrawUsage);
-    butteGeo.setAttribute('aGlow', glowAttr);
-    buttes = new InstancedMesh(butteGeo, mat({ BUTTE: 1 }), nB);
-    buttes.frustumCulled = false;
-    scene.add(buttes, beacon);
-  }
-  const spin = Array.from({ length: nB }, () => rnd() * Math.PI * 2);
-  const lean = Array.from({ length: nB }, () => 0.78 + rnd() * 0.5);
-  function placeButtes(asp) {
-    if (!buttes) return;
-    const m = new Matrix4();
-    const qt = new Quaternion();
-    const up = new Vector3(0, 1, 0);
-    tops.length = 0;
-    row(asp).forEach((b, i) => {
-      qt.setFromAxisAngle(up, spin[i]);
-      m.compose(new Vector3(b.x, b.y, b.z), qt, new Vector3(b.r * lean[i], b.tall, b.r / lean[i]));
-      buttes.setMatrixAt(i, m);
-      tops.push([b.x, b.y + b.tall, b.z, b.r]);
-    });
-    buttes.instanceMatrix.needsUpdate = true;
-  }
-  placeButtes(aspect);
-
   /* ---- Sand on the wind ------------------------------------------------------ */
   const nS = phone ? 90 : 220;
   const streakGeo = keep(new BufferGeometry());
@@ -624,19 +497,6 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = []
   const streaks = new InstancedMesh(streakGeo, streakMat, nS);
   streaks.frustumCulled = false;
   scene.add(streaks);
-
-  /* ---- A lit week ------------------------------------------------------------- */
-  const lit = { index: -1, level: 0, want: 0 };
-  function setWeek(index) {
-    if (!buttes) return;
-    const i = Number.isInteger(index) && index >= 0 && index < nB ? index : -1;
-    if (i >= 0 && i !== lit.index) {
-      if (lit.index >= 0) glowAttr.array[lit.index] = 0;
-      lit.index = i;
-      lit.level = Math.min(lit.level, 0.35);
-    }
-    lit.want = i >= 0 ? 1 : 0;
-  }
 
   /** Per frame. `s` is the journey's state from worldScene.js. */
   function update(s) {
@@ -663,26 +523,11 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = []
     streaks.visible = s.day * s.fine > 0.02;
     U.uFine.value = s.fine;
     U.uShore.value = s.shore;
-    if (buttes && (lit.level > 0.002 || lit.want > 0)) {
-      lit.level += (lit.want - lit.level) * 0.16;
-      if (lit.index >= 0) {
-        glowAttr.array[lit.index] = lit.level;
-        glowAttr.needsUpdate = true;
-        const [x, y, z, r] = tops[lit.index];
-        beacon.visible = lit.level > 0.01;
-        beacon.position.set(x, y + 170, z);
-        beacon.scale.set(r * 5, 340, 1);
-        beacon.quaternion.copy(camera.quaternion);
-        beacon.material.uniforms.uColor.value.copy(C.ember);
-        beacon.material.uniforms.uAlpha.value = 0.75 * lit.level;
-      }
-    }
   }
 
   function resize(asp) {
     camera.aspect = asp;
     camera.updateProjectionMatrix();
-    placeButtes(asp);
   }
 
   function dispose() {
@@ -690,5 +535,5 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = []
     fires?.dispose();
   }
 
-  return { scene, camera, update, resize, setWeek, dispose, lampCol: U.uLampCol.value, sunAz, tanF, weeks: nB, lit, fires };
+  return { scene, camera, update, resize, dispose, lampCol: U.uLampCol.value, sunAz, tanF, fires };
 }
