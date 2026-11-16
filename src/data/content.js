@@ -1681,7 +1681,7 @@ export const contact = {
     faces: {
       label: 'The faces',
       rows: [
-        { where: 'First screen', what: 'My studio photograph in a round window, gathered from points of light and let go into the ball' },
+        { where: 'First screen', what: 'My studio photograph in a round window; on Enter its light leaves the picture as points and gathers into the ball' },
         { where: 'Under my name', what: 'A silhouette on a beach at sunset' },
         { where: 'Contact', what: 'The studio headshot' },
       ],
@@ -1692,11 +1692,13 @@ export const contact = {
      it null rather than quote a number that was not measured that day. */
   colophon: {
     label: 'Colophon',
-    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph, with points of light baked from it that gather into the picture and let go.',
+    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the face on the first screen is my photograph: it arrives in soft focus and, when you enter, its light leaves the picture as points and lands on the ring of builds.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
     measured: 'Lighthouse, phone profile, {date}: performance {performance}, accessibility {accessibility}, best practices {bestPractices}, SEO {seo}.',
     // Measured Nov 16 2026 on the production build (npm run build, vite preview), Lighthouse 12.2.1,
-    // --form-factor=mobile: two runs gave 96, 100, 100, 100 (LCP 2.6 s, TBT 0 to 10 ms, CLS 0).
+    // --form-factor=mobile: three runs in a row gave 96, 100, 100, 100 each (LCP 2.6 s, TBT 10 to
+    // 20 ms, CLS 0), after the hologram's mount was split into short tasks (one run before that
+    // split had read 94 with a 140 ms TBT). Quote the median of three, never the best run.
     lighthouse: { date: 'Nov 16 2026', performance: 96, accessibility: 100, bestPractices: 100, seo: 100 },
     llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
   },
