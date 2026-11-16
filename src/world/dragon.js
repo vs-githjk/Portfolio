@@ -125,7 +125,7 @@ void main(){
   #endif
   float under_ = smoothstep(-0.15, -0.7, vRN.y) * body;   // belly, throat and the underside of the tail
   float back = smoothstep(0.35, 0.95, vRN.y) * body;
-  vec3 albedo = mix(uHide * (0.5 + 1.0 * d) * (1.0 - 0.25 * back), uBelly * (0.55 + 0.75 * d), max(under_, smoothstep(0.25, 0.7, claw)));
+  vec3 albedo = mix(uHide * (0.5 + 1.0 * d) * (1.0 - 0.25 * back), uBelly * (0.55 + 0.75 * d), max(max(under_, smoothstep(0.25, 0.7, claw)), vMask.g));
   // Wing skin: red, darker along its veins and bones.
   albedo = mix(albedo, uWing * (0.4 + 0.75 * d), skin);
 
@@ -136,7 +136,7 @@ void main(){
   // The sheen of the scales: a tight highlight and a broad, cooler one under it.
   vec3 H = normalize(uKeyDir + V);
   float nh = max(dot(N, H), 0.0);
-  col += (uKey * pow(nh, 48.0) * 0.7 + (uKey * 0.5 + uHide * 2.0) * pow(nh, 9.0) * 0.16) * body * (0.35 + 0.65 * d);
+  col += (uKey * pow(nh, 48.0) * 0.9 + uKey * pow(nh, 140.0) * 1.4 * d + (uKey * 0.5 + uHide * 2.0) * pow(nh, 9.0) * 0.2) * body * (0.35 + 0.65 * d);
   // Light through the wing: the far side lit shows on the near side, most when the reader looks toward the light.
   float thru = max(-ndl, 0.0) * (0.45 + 0.55 * pow(max(dot(V, -uKeyDir), 0.0), 2.0));
   col += uKey * uThin * mix(uWing * 2.6, uGlow, 0.38) * thru * skin * 2.2 * (0.25 + 0.75 * d);
@@ -243,7 +243,7 @@ export async function createDragon({ url, time, wet }) {
         else if (t === 2) claw += w;
       }
       mask[i * 4] = Math.round(255 * Math.min(1, (wing / (tot || 1)) * 1.6));
-      mask[i * 4 + 1] = 255;
+      mask[i * 4 + 1] = 0;
       mask[i * 4 + 2] = Math.round(255 * (claw / (tot || 1)));
       mask[i * 4 + 3] = 255;
     }
@@ -265,6 +265,8 @@ export async function createDragon({ url, time, wet }) {
     act[clip.name.toLowerCase()] = a;
   }
   const BEATS = 4; // wing beats in the Fly clip
+  const HORN = [-0.95, -0.5]; // in the stations' units along the skull from the head's joint at rest: behind the first it is horn, ahead of the second it is not
+  const SPREAD = [0.6, 0, 0.25, 0.7, 0.15]; // radians: root out, root back, root pitch, folds out, folds pitch
 
   /* The model arrives in its author's frame and size. Posed in a clip, it is measured
      and brought to the frame the stations think in: head toward +z, back toward +y,
@@ -293,6 +295,33 @@ export async function createDragon({ url, time, wet }) {
   const flyBox = measure('fly');
   const middle = flyBox.getCenter(new Vector3());
   for (const k in act) act[k].setEffectiveWeight(0);
+  /* The horns have no bones of their own: they are the part of the skull that stands
+     back from the head's joint at rest. G in the vertex colour marks them, for gold. */
+  {
+    const skull = named(/neck/i).pop();
+    const geo = main.geometry;
+    const si = geo.attributes.skinIndex;
+    const sw = geo.attributes.skinWeight;
+    const col = geo.attributes.color;
+    const idx = main.skeleton.bones.indexOf(skull);
+    const restM = new Matrix4().multiplyMatrices(main.skeleton.bones[0].matrixWorld, main.skeleton.boneInverses[0]);
+    const v = new Vector3();
+    const up = new Vector3(0, 1, 0);
+    // where the head's joint stands at rest, in the same frame as the rest vertices
+    const joint = skull ? new Vector3().applyMatrix4(new Matrix4().copy(main.skeleton.boneInverses[idx]).invert()).applyMatrix4(restM) : new Vector3();
+    const sm = (a, b, x) => {
+      const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+      return t * t * (3 - 2 * t);
+    };
+    for (let i = 0; skull && i < col.count; i++) {
+      let w = 0;
+      for (let k = 0; k < 4; k++) if (si.getComponent(i, k) === idx) w += sw.getComponent(i, k);
+      if (w < 0.5) continue;
+      v.fromBufferAttribute(geo.attributes.position, i).applyMatrix4(restM).sub(joint).applyAxisAngle(up, -yaw).multiplyScalar(scale);
+      col.setY(i, 1 - sm(HORN[0], HORN[1], v.z));
+    }
+    col.needsUpdate = true;
+  }
   const dims = (b) => b.getSize(new Vector3()).applyAxisAngle(new Vector3(0, 1, 0), -yaw).multiplyScalar(scale).toArray().map((v) => Math.round(Math.abs(v) * 10) / 10);
   const metrics = { sit: dims(sit), fly: dims(flyBox) }; // [across, tall, long] in the stations' units
 
@@ -327,6 +356,33 @@ export async function createDragon({ url, time, wet }) {
   const axis = new Vector3();
   const state = { x: 0, y: 0, shown: false };
   const neck = named(/^DEF-neck/i);
+  // The wings at the roost: each side's root, and the first bone of each fold of skin.
+  const wingRoot = { L: named(/Wing_Base\.?L/i), R: named(/Wing_Base\.?R/i) };
+  const wingFold = { L: named(/Wing_Fold_\d\.?L/i), R: named(/Wing_Fold_\d\.?R/i) };
+  const turnBone = (b, ax, angle) => {
+    b.parent.updateWorldMatrix(true, false);
+    b.parent.getWorldQuaternion(q0);
+    q1.setFromAxisAngle(ax, angle);
+    q2.copy(q0).invert().multiply(q1).multiply(q0);
+    b.quaternion.premultiply(q2);
+  };
+  /* Sitting, it opens its wings: `k` is 0 folded (the clip) to 1 spread. The roots swing
+     out and up from the back, and the folds of skin fan open after them. `tune` is for the
+     kit demo only. */
+  function unfurl(k, tune = SPREAD) {
+    if (k < 1e-3) return;
+    for (const [side, sg] of [['L', 1], ['R', -1]]) {
+      for (const b of wingRoot[side]) {
+        turnBone(b, axis.copy(Z), -sg * tune[0] * k);
+        turnBone(b, axis.copy(Y), sg * tune[1] * k);
+        turnBone(b, axis.copy(X), tune[2] * k);
+      }
+      wingFold[side].forEach((b, i) => {
+        turnBone(b, axis.copy(Z), -sg * tune[3] * k * (0.4 + 0.3 * i));
+        turnBone(b, axis.copy(X), tune[4] * k * (0.4 + 0.3 * i));
+      });
+    }
+  }
 
   /* Turn the neck and head by `yaw` (toward the creature's left) and `pitch` (down)
      radians, shared along the neck, about the creature's own axes. */
@@ -350,7 +406,7 @@ export async function createDragon({ url, time, wet }) {
      size (px a model unit at depth 0), fwd [x, y, z] and up [x, y, z] (world: x right, y up,
      z toward the reader), bank (radians), feet (the place given is where it stands),
      lean (radians: in flight the model hovers upright; this tips it nose down toward level),
-     clips { fly, glide, perch, stand } (weights; glide is the Fly clip), beat (wing beats a
+     spread (0 to 1: sitting, the wings open), clips { fly, glide, perch, stand } (weights; glide is the Fly clip), beat (wing beats a
      second), look [yaw, pitch], show (0 to 1), dpr, resY, still, phase } */
   function update(pose) {
     const show = pose.show ?? 0;
@@ -395,6 +451,7 @@ export async function createDragon({ url, time, wet }) {
       mixer.update(0);
     } else mixer.update(dt);
     if (pose.look) look(pose.look[0], pose.look[1]);
+    if (pose.spread) unfurl(pose.spread, pose.tune);
   }
 
   /** p: { keyDir, key, lowDir, low, amb, hide, belly, wing, rim, glow, fog (Vector3s or [r,g,b]), fogK, caust, rimGain, fire, thin, split } */

@@ -8,7 +8,7 @@ import { createDragon } from './dragon';
    ?pitch=deg   ?bank=deg   ?size=px per unit   ?lite (the phone file)   ?still   ?t=seconds   ?bare (no label)   ?bg=hex|none
 
    public/dragon/perch.webp (the still that stands on the roost under reduced motion) is a
-   screenshot of ?clip=perch&light=night&yaw=145&look=-28&still&bare&bg=none with no page ground. */
+   screenshot of ?clip=perch&light=night&yaw=128&look=-28&spread=0.85&still&bare&bg=none with no page ground. */
 const q = new URLSearchParams(location.search);
 const root = document.documentElement;
 if (q.has('bare')) root.dataset.bare = '';
@@ -26,7 +26,7 @@ const v = (r, g, b, k = 1) => new Vector3((r / 255) * k, (g / 255) * k, (b / 255
 const LIGHT = {
   sea: { keyDir: [0.25, 0.9, 0.35], key: v(150, 232, 232, 0.95), lowDir: [0, -1, 0.2], low: v(15, 84, 96, 0.5), amb: v(15, 84, 96, 0.7), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(150, 232, 232, 0.9), glow: v(255, 150, 60), fog: v(6, 40, 50), fogK: 0, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.5 },
   dusk: { keyDir: [0.5, 0.22, -0.7], key: v(255, 226, 178, 1.5), lowDir: [-0.3, -0.8, 0.5], low: v(226, 120, 64, 0.4), amb: v(104, 52, 74, 0.95), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(255, 190, 136), glow: v(255, 150, 60), fog: v(226, 120, 64), fogK: 0, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.72 },
-  night: { keyDir: [-0.5, 0.62, 0.6], key: v(246, 230, 210, 0.8), lowDir: [0.25, -0.85, 0.45], low: v(255, 150, 84, 0.34), amb: v(30, 22, 20, 2.6), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(255, 150, 84, 0.8), glow: v(255, 150, 60), fog: v(30, 22, 20), fogK: 0, caust: 0, rimGain: 0.7, fire: 1.25, thin: 0.5 },
+  night: { keyDir: [-0.5, 0.62, 0.6], key: v(246, 230, 210, 0.8), lowDir: [0.25, -0.85, 0.45], low: v(255, 150, 84, 0.34), amb: v(30, 22, 20, 2.6), hide: v(16, 56, 156), belly: v(226, 172, 52), wing: v(150, 28, 24), rim: v(255, 150, 84, 0.8), glow: v(255, 150, 60), fog: v(30, 22, 20), fogK: 0, caust: 0, rimGain: 1.1, fire: 1.4, thin: 0.22 },
 };
 LIGHT.dawn = { ...LIGHT.dusk, keyDir: [-0.62, 0.12, -0.6], amb: v(30, 22, 20, 1.7) };
 live.light(LIGHT[q.get('light')] ?? LIGHT.night);
@@ -60,7 +60,7 @@ function frame(ms) {
   const pitch = num('pitch', 0) * rad;
   const fwd = [Math.cos(yaw) * Math.cos(pitch), Math.sin(pitch), Math.sin(yaw) * Math.cos(pitch)];
   const perch = clip === 'perch' || clip === 'stand';
-  const pose = { t, cam: { x: 0, y: 0, z: camZ }, x: num('x', 0), y: num('y', perch ? h * 0.2 : 0), z: num('z', 0), size: num('size', Math.min(w / 17, h / 11)), feet: perch, fwd, up: [0, 1, 0], bank: num('bank', 0) * rad, clips: { [clip]: 1 }, lean: num('lean', 0) * rad, beat: num('beat', 0.7), look: [num('look', 0) * rad, num('nod', 0) * rad], show: 1, dpr, resY: Math.floor(h * dpr), phase: num('phase', 0.3) };
+  const pose = { t, cam: { x: 0, y: 0, z: camZ }, x: num('x', 0), y: num('y', perch ? h * 0.2 : 0), z: num('z', 0), size: num('size', Math.min(w / 17, h / 11)), feet: perch, fwd, up: [0, 1, 0], bank: num('bank', 0) * rad, clips: { [clip]: 1 }, lean: num('lean', 0) * rad, beat: num('beat', 0.7), look: [num('look', 0) * rad, num('nod', 0) * rad], spread: num('spread', 0), tune: q.has('tune') ? q.get('tune').split(',').map(Number) : undefined, show: 1, dpr, resY: Math.floor(h * dpr), phase: num('phase', 0.3) };
   if (still) live.still(pose);
   else live.update(pose);
   renderer.render(scene, camera);

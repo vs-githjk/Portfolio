@@ -59,7 +59,7 @@ export function createDragonStations({ live, phone, C }) {
   const LIGHT = {
     sea: { keyDir: [0.25, 0.9, 0.35], key: v('sea-ray', 0.95), lowDir: [0, -1, 0.2], low: v('sea-shallow', 0.5), amb: v('sea-shallow', 1.15), hide: v('dragon-hide', 1.25), belly: v('dragon-belly', 0.8), wing: v('dragon-wing', 0.9), rim: v('sea-ray', 0.9), glow: v('dragon-glow'), fogK: 0.0011, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.22, split: 0 },
     dusk: { keyDir: [0.5, 0.22, -0.7], key: v('sun', 1.5), lowDir: [-0.3, -0.8, 0.5], low: v('dusk-low', 0.4), amb: v('dusk-mid', 1.3), hide: v('dragon-hide', 1.6), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('earth-rim', 1), glow: v('dragon-glow'), fog: v('dusk-low', 0.82), fogK: 0.0009, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.42, split: 1 },
-    night: { keyDir: [-0.5, 0.62, 0.6], key: v('moon-rim', 1.1), lowDir: [0.25, -0.85, 0.45], low: v('ember', 0.6), amb: v('night-low', 3.2), hide: v('dragon-hide'), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('ember', 1), glow: v('dragon-glow'), fog: v('night-low'), fogK: 0, caust: 0, rimGain: 1.1, fire: 1.4, thin: 0.5, split: 0 },
+    night: { keyDir: [-0.5, 0.62, 0.6], key: v('moon-rim', 1.1), lowDir: [0.25, -0.85, 0.45], low: v('ember', 0.6), amb: v('night-low', 3.2), hide: v('dragon-hide'), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('ember', 1), glow: v('dragon-glow'), fog: v('night-low'), fogK: 0, caust: 0, rimGain: 1.1, fire: 1.4, thin: 0.22, split: 0 },
     dawn: { keyDir: [-0.62, 0.12, -0.6], key: v('sun', 1.25), lowDir: [-0.3, -0.8, 0.5], low: v('earth-rim', 0.75), amb: v('night-low', 2.6), hide: v('dragon-hide'), belly: v('dragon-belly'), wing: v('dragon-wing'), rim: v('earth-rim', 1), glow: v('dragon-glow'), fog: v('night-low', 1.4), fogK: 0.0004, caust: 0, rimGain: 1.3, fire: 1, thin: 0.42, split: 0 },
   };
   let lit = '';
@@ -99,27 +99,29 @@ export function createDragonStations({ live, phone, C }) {
     const shore = anchorRect('shore');
     st.breach = null;
     if (shore && shore.h > 300) {
-      const size = phone ? Math.min(17, (w * 0.8) / MODEL.span) : Math.max(22, Math.min(34, w / 42));
+      const size = phone ? Math.min(17, (w * 0.8) / MODEL.span) : Math.max(24, Math.min(40, w / 36));
       // x in window widths, y in window heights (both from the middle), z in px
       const way = phone
         ? [
             [0.14, 0.95, 60],
             [0.16, 0.62, 40],
             [0.16, 0.3, 10],
-            [0.12, 0.04, -40],
-            [0.06, -0.2, -260],
-            [0.12, -0.2, -800],
-            [0.2, -0.12, -1500],
+            [0.06, 0.04, -40],
+            [-0.1, -0.14, -160],
+            [0.04, -0.2, -300],
+            [0.2, -0.16, -520],
+            [0.5, -0.2, -1200],
           ]
         : [
-            [0.26, 1.05, 80],
-            [0.25, 0.68, 60],
-            [0.24, 0.34, 20],
-            [0.24, 0.08, -60],
-            [0.25, -0.1, -260],
-            [0.26, -0.16, -700],
-            [0.225, -0.12, -1300],
-            [0.22, -0.08, -1900],
+            [0.25, 1.1, 80],
+            [0.24, 0.7, 60],
+            [0.22, 0.36, 20],
+            [0.17, 0.1, -40],
+            [0.08, -0.08, -160],
+            [0.12, -0.16, -320],
+            [0.24, -0.12, -480],
+            [0.38, -0.14, -800],
+            [0.52, -0.2, -1500],
           ];
       st.breach = { rect: shore, size, path: makePath(way), boxes: boxesOf(shore), band: [shore.top, shore.bottom] };
     }
@@ -143,13 +145,13 @@ export function createDragonStations({ live, phone, C }) {
       }
       const ceiling = over ? over.getBoundingClientRect().bottom + y0 + 10 : roost.top;
       // Head to the left and toward the reader, tail away to the right: about 12 units wide, 8.4 tall.
-      const wide = 13.5;
-      const reach = 5; // from the feet to the snout, on the screen
-      let size = Math.min((roost.h - 6) / (MODEL.tall + 0.9), (Math.min(roost.w, w - 2 * GUTTER) * (phone ? 0.98 : 0.6)) / wide);
+      const wide = 14.5;
+      const reach = 6.5; // from the feet to the snout, on the screen
+      let size = Math.min((roost.h - 6) / (MODEL.tall + 2.4), (Math.min(roost.w, w - 2 * GUTTER) * (phone ? 0.98 : 0.6)) / wide);
       const xFeet = phone ? roost.left + reach * size + 6 : roost.right - (wide - reach) * size - roost.w * 0.04;
       const open = !phone && (noteRight < 0 || noteRight + 28 < xFeet - reach * size);
       const top = open ? Math.min(roost.top, Math.max(ceiling, roost.top - 150)) : roost.top;
-      if (open) size = Math.min(size * 1.5, (roost.bottom - top - 6) / (MODEL.tall + 0.9));
+      if (open) size = Math.min(size * 1.5, (roost.bottom - top - 6) / (MODEL.tall + 2.4));
       const band = [top - (open ? 40 : 6), roost.bottom + 8];
       const cols = graph ? columnsOf(graph.el, Number(graph.el.dataset?.weeks) || 53) : null;
       // The section's calm ground opens over the band (v3-sections.css reads these).
@@ -301,8 +303,10 @@ export function createDragonStations({ live, phone, C }) {
         const x = s.xFeet - w / 2;
         const y = s.ground - f.line;
         const z = 0;
-        const settle = 1;
-        const face = [-0.82, 0, 0.57];
+        const face = [-0.62, 0, 0.78];
+        // Every so often it opens its wings, slowly, holds them, and folds them again.
+        const tt = landAt < 0 ? -1 : (f.t - landAt - 1.6) % 16;
+        const spread = still ? 0.85 : tt < 0 ? 0 : 0.92 * sm(tt / 3.6) * (1 - sm((tt - 8) / 3.6));
         // It looks out at the reader, slowly sweeps the ground, and glances at a chosen week.
         let yaw = -0.5 + 0.22 * Math.sin(f.t * 0.31) * (still ? 0 : 1);
         let pitch = 0.05;
@@ -314,7 +318,7 @@ export function createDragonStations({ live, phone, C }) {
         }
         light('night');
         guard(s, f);
-        live.update({ ...base, x, y, z, size: s.size, feet: true, fwd: face, up: [0, 1, -0.2 * settle], bank: 0, clips: { perch: 1 }, look: [yaw, pitch], show: sm(L), phase: 0.2 });
+        live.update({ ...base, x, y, z, size: s.size, feet: true, fwd: face, up: [0, 1, -0.26], bank: 0, spread, clips: { perch: 1 }, look: [yaw, pitch], show: sm(L), phase: 0.2 });
         shown.station = 'roost';
         shown.u = L;
         return 'roost';
@@ -324,17 +328,17 @@ export function createDragonStations({ live, phone, C }) {
     // 2 The breach.
     if (st.breach) {
       const s = st.breach;
-      const u = (f.scroll - (s.rect.top - h * 0.6)) / (h * 1.1);
+      const u = (f.scroll - (s.rect.top - h * 0.6)) / (h * 1.3);
       if (u > 0 && u < 1) {
         const e = sm(u * 1.04);
         s.path(e, a3);
         const z = a3[2];
         heading(s.path, e, 0.03, (cam.z - z) / cam.z, w, h);
-        const climb = 1 - sm((e - 0.5) / 0.3); // 1 while it goes straight up
+        const climb = 1 - sm((e - 0.36) / 0.22); // 1 while it goes straight up
         light('dusk');
         guard(s, f);
         // Going up its back is to the reader's left; as it levels off toward the sun the reader sees it from behind and below.
-        live.update({ ...base, x: a3[0] * w, y: a3[1] * h, z, size: s.size, fwd: [...fwd], up: [mix(-0.2, -0.62, climb), mix(1, 0.2, climb), mix(0.5, 0.76, climb)], bank: 0.25 * sm((e - 0.55) / 0.25), look: [0, -0.55], clips: { fly: 1 }, lean: mix(1.15, 1.5, climb), beat: mix(0.6, 0.85, climb), show: sm(u / 0.08) * (1 - sm((u - 0.86) / 0.12)), phase: 0.1 });
+        live.update({ ...base, x: a3[0] * w, y: a3[1] * h, z, size: s.size, fwd: [...fwd], up: [mix(-0.2, -0.62, climb), mix(1, 0.2, climb), mix(0.5, 0.76, climb)], bank: -0.3 * sm((e - 0.4) / 0.2) * (1 - sm((e - 0.8) / 0.2)), look: [0, -0.55], clips: { fly: 1 }, lean: mix(1.15, 1.5, climb), beat: mix(0.6, 0.85, climb), show: sm(u / 0.08) * (1 - sm((u - 0.86) / 0.12)), phase: 0.1 });
         shown.station = 'breach';
         shown.u = u;
         return 'breach';

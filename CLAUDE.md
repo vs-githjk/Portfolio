@@ -132,11 +132,12 @@ first waterline, the sea ends at the shore, then dusk, night and dawn over a des
 - **The earth is a coast** (`lib/worldLand.js`; Vidyut, Nov 16: the flat buttes were "bland and
   boring", the camp had "two tents"). One heightfield, sea level at y = 0: the beach with surf
   where the reader comes out of the water, the camp on a rise (nine tents, banners, crates,
-  eight figures, loose rock, a worn path), an inlet of the sea running away toward the sun,
+  eight figures, loose rock, a worn path, grass in tufts), an inlet of the sea running away toward the sun,
   foothills, then two ranges of ridged mountains, the far one snow-capped. The ranges part
   where the inlet runs, so the sun sets down the water; on a narrow window the inlet narrows
-  so the mountains stay in view. Rock, scrub and snow are `--land-rock`, `--land-scrub`,
-  `--land-snow`. Do not flatten it back to dunes and mesas.
+  so the mountains stay in view. Pine stands grow on the lower slopes (never between the reader and the
+  camp), and the near shore is green. Rock, scrub, snow and green are `--land-rock`,
+  `--land-scrub`, `--land-snow`, `--land-green`. The camp, the pines and the grass are one mesh. Do not flatten it back to dunes and mesas.
 - One unit is one CSS pixel on the plane z = 0; depth is parallax. The scene reads the page:
   an element marked `data-world-anchor="<name>"` (names in `ANCHOR`, `data/world.js`) is
   where a piece lives, and layout runs again whenever the page height changes.
@@ -180,7 +181,8 @@ no Receipts line.
   eyes, a soft rim (`--dragon-hide`, `--dragon-belly`, `--dragon-wing`, `--dragon-glow`; its
   yellow is its own, `--win` stays the awards' gold). Only the light and dark of the model's
   base colour and its normal map are used. Which part is which comes from the skin weights at
-  load (wing bones, toe bones). It is lit by the place it is in (`LIGHT` in
+  load (wing bones, toe bones); the horns have no bones, so they are the part of the skull
+  behind the head's joint at rest, and they are gold too. It is lit by the place it is in (`LIGHT` in
   `dragonStations.js`). A depth-only pass is drawn first so a fade never shows the far wing
   through the near one.
 - **The Fly clip hovers upright.** `lean` (about 1.2 rad) tips it toward level for the passes;
@@ -188,8 +190,9 @@ no Receipts line.
   frame (head toward +z, 8.4 units tall sitting), so another model can be swapped in.
 - **Four stations and nowhere else, and grand**: big in frame, slow wingbeats (0.4 to 0.85 a
   second). One lap across the giant's face; the breach as the reader comes up through the
-  surface, then across the low sun; the roost (it sits on the commit card on watch, turning
-  its head; choosing a week makes it look at that column); a low pass over the limb at
+  surface, then a long sweep across the low sun; the roost (it sits on the commit card on watch, turning
+  its head and, every sixteen seconds, slowly opening its wings: `unfurl` turns the wing
+  bones over the Idle Sit clip; choosing a week makes it look at that column); a low pass over the limb at
   Contact and, when the email is copied, the flight into the dawn.
 - **It loads last.** Its code is a chunk of its own (GLTFLoader and the meshopt decoder),
   asked for by `World.jsx` only after the world has drawn its first frame and the page is
