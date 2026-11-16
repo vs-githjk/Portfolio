@@ -1026,7 +1026,9 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     const fz = -60;
     const fk = view(fz);
     schoolMat.uniforms.uSize.value = (phone ? 11 : 15) * fk;
-    schoolMat.uniforms.uHome.value.set(0, -(home.shore - h * 0.42), fz);
+    // A phone has no margins, so there the school keeps to the top of the shore's own
+    // window (no text column), not the last rows of the builds above it.
+    schoolMat.uniforms.uHome.value.set(0, -(phone ? home.shore + h * 0.16 : home.shore - h * 0.42), fz);
     schoolMat.uniforms.uLoop.value.set(w * (phone ? 0.3 : 0.34) * fk, (phone ? 46 : h * 0.13) * fk);
     place(giant, -220, home.giant + (phone ? 20 : 70), w * (phone ? 0.2 : 0.27), 0, gr);
     const gk = view(-220);
@@ -1448,7 +1450,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
         const p = b.project();
         put(b.id, p.x, p.y, p.visible);
       }
-      put('school', w / 2, home.shore - h * 0.42 - line + h / 2, school.visible);
+      put('school', w / 2, (phone ? home.shore + h * 0.16 : home.shore - h * 0.42) - line + h / 2, school.visible);
       // The fires are named only while the camp itself is in the window.
       put('fires', w * 0.8, h * 0.72, land.fires?.object.visible && state.lamp > 0.05 && line + h / 2 > home.crew + h * 0.25 && line - h / 2 < home.crewEnd - h * 0.25);
       put('stars', winStars.place.x, winStars.place.y - line + h / 2, winStars.object.visible);
