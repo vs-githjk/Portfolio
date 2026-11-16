@@ -40,6 +40,13 @@ export function realmAt(a, y, h, bar) {
   return h * (-0.08 + 1.22 * rise) >= bar ? 'earth' : 'sea';
 }
 
+/* Where the ring of build cards stands. One line to flip:
+     'builds'  at the top of Builds, as the index of the builds (the front arc of the
+               ring hangs under the heading and the giant; it replaces the dot chart)
+     'proof'   in Proof of work, around "Verify me in one click": a ring of the wins,
+               each card opening its public page (it replaces the plaques on a wide window) */
+export const RING_HOME = 'builds';
+
 /* The first screen's two links and the short hint between them. */
 export const entry = {
   enter: 'Enter',
@@ -64,7 +71,7 @@ export const loadLines = {
    `line` is a waterline: drawn on the Chart, not a destination. */
 export const places = [
   { id: 'welcome', name: 'The Threshold', label: welcome.label, realm: 'space' },
-  { id: 'top', name: 'The Orrery', label: hero.headline, realm: 'space' },
+  { id: 'top', name: 'The Landing', label: hero.headline, realm: 'space' },
   { line: 'surface', name: 'The Waterline' },
   { id: 'work', name: 'The Sounding', label: experience.heading, realm: 'sea' },
   { id: 'builds', name: 'The Deep', label: builds.heading, realm: 'sea' },

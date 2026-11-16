@@ -3,13 +3,20 @@ import { hero } from '../data/content';
 import { useReducedMotion } from '../hooks/useMediaQuery';
 import Badge from './Badge';
 import { ChevronLeftIcon, ChevronRightIcon, PauseIcon, PlayIcon } from './Icons';
-import { entryState, onEntry } from '../shell/entryState';
 import { registerBinding } from '../kit/bindings';
-import { ring } from '../lib/ring';
 
-/* "What I've built": the orbit ring. Eleven glass cards on an elliptical CSS 3D
-   ring around the name. The front card is large and readable, the rest recede
-   and dim, and the ring turns one card every few seconds.
+/* The orbit ring: glass cards on an elliptical CSS 3D ring, standing on an
+   engraved plate. The front card is large and readable, the rest recede and dim,
+   and the ring turns one card every few seconds. It is an index: every card is
+   one link (to its Builds entry, or wherever `hrefFor` says).
+
+   Two ways to stand (`mode`, set by RingStage):
+     under   the front arc of the ring hangs under the centre block (the Builds
+             opener). The back half is not shown: a card fades out as it passes
+             the side, so nothing ever crosses the heading. The ring sets the
+             stage's height (--stage-h).
+     around  the whole ring turns around the centre block in a window-tall stage;
+             a card behind the copy fades whole.
 
    Behavior:
    - the ring is one rAF loop that writes transforms straight to the nodes (no
@@ -18,35 +25,28 @@ import { ring } from '../lib/ring';
    - hover on the ring pauses it, hover on a back card lifts that card;
    - focus inside the ring stops it for good (it is a keyboard user's ring now)
      and only the front card is tabbable; ArrowLeft/Right step, Home/End jump;
-   - every card is one link to its Builds entry (#build-<id>);
    - prefers-reduced-motion: a static pose, no rAF, no pause button;
-   - below 960px wide or 640px tall the ring becomes a swipeable snap row.
+   - below 960px wide or 640px tall the ring is not shown (Drift.jsx stands in).
 
    Geometry comes from the --orbit-* tokens; measure() fits the radius to the
-   scene width and the ring centre to the hero copy above it.
+   scene width and the ring centre to the centre block above it.
 
-   The Orrery (v3). The cards stand on an engraved plate: two hairline rims and
-   one tick per build, drawn in the scene's own SVG from the same projection that
-   poses the cards (foot()), so a resting card's foot sits on its tick by
-   construction. The inner rim is cut into one pad per build, so the plate itself
-   counts them. Pads and ticks are stations and do not turn; the front one is lit,
-   and the counter under it reads which build stands there.
-   The ring can be thrown: a drag on a card turns it under the hand, and on
-   release it keeps its speed, slows, and settles on the nearest station. When
-   the reader arrives from the welcome (shell/entryState.js) the plate settles
-   and the cards land on their ticks front first, 40 ms apart; the ring then
-   holds for 600 ms before it turns. */
+   The plate: two hairline rims and one tick per card, drawn in the scene's own
+   SVG from the same projection that poses the cards (foot()), so a resting
+   card's foot sits on its tick by construction. Pads and ticks are stations and
+   do not turn; the front one is lit, and the counter under it reads which card
+   stands there. The ring can be thrown: a drag on a card turns it under the
+   hand, and on release it keeps its speed, slows, and settles on the nearest
+   station. The first time the ring comes into view the cards land on their
+   ticks front first, 40 ms apart; the ring then holds for 600 ms before it turns. */
 
-const { carousel } = hero;
-const slides = carousel.slides;
-const N = slides.length;
-const STEP = (2 * Math.PI) / N;
 const RING_MQ = '(min-width: 960px) and (min-height: 640px)';
 
 const pad2 = (k) => String(k).padStart(2, '0');
 const easeOut = (p) => 1 - Math.pow(1 - p, 3);
 const LAND = { gap: 40, dur: 420, hold: 600, from: 0.6 };
-const NAME_CH = Math.max(...slides.map((s) => s.title.length));
+/* Under a block: the cosine of the ring angle where a card is gone, and where it is whole. */
+const ARC = [0.3, 0.48];
 
 /* Two widths per ring card: 320 for the desktop ring (cards are about 220px wide),
    640 for a phone's row (cards up to 320px wide at 2x or more). */
@@ -71,7 +71,11 @@ function Shot({ slide }) {
   );
 }
 
-export default function Orbit({ stageRef, centreRef }) {
+export default function Orbit({ stageRef, centreRef, slides = hero.carousel.slides, words = hero.carousel, mode = 'around', hrefFor = (s) => `#build-${s.id}` }) {
+  const N = slides.length;
+  const STEP = (2 * Math.PI) / N;
+  const NAME_CH = Math.max(...slides.map((s) => s.title.length));
+  const under = mode === 'under';
   const reducedHook = useReducedMotion();
   const regionRef = useRef(null);
   const sceneRef = useRef(null);
@@ -147,7 +151,8 @@ export default function Orbit({ stageRef, centreRef }) {
     let liveT = 0;
     let free = null; // the ring's angle while a hand or a throw has it; null when the clock does
     let spin = null; // a throw settling: { from, to, t0, dur }
-    let landAt = entryState() === 'pre' ? Infinity : -1; // when the cards began to land; -1 when they stand
+    let landAt = -1; // when the cards began to land; Infinity while they wait to; -1 when they stand
+    let arrived = false; // the ring has been seen once
     let landT = 0;
     const landed = cards.map(() => -1);
     const lit = cards.map(() => null);
@@ -229,20 +234,17 @@ export default function Orbit({ stageRef, centreRef }) {
       scene.style.removeProperty('--card-h');
       geo.cardH = Math.max(...cards.map((c) => c.offsetHeight)) || 240;
       scene.style.setProperty('--card-h', `${geo.cardH}px`);
-      // Where the hero copy really stands, relative to the ring centre: the portrait's
-      // left edge and the right end of the name block (the credential line). The block
-      // is centred on the stage, and its portrait side is wider than its text side.
+      // Where the copy really stands, relative to the ring centre: the left and right
+      // ends of the centre block's own children (the block is centred on the stage).
       const half = centre.offsetWidth / 2;
-      const who = centre.querySelector('.who-main');
-      const face = centre.querySelector('.portrait');
-      if (who && face) {
-        geo.copyL = face.offsetLeft - half;
-        // The right end is the widest line of the copy, not the name alone.
-        const right = Math.max(...Array.from(who.children, (c) => c.offsetLeft + c.offsetWidth));
-        geo.copyR = Math.max(who.offsetLeft + who.offsetWidth, right) - half;
+      const kids = Array.from(centre.children).filter((c) => c.offsetWidth > 0);
+      if (kids.length) {
+        geo.copyL = Math.min(...kids.map((c) => c.offsetLeft)) - half;
+        geo.copyR = Math.max(...kids.map((c) => c.offsetLeft + c.offsetWidth)) - half;
       }
       const stageH = stage.clientHeight;
-      geo.rz = Math.min(CFG.rz, Math.round(stageH * 0.46));
+      // Under the block the ring keeps its own depth; around it, the stage's height sets it.
+      geo.rz = under ? CFG.rz : Math.min(CFG.rz, Math.round(stageH * 0.46));
       // The widest the ring may be: the outermost card keeps 16px to spare on each side.
       const room = scene.clientWidth / 2 - 16;
       const wide = scene.clientWidth;
@@ -262,7 +264,7 @@ export default function Orbit({ stageRef, centreRef }) {
       // centre block (which ends 18px above the front card) touches the nav.
       const blockH = centre.offsetHeight || 360;
       const minO = 14 + blockH + 18 - frontTop;
-      const O = Math.max(Math.round(stageH * 0.47), Math.round(minO));
+      const O = under ? Math.round(minO) : Math.max(Math.round(stageH * 0.47), Math.round(minO));
       stage.style.setProperty('--oy', `${O}px`);
       stage.style.setProperty('--centre-off', `${(frontTop - 18).toFixed(0)}px`);
       // The lifted front card is nearer the camera, so it grows about the ring centre.
@@ -272,10 +274,10 @@ export default function Orbit({ stageRef, centreRef }) {
         return frontTop + cardH + grow * (geo.rz * geo.sinT + cardH / 2) + 18;
       };
       geo.front = CFG.front;
-      while (geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
+      while (!under && geo.front > 0 && O + barAt(geo.front) + 44 + 8 > stageH) geo.front = Math.max(0, geo.front - 10);
       stage.style.setProperty('--bar-y', `${barAt(geo.front).toFixed(0)}px`);
-      // The welcome hologram lands its light on this ring (lib/ring.js).
-      Object.assign(ring, { el: scene, n: N, oy: O, rx: geo.rx, rz: geo.rz, sinT: geo.sinT, cosT: geo.cosT, persp: CFG.persp, cardW: geo.cardW, cardH: geo.cardH, front: geo.front, side: CFG.side, yaw: CFG.yaw, lean: CFG.lean });
+      // Under the block the ring is what makes the stage tall: down to the control bar.
+      if (under) stage.style.setProperty('--stage-h', `${Math.round(O + barAt(geo.front) + 44 + 12)}px`);
       drawPlate();
       // Where the plate is in the document, for its receipt (kit/bindings.js).
       const box = stage.getBoundingClientRect();
@@ -285,7 +287,6 @@ export default function Orbit({ stageRef, centreRef }) {
 
     function pose(now = performance.now()) {
       const th = free ?? theta(vt);
-      ring.theta = th;
       const f0 = ((Math.round(-th / STEP) % N) + N) % N;
       const want = cards.map(() => '');
       const ranks = [];
@@ -344,10 +345,13 @@ export default function Orbit({ stageRef, centreRef }) {
         // where a dark slab would otherwise sit behind the name.
         // It leaves a little early (full cover is not needed), so no faint outline of a
         // card lingers beside the hero copy while it turns.
-        const vis = Math.max(0, 1 - CFG.ghost * Math.min(1, hidden * 1.35));
+        // Under the block only the front arc shows: a card is whole two steps from the
+        // front and gone before it reaches the side, where the heading is.
+        const vis = under ? Math.max(0, Math.min(1, (c - ARC[0]) / (ARC[1] - ARC[0]))) : Math.max(0, 1 - CFG.ghost * Math.min(1, hidden * 1.35));
         if (Math.abs(vis - lastVis[k]) > 0.004) {
           lastVis[k] = vis;
           cards[k].style.setProperty('--vis', vis.toFixed(3));
+          cards[k].style.pointerEvents = vis < 0.5 ? 'none' : '';
         }
         const sh = (shade * (1 - hov[k])).toFixed(3);
         shades[k][0].style.opacity = sh;
@@ -654,9 +658,7 @@ export default function Orbit({ stageRef, centreRef }) {
         return { ...at, side: 'right', visible: at.y > 0 && at.y < window.innerHeight };
       },
     });
-    const offEntry = onEntry(land);
-    if (entryState() === 'pre') reasons.landing = true;
-    else region.dataset.land = '';
+    region.dataset.land = '';
 
     const onVis = () => {
       reasons.hidden = document.hidden;
@@ -682,11 +684,27 @@ export default function Orbit({ stageRef, centreRef }) {
       );
       io.observe(region);
     }
+    // The arrival: until the ring has been seen the cards wait unlit; they land the
+    // first time a third of it is in the window.
+    let seenIo = null;
+    if ('IntersectionObserver' in window && !reduced()) {
+      land('pre');
+      seenIo = new IntersectionObserver(
+        (es) => {
+          if (arrived || !es.some((e) => e.isIntersecting)) return;
+          arrived = true;
+          seenIo.disconnect();
+          land('land');
+        },
+        { threshold: 0.3 }
+      );
+      seenIo.observe(region);
+    }
 
     // Where the plate's rim is while the rows stand in for the ring (read on a resize, never per frame).
     const row = { x: 0, docY: null };
     function measureRow() {
-      const plate = stage.querySelector('.drift-plate');
+      const plate = stage.querySelector('.drift');
       const box = plate?.getBoundingClientRect();
       if (!box || box.height < 2) {
         row.docY = null;
@@ -699,7 +717,6 @@ export default function Orbit({ stageRef, centreRef }) {
     function applyMode() {
       const wasRing = ringMode;
       ringMode = ringMq.matches;
-      ring.on = ringMode;
       region.dataset.mode = ringMode ? 'ring' : 'row';
       if (!ringMode) {
         if (raf) cancelAnimationFrame(raf);
@@ -783,7 +800,6 @@ export default function Orbit({ stageRef, centreRef }) {
       if (raf) cancelAnimationFrame(raf);
       clearTimeout(liveT);
       clearTimeout(landT);
-      offEntry();
       offBinding();
       scene.removeEventListener('pointerdown', onDown);
       scene.removeEventListener('click', onClickCapture, true);
@@ -793,6 +809,7 @@ export default function Orbit({ stageRef, centreRef }) {
       window.removeEventListener('pointercancel', onUp);
       ro.disconnect();
       io?.disconnect();
+      seenIo?.disconnect();
       region.removeEventListener('keydown', onKey);
       region.removeEventListener('mouseenter', onEnter);
       region.removeEventListener('mouseleave', onLeave);
@@ -806,15 +823,16 @@ export default function Orbit({ stageRef, centreRef }) {
         c.removeEventListener('mouseleave', cardHandlers[k][1]);
       });
     };
-  }, [stageRef, centreRef]);
+  }, [stageRef, centreRef, slides, N, STEP, under]);
 
   return (
     <section
       className="orbit"
       ref={regionRef}
       aria-roledescription="carousel"
-      aria-label={carousel.label}
+      aria-label={words.label}
       data-state={state}
+      data-ring={mode}
     >
       <div className="orbit-scene" ref={sceneRef}>
         <svg className="ring-plate" aria-hidden="true" focusable="false">
@@ -841,7 +859,7 @@ export default function Orbit({ stageRef, centreRef }) {
               aria-roledescription="slide"
               aria-label={`${k + 1} of ${N}: ${s.title}`}
             >
-              <a className="card-link" href={`#build-${s.id}`} tabIndex={k === 0 ? 0 : -1}>
+              <a className="card-link" href={hrefFor(s)} tabIndex={k === 0 ? 0 : -1} {...(/^https?:/.test(hrefFor(s)) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
                 <span className="card-media">
                   <Shot slide={s} />
                   <span className="card-prog" aria-hidden="true">
@@ -860,7 +878,7 @@ export default function Orbit({ stageRef, centreRef }) {
                   )}
                   <span className="card-one">{s.oneLiner}</span>
                   <span className="card-cta">
-                    <span>{carousel.slideCta} →</span>
+                    <span>{words.slideCta} →</span>
                     <span className="card-idx" aria-hidden="true">
                       {pad2(k + 1)} / {pad2(N)}
                     </span>
@@ -874,16 +892,16 @@ export default function Orbit({ stageRef, centreRef }) {
       </div>
       <div className="orbit-bar">
         <div className="orbit-side" data-side="left">
-          <span className="eyebrow">{carousel.label}</span>
+          <span className="eyebrow">{words.label}</span>
           <button
             className="ctl ctl-pause"
             type="button"
-            aria-label={userPaused ? carousel.controls.play : carousel.controls.pause}
+            aria-label={userPaused ? words.controls.play : words.controls.pause}
             onClick={() => api.current.toggle()}
           >
             {userPaused ? <PlayIcon /> : <PauseIcon />}
           </button>
-          <button className="ctl" type="button" aria-label={carousel.controls.prev} onClick={() => api.current.step(-1)}>
+          <button className="ctl" type="button" aria-label={words.controls.prev} onClick={() => api.current.step(-1)}>
             <ChevronLeftIcon />
           </button>
         </div>
@@ -891,7 +909,7 @@ export default function Orbit({ stageRef, centreRef }) {
           {pad2(1)} / {pad2(N)}
         </span>
         <div className="orbit-side" data-side="right">
-          <button className="ctl" type="button" aria-label={carousel.controls.next} onClick={() => api.current.step(1)}>
+          <button className="ctl" type="button" aria-label={words.controls.next} onClick={() => api.current.step(1)}>
             <ChevronRightIcon />
           </button>
           <span className="readout-name" ref={nameRef} aria-hidden="true" style={{ '--name-ch': NAME_CH }}>
