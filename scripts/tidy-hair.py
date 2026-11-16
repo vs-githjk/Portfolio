@@ -13,6 +13,10 @@ default suits a 768 x 1376 standing figure) and touches nothing else:
            there catch the light instead of sinking to one flat dark
   crisps   a gentle unsharp mask over the whole head box, face included
 
+Not used for the current figures (Nov 16): its trim cut the crown flat, and
+scripts/matte-figure.py now keys the hair from its own edge. Kept for a figure
+whose hair really is one dark dome.
+
 Needs Pillow, numpy and scipy.
 """
 import sys
