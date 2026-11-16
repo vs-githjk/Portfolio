@@ -15,7 +15,7 @@ import { localBindings } from '../kit/bindings';
    hairline. Anywhere else it goes to the margin on its side if the margin is
    wide enough, and to the ledger (one line each, along the foot) if not.
    Decoration: the same facts are already in the page, so the layer is aria-hidden. */
-const TAG = { w: 168, h: 64, gap: 18, edge: 10 };
+const TAG = { w: 168, h: 64, gap: 18, edge: 10, rail: 26 }; // rail: the depth rail's strip down the right edge
 
 function layout(items, parts, free, column, bar) {
   const w = window.innerWidth;
@@ -32,11 +32,11 @@ function layout(items, parts, free, column, bar) {
     const inFree = zones.some(([a, b]) => it.y >= a && it.y <= b);
     const side = it.side === 'left' ? 'left' : 'right';
     if (inFree && w >= TAG.w * 2) {
-      const left = Math.max(TAG.edge, Math.min(w - TAG.w - TAG.edge, side === 'left' ? it.x - TAG.gap - TAG.w : it.x + TAG.gap));
+      const left = Math.max(TAG.edge, Math.min(w - TAG.w - TAG.edge - TAG.rail, side === 'left' ? it.x - TAG.gap - TAG.w : it.x + TAG.gap));
       const top = Math.max(bar + TAG.edge, Math.min(h - TAG.h - TAG.edge, it.y - TAG.h / 2));
       tags.push({ ...it, words, side, where: 'beside', left, top });
-    } else if (margin >= TAG.w + TAG.edge * 2 && it.y > bar && it.y < h) {
-      const left = side === 'left' ? TAG.edge : w - TAG.w - TAG.edge;
+    } else if (margin >= TAG.w + TAG.edge * 2 + TAG.rail && it.y > bar && it.y < h) {
+      const left = side === 'left' ? TAG.edge : w - TAG.w - TAG.edge - TAG.rail;
       tags.push({ ...it, words, side, where: 'margin', left, top: Math.max(bar + TAG.edge, Math.min(h - TAG.h - TAG.edge, it.y - TAG.h / 2)) });
     } else if (it.y > 0 && it.y < h) ledger.push({ id: it.id, words });
   }

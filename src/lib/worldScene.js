@@ -1449,7 +1449,8 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
         put(b.id, p.x, p.y, p.visible);
       }
       put('school', w / 2, home.shore - h * 0.42 - line + h / 2, school.visible);
-      put('fires', w * 0.8, h * 0.72, land.fires?.object.visible && state.lamp > 0.05 && -camY > home.shore);
+      // The fires are named only while the camp itself is in the window.
+      put('fires', w * 0.8, h * 0.72, land.fires?.object.visible && state.lamp > 0.05 && line + h / 2 > home.crew + h * 0.25 && line - h / 2 < home.crewEnd - h * 0.25);
       put('stars', winStars.place.x, winStars.place.y - line + h / 2, winStars.object.visible);
       put('moon', w / 2 + sizes.moonX, h * 0.3, moon.visible);
       return out;
