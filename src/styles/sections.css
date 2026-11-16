@@ -2457,15 +2457,63 @@ html[data-holo='off'] .welcome-face {
   border-top: var(--rule);
 }
 
+/* The facts are not four equal figures. One of them is the point of the crew, the
+   last: nothing leaves without his go. It stands large on the left; the other
+   three are a short ledger beside it, a figure and its words on one line each. */
 .nb-foot .metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px 32px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 0 clamp(32px, 5vw, 72px);
+  align-items: center;
   padding-top: 0;
 }
 
+.nb-foot .metric {
+  grid-column: 2;
+  grid-template-columns: 3.2ch minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.nb-foot .metric:first-child {
+  border-top: 1px solid var(--hair);
+}
+
 .nb-foot .metric b {
-  font-size: clamp(40px, 4vw, 56px);
+  font-size: 26px;
+}
+
+.nb-foot .metric span {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--text-2);
+  white-space: normal;
+}
+
+.nb-foot .metric:last-child {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 clamp(16px, 2vw, 28px);
+  padding: 0;
+  border: 0;
+}
+
+.nb-foot .metric:last-child b {
+  font-size: clamp(88px, 9vw, 132px);
+  line-height: 0.8;
+  color: var(--acc-text);
+}
+
+.nb-foot .metric:last-child span {
+  max-width: 16ch;
+  font-family: var(--font-read);
+  font-size: clamp(19px, 1.7vw, 24px);
+  line-height: 1.2;
+  color: var(--text);
 }
 
 .nb-end {
@@ -2522,11 +2570,19 @@ html[data-holo='off'] .welcome-face {
   }
 
   .nb-foot .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
   }
 
-  .nb-foot .metric span {
-    white-space: normal;
+  .nb-foot .metric,
+  .nb-foot .metric:last-child {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .nb-foot .metric:last-child {
+    order: -1;
+    padding-bottom: 22px;
   }
 
   .nb-sys {
