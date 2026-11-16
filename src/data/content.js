@@ -367,6 +367,11 @@ export const builds = {
   /* Labels for the controls inside a build. */
   labels: {
     of: 'of',
+    /* The bar a phone shows in place of a flagship's story panel (below 760px). */
+    file: 'Inside',
+    fileOpen: 'Open',
+    fileClose: 'Close',
+    fileSr: ' the story, stills and figures of {title}',
     story: 'The full story',
     storySr: ' of {title}',
     stills: 'Stills from {title}',
@@ -419,6 +424,8 @@ export const builds = {
         },
       },
       figure: 0, // which metric is the one large figure on its arrival screen
+      // The line on a phone's Inside bar: what opening it gets you. From this entry's own story.
+      tease: 'Why it never hears “send 14” as “send 40”.',
       kind: 'Product · live · free while in beta',
       title: 'PrismAI',
       descriptor: 'know who promised what',
@@ -525,6 +532,7 @@ export const builds = {
         },
       },
       figure: 0,
+      tease: 'How a level earns its strength number.',
       kind: 'Product · live · solo',
       title: 'DuelWise',
       descriptor: 'can you beat my agents?',
@@ -630,6 +638,7 @@ export const builds = {
         },
       },
       figure: 0,
+      tease: 'How a photo lands inside a 3D scan.',
       kind: 'Hackathon · HackPrinceton 2026 · team of 4',
       title: 'SNAPBACK',
       descriptor: 'trust the home, not the ad',

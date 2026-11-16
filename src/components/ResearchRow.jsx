@@ -44,6 +44,11 @@ export default function ResearchRow({ item }) {
           <span className="sr">{fill(builds.labels.storySr, { title: item.title })}</span>
         </summary>
         <div className="fold-body">
+          {/* On a phone the second figure and the author line open with the story (one copy shows at a time). */}
+          <div className="paper-folded">
+            <Metrics items={item.metrics.slice(1)} />
+            <p className="role">{item.role}</p>
+          </div>
           {item.body.map((p) => (
             <p className="text" key={p.slice(0, 24)}>
               <Rich text={p} />

@@ -261,8 +261,17 @@ labels and receipt sentences live in `data/world.js`; events and shared CSS vari
 - Height, measured Nov 16 with the ring as the index: 6,654px at 1440 (it was 6,299 with
   the dot chart; baseline 9,163) and 8,951px at 390 (it was 8,755; baseline 19,488). The
   flagship stages then took it to 7,542px at 1440 and 10,379px at 390 (a stage is 560 to
-  640px tall where the old window was 260, and SNAPBACK's is 925px on a phone). That is
-  over the old ceiling on purpose and waits on Vidyut's word; do not add to it.
+  640px tall where the old window was 260). Vidyut, Nov 16: the laptop is fine as it is;
+  the phone had to come back down. So below 760px a flagship is its stage, the one-liner,
+  one figure and the links, and its story panel (stills, second figure, role, what is
+  being built, the story) opens from the Inside bar (`.ch-file`: three stills dealt like
+  cards, one teasing line from `tease` in `content.js`, an Open handle; a button with
+  `aria-expanded`, shown only under `html.js`, so without scripts the panel is simply
+  there). SNAPBACK's stage drops its sample ad and tally on a phone. Below 560px a
+  featured plate leads with its one-liner and one proof (its award, or its first result
+  when it has none) and its descriptor opens with the dossier; the paper's second figure
+  and author line open with its story. Builds is 8,860px at 390 now; keep it at or under
+  about 8,900, and leave the laptop alone.
 - Images are flat and straight; only the ring is 3D.
 
 ## Master Agents (`components/NowBuilding.jsx`, `CrewRun.jsx`, `builds.building`)

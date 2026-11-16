@@ -73,6 +73,9 @@ export default function BuildCard({ item, anchor }) {
           <span className="num">{place(item.id)}</span> {item.title}
         </p>
         <div className="dossier-body">
+          {/* On a phone the plate leads with its one-liner and one proof; what it is, in
+              two words, is here (v4-flagships.css shows this line below 560px only). */}
+          <p className="dossier-desc">{item.descriptor}</p>
           <p className="eyebrow">{item.when}</p>
           {item.role && <p className="role">{item.role}</p>}
           {item.body.map((p) => (

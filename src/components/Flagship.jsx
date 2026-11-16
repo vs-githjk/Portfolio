@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { builds } from '../data/content';
 import Count from './Count';
 import LinkRow from './LinkRow';
@@ -21,6 +22,7 @@ import { fill, place } from './counts';
    line and what is being built now. The story itself and the stack open under
    "The full story" (a native <details>, so the text is in the HTML). */
 export default function Flagship({ item, index }) {
+  const [open, setOpen] = useState(false);
   const { lead, stack } = item.media;
   const frames = [
     { ...lead, width: 1200, height: 750, steps: [640, 900] },
@@ -64,7 +66,28 @@ export default function Flagship({ item, index }) {
           <LinkRow links={item.links} />
         </div>
       </div>
-      <div className="ch-story reveal">
+      {/* Below 760px the story panel waits behind this bar (v4-flagships.css). Wider, and
+          without the script, the bar is not shown and the panel is simply there. */}
+      <button className="ch-file" type="button" aria-expanded={open} aria-controls={`file-${item.id}`} onClick={() => setOpen((v) => !v)}>
+        <span className="ch-file-peek" aria-hidden="true">
+          {stack.map((f) => (
+            <img key={f.image} src={f.image.replace('.webp', '-320.webp')} alt="" width="320" height="200" loading="lazy" decoding="async" />
+          ))}
+        </span>
+        <span className="ch-file-what">
+          <b>{builds.labels.file}</b>
+          <span>{item.tease}</span>
+        </span>
+        <span className="ch-file-go">
+          <span>{open ? builds.labels.fileClose : builds.labels.fileOpen}</span>
+          <span className="sr">{fill(builds.labels.fileSr, { title: item.title })}</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M3 4.5 8 9l5-4.5" />
+            <path d="M3 8.5 8 13l5-4.5" />
+          </svg>
+        </span>
+      </button>
+      <div className="ch-story reveal" id={`file-${item.id}`} data-open={open ? '' : undefined}>
         <Stills id={item.id} title={item.title} frames={frames} />
         <div className="ch-tell">
           <Metrics items={rest} />

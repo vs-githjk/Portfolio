@@ -1247,7 +1247,7 @@
   }
 
   .sh {
-    width: min(100%, 286px);
+    width: min(100%, 252px);
     justify-self: center;
     margin: 2px 0 6px;
   }
@@ -1259,6 +1259,249 @@
   .chk-tally-k {
     grid-row: auto;
     max-width: none;
+  }
+}
+
+/* ---- A phone's flagship: the stage, one line, one figure, and the rest inside ---- */
+/* Below 760px the story panel (stills, the second figure, the role line, what is
+   being built, the story) opens from a bar. Wider, the bar is never shown. Without
+   the script it is not shown either, and the panel is in the page as before. */
+.ch-file {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  html.js .ch-story:not([data-open]) {
+    display: none;
+  }
+
+  html.js .ch-file {
+    --cut: var(--cut-md);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-height: 68px;
+    margin-top: 18px;
+    padding: 10px 12px 10px 14px;
+    border: 1px solid var(--hair-2);
+    border-radius: var(--r-xs);
+    background-color: var(--surface);
+    background-image: var(--cut-edge);
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: var(--cut) var(--cut);
+    background-origin: border-box;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .ch-file[aria-expanded='true'] {
+    --cut-line: var(--acc);
+    border-color: var(--acc);
+  }
+
+  .ch-file:focus-visible {
+    outline: 2px solid var(--acc);
+    outline-offset: -4px;
+  }
+
+  /* Three stills, dealt like cards: a look at what is inside. */
+  .ch-file-peek {
+    display: flex;
+    padding-left: 4px;
+  }
+
+  .ch-file-peek img {
+    width: 36px;
+    height: 27px;
+    margin-left: -24px;
+    border: 1px solid var(--hair-2);
+    border-radius: 3px;
+    object-fit: cover;
+    object-position: top left;
+    background: var(--surface-2);
+    box-shadow: -3px 2px 6px rgba(0, 0, 0, 0.4);
+    transform: rotate(var(--r, 0deg)) translateY(var(--y, 0));
+  }
+
+  .ch-file-peek img:first-child {
+    --r: -7deg;
+    --y: 1px;
+    margin-left: 0;
+  }
+
+  .ch-file-peek img:last-child {
+    --r: 6deg;
+    --y: 1px;
+  }
+
+  .ch-file[aria-expanded='true'] .ch-file-peek img {
+    --r: 0deg;
+    --y: 0;
+    margin-left: -30px;
+  }
+
+  .ch-file[aria-expanded='true'] .ch-file-peek img:first-child {
+    margin-left: 0;
+  }
+
+  .ch-file-what {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .ch-file-what b {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--acc-text);
+  }
+
+  .ch-file-what span {
+    font-family: var(--font-read);
+    font-style: italic;
+    font-size: 14.5px;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  /* The handle: the word, and two chevrons that close up into one and turn over. */
+  .ch-file-go {
+    display: grid;
+    justify-items: center;
+    gap: 1px;
+    min-width: 46px;
+    padding: 7px 6px 5px;
+    border: 1px solid var(--acc);
+    border-radius: 999px 999px 6px 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--acc-text);
+  }
+
+  .ch-file-go svg {
+    width: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ch-file[aria-expanded='true'] .ch-file-go {
+    background: var(--acc-fill);
+    border-color: var(--acc-fill);
+    color: var(--acc-ink);
+  }
+
+  .ch-file[aria-expanded='true'] .ch-file-go svg {
+    transform: rotate(180deg);
+  }
+
+  .ch-file[aria-expanded='true'] .ch-file-go path:first-child {
+    transform: translateY(4px);
+  }
+
+  html.js .ch-file + .ch-story {
+    margin-top: 10px;
+  }
+
+  /* SNAPBACK's stage on a phone: the house and the verdict. The sample ad and the
+     measured tally step aside; the tally's two figures are the chapter's own
+     (one beside the stage, one inside). */
+  .chk-ad,
+  .chk-tally {
+    display: none;
+  }
+}
+
+/* The same idea for the rest of Builds on a phone: a featured plate leads with its
+   one-liner and one proof (its award, or its first result when it has no award);
+   the two-word descriptor opens with the dossier. The paper keeps its diagram, its
+   headline figure and its one-liner; the second figure and the author line open
+   with the story. */
+.dossier-desc,
+.paper-folded {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .plate-title span {
+    display: none;
+  }
+
+  .dossier-desc {
+    display: block;
+    font-family: var(--font-read);
+    font-style: italic;
+    font-size: var(--fs-lead);
+    line-height: 1.15;
+    color: var(--text-2);
+  }
+
+  .plate:not(:has(.badge)) > .plate-results {
+    display: block;
+  }
+
+  .plate:not(:has(.badge)) > .plate-results li:not(:first-child),
+  .plate:not(:has(.badge)) + .dossier .dossier-results [data-first] {
+    display: none;
+  }
+
+  .paper-body > .metrics,
+  .paper-body > .role {
+    display: none;
+  }
+
+  .paper-folded {
+    display: grid;
+    gap: 12px;
+  }
+
+  .pstage-cap span {
+    display: none; /* the site is already in the chapter's index line */
+  }
+
+  .ch {
+    --ch-gap: 40px;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .ch-file-peek img,
+  .ch-file-go svg,
+  .ch-file-go path {
+    transition:
+      transform 0.35s var(--ease),
+      margin 0.35s var(--ease);
+  }
+
+  .ch-file:active .ch-file-go {
+    transform: scale(0.96);
+  }
+
+  html.js .ch-story[data-open] {
+    animation: ch-file-in 0.4s var(--ease);
+  }
+}
+
+@keyframes ch-file-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 -20px 0);
   }
 }
 
