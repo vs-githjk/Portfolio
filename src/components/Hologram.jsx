@@ -8,8 +8,9 @@ import { createHologram, parseFace } from '../lib/holoScene';
    lib/holoScene.js). This file is the lifecycle, the choreography and the budget.
 
    - At rest it is him, in his own colours, in a round window (not a face of blue
-     light: that was judged ghostly, see CLAUDE.md). It becomes light only as it
-     lets go.
+     light: that was judged ghostly, see CLAUDE.md): the photograph itself, crisp,
+     on a mesh that turns with his head. The points assemble him at the start and
+     take the picture apart when it lets go; it becomes light only then.
 
    - It arrives after the first paint (Background mounts it when the page is
      idle) and then fetches the point cloud, so the greeting text is the first
@@ -38,6 +39,8 @@ import { createHologram, parseFace } from '../lib/holoScene';
      away with the page: no drawing in, no turn, no planet. */
 
 const FACE_URLS = ['/holo/face-a.bin', '/holo/face-b.bin'];
+/* The photograph the window shows at rest: a smaller one for a phone. */
+const PICTURE_URLS = ['/holo/face-512.webp', '/holo/face-1024.webp'];
 const SEEN_KEY = 'holo-seen';
 const INTRO_MS = 2000;
 /* When the greeting is being typed, in ms after the face starts to draw. These
@@ -208,7 +211,7 @@ export default function Hologram() {
         }
         scene.render({
           ...at,
-          ...windowAt(at, morph, ease(span(0, 0.3, intro))),
+          ...windowAt(at, morph, ease(span(0.25, 0.9, intro))),
           ball: at.ball * pulse,
           time: t,
           intro: ease(intro),
@@ -216,7 +219,7 @@ export default function Hologram() {
           morph,
           flow,
           // A slow look to one side and back: one eased swing every fifteen seconds.
-          turn: look * 0.14,
+          turn: look * 0.11,
           nod: 0.02 + Math.sin(t * 0.27) * 0.02 + gaze.y * 0.05 * (1 - span(0, 0.3, eased)),
           voice: talking ? 0.5 + 0.5 * Math.sin(t * 7.5) : 0,
           // While the planet says its line it swells and a ripple runs over it.
@@ -263,17 +266,15 @@ export default function Hologram() {
       };
     }
 
-    /* The round window for this frame: the circle the picture is cut to and the wall
-       behind it. As the picture lets go, the window closes onto the planet and its
-       wall goes out. `open` is how far the window has opened at the start. */
+    /* The round window for this frame: the circle the picture is cut to (it rides
+       with the picture) and how strong the hairline at its rim is. `open` is how far
+       the window has opened at the start; the rim goes as the picture lets go. */
     function windowAt(at, morph, open) {
       const d = cloud.disc;
-      const e = ease(span(0, 0.9, morph));
-      const x0 = at.cx + d.x * at.size;
-      const y0 = at.cy - d.y * at.size;
-      const r0 = d.r * at.size;
-      const disc = { x: x0 + (at.cx - x0) * e, y: y0 + (at.cy - y0) * e, r: r0 + (at.ball - r0) * e };
-      return { disc, wall: { ...disc, a: open * (1 - ease(span(0.2, 0.75, morph))) } };
+      return {
+        disc: { x: at.cx + d.x * at.size, y: at.cy - d.y * at.size, r: d.r * at.size },
+        rim: open * (1 - ease(span(0, 0.3, morph))),
+      };
     }
 
     /* Where the light is to land, in the window, now. The orbit ring when it is
@@ -317,9 +318,21 @@ export default function Hologram() {
 
     const load = (url) => fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error('hologram: face file missing'))));
     // A phone stops at the base tier. A desktop that cannot get the fill-in still has a face.
-    Promise.all([load(FACE_URLS[0]), phone ? null : load(FACE_URLS[1]).catch(() => null)])
+    // The photograph is fetched here, by script, and drawn in the canvas: it is never an
+    // element of the page, so it cannot become the largest contentful paint (the greeting is).
+    // Without it the points are the picture, as they were before it was allowed.
+    const photograph = new Promise((resolve) => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => resolve(image);
+      image.onerror = () => resolve(null);
+      image.src = PICTURE_URLS[phone ? 0 : 1];
+    });
+    let image = null;
+    Promise.all([load(FACE_URLS[0]), phone ? null : load(FACE_URLS[1]).catch(() => null), photograph])
       .then((files) => {
         if (dead) return;
+        image = files.pop();
         cloud = parseFace(files.filter(Boolean), ring.n);
         // Parsing and compiling are two tasks, not one long one.
         return new Promise((resolve) => setTimeout(() => resolve(cloud), 0));
@@ -337,6 +350,7 @@ export default function Hologram() {
           // The bloom is a desktop pass.
           phone ? 0 : Number(style.getPropertyValue('--holo-bloom')) || 0
         );
+        if (image) scene.setPicture(image);
         measure();
         seenAtStart = seen || rm.matches || window.scrollY > 40;
         seen = seenAtStart;

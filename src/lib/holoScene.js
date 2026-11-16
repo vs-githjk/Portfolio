@@ -1,19 +1,21 @@
 /* The welcome portrait: him, in a round window of light, drawn with plain WebGL
    (no library, so the chunk stays a few kilobytes).
 
-   The points come from public/holo/face-a.bin and face-b.bin
-   (scripts/bake-hologram.py): for each one a position, a real depth, a colour
-   from the photograph, how solid it is and the spacing to its neighbours. At
-   rest they are a picture, not a glow: soft splats painted over one another
-   (each covers what is behind it), in his own colours, inside a round window
-   whose wall is the colour of the photo's own backdrop. Nov 15 2026: every
-   version of his face made of blue light was judged ghostly, by him and by the
-   models asked cold; his own colouring in a lit, framed picture was not.
+   At rest the window shows the photograph itself (public/holo/face-1024.webp,
+   or face-512.webp on a phone), crisp, on a mesh that has the points' depth, so
+   it turns with his head; not one point is drawn. The points come from
+   public/holo/face-a.bin and face-b.bin (scripts/bake-hologram.py): for each one
+   a position, a real depth, a colour from the photograph, how solid it is and
+   the spacing to its neighbours. They assemble him at the start and take the
+   picture apart when it lets go; if the photograph cannot be loaded they are the
+   picture, soft splats painted over one another. Nov 15 2026: every version of
+   his face made of blue light was judged ghostly, by him and by the models asked
+   cold; his own colouring in a lit, framed picture was not.
 
    Every point has three homes, and the vertex shader moves it between them:
 
-     intro  0 to 1   the window opens and he is assembled toward the viewer:
-                     the nearest points (nose, brow, cheeks) arrive first
+     intro  0 to 1   he is assembled from his eyes outward: the points come
+                     home and the photograph follows a beat behind them
      morph  0 to 1   the picture lets go of its light: each point leaves its
                      colour behind, becomes a point of the page's blue light
                      and gathers into a small planet, from the outside in
@@ -61,6 +63,8 @@ uniform float uBallGap; // spacing of the points on the planet, in radii
 uniform vec3 uDeep, uPale, uHot; // the colours of the light
 uniform float uGain;    // its strength
 uniform float uPass;    // 0 the picture, 1 the glow
+uniform float uPicture; // 1 the photograph is there to show at rest, 0 the points must be the picture
+uniform vec2 uEye;      // the middle of the eye line: where he starts to appear, and the last place to let go
 varying vec3 vCol;    // what colour it is
 varying float vAmp;   // how much of it there is
 varying float vOver;  // 1 it is painted and covers, 0 it is light and adds
@@ -94,17 +98,24 @@ void main() {
   vec3 h = f + vec3(0.0, 0.0, 0.13);
   h = turn(h, uTurn * above, uNod * above);
   f = h - vec3(0.0, 0.0, 0.13);
-  // Assembled toward the viewer: the nearest points come home first. Until its
-  // turn a point waits far behind its place, unseen.
-  float nearness = clamp((aFace.z + 0.13) / 0.2, 0.0, 1.0);
-  float line = uIntro * 1.5 - 0.25;
-  float drawn = 1.0 - smoothstep(line - 0.25, line, 1.0 - nearness + r1 * 0.1);
+  // Assembled from his eyes outward: the points nearest the middle of the eye
+  // line come home first, the window's rim last. (Nearest-to-the-viewer first
+  // was tried: for a third of a second it showed a face with holes for eyes.)
+  // Until its turn a point waits a little outside and behind its place, unseen.
+  float reach0 = min(1.0, length(vec2((aFace.x - uEye.x) / 0.3, (aFace.y - uEye.y) / 0.42)) / 2.3);
+  float line = uIntro * 1.7 - 0.25;
+  float drawn = 1.0 - smoothstep(line - 0.25, line, reach0 + r1 * 0.1);
   float home = ease(drawn);
+  // The photograph itself follows a beat behind its points (the mesh shader uses
+  // the same line), and where it has arrived the points step back: at rest the
+  // window shows the picture, crisp, and not one point.
+  float line2 = uIntro * 2.05 - 0.75;
+  float pictured = uPicture * ease(1.0 - smoothstep(line2 - 0.2, line2, reach0 + 0.05));
   f = mix(vec3(f.xy * (1.12 + 0.2 * r2), f.z - 0.5 - 0.3 * r1), f, home);
   float faceSize = gap * uSize * SPREAD;
   // No light of our own on him: the photograph's is the flattering one. A point
   // is as solid as the matte says.
-  float faceAmp = solid * home * home * 0.92;
+  float faceAmp = solid * home * home * 0.92 * (1.0 - pictured);
 
   // ---- the planet -------------------------------------------------------------
   float shell = step(0.99, aBall.w);
@@ -249,7 +260,11 @@ void main() {
   light = mix(light, uHot, clamp(hot, 0.0, 1.0));
   vCol = mix(aCol, light, m);
   float lightAmp = glow * uGain * 0.75 * mix(1.0, bloom, uPass);
-  vAmp = mix(faceAmp * (1.0 - uPass), lightAmp, m) * share * clearOf;
+  // Leaving: a point shows itself the moment it starts to move, exactly where
+  // the photograph (which fades there in step, see the mesh shader) showed its
+  // colour, so the picture is never swapped for the points: it is taken apart.
+  float paint = max(faceAmp, solid * 0.92 * smoothstep(0.0, 0.015, m));
+  vAmp = mix(paint * (1.0 - uPass), lightAmp, m) * share * clearOf;
   vOver = (1.0 - m) * (1.0 - uPass);
   vMask = 1.0 - m;
 }
@@ -274,22 +289,71 @@ void main() {
 }
 `;
 
-/* The wall of the round window: a flat field the colour of the photo's own
-   backdrop (so the feathered edge of his hair and shoulders melts into it), a
-   breath of light behind his head, and a quiet hairline at the rim. */
-const WALL_FRAG = /* glsl */ `
-precision mediump float;
-uniform vec3 uDisc;   // centre x, y (device pixels, y from the bottom), radius
-uniform vec3 uWall, uRim;
-uniform float uAlpha;
+/* The photograph, crisp, on a mesh that has the same depth as the points, so
+   it turns with the head exactly as they do and they can take over from it
+   anywhere. It arrives a beat behind its points (nearest first) and is taken
+   apart from the outside in as they leave (the centre of his face last). */
+const MESH_VERT = /* glsl */ `
+precision highp float;
+attribute vec3 aGrid;   // x, y in picture heights (y up, the head's centre at 0), z toward the viewer
+uniform vec2 uRes, uCenter;
+uniform float uSize, uTime, uIntro, uTurn, uNod, uStill;
+uniform vec3 uSquare;   // the picture's square among the points: left x, top y, side
+uniform mediump vec2 uEye; // the middle of the eye line (the fragment shader reads it too, at its precision)
+varying vec2 vUv;
+varying vec2 vAt;
+varying float vIn;
+
+vec3 turn(vec3 p, float a, float b) {
+  float c = cos(a), s = sin(a);
+  p = vec3(p.x * c + p.z * s, p.y, p.z * c - p.x * s);
+  c = cos(b); s = sin(b);
+  return vec3(p.x, p.y * c - p.z * s, p.z * c + p.y * s);
+}
+
 void main() {
+  // The same breath and the same turn of the head as the points (holoScene VERT).
+  vec3 f = aGrid;
+  f.xy = vec2(f.x, f.y + 0.45) * (1.0 + 0.0025 * sin(uTime * 1.25) * (1.0 - uStill)) - vec2(0.0, 0.45);
+  float above = smoothstep(-0.37, -0.255, f.y);
+  vec3 h = f + vec3(0.0, 0.0, 0.13);
+  h = turn(h, uTurn * above, uNod * above);
+  f = h - vec3(0.0, 0.0, 0.13);
+  float reach0 = min(1.0, length(vec2((aGrid.x - uEye.x) / 0.3, (aGrid.y - uEye.y) / 0.42)) / 2.3);
+  float line2 = uIntro * 2.05 - 0.75;
+  float drawn = 1.0 - smoothstep(line2 - 0.2, line2, reach0 + 0.05);
+  vIn = drawn * drawn * (3.0 - 2.0 * drawn);
+  float depth = 1.0 / (1.0 - f.z / 3.2);
+  vec2 px = uCenter + vec2(f.x, -f.y) * uSize * depth;
+  gl_Position = vec4(px.x / uRes.x * 2.0 - 1.0, 1.0 - px.y / uRes.y * 2.0, 0.0, 1.0);
+  vUv = vec2((aGrid.x - uSquare.x) / uSquare.z, (uSquare.y - aGrid.y) / uSquare.z);
+  vAt = aGrid.xy;
+}
+`;
+const MESH_FRAG = /* glsl */ `
+precision mediump float;
+uniform sampler2D uTex;
+uniform vec3 uDisc;     // the round window: centre x, y (device pixels, y from the bottom), radius
+uniform vec2 uEye;      // the middle of the eye line: the last place to let go
+uniform vec3 uRim;
+uniform float uMorph, uShow, uRimA;
+varying vec2 vUv;
+varying vec2 vAt;
+varying float vIn;
+void main() {
+  // The order the points leave in (parseFace): the farther from his eyes, the
+  // sooner. A point of order o starts to move when uMorph * 2.3 passes o * 1.3;
+  // the photograph is gone from a place just as its points take off from it.
+  float far = min(1.0, length(vec2((vAt.x - uEye.x) / 0.3, (vAt.y - uEye.y) / 0.42)));
+  float order = (1.0 - far) * 0.8 + 0.03;
+  float front = uMorph * 1.769;
+  float stays = smoothstep(front - 0.06, front, order);
   float d = distance(gl_FragCoord.xy, uDisc.xy);
   float inside = 1.0 - smoothstep(uDisc.z - 0.75, uDisc.z + 0.75, d);
-  vec2 q = (gl_FragCoord.xy - uDisc.xy) / uDisc.z;
-  float pool = exp(-(q.x * q.x * 1.5 + (q.y - 0.12) * (q.y - 0.12) * 1.5));
-  float a = inside * uAlpha;
-  float line = exp(-pow((d - uDisc.z) / 1.0, 2.0)) * 0.42 * uAlpha;
-  gl_FragColor = vec4(uWall * (1.0 + 0.1 * pool) * a + uRim * line, a);
+  float a = vIn * stays * inside * uShow;
+  // One quiet hairline at the window's rim, no glow.
+  float line = exp(-pow((d - uDisc.z) / 1.0, 2.0)) * 0.42 * uRimA;
+  gl_FragColor = vec4(texture2D(uTex, vUv).rgb * a + uRim * line, a);
 }
 `;
 
@@ -395,11 +459,11 @@ export function parseFace(buffers, slots = 12) {
         ball[i * 4 + 1] = up;
         ball[i * 4 + 2] = q * Math.sin(round);
         ball[i * 4 + 3] = core ? 0.03 + 0.13 * Math.cbrt(rnd()) : 1;
-        // The peel: the farther from the eyes, the sooner a point leaves. The eyes
-        // themselves are the last to let go.
+        // The peel: the farther from the middle of the eye line, the sooner a point
+        // leaves. (No special case for the eyes: with the photograph under them, two
+        // crisp eyes left hanging on their own would be exactly the wrong picture.)
         const far = Math.min(1, Math.hypot((x - eye[0]) / 0.3, (y - eye[1]) / 0.42));
-        const inEye = Math.abs(y - eye[1] + (x - eye[0]) * 0.14) < 0.03 && Math.abs(x - eye[0]) < 0.125 && Math.abs(x - eye[0]) > 0.035;
-        more[i * 4] = inEye ? 0.9 + 0.1 * rnd() : (1 - far) * 0.8 + 0.06 * rnd();
+        more[i * 4] = (1 - far) * 0.8 + 0.06 * rnd();
         // Its card on the ring, and its place on that card's thumbnail.
         more[i * 4 + 1] = (Math.floor(rnd() * slots) / slots) * TAU;
         more[i * 4 + 2] = rnd() - 0.5;
@@ -408,7 +472,87 @@ export function parseFace(buffers, slots = 12) {
       }
     }
   }
-  return { n, base: heads[0].count, face, col, data, ball, more, disc, wall, ballGap: Math.sqrt((4 * Math.PI) / Math.max(1, shell)) };
+  // The mesh the photograph is drawn on: a grid over the window's square, with
+  // the points' own depth (averaged onto its nodes, gaps filled, smoothed), so the
+  // picture and the points turn as one.
+  // The mesh reaches a little past the window all round: the backdrop stands
+  // behind the picture plane, so seen in perspective its edge falls inside the
+  // window's rim, and a mesh no wider than the window showed flat cuts there.
+  // (Past the photograph's own edge the texture repeats its last pixels: backdrop.)
+  const G = 96;
+  const REACH = 1.14;
+  const left = disc.x - disc.r * REACH;
+  const top = disc.y + disc.r * REACH;
+  const side = disc.r * 2 * REACH;
+  const nodes = (G + 1) * (G + 1);
+  const sum = new Float32Array(nodes);
+  const hits = new Float32Array(nodes);
+  for (let k = 0; k < n; k += 1) {
+    const gx = Math.round(((face[k * 3] - left) / side) * G);
+    const gy = Math.round(((top - face[k * 3 + 1]) / side) * G);
+    if (gx < 0 || gy < 0 || gx > G || gy > G) continue;
+    sum[gy * (G + 1) + gx] += face[k * 3 + 2];
+    hits[gy * (G + 1) + gx] += 1;
+  }
+  let depth = new Float32Array(nodes);
+  for (let k = 0; k < nodes; k += 1) depth[k] = hits[k] ? sum[k] / hits[k] : NaN;
+  const around = (src, gx, gy, skipNaN) => {
+    let total = 0;
+    let count = 0;
+    for (let dy = -1; dy <= 1; dy += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        const x = gx + dx;
+        const y = gy + dy;
+        if (x < 0 || y < 0 || x > G || y > G) continue;
+        const v = src[y * (G + 1) + x];
+        if (skipNaN && Number.isNaN(v)) continue;
+        total += v;
+        count += 1;
+      }
+    }
+    return count ? total / count : NaN;
+  };
+  for (let pass = 0; pass < 12; pass += 1) {
+    const next = depth.slice();
+    let holes = 0;
+    for (let gy = 0; gy <= G; gy += 1) {
+      for (let gx = 0; gx <= G; gx += 1) {
+        const at = gy * (G + 1) + gx;
+        if (!Number.isNaN(depth[at])) continue;
+        next[at] = around(depth, gx, gy, true);
+        if (Number.isNaN(next[at])) holes += 1;
+      }
+    }
+    depth = next;
+    if (!holes) break;
+  }
+  for (let pass = 0; pass < 2; pass += 1) {
+    const next = depth.slice();
+    for (let gy = 0; gy <= G; gy += 1) {
+      for (let gx = 0; gx <= G; gx += 1) {
+        const at = gy * (G + 1) + gx;
+        next[at] = Number.isNaN(depth[at]) ? -0.13 : around(depth, gx, gy, true);
+      }
+    }
+    depth = next;
+  }
+  const grid = new Float32Array(nodes * 3);
+  for (let gy = 0; gy <= G; gy += 1) {
+    for (let gx = 0; gx <= G; gx += 1) {
+      const at = gy * (G + 1) + gx;
+      grid[at * 3] = left + (gx / G) * side;
+      grid[at * 3 + 1] = top - (gy / G) * side;
+      grid[at * 3 + 2] = depth[at];
+    }
+  }
+  const cells = new Uint16Array(G * G * 6);
+  for (let gy = 0, o = 0; gy < G; gy += 1) {
+    for (let gx = 0; gx < G; gx += 1, o += 6) {
+      const a = gy * (G + 1) + gx;
+      cells.set([a, a + 1, a + G + 1, a + G + 1, a + 1, a + G + 2], o);
+    }
+  }
+  return { n, base: heads[0].count, face, col, data, ball, more, disc, wall, eye, grid, cells, square: [disc.x - disc.r, disc.y + disc.r, disc.r * 2], ballGap: Math.sqrt((4 * Math.PI) / Math.max(1, shell)) };
 }
 
 function compile(gl, type, source) {
@@ -437,7 +581,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
 
   const program = link(gl, VERT, FRAG);
   const blur = link(gl, QUAD_VERT, BLUR_FRAG);
-  const wallProgram = link(gl, QUAD_VERT, WALL_FRAG);
+  const mesh = link(gl, MESH_VERT, MESH_FRAG);
   const buffers = [];
   const attrs = [];
   const attribute = (name, array, size) => {
@@ -459,20 +603,48 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   const quadAt = gl.getAttribLocation(blur, 'aPos');
 
   const u = {};
-  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingD', 'uRingOn', 'uClear', 'uCopy', 'uCopyK', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uDisc', 'uPass', 'uDeep', 'uPale', 'uHot', 'uGain']) {
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingD', 'uRingOn', 'uClear', 'uCopy', 'uCopyK', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uDisc', 'uPass', 'uPicture', 'uEye', 'uDeep', 'uPale', 'uHot', 'uGain']) {
     u[name] = gl.getUniformLocation(program, name);
   }
   const ub = { uTex: gl.getUniformLocation(blur, 'uTex'), uStep: gl.getUniformLocation(blur, 'uStep'), uGain: gl.getUniformLocation(blur, 'uGain') };
-  const uw = { uDisc: gl.getUniformLocation(wallProgram, 'uDisc'), uWall: gl.getUniformLocation(wallProgram, 'uWall'), uRim: gl.getUniformLocation(wallProgram, 'uRim'), uAlpha: gl.getUniformLocation(wallProgram, 'uAlpha') };
-  const wallAt = gl.getAttribLocation(wallProgram, 'aPos');
-  gl.useProgram(wallProgram);
-  gl.uniform3fv(uw.uWall, cloud.wall);
-  gl.uniform3fv(uw.uRim, colors.pale);
+  // The photograph's mesh: its grid, its triangles and (once it has loaded) its texture.
+  const um = {};
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uTime', 'uIntro', 'uTurn', 'uNod', 'uStill', 'uSquare', 'uTex', 'uDisc', 'uEye', 'uRim', 'uMorph', 'uShow', 'uRimA']) {
+    um[name] = gl.getUniformLocation(mesh, name);
+  }
+  const gridAt = gl.getAttribLocation(mesh, 'aGrid');
+  const gridBuffer = gl.createBuffer();
+  buffers.push(gridBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gridBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, cloud.grid, gl.STATIC_DRAW);
+  const cellBuffer = gl.createBuffer();
+  buffers.push(cellBuffer);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cellBuffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cloud.cells, gl.STATIC_DRAW);
+  gl.useProgram(mesh);
+  gl.uniform3fv(um.uSquare, cloud.square);
+  gl.uniform2fv(um.uEye, cloud.eye);
+  gl.uniform3fv(um.uRim, colors.pale);
+  let picture = null; // the photograph's texture, when there is one
+
+  /* Give the scene the photograph (an image whose sides are a power of two, so it
+     can be mipmapped and stays clean when drawn smaller than it is). */
+  function setPicture(image) {
+    picture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, picture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  }
   gl.useProgram(program);
   gl.uniform3fv(u.uDeep, colors.deep);
   gl.uniform3fv(u.uPale, colors.pale);
   gl.uniform3fv(u.uHot, colors.hot);
   gl.uniform1f(u.uBallGap, cloud.ballGap);
+  gl.uniform2fv(u.uEye, cloud.eye);
 
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
@@ -530,6 +702,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     gl.uniform1f(u.uCopyK, k);
     gl.uniform1f(u.uRingOn, r.on ? 1 : 0);
     gl.uniform1f(u.uPass, pass);
+    gl.uniform1f(u.uPicture, picture ? 1 : 0);
     gl.uniform3f(u.uDisc, s.disc.x * k, canvas.height * scale - s.disc.y * k, s.disc.r * k);
     gl.uniform1f(u.uTime, s.time);
     gl.uniform1f(u.uIntro, s.intro);
@@ -565,27 +738,43 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     gl.enable(gl.BLEND);
   }
 
-  /* The window's wall, under everything. */
-  function wall(at) {
-    gl.useProgram(wallProgram);
-    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
-    gl.enableVertexAttribArray(wallAt);
-    gl.vertexAttribPointer(wallAt, 2, gl.FLOAT, false, 0, 0);
-    gl.uniform3f(uw.uDisc, at.x * dpr, canvas.height - at.y * dpr, at.r * dpr);
-    gl.uniform1f(uw.uAlpha, at.a);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  /* The photograph, under the points. */
+  function photograph(s) {
+    gl.useProgram(mesh);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gridBuffer);
+    gl.enableVertexAttribArray(gridAt);
+    gl.vertexAttribPointer(gridAt, 3, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cellBuffer);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, picture);
+    gl.uniform1i(um.uTex, 0);
+    gl.uniform2f(um.uRes, canvas.width, canvas.height);
+    gl.uniform2f(um.uCenter, s.cx * dpr, s.cy * dpr);
+    gl.uniform1f(um.uSize, s.size * dpr);
+    gl.uniform1f(um.uTime, s.time);
+    gl.uniform1f(um.uIntro, s.intro);
+    gl.uniform1f(um.uTurn, s.turn);
+    gl.uniform1f(um.uNod, s.nod);
+    gl.uniform1f(um.uStill, s.still ? 1 : 0);
+    gl.uniform1f(um.uMorph, s.morph);
+    gl.uniform1f(um.uShow, 1);
+    gl.uniform1f(um.uRimA, s.rim);
+    gl.uniform3f(um.uDisc, s.disc.x * dpr, canvas.height - s.disc.y * dpr, s.disc.r * dpr);
+    gl.drawElements(gl.TRIANGLES, cloud.cells.length, gl.UNSIGNED_SHORT, 0);
   }
 
   /* One frame. Lengths are CSS pixels; `s` is the state:
      { time, intro, morph, flow, turn, nod, voice, speak, still, gain, glow, cx, cy, size, ball,
-       disc: { x, y, r } the round window the picture is cut to, wall: { x, y, r, a } the wall drawn behind it,
+       disc: { x, y, r } the round window the picture is cut to, rim: how strong its hairline is,
        ring: { on, x, y, rx, rz, sinT, cosT, persp, theta, cardW, cardH, front, side, yaw, lean, n, clearL, clearR, copyL, copyT, copyR, copyB } } */
   function render(s) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT);
     if (s.gain <= 0.002) return;
-    if (s.wall.a > 0.003) wall(s.wall);
+    // The photograph first: whole at rest, and what is left of it while he is being
+    // assembled or taken apart. Past half way through the peel there is none left.
+    if (picture && s.morph < 0.6) photograph(s);
     // Only light glows, and there is none until the picture starts to let go.
     if (bloom > 0 && s.morph > 0.001) {
       const [a, b] = targets;
@@ -603,7 +792,8 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);
-    points(s, 1, 0);
+    // At rest every point has stepped back behind the photograph: nothing to draw.
+    if (!(picture && s.intro >= 1 && s.morph <= 0)) points(s, 1, 0);
   }
 
   function dispose() {
@@ -614,8 +804,9 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     });
     gl.deleteProgram(program);
     gl.deleteProgram(blur);
-    gl.deleteProgram(wallProgram);
+    gl.deleteProgram(mesh);
+    if (picture) gl.deleteTexture(picture);
   }
 
-  return { resize, render, dispose };
+  return { resize, render, setPicture, dispose };
 }
