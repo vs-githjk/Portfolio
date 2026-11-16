@@ -833,6 +833,8 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
     } catch {
       // A lost context: World.jsx handles it.
     }
+    // The page may have been laid out again while the programs compiled: read it once more.
+    if (stationEnv) st.layout(stationEnv);
     dragon = live;
     stations = st;
     return true;
