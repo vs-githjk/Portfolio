@@ -58,9 +58,9 @@ export function createDragonStations({ live, phone, C }) {
   const v = (name, k = 1) => [C[name].x * k, C[name].y * k, C[name].z * k];
   const LIGHT = {
     sea: { keyDir: [0.25, 0.9, 0.35], key: v('sea-ray', 0.95), lowDir: [0, -1, 0.2], low: v('sea-shallow', 0.5), amb: v('sea-shallow', 1.15), hide: v('dragon-sea-hide', 1.5), belly: v('dragon-sea-belly'), rim: v('sea-ray', 0.9), glow: v('dragon-sea-glow'), fogK: 0.0011, caust: 0.55, rimGain: 0.85, fire: 0.55, thin: 0.22, split: 0 },
-    dusk: { keyDir: [0.5, 0.22, -0.7], key: v('sun', 1.5), lowDir: [-0.3, -0.8, 0.5], low: v('dusk-low', 0.22), amb: v('dusk-mid', 0.55), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('dusk-low', 0.82), fogK: 0.00075, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.72, split: 1 },
+    dusk: { keyDir: [0.5, 0.22, -0.7], key: v('sun', 1.5), lowDir: [-0.3, -0.8, 0.5], low: v('dusk-low', 0.4), amb: v('dusk-mid', 0.95), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('dusk-low', 0.82), fogK: 0.0009, caust: 0, rimGain: 1.25, fire: 0.9, thin: 0.72, split: 1 },
     night: { keyDir: [-0.5, 0.62, 0.6], key: v('moon-rim', 1.1), lowDir: [0.25, -0.85, 0.45], low: v('ember', 0.6), amb: v('night-low', 3.2), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('ember', 1), glow: v('dragon-air-glow'), fog: v('night-low'), fogK: 0, caust: 0, rimGain: 1.1, fire: 1.4, thin: 0.5, split: 0 },
-    dawn: { keyDir: [-0.62, 0.12, -0.6], key: v('sun', 1.25), lowDir: [0, -1, 0.2], low: v('earth-rim', 0.2), amb: v('night-low', 1.7), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('night-low', 1.4), fogK: 0.0004, caust: 0, rimGain: 1.3, fire: 1, thin: 0.72, split: 0 },
+    dawn: { keyDir: [-0.62, 0.12, -0.6], key: v('sun', 1.25), lowDir: [-0.3, -0.8, 0.5], low: v('earth-rim', 0.75), amb: v('night-low', 2.6), hide: v('dragon-air-hide'), belly: v('dragon-air-belly'), rim: v('earth-rim', 1), glow: v('dragon-air-glow'), fog: v('night-low', 1.4), fogK: 0.0004, caust: 0, rimGain: 1.3, fire: 1, thin: 0.72, split: 0 },
   };
   let lit = '';
   const light = (name) => {
@@ -195,11 +195,11 @@ export function createDragonStations({ live, phone, C }) {
             [sx, S - 14, -2000],
           ];
       const lowWay = [
-        [w * 0.5 + MODEL.length * size, limb(w * 0.5) - (phone ? 70 : 96), -60],
-        [w * 0.3, limb(w * 0.3) - (phone ? 64 : 92), -60],
-        [w * 0.1, limb(w * 0.1) - (phone ? 62 : 88), -90],
-        [-w * 0.12, limb(-w * 0.12) - (phone ? 60 : 84), -160],
-        [-w * 0.34, limb(-w * 0.34) - (phone ? 58 : 80), -300],
+        [w * 0.5 + MODEL.length * size, limb(w * 0.5) - (phone ? 70 : 74), -60],
+        [w * 0.3, limb(w * 0.3) - (phone ? 64 : 70), -60],
+        [w * 0.1, limb(w * 0.1) - (phone ? 62 : 66), -90],
+        [-w * 0.12, limb(-w * 0.12) - (phone ? 60 : 64), -160],
+        [-w * 0.34, limb(-w * 0.34) - (phone ? 58 : 62), -300],
         [-w * 0.5 - MODEL.length * size, limb(-w * 0.5) - 76, -520],
       ];
       const end = document.documentElement.scrollHeight - h;
@@ -212,12 +212,14 @@ export function createDragonStations({ live, phone, C }) {
         clock: [from, Math.max(120, end - from)],
         boxes: boxesOf(contact, [top - 40, horizon.bottom]),
         band: [phone ? horizon.top - 30 : top, horizon.bottom],
-        lowBand: [horizon.top - (phone ? 60 : 150), horizon.bottom],
+        lowBand: [horizon.top - (phone ? 60 : 110), horizon.bottom],
+        lowBoxes: boxesOf(contact, [horizon.top - 110, horizon.bottom]),
       };
     }
   }
 
-  function guard(s, f, band = s.band) {
+  function guard(s, f) {
+    const band = s.band;
     live.guard(
       s.boxes.map((b) => [b[0], b[1] - f.scroll, b[2], b[3] - f.scroll]),
       [band[0] - f.scroll, band[1] - f.scroll]
@@ -282,7 +284,7 @@ export function createDragonStations({ live, phone, C }) {
           const z = a3[2];
           heading(s.low, e, 0.02, (cam.z - z) / cam.z);
           light('dawn');
-          guard(s, f, s.lowBand);
+          guard({ boxes: s.lowBoxes, band: s.lowBand }, f);
           live.update({ ...base, x: a3[0], y: a3[1] - f.line + Math.sin(f.t * 0.7) * 5, z, size: s.size, fwd: [...fwd], up: [0, 1, 0.45], bank: 0.12, clips: { glide: 1 - 0.6 * pace, fly: 0.6 * pace }, beat: 0.7, show: sm((u - 0.02) / 0.1), phase: 0.5 });
           shown.station = 'limb';
           shown.u = u;

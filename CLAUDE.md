@@ -76,7 +76,7 @@ Re-measure when the build changes, or set it to null.
 | Crew (The Camp) | Master Agents, a character select screen, and a run that holds at each gate |
 | Highlights (The Cut) | Four sentences cut as strata of rock |
 | Vista: galaxy | Night over the ridges |
-| Proof of work (The Ridge at night) | The nine wins (gold plaques), the dragon on watch, the GitHub graph, four verification links |
+| Proof of work (The Ridge at night) | The nine wins (gold plaques), the dragon roosting on the commit card, the GitHub graph, four verification links |
 | Principles (The Bench) | Four tiles, each with a small drawing that runs once |
 | Value (Moonrise) | Hairline rows; a moon fills as they are read |
 | Toolkit (The Inventory) | A label and a line of tools per group; a tool answers with the builds that use it |
@@ -136,7 +136,8 @@ first waterline, the sea ends at the shore, then dusk, night and dawn over a des
   (twenty builds: moons and ring lights), a small world per flagship (`flagWorlds.js`,
   counts from each flagship's `scene` in `content.js`, checked by
   `scripts/check-scenes.mjs`), the school (Fish Market), the camp's fires (one per agent),
-  the constellation (one gold star per win), the moon (the Value rows), and the dragon.
+  the constellation (one gold star per win) and the moon (the Value rows). The dragon is
+  a model, not data.
 - **Text stays readable.** Drifting things keep to the margins; every section paints calm
   ink behind its column (`.sec::before`, `--world-calm`) and the backdrop gives up its
   brightest values there (`hush()` in `worldBackdrop.js`). Both ramps are long (about 300px)
@@ -145,34 +146,52 @@ first waterline, the sea ends at the shore, then dusk, night and dawn over a des
 - The footer has no top line under the world: the limb fades into its ground.
 - Budget: the chunk is requested on the first scroll (or after idle on a desktop), never
   before first paint; it draws only while visible; DPR capped; phones get fewer points.
-  `scripts/check-budget.mjs` holds the chunk under its ceiling.
+  `scripts/check-budget.mjs` holds the chunk (with three's core, which the dragon shares)
+  and the dragon's own chunk and files under their ceilings.
 - Reduced motion: one still frame per place (`data-world="still"`). `?plain` or the World
   switch: no canvases and no world chunk at all. No WebGL: `data-world="off"`.
 - Do not add another WebGL canvas. The hologram is the one exception.
 
-### The dragon (`src/world/wyrm.js`, `wyrmStations.js`)
+### The dragon (`src/world/dragon.js`, `dragonStations.js`, `scripts/bake-dragon.py`)
 
-A creature of light whose body is the last year of weekly GitHub records: one vertebra a
-week, girth and spike height from that week's count, seven day lights over each. It has five
-stations and is nowhere else (nothing wanders without a reason): a glimpse under the first
-waterline, one pass round the giant, the breach at the shore, the watch over the commit
-graph, and the flight into the dawn when the email is copied.
+A rigged, animated 3D model (Vidyut, Nov 16: the creature drawn from commit weeks "looks like
+a dragonfly", he wanted a real dragon, much larger). It is no longer built from data and has no
+Receipts line.
 
-- **The watch (Proof of work).** One vertebra over each week's column; the newest nine weeks
-  rise as its neck, the head is held high looking out, the near wing is swept back and the
-  far wing raised (a V), the tail curls up to fit the room it has. Laid flat it read as a
-  lizard or a horse. On a phone, and on a laptop too narrow for columns plus head and tail,
-  it is drawn whole between the gutters with the vertebrae closer together, and fuller.
-- Its band is the `roost` anchor, rising past the note above it only where the note stops
-  short of its tall half (`.pow-prov` is capped at 60ch for this), and never nearer than 8px
-  under the win cards. It never relies on a keep-out box to stay off text. Measured Nov 16:
-  zero lit pixels in text boxes at 360, 390, 1199, 1440 and 1600.
-- The head is a blunt muzzle with a nostril bump and a heavy brow (`HEAD`); a long even
-  taper read as a horse's skull. Bat wings, back spikes, legs with claws, horns, a tail barb.
-  Fins, a sail or barbels read as a fish.
-- Cold-read rule: before changing its silhouette, crop every station at 390 and 1440 and ask
-  three non-Claude vision models "what creature is this?" with no hint. Nov 16: dragon first
-  from at least two of three at all eight crops, no repeated source named.
+- **The model.** "Low Poly Ice Dragon" by xterryx, OpenGameArt, CC0 1.0
+  (https://opengameart.org/content/low-poly-ice-dragon), credited under Credits ("Borrowed,
+  with thanks", `contact.credits.borrowed`). `scripts/bake-dragon.py` (Blender, run by hand)
+  applies the mirror, lengthens the wings, subdivides (two levels, one for the phone file),
+  bakes three masks into the vertex colours (wing skin, occlusion, points) and writes four
+  clips as functions of phase: Fly, Glide, Perch, Roar. Then `npx @gltf-transform/cli
+  resample` and `meshopt` give `public/dragon/dragon.glb` (41k triangles, 552 KB, 306 KB
+  gzip) and `dragon-lite.glb` (10k, 304 KB, 122 KB gzip; phones). No textures.
+- **The look is a shader**, lit by the place it is in (`LIGHT` in `dragonStations.js`, from the
+  page's palette and the `--dragon-*` tokens): plates with seams and a finer layer inside
+  them, each plate a low dome, the wing's bones as ridges with the skin hanging between,
+  light through the wing when the sun is behind it, the fire in the seams under the throat,
+  caustics under water, distance haze. A depth-only pass is drawn first so a fade never shows
+  the far wing through the near one.
+- **Four stations and nowhere else.** One lap across the giant's face (scroll is the clock;
+  it comes from behind the giant and goes back behind it); the breach as the reader comes up
+  through the surface, then across the low sun; the roost (it flies in once, lands on the
+  commit card, roars once, then keeps watch; choosing a week makes it look at that column);
+  a low pass over the limb at Contact and, when the email is copied, the flight into the dawn.
+- **It loads last.** Its code is a chunk of its own (`dragon-*.js`, GLTFLoader and the meshopt
+  decoder), asked for by `World.jsx` only after the world has drawn its first frame and the
+  page is idle (`<html data-dragon="on">` once it is in the scene). `?plain`, no WebGL and
+  reduced motion never ask for it. Under reduced motion the roost band holds a still of it
+  (`public/dragon/perch.webp`, a screenshot of `kit-demo.html`, see `src/world/demo.js`).
+- **Text.** Its light is held inside the station's band and gives nothing inside the text
+  boxes there (the same guard the pieces of light use). Measured Nov 16 with the dragon alone
+  on black at 56 scroll steps and both the timed stations: zero lit pixels in a text box at
+  1440 and at 390. The section's calm ground would lie over it at the roost, so `#verify`
+  opens that ground over the band (`--roost-top`, `--roost-bottom`, written by the scene).
+  Re-measure after moving a path.
+- `kit-demo.html` (dev only) shows it alone: `?clip=`, `?light=`, `?yaw=`, `?still`.
+- Cold-read rule: crop every station at 390 and 1440 and ask non-Claude vision models "what
+  is this creature, and does it look impressive or cheap?" with no hint, with the rejected
+  line-drawn version as a control.
 
 ## The shell (`src/shell/`, `src/kit/`)
 
@@ -221,7 +240,7 @@ The graph is drawn from a build-time snapshot: `scripts/fetch-github.mjs` (prebu
 runtime third-party calls. Every GitHub figure is computed from that JSON, and there is no
 total. A ridge of buttes stands over the calendar, one a week. A phone crops the graph to
 the latest half year and its label says "last 6 months" (only with the script: without it
-the graph is whole and the label stays twelve). Choosing a week lights the dragon's vertebra.
+the graph is whole and the label stays twelve). Choosing a week makes the dragon on the roost look at that column.
 
 ## One shape language: cut corners
 

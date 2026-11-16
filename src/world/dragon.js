@@ -131,6 +131,13 @@ void main(){
     // each plate is a low dome: its edges lean away from its middle
     vec3 lean = gTo - dot(gTo, vRN) * vRN;
     vec3 dome = -lean * 0.95 * fine * body;
+    // a finer layer inside each plate, only where there are the pixels for it
+    vec3 q2 = vRest * uPlates * 2.7 + 3.1;
+    float fine3 = 1.0 - smoothstep(0.3, 0.75, length(fwidth(q2)));
+    vec4 p2 = plates(q2);
+    seam *= mix(1.0, 0.72 + 0.28 * p2.x, fine3 * body);
+    shade = mix(shade, 0.5 * shade + 0.5 * p2.y, fine3);
+    dome += -(gTo - dot(gTo, vRN) * vRN) * 0.5 * fine3 * body;
   #endif
   #ifndef PLATES
     vec3 dome = vec3(0.0);
@@ -138,7 +145,7 @@ void main(){
   // The dome is found at rest: carried onto the posed body by the same turn that took the rest normal to N.
   N = normalize(N + dome * 0.55 - N * dot(dome, vRN) * 0.3);
   // The wing's bones: the arm and three fingers, as ridges the skin hangs between.
-  float rib = 0.0; float web = 1.0;
+  float rib = 0.0; float web = 1.0; float fold = 0.0;
   if (skin > 0.02) {
     vec3 r = vec3(abs(vRest.x), vRest.yz);
     float dmin = 9.0;
@@ -149,9 +156,11 @@ void main(){
     }
     rib = smoothstep(0.26, 0.07, dmin) * skin;
     web = smoothstep(0.1, 1.1, dmin);
+    fold = sin(dmin * 5.0 + 2.3 * sin(r.y * 0.9 + r.z * 0.7)) * skin * (1.0 - rib);
   }
   float under_ = smoothstep(0.15, -0.55, vRN.y) * body;   // belly, throat and the underside of the tail
-  vec3 albedo = mix(uHide * (0.7 + 0.6 * shade), mix(uHide, uBelly, 0.5) * (0.85 + 0.3 * shade), under_);
+  float back = smoothstep(0.35, 0.95, vRN.y) * body;
+  vec3 albedo = mix(uHide * (0.7 + 0.6 * shade) * (1.0 - 0.35 * back), mix(uHide, uBelly, 0.5) * (0.85 + 0.3 * shade), under_);
   albedo = mix(albedo, uBelly * 1.3, point * 0.7);
   albedo *= mix(1.0, 0.3, (1.0 - seam));
   // Wing skin: thinner and warmer between the fingers than on them, with veins.
@@ -162,16 +171,17 @@ void main(){
   albedo = mix(albedo, (uHide * 1.25 + uBelly * 0.14) * vein * (0.6 + 0.4 * web), skin);
   albedo = mix(albedo, uHide * 0.45, rib * 0.9);
 
+  N = normalize(N + vRN.zxy * fold * 0.07);
   float ndl = dot(N, uKeyDir);
   float dif = smoothstep(-0.2, 1.0, ndl);
   float low = smoothstep(-0.1, 1.0, dot(N, uLowDir));
-  vec3 col = albedo * (uAmb + uKey * dif + uLow * low) * occ;
+  vec3 col = albedo * (uAmb * (0.55 + 0.45 * N.y) + uKey * dif + uLow * low) * occ;
   // A wet sheen on each plate.
   vec3 H = normalize(uKeyDir + V);
   col += uKey * pow(max(dot(N, H), 0.0), 42.0) * 0.55 * seam * body * occ;
   // Light through the wing: the far side lit shows on the near side, most when the reader looks toward the light.
   float thru = max(-ndl, 0.0) * (0.45 + 0.55 * pow(max(dot(V, -uKeyDir), 0.0), 2.0));
-  col += uKey * uThin * mix(uBelly, uGlow, 0.55) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * vein * (0.3 + 0.7 * web) * (1.0 - 0.85 * rib);
+  col += uKey * uThin * mix(uBelly, uGlow, 0.55) * thru * skin * (0.5 + 0.5 * occ) * 2.2 * (0.86 + 0.14 * vein) * (0.9 + 0.1 * fold) * (0.1 + 0.9 * web * web) * (1.0 - 0.85 * rib);
   col += uKey * pow(max(dot(N, H), 0.0), 24.0) * 0.3 * rib * occ;
   // The rim: the place's own light on every edge turned away from the reader.
   float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
