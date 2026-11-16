@@ -2,16 +2,12 @@ import { builds, contact } from '../data/content';
 import { BINDING, receipts } from '../data/world';
 import { fill, put } from './counts';
 
-/* The foot of the page: the colophon in two lines, then the credits, rolled only
-   when asked for (a native <details>, closed: after the dawn at Contact a
-   fourteen-row cast list read as a long tail; Nov 16). The cast is the crew, each
-   with their job (small portraits, in grey: their colours stay at the Camp).
-   Then whatever lives in the world, each with the fact it is drawn from (the
-   sentences come from data/world.js, one per binding in the kit contract; a
-   binding with no sentence yet is left out). Then the faces, what the page is
-   made with and set in, what it measured (only when content.js holds numbers
-   measured on the production build), and the way back up. Every count here is
-   computed. */
+/* The foot of the page is one quiet line, so Contact is the last thing on it
+   (Vidyut, Nov 16): the plain-text link, Roll the credits, Back to the top.
+   The credits open below that line only when asked for (a native <details>):
+   the colophon, the cast (the crew, each with their job), whatever lives in the
+   world with the fact it is drawn from (sentences from data/world.js), and the
+   faces. Every count here is computed. */
 export default function Footer() {
   const c = contact.colophon;
   const k = contact.credits;
@@ -21,9 +17,12 @@ export default function Footer() {
     <footer className="foot" data-realm="earth">
       <div className="wrap">
         <div className="credits">
-          <p className="credits-part credits-notes">
-            <a href={c.llms.href}>{c.llms.label}</a>
-          </p>
+          <a className="credits-link" href={c.llms.href}>
+            {c.llms.label}
+          </a>
+          <a className="credits-link" data-top="" href="#top">
+            {contact.footerTop} <span aria-hidden="true">↑</span>
+          </a>
 
           <details className="credits-roll fold">
             <summary>{k.open}</summary>
@@ -84,13 +83,6 @@ export default function Footer() {
             </div>
           </details>
 
-          <a className="credits-top" href="#top">
-            {contact.footerTop} <span aria-hidden="true">↑</span>
-          </a>
-        </div>
-        <div className="foot-line">
-          <span>{contact.footerLeft}</span>
-          <span>{contact.footerRight}</span>
         </div>
       </div>
     </footer>

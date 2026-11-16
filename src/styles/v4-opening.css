@@ -4,17 +4,13 @@
    Loaded last. Tokens: --holo-* and --hub-* in tokens.css.
    ========================================================================== */
 
-/* ================================ THE PROJECTIONS ========================== */
-/* The panels beside him are holograms of the same kind as his own (the canvas:
-   lib/holoScene.js), drawn in CSS with the same numbers: the picture's tones on
-   the hologram's blue with a little of its own colour left in (--holo-warm), a
-   scan line every --holo-pitch pixels, a band of light rolling up every
-   --holo-roll, a hairline frame with red and blue a pixel and a half apart, the
-   foot dissolving, and under it a cone of light standing on a small plate.
-   They take turns (hub-think; --k staggers them, so two or three are lit at
-   once), never touch his picture, and leave with the greeting (--out). */
+/* ================================ THE CARDS ================================ */
+/* Only he is a hologram. His work stands in the room as real things: crisp,
+   full-colour cards (the builds' own thumbnails, untouched: no tint, no scan
+   lines, no blur) in a symmetric arc round him, three a side, each in a thin
+   metal frame with its name and one word under it. They never touch his figure
+   and leave with the greeting (--out). Decoration: aria-hidden. */
 .hub {
-  --think: 19.2s; /* one full round of the six */
   position: absolute;
   left: 0;
   right: 0;
@@ -25,218 +21,90 @@
   opacity: calc(1 - var(--out, 0));
 }
 
-.hub-panel {
-  --w: calc(var(--hub-w) * var(--d, 1));
+.hub-card {
+  --cw: calc(var(--hub-w) * var(--d, 1));
   position: absolute;
-  width: var(--w);
+  width: var(--cw);
+  margin: 0;
   display: grid;
-  justify-items: center;
-  opacity: 0;
-  animation: hub-think var(--think) var(--ease) infinite;
-  animation-delay: calc(var(--k) * var(--think) / 6);
+  gap: 10px;
+  justify-items: start;
 }
 
-/* Seats, down each side, at three depths: --d is a panel's size (nearer is
-   larger), --lit how bright it is, --z how far it shifts against the pointer. */
-.hub-panel[data-at='l1'] { left: 19%; top: 7%; --d: 1; --lit: var(--hub-dim); --z: 16; }
-.hub-panel[data-at='l2'] { left: 4.5%; top: 17%; --d: 0.62; --lit: 0.6; --z: 6; }
-.hub-panel[data-at='l3'] { left: 11.5%; top: 41%; --d: 0.84; --lit: 0.8; --z: 11; }
-.hub-panel[data-at='l4'] { left: 3%; top: 63%; --d: 0.58; --lit: 0.55; --z: 5; }
-.hub-panel[data-at='r1'] { right: 18%; top: 9%; --d: 1; --lit: var(--hub-dim); --z: 16; }
-.hub-panel[data-at='r2'] { right: 5%; top: 23%; --d: 0.6; --lit: 0.82; --z: 7; }
-.hub-panel[data-at='r3'] { right: 11%; top: 44%; --d: 0.84; --lit: 0.8; --z: 11; }
-.hub-panel[data-at='r4'] { right: 4%; top: 64%; --d: 0.5; --lit: 0.55; --z: 5; }
+/* Seats: an arc, mirrored. The top pair is nearest him and largest; the middle
+   pair stands furthest out; the low pair comes back in above the greeting's ends. */
+.hub-card[data-at='la'] { left: 15.5%; top: 8%; --z: 14; }
+.hub-card[data-at='ra'] { right: 15.5%; top: 8%; --z: 14; }
+.hub-card[data-at='lb'] { left: 4.5%; top: 30%; --d: 0.9; --z: 9; }
+.hub-card[data-at='rb'] { right: 4.5%; top: 30%; --d: 0.9; --z: 9; }
+.hub-card[data-at='lc'] { left: 10%; top: 53.5%; --d: 0.9; --z: 11; }
+.hub-card[data-at='rc'] { right: 10%; top: 53.5%; --d: 0.9; --z: 11; }
 
-/* The pane. */
-.hub-pic {
+/* The frame: glass over the picture, a hairline of metal round it, one highlight
+   along its top edge, and a real shadow under it. */
+.hub-shot {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-radius: calc(var(--w) * 0.07);
-  background: rgb(var(--holo-deep));
+  border-radius: var(--r-md);
+  background: var(--surface-2);
   box-shadow:
-    -1.5px 0 0 rgba(var(--holo-fringe-r), 0.5),
-    1.5px 0 0 rgba(var(--holo-fringe-b), 0.6),
-    0 0 0 1px rgba(var(--holo-pale), 0.34),
-    0 0 26px rgba(var(--holo-deep), 0.28);
-  -webkit-mask-image: linear-gradient(to bottom, #000 56%, rgb(0 0 0 / 0.3));
-  mask-image: linear-gradient(to bottom, #000 56%, rgb(0 0 0 / 0.3));
-  opacity: 0.94;
-  animation: hub-scan var(--think) linear infinite;
-  animation-delay: inherit;
+    0 0 0 1px var(--card-metal),
+    0 0 0 4px var(--card-rim),
+    0 0 0 5px var(--card-edge),
+    0 22px 38px -14px var(--shadow-ink),
+    0 6px 14px -6px var(--shadow-ink);
 }
 
-.hub-panel[data-kind='crew'] .hub-pic {
-  aspect-ratio: 1;
+.hub-shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, var(--card-sheen), transparent 34%);
+  box-shadow: inset 0 1px 0 var(--card-metal);
 }
 
-/* The picture's tones take the pane's blue; over them, a share of its own colour. */
-.hub-pic img {
-  grid-area: 1 / 1;
+.hub-shot img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 18%;
 }
 
-.hub-pic img:first-of-type {
-  mix-blend-mode: luminosity;
-  filter: contrast(1.06) brightness(1.04);
-}
-
-.hub-pic img + img {
-  opacity: var(--holo-warm);
-}
-
-/* Whites take the pale blue, as in his picture, where only the very brightest is near white. */
-.hub-pic::before {
-  content: '';
-  grid-area: 1 / 1;
-  align-self: stretch;
-  justify-self: stretch;
-  z-index: 1;
-  background: rgb(var(--holo-pale));
-  mix-blend-mode: multiply;
-}
-
-/* Scan lines, and the band of light that rolls up. */
-.hub-pic::after {
-  content: '';
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  background:
-    linear-gradient(to top, transparent 42%, rgba(var(--holo-hot), 0.16) 50%, transparent 58%) 0 0 / 100% 200%,
-    repeating-linear-gradient(
-      to bottom,
-      rgba(var(--holo-ink), 0.2) 0,
-      transparent calc(var(--holo-pitch) * 0.5px),
-      rgba(var(--holo-ink), 0.2) calc(var(--holo-pitch) * 1px)
-    );
-  animation: holo-roll var(--holo-roll) linear infinite;
-}
-
-@keyframes holo-roll {
-  from {
-    background-position:
-      0 0,
-      0 0;
-  }
-  to {
-    background-position:
-      0 200%,
-      0 0;
-  }
-}
-
-/* The cone and the plate under a pane. */
-.hub-cone {
-  position: relative;
-  width: 100%;
-  height: calc(var(--w) * 0.15);
-  margin-bottom: calc(var(--w) * 0.06 + 8px);
-}
-
-.hub-cone::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(2% 0, 98% 0, 60% 100%, 40% 100%);
-  background:
-    repeating-linear-gradient(to bottom, rgba(var(--holo-ink), 0.2) 0, transparent calc(var(--holo-pitch) * 0.5px), rgba(var(--holo-ink), 0.2) calc(var(--holo-pitch) * 1px)),
-    linear-gradient(to top, rgba(var(--holo-pale), 0.4), rgba(var(--holo-deep), 0.1));
-}
-
-.hub-cone::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  width: 46%;
-  aspect-ratio: 1 / 0.2;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 1px solid rgba(var(--holo-pale), 0.75);
-  background:
-    radial-gradient(50% 50%, rgb(var(--holo-hot)) 0, rgba(var(--holo-hot), 0.5) 22%, transparent 50%),
-    rgba(var(--holo-ink), 0.5);
-  box-shadow: 0 0 12px rgba(var(--holo-deep), 0.5);
-}
-
-.hub-panel figcaption {
-  /* A tight ink halo: a caption can stand over the dusk. */
-  text-shadow:
-    0 0 3px var(--ink),
-    0 0 8px var(--ink);
-  font-family: var(--font-mono);
-  font-size: clamp(9px, calc(var(--w) * 0.07), 11px);
+.hub-card figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-left: 2px;
   white-space: nowrap;
-  font-weight: 500;
-  letter-spacing: var(--tr-label);
-  text-transform: uppercase;
-  text-align: center;
+}
+
+.hub-card figcaption b {
+  font-family: var(--font-read);
+  font-weight: 400;
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.1;
   color: var(--text);
 }
 
-/* One projection: the plate and the cone light, the picture is scanned in from
-   its foot (hub-scan, the same clock), it holds and floats a little, then its
-   light goes out. It is lit for about a third of the round. */
-@keyframes hub-think {
-  0% {
-    opacity: 0;
-    translate: 0 0;
-  }
-  1.5% {
-    opacity: var(--hub-dim);
-  }
-  20% {
-    translate: 0 -5px;
-  }
-  33% {
-    opacity: var(--hub-dim);
-    translate: 0 0;
-  }
-  36%,
-  100% {
-    opacity: 0;
-    translate: 0 0;
-  }
+.hub-card figcaption span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: var(--tr-label);
+  text-transform: uppercase;
+  color: var(--text-2);
 }
 
-@keyframes hub-scan {
-  0%,
-  1% {
-    clip-path: inset(100% -4px 0 -4px);
-    filter: brightness(1.7);
-  }
-  5% {
-    clip-path: inset(0 -4px 0 -4px);
-    filter: brightness(1.25);
-  }
-  7%,
-  100% {
-    clip-path: inset(0 -4px 0 -4px);
-    filter: none;
-  }
-}
-
-/* They wait for his projection: the layer comes up once it has been scanned in. */
-html.js:not([data-holo]) .hub,
-html[data-holo='in'] .hub {
+/* They wait for his projection, then arrive one after another, and the room has
+   a little depth: a card shifts against the pointer by its --z (a mouse only;
+   Welcome.jsx writes --px, --py). Nothing else about them moves. */
+html.js:not([data-holo]) .hub {
   opacity: 0;
-}
-
-html[data-holo='in'] .hub {
-  animation: hub-in 0.8s var(--ease) 1.7s forwards;
-}
-
-@keyframes hub-in {
-  to {
-    opacity: 1;
-  }
 }
 
 .welcome[data-run] .hub {
@@ -248,128 +116,63 @@ html[data-holo='off'] .hub {
   display: none;
 }
 
-/* A narrow laptop has less room at the sides. */
-@media (max-width: 1100px) {
-  .hub-panel[data-at='l1'],
-  .hub-panel[data-at='l3'] {
-    left: 3%;
-  }
-
-  .hub-panel[data-at='r1'],
-  .hub-panel[data-at='r3'] {
-    right: 3%;
-  }
-}
-
-/* A phone: four projections take turns in two places, in the corners above his
-   picture. Each one ends 10px above the picture's box (lib/face.js publishes it
-   as --face-rect-y, in document pixels; the welcome starts one bar down), so
-   nothing ever meets his head, at any width. The third and fourth arrive as the
-   first and second leave, so each place holds one at a time. */
-@media (max-width: 760px) {
-  .hub .hub-panel[data-at] {
-    --hub-w: 92px;
-    --d: 1;
-    top: calc(var(--face-rect-y, 150px) - var(--nav-h) - 10px);
-    transform: translateY(-100%);
-  }
-
-  .hub-panel[data-at='l2'],
-  .hub-panel[data-at='r2'],
-  .hub-panel[data-at='l4'],
-  .hub-panel[data-at='r4'] {
-    display: none;
-  }
-
-  .hub-panel[data-at='l1'],
-  .hub-panel[data-at='l3'] { left: 4%; }
-  .hub-panel[data-at='r1'],
-  .hub-panel[data-at='r3'] { right: 4%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* The projections hold still: the first three stay lit, the rest stay away. */
-  .hub-panel,
-  .hub-pic,
-  .hub-pic::after {
-    animation: none;
-  }
-
-  .hub-panel {
-    opacity: var(--lit, var(--hub-dim));
-  }
-
-  html[data-holo='in'] .hub {
-    animation: none;
-    opacity: 1;
-  }
-}
-
-/* A wide window: every panel is lit at once. Each is scanned in once, one after
-   another, then floats a little on its own clock, and the whole room has depth:
-   a panel shifts against the pointer by its --z (Welcome.jsx writes --px, --py). */
 @media (min-width: 761px) {
-  .hub-panel {
+  .hub-card {
     transform: translate(calc(var(--px, 0) * var(--z, 0) * -1px), calc(var(--py, 0) * var(--z, 0) * -0.6px));
     transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
 
-@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
-  .hub-panel {
-    animation:
-      hub-arrive 0.7s var(--ease) calc(0.2s + var(--k) * 0.16s) both,
-      hub-float calc(7s + var(--k) * 0.9s) ease-in-out calc(var(--k) * -1.3s) infinite;
-  }
-
-  .hub-pic {
-    animation: hub-scan-once 0.8s linear calc(0.2s + var(--k) * 0.16s) both;
+@media (prefers-reduced-motion: no-preference) {
+  html[data-holo='in'] .hub-card {
+    animation: hub-arrive 0.6s var(--ease) calc(1.2s + var(--k) * 0.12s) both;
   }
 }
 
 @keyframes hub-arrive {
   from {
     opacity: 0;
-  }
-  to {
-    opacity: var(--lit, var(--hub-dim));
+    translate: 0 10px;
   }
 }
 
-@keyframes hub-float {
-  50% {
-    translate: 0 -6px;
+/* A phone: the two flagships, small, in the corners above his figure (the box
+   is published by lib/face.js as --face-rect-y). */
+@media (max-width: 760px) {
+  .hub .hub-card[data-at] {
+    --hub-w: 108px;
+    --d: 1;
+    top: calc(var(--face-rect-y, 150px) - var(--nav-h) - 8px);
+    transform: translateY(-100%);
+    gap: 7px;
   }
-}
 
-@keyframes hub-scan-once {
-  0% {
-    clip-path: inset(100% -4px 0 -4px);
-    filter: brightness(1.7);
-  }
-  70% {
-    clip-path: inset(0 -4px 0 -4px);
-    filter: brightness(1.25);
-  }
-  100% {
-    clip-path: inset(0 -4px 0 -4px);
-    filter: none;
-  }
-}
+  .hub-card[data-at='la'] { left: 4%; }
+  .hub-card[data-at='ra'] { right: 4%; }
 
-/* A phone under reduced motion: one still panel in each corner. */
-@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
-  .hub-panel[data-at='l3'],
-  .hub-panel[data-at='r3'] {
+  .hub-card[data-at='lb'],
+  .hub-card[data-at='rb'],
+  .hub-card[data-at='lc'],
+  .hub-card[data-at='rc'],
+  .hub-card figcaption span {
     display: none;
+  }
+
+  .hub-card figcaption b {
+    font-size: 13px;
+  }
+
+  .hub-shot {
+    box-shadow:
+      0 0 0 1px var(--card-metal),
+      0 10px 20px -8px var(--shadow-ink);
   }
 }
 
 /* ================================== THE ROOM =============================== */
-/* WelcomeScene.jsx: the observatory behind the first screen. Decoration, in the
-   hologram's blue: a floor of light round the plate, constellations and drifting
-   glyphs at the sides, the limb of a far world low in a corner. It leaves with
-   the greeting (--out) and is not there when the hologram is not. */
+/* WelcomeScene.jsx: a floor of light round the plate and a few faint
+   constellations high at the sides. It leaves with the greeting (--out) and is
+   not there when the hologram is not. */
 .obs {
   position: absolute;
   left: 0;
@@ -402,74 +205,50 @@ html[data-plain] .obs,
   width: 100%;
   height: 100%;
   fill: none;
-  transform: translate(calc(var(--px, 0) * -5px), calc(var(--py, 0) * -3px));
+  transform: translate(calc(var(--px, 0) * -4px), calc(var(--py, 0) * -2px));
   transition:
     transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
     opacity 1.2s var(--ease);
 }
 
 .obs-con path {
-  stroke: rgba(var(--holo-pale), 0.2);
+  stroke: rgba(var(--holo-pale), 0.16);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 .obs-con circle {
-  fill: rgba(var(--holo-hot), 0.85);
+  fill: rgba(var(--holo-hot), 0.8);
 }
 
 .obs-con {
-  animation: obs-twinkle 7s ease-in-out calc(var(--k) * -1.9s) infinite;
+  animation: obs-twinkle 8s ease-in-out calc(var(--k) * -1.9s) infinite;
 }
 
 @keyframes obs-twinkle {
   50% {
-    opacity: 0.55;
-  }
-}
-
-.obs-glyph {
-  stroke: rgba(var(--room-gold), 0.7);
-  stroke-width: 1.3;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  opacity: 0;
-  animation: obs-drift 16s linear calc(var(--k) * -1.37s) infinite;
-}
-
-@keyframes obs-drift {
-  0% {
-    opacity: 0;
-    transform: translateY(26px);
-  }
-  18%,
-  78% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-46px);
+    opacity: 0.6;
   }
 }
 
 /* The floor: centred on the plate and sized from it, lying flat. It fades out
-   sideways and before it reaches the greeting under the plate. */
+   sideways and before it reaches the plaque under the plate. */
 .obs-floor {
   position: absolute;
   left: var(--plate-x, -9999px);
   top: calc(var(--plate-y, 0px) - var(--nav-h));
-  width: calc(var(--plate-w, 100px) * 9.6);
+  width: calc(var(--plate-w, 100px) * 8.4);
   aspect-ratio: 5 / 1;
   transform: translate(-50%, -50%);
   fill: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 4%, #000 30%, #000 50%, transparent 68%), radial-gradient(closest-side, #000 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 6%, #000 32%, #000 50%, transparent 64%), radial-gradient(closest-side, #000 50%, transparent 100%);
   -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to bottom, transparent 4%, #000 30%, #000 50%, transparent 68%), radial-gradient(closest-side, #000 45%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 6%, #000 32%, #000 50%, transparent 64%), radial-gradient(closest-side, #000 50%, transparent 100%);
   mask-composite: intersect;
 }
 
 .obs-ring {
-  stroke: rgba(var(--holo-pale), 0.66);
+  stroke: rgba(var(--holo-pale), 0.6);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
   opacity: calc(0.75 - var(--k) * 0.12);
@@ -486,7 +265,7 @@ html[data-plain] .obs,
 }
 
 .obs-spoke {
-  stroke: rgba(var(--holo-pale), 0.36);
+  stroke: rgba(var(--holo-pale), 0.3);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
@@ -498,86 +277,7 @@ html[data-plain] .obs,
   vector-effect: non-scaling-stroke;
 }
 
-/* Ember sparks, low at the sides: they rise a little and go out. */
-.obs-ember {
-  fill: rgb(var(--room-ember));
-  opacity: 0;
-  animation: obs-spark 9s ease-out calc(var(--k) * -1.6s) infinite;
-}
-
-@keyframes obs-spark {
-  0% {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  12% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(10px, -90px);
-  }
-}
-
-/* The traces: circuit from the plate to each panel's base, laid out by
-   WelcomeScene.jsx. Fine blue wire, gold nodes, a gold pulse travelling out. */
-.obs-traces {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  display: none;
-}
-
-.obs[data-traced] .obs-traces {
-  display: block;
-}
-
-.obs-wire {
-  stroke: rgba(var(--holo-pale), 0.3);
-  stroke-width: 1;
-  stroke-linejoin: round;
-}
-
-.obs-pulse {
-  stroke: rgb(var(--room-gold));
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-dasharray: 7 93;
-  stroke-dashoffset: 107;
-  animation: obs-run 5.2s linear calc(var(--k) * -0.65s) infinite;
-}
-
-@keyframes obs-run {
-  to {
-    stroke-dashoffset: 7;
-  }
-}
-
-.obs-node {
-  fill: var(--ink);
-  stroke: rgba(var(--room-gold), 0.9);
-  stroke-width: 1;
-}
-
-.obs-node[data-end] {
-  fill: rgba(var(--room-gold), 0.85);
-  stroke: none;
-}
-
-.obs-tag {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  fill: rgba(var(--holo-pale), 0.5);
-}
-
-/* A phone: the floor and two constellations; no traces, glyphs or sparks. */
 @media (max-width: 760px) {
-  .obs-traces,
-  .obs-ember,
-  .obs-glyph,
   .obs-con[data-side='b'] {
     display: none;
   }
@@ -588,31 +288,15 @@ html[data-plain] .obs,
   .obs-ring {
     animation: none;
   }
-
-  .obs-glyph {
-    animation: none;
-    opacity: 0.5;
-  }
-
-  .obs-ember {
-    animation: none;
-    opacity: 0.6;
-  }
-
-  .obs-pulse {
-    animation: none;
-    stroke-dashoffset: 60;
-  }
 }
 
-/* ============================== THE FAR WALL =============================== */
-/* WelcomeBackdrop.jsx, in the fixed stack under the hologram's canvas: dusk over
-   a mountain range. The horizon stands --room-rise above the plate. Warm light
-   is strongest toward the sides and low; the middle and everything above stay
-   the page's blue, so the figure's own light leads. */
+/* ================================= THE SKY ================================= */
+/* WelcomeBackdrop.jsx, in the fixed stack under the hologram's canvas: one soft
+   band of aurora across a deep sky, gold and ember melting into the blue. No
+   shapes. --hz is about where the plate stands; the band hangs above it and is
+   strongest at the sides, so the figure's own blue leads in the middle. */
 .bg-room {
-  --room-rise: clamp(22px, 4svh, 40px);
-  --hz: calc(var(--plate-y, 72svh) - var(--room-rise));
+  --hz: var(--plate-y, 72svh);
   position: absolute;
   inset: 0;
   will-change: transform;
@@ -624,66 +308,45 @@ html:not(.js) .bg-room {
   display: none;
 }
 
-.room-dusk {
+.room-aurora {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--hz) - 46svh);
-  height: 46svh;
+  left: -8%;
+  right: -8%;
+  top: calc(var(--hz) - 64svh);
+  height: 86svh;
+  filter: blur(28px);
   background:
-    radial-gradient(52% 46% at 12% 100%, rgba(var(--room-gold), 0.62), transparent 100%),
-    radial-gradient(48% 42% at 90% 100%, rgba(var(--room-gold), 0.54), transparent 100%),
-    radial-gradient(74% 28% at 8% 100%, rgba(var(--room-ember), 0.7), transparent 100%),
-    radial-gradient(74% 26% at 94% 100%, rgba(var(--room-ember), 0.64), transparent 100%),
-    linear-gradient(to top, rgba(var(--room-ember), 0.3), rgba(var(--room-haze), 0.22) 34%, transparent 82%);
+    /* ribbons: thin, tilted, the brightest part of the band */
+    radial-gradient(34% 5% at 20% 63%, rgba(var(--room-gold), 0.5), transparent 100%),
+    radial-gradient(30% 4% at 80% 58%, rgba(var(--room-gold), 0.42), transparent 100%),
+    radial-gradient(24% 3.5% at 33% 50%, rgba(var(--room-ember), 0.34), transparent 100%),
+    /* clouds of ember, low at the sides */
+    radial-gradient(40% 22% at 6% 74%, rgba(var(--room-ember), 0.5), transparent 100%),
+    radial-gradient(38% 20% at 96% 70%, rgba(var(--room-ember), 0.44), transparent 100%),
+    /* gold above them */
+    radial-gradient(44% 24% at 18% 56%, rgba(var(--room-gold), 0.36), transparent 100%),
+    radial-gradient(40% 22% at 86% 50%, rgba(var(--room-gold), 0.3), transparent 100%),
+    /* violet haze that joins them to the blue, and blue rising above */
+    radial-gradient(70% 34% at 30% 44%, rgba(var(--room-haze), 0.42), transparent 100%),
+    radial-gradient(70% 34% at 74% 40%, rgba(var(--room-haze), 0.38), transparent 100%),
+    radial-gradient(60% 40% at 50% 24%, rgba(var(--holo-deep), 0.2), transparent 100%);
+  transform: rotate(-4deg);
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 24%, rgba(0, 0, 0, 0.3) 44%, rgba(0, 0, 0, 0.3) 56%, #000 76%);
+  mask-image: linear-gradient(to right, #000 0, #000 24%, rgba(0, 0, 0, 0.3) 44%, rgba(0, 0, 0, 0.3) 56%, #000 76%);
 }
 
-/* The sun, just gone behind the range on the left: what makes it dusk. */
-.room-sun {
-  position: absolute;
-  left: 31%;
-  top: calc(var(--hz) - 15svh);
-  width: 13svh;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgb(var(--room-gold)) 0, rgba(var(--room-gold), 0.9) 58%, rgba(var(--room-ember), 0.5) 80%, transparent 100%);
-  box-shadow: 0 0 9svh 3svh rgba(var(--room-gold), 0.22);
-}
-
-.room-range {
-  position: absolute;
-  left: 0;
-  top: calc(var(--hz) - 19svh);
-  width: 100%;
-  height: 19svh;
-}
-
-.room-far {
-  fill: rgba(var(--room-haze), 0.46);
-}
-
-.room-near {
-  fill: var(--ink);
-}
-
-.room-rim {
-  fill: none;
-  stroke: rgba(var(--room-gold), 0.95);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-/* The ground in front of the range: ink, so the floor of light and the greeting
-   stand on a calm dark field. */
-.room-ground {
+/* A fine grain over the band: painted light, not a gradient. */
+.room-grain {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--hz) - 1px);
-  height: 60svh;
-  background: linear-gradient(to bottom, var(--ink), color-mix(in srgb, var(--ink) 86%, transparent) 60%, transparent);
+  top: calc(var(--hz) - 64svh);
+  height: 86svh;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
 }
 
 /* ================================== THE HERO =============================== */
@@ -743,7 +406,7 @@ html:not(.js) .bg-room {
   display: block;
   width: 96px;
   height: auto;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 64 / 81;
   object-fit: cover;
   border-radius: var(--r-lg);
   border: 1px solid color-mix(in srgb, var(--acc) 46%, transparent);
@@ -843,6 +506,19 @@ html:not(.js) .bg-room {
       rgba(var(--holo-ink), 0.22) calc(var(--holo-pitch) * 1px)
     );
   animation: holo-roll var(--holo-roll) linear infinite;
+}
+
+@keyframes holo-roll {
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 200%,
+      0 0;
+  }
 }
 
 /* The cone rises behind the figure from the plate under its feet. */
@@ -984,35 +660,119 @@ html[data-entry='pre']:not([data-holo='off']) .hero .hero-photo {
   margin-bottom: 8px;
 }
 
-/* ============================== THE NAMEPLATE ============================== */
-/* One line of award gold on the floor in front of the plate: a fact about him,
-   under his own feet, so it cannot be read as a build's label. Placed from the
-   plate (--plate-y, --plate-w); it leaves with the greeting. */
-.welcome-plate {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(var(--plate-y, -999px) - var(--nav-h) + var(--plate-w, 100px) * 0.2 + 6px);
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: clamp(9px, 2.5vw, 11px);
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-align: center;
-  white-space: nowrap;
-  color: var(--win);
-  text-shadow:
-    0 0 3px var(--ink),
-    0 0 10px var(--ink);
-  opacity: calc(1 - var(--out, 0));
-  pointer-events: none;
+/* =============================== THE PLAQUE ================================ */
+/* A gold plaque at the foot of the projector: the fact about him, under his own
+   feet, a crafted object and crisp. It sits in the page's flow between his
+   figure and the greeting, so nothing has to make room for it, and it leaves
+   with the greeting. */
+.welcome {
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
 }
 
-html:not(.js) .welcome-plate,
-html[data-holo='off'] .welcome-plate,
-html[data-plain] .welcome-plate,
-html.js:not([data-holo]) .welcome-plate,
+.welcome-plate {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 7px 16px 7px 13px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(180deg, var(--plaque-hi), var(--win) 46%, var(--plaque-lo));
+  box-shadow:
+    inset 0 1px 0 var(--plaque-shine),
+    inset 0 -1px 0 var(--plaque-shade),
+    0 0 0 1px var(--plaque-shade),
+    0 10px 22px -10px var(--shadow-ink);
+  color: var(--plaque-ink);
+  white-space: nowrap;
+  opacity: calc(1 - var(--out, 0));
+}
+
+.welcome-plate b {
+  font-family: var(--font-read);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.welcome-plate span {
+  font-family: var(--font-mono);
+  font-size: clamp(9.5px, 2.5vw, 11px);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.welcome-plate i {
+  font-style: normal;
+  opacity: 0.6;
+}
+
 .welcome[data-run] .welcome-plate {
-  display: none;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+
+/* ================================= TOOLKIT ================================= */
+/* A picked tool answers in a sentence, with the builds' names as text links. */
+.tk-answer p a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--acc) 70%, transparent);
+  text-underline-offset: 0.22em;
+  /* A 44px touch area without moving the line. */
+  padding-block: 12px;
+}
+
+.tk-answer p a:hover {
+  color: var(--acc-text);
+}
+
+/* ================================= THE FOOT ================================ */
+/* One quiet line, so Contact is the last thing on the page: llms.txt, Roll the
+   credits, Back to the top. The credits open under it only when asked for. */
+.foot {
+  padding: 4px 0 10px;
+}
+
+.foot .wrap {
+  gap: 0;
+}
+
+.credits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 clamp(18px, 4vw, 40px);
+  padding-block: 0;
+}
+
+.credits-link,
+.credits-roll > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text-3);
+  transition: color var(--dur) var(--ease);
+}
+
+.credits-link:hover,
+.credits-roll > summary:hover {
+  color: var(--text);
+}
+
+.credits-link { order: 1; }
+.credits-roll { order: 2; width: auto; }
+.credits-link[data-top] { order: 3; }
+
+.credits-roll[open] {
+  order: 4;
+  flex-basis: 100%;
 }

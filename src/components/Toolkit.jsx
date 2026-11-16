@@ -4,7 +4,8 @@ import { EV } from '../kit/contract';
 
 /* A reverse index, not an inventory. Every tool that a build on this page lists
    in its stack line is a toggle; picking one makes those builds answer in a
-   sentence, with their thumbnails as links to the entries. The index is computed
+   sentence: their names only, each a text link to its entry (no pictures:
+   Vidyut, Nov 16). The index is computed
    here from content.js (stack lines split on " · ", a bracketed list counted as
    its own tools, names matched exactly or through `toolkit.aliases`), so it can
    only say what the stack lines say. A tool with no stack line stays plain text.
@@ -12,7 +13,6 @@ import { EV } from '../kit/contract';
 const ALL = [...builds.flagships, ...builds.items, builds.research, ...builds.more.items].map((b) => ({
   id: b.id,
   title: b.title,
-  image: (b.media.lead?.image ?? b.media.image).replace('.webp', '-640.webp'),
   tools: new Set(
     b.stack.split(' · ').flatMap((t) => {
       const m = t.match(/^(.*?)\s*\((.*)\)$/);
@@ -52,7 +52,7 @@ export default function Toolkit() {
     const t = setTimeout(() => setSaid(''), 2500);
     return () => clearTimeout(t);
   }, [said]);
-  const sentence = toolkit.answer.replace('{tool}', tool).replace('{builds}', list(hits.map((b) => b.title)));
+  const [before, after = ''] = toolkit.answer.replace('{tool}', tool).split('{builds}');
 
   return (
     <section className="sec" id="toolkit" data-realm="earth">
@@ -86,17 +86,16 @@ export default function Toolkit() {
                 </ul>
                 {g.items.includes(tool) && hits.length > 0 && (
                   <div className="tk-answer" key={tool}>
-                    <p>{sentence}</p>
-                    <ul className="tk-plates">
-                      {hits.map((b) => (
-                        <li key={b.id}>
-                          <a href={`#build-${b.id}`}>
-                            <img src={b.image} alt="" width="640" height="400" loading="lazy" decoding="async" />
-                            <span>{b.title}</span>
-                          </a>
-                        </li>
+                    <p>
+                      {before}
+                      {hits.map((b, i) => (
+                        <span key={b.id}>
+                          {i === 0 ? '' : i === hits.length - 1 ? ` ${toolkit.and} ` : ', '}
+                          <a href={`#build-${b.id}`}>{b.title}</a>
+                        </span>
                       ))}
-                    </ul>
+                      {after}
+                    </p>
                   </div>
                 )}
               </div>

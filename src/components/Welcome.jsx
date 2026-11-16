@@ -14,13 +14,12 @@ import { emit } from '../kit/bus';
    data-holo-anchor here), then the greeting and the door. Nothing waits on it:
    the text is in the HTML, the nav works, and Enter is a real link to the hero.
 
-   One visual language. The small panels at the sides (welcome.hub: builds, the
-   crew, one gold fact) are projections of the same kind, drawn in CSS: the same
-   blue ramp, the same scan lines, the same plate and cone under each, at
-   different depths. Behind them is the room (WelcomeScene): a floor of light
-   round the plate, constellations, drifting glyphs, the limb of a far world.
-   Nothing touches his figure or sits on the greeting; all of it is decoration
-   (aria-hidden).
+   Only he is a hologram. His work stands round him as real things (welcome.hub):
+   six crisp, full-colour cards in a symmetric arc, three a side, each with its
+   name and one word under it; and at the foot of the projector a gold plaque
+   with the fact about him. Behind is the room (WelcomeScene: a floor of light
+   round the plate, a few constellations) and the sky (WelcomeBackdrop). Nothing
+   touches his figure or sits on the greeting.
 
    The hand-off is direct: on Enter, or as the reader scrolls, the greeting and
    the panels fade, curtains of light close over the projection and leave one
@@ -110,31 +109,37 @@ export default function Welcome() {
       <div className="welcome-face" data-holo-anchor="" aria-hidden="true" />
       <WelcomeScene />
       <div className="hub" aria-hidden="true">
-        {welcome.hub.map((item, k) => (
-          <figure className="hub-panel" data-at={item.at} data-kind={item.kind} style={{ '--k': k }} key={item.at}>
-            <span className="hub-pic">
-              {
-                /* Twice: once for its tones in the blue light, once for a share of its own colour. */
-                [0, 1].map((layer) => (
-                  <img
-                    key={layer}
-                    src={item.kind === 'crew' ? `/agents/${item.id}-148.webp` : `/builds/ring/${item.id}-320.webp`}
-                    alt=""
-                    width={item.kind === 'crew' ? 148 : 320}
-                    height={item.kind === 'crew' ? 148 : 200}
-                    loading="lazy"
-                    decoding="async"
-                    fetchPriority="low"
-                  />
-                ))
-              }
-            </span>
-            <span className="hub-cone" />
-            <figcaption>{item.label}</figcaption>
-          </figure>
-        ))}
+        {welcome.hub.map((item, k) => {
+          const src = item.kind === 'crew' ? `/agents/${item.id}.webp` : `/builds/ring/${item.id}.webp`;
+          return (
+            <figure className="hub-card" data-at={item.at} style={{ '--k': k }} key={item.at}>
+              <span className="hub-shot">
+                <img
+                  src={src}
+                  srcSet={item.kind === 'crew' ? undefined : `${src.replace('.webp', '-320.webp')} 320w, ${src} 640w`}
+                  sizes="(max-width: 760px) 112px, 210px"
+                  alt=""
+                  width={item.kind === 'crew' ? 294 : 640}
+                  height={item.kind === 'crew' ? 294 : 400}
+                  loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
+                />
+              </span>
+              <figcaption>
+                <b>{item.label}</b>
+                <span>{item.note}</span>
+              </figcaption>
+            </figure>
+          );
+        })}
       </div>
-      <p className="welcome-plate">{welcome.plate}</p>
+      <p className="welcome-plate">
+        <b>{welcome.plate.value}</b>
+        <span>
+          {welcome.plate.line} <i aria-hidden="true">·</i> {welcome.plate.more}
+        </span>
+      </p>
       <p className="welcome-say">
         {welcome.lines.map((line, k) => (
           <span className="say" data-line={k + 1} style={{ '--n': line.length }} key={line}>

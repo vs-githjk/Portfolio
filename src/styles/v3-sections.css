@@ -2209,46 +2209,6 @@ html:not([data-world='on']) .pow-roost {
   color: var(--text-2);
 }
 
-.credits-notes p {
-  max-width: 68ch;
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--text-2);
-}
-
-.credits-notes a,
-.credits-top {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--link);
-}
-
-.credits-top {
-  padding: 0 20px;
-  border: 1px solid var(--hair-2);
-  border-radius: var(--r-xs);
-  font-size: var(--fs-label);
-  letter-spacing: var(--tr-label);
-  color: var(--text);
-}
-
-.credits-notes a:hover,
-.credits-top:hover {
-  color: var(--text);
-  border-color: var(--acc);
-}
-
-.foot-line {
-  justify-content: center;
-  gap: 8px 28px;
-}
-
 @media (max-width: 560px) {
   .credits-cast li {
     column-gap: 12px;

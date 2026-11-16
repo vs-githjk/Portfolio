@@ -3678,43 +3678,6 @@ a.plaque:active::after {
   text-wrap: balance;
 }
 
-.tk-plates {
-  gap: 12px;
-}
-
-.tk-plates a {
-  display: grid;
-  gap: 6px;
-  width: clamp(132px, 12vw, 168px);
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-2);
-}
-
-.tk-plates img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  border: 1px solid var(--hair-2);
-  border-radius: var(--r-sm);
-  background: var(--surface-2);
-  transition:
-    border-color var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
-}
-
-.tk-plates a:hover {
-  color: var(--text);
-}
-
-.tk-plates a:hover img {
-  border-color: var(--acc);
-  transform: translateY(-2px);
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .tk-answer {
     animation: tk-open 0.28s var(--ease) backwards;
@@ -3905,21 +3868,6 @@ a.plaque:active::after {
 .foot .wrap {
   display: grid;
   gap: 22px;
-}
-
-.foot-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding-top: 18px;
-  border-top: var(--rule);
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-3);
 }
 
 /* ============================== CUT CORNERS ================================ */

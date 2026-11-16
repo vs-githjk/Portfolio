@@ -75,10 +75,10 @@ export const welcome = {
      `width` and `height` are the desktop file's own pixels (the hero reserves its
      box from them): update them when the script prints new ones. To try a figure
      without editing this file, open the page with ?figure=/holo/<file>. */
-  /* The plate under the hologram's feet: a fact about him, in award gold, so it can
-     never be read as a panel's label. Both facts are on this page (Highlights, and
-     the wins in Proof of work). */
-  plate: '5× hackathon winner · 6 first places',
+  /* A fact about him, on a gold plaque at the foot of the projector, under his own
+     feet, so it can never be read as a build's label. Both facts are on this page
+     (Highlights, and the wins in Proof of work). */
+  plate: { value: '5×', line: 'hackathon winner', more: '6 first places' },
   figure: {
     src: '/holo/wizard-1.webp',
     phone: '/holo/wizard-1-phone.webp',
@@ -91,21 +91,20 @@ export const welcome = {
     face: { x: 0.48, y: 0.105, r: 0.085 },
     alt: 'A hologram of Vidyut, smiling, in a long robe of stars, a wooden staff in one hand and a glowing crystal in the other',
   },
-  /* His work, as small projections at the sides of the first screen, in the same
-     blue light as his own, at different depths (a wide window shows all eight; a
-     phone four, taking turns). `at` is the seat (l1 to l4 down the left, r1 to r4
-     down the right). A build shows its ring thumbnail (/builds/ring/<id>-320.webp),
-     the crew one Master Agents portrait. Decoration: aria-hidden. Each caption
-     sits under its own panel and names only that panel. */
+  /* His work, standing in the room as real things: crisp, full-colour cards in an
+     arc round him, three a side (Vidyut, Nov 16: "that stuff doesn't have to be
+     holograms. That stuff can actually be real. I did all of that. I'm the
+     hologram because I'm the wizard."). `at` is the seat (a, b, c from the top;
+     l or r). A build shows its ring thumbnail (/builds/ring/<id>.webp), the crew
+     one Master Agents portrait. `kind` is one or two words already true of it on
+     this page (its badge). Decoration: aria-hidden; a phone shows the first two. */
   hub: [
-    { at: 'l1', kind: 'build', id: 'prismai', label: 'PrismAI' },
-    { at: 'r1', kind: 'build', id: 'duelwise', label: 'DuelWise' },
-    { at: 'l2', kind: 'build', id: 'snapback', label: 'SNAPBACK' },
-    { at: 'r2', kind: 'build', id: 'prismkeep', label: 'PrismKeep' },
-    { at: 'l3', kind: 'build', id: 'betterbill', label: 'BetterBill' },
-    { at: 'r3', kind: 'build', id: 'terrametric', label: 'Terrametric' },
-    { at: 'l4', kind: 'build', id: 'paper', label: 'arXiv preprint' },
-    { at: 'r4', kind: 'crew', id: 'orchestrator', label: 'Master Agents' },
+    { at: 'la', kind: 'build', id: 'prismai', label: 'PrismAI', note: 'Live beta' },
+    { at: 'ra', kind: 'build', id: 'duelwise', label: 'DuelWise', note: 'Live' },
+    { at: 'lb', kind: 'build', id: 'snapback', label: 'SNAPBACK', note: 'Flagship' },
+    { at: 'rb', kind: 'build', id: 'betterbill', label: 'BetterBill', note: '1st place' },
+    { at: 'lc', kind: 'build', id: 'terrametric', label: 'Terrametric', note: '1st place' },
+    { at: 'rc', kind: 'crew', id: 'orchestrator', label: 'Master Agents', note: 'Now building' },
   ],
 };
 
@@ -118,12 +117,14 @@ export const welcome = {
    (it is the index at the top of Builds) but its words and slides are kept here. */
 export const hero = {
   status: 'Forward-deployed and AI engineer',
-  /* The studio headshot, a 4:5 crop of public/portrait@2x.jpg at 320 and 640 px
-     wide. The one place on the page his photograph is shown. */
+  /* His own photograph, the one he chose (a Halloween evening, shirt and tie):
+     head, shoulders, chest and his right arm, cropped from the wider photo with
+     the room's pink light calmed. 320 and 640 px wide. The one place on the page
+     his photograph is shown. */
   portrait: {
-    src: '/headshot-hero-320.webp',
-    src2x: '/headshot-hero-640.webp',
-    alt: 'Vidyut Sriram, smiling, in a light blue polo against a dark grey studio backdrop',
+    src: '/hero-photo-320.webp',
+    src2x: '/hero-photo-640.webp',
+    alt: 'Vidyut Sriram, smiling, in a white shirt with the sleeves rolled and a blue tie',
   },
   headline: 'Vidyut Sriram',
   identity: 'Builds safe, reliable AI systems.',
@@ -1819,8 +1820,6 @@ export const contact = {
     { kind: 'arXiv', value: '2607.21641', href: 'https://arxiv.org/abs/2607.21641' },
     { kind: 'Resume', value: 'Download', href: '/resume.pdf' },
   ],
-  footerLeft: 'Vidyut Sriram · State College, PA',
-  footerRight: 'Built from scratch · 2026',
   footerTop: 'Back to the top',
   /* The credits at the foot (Footer.jsx). {Crew} is the size of the crew, counted. */
   credits: {
@@ -1832,7 +1831,7 @@ export const contact = {
       label: 'The faces',
       rows: [
         { where: 'First screen', what: 'A hologram: me in a robe of stars, in blue light on a projector plate; on Enter it closes to a single beam' },
-        { where: 'Beside my name', what: 'My studio headshot' },
+        { where: 'Beside my name', what: 'A photograph of me, shirt and tie' },
         { where: 'Contact', what: 'The hologram again, smaller' },
       ],
     },
@@ -1858,7 +1857,7 @@ export const contact = {
     // quoted set was: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 92, held: 'eight',
     // worst: 67, high: 97, accessibility: 100, bestPractices: 100, seo: 100 }.
     lighthouse: null,
-    llms: { label: 'This page as plain text: llms.txt', href: '/llms.txt' },
+    llms: { label: 'llms.txt', href: '/llms.txt' },
   },
 };
 

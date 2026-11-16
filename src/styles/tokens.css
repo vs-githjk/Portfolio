@@ -206,7 +206,7 @@
   --world-calm: 0.62; /* how much of the ground returns behind a text column */
   --calm-bleed: clamp(0px, 2vw, 28px); /* how far the calm ground feathers out past the column */
   --vista-h: clamp(220px, 44svh, 440px); /* a window where a set piece shows whole */
-  --vista-foot: clamp(120px, 22svh, 220px); /* the horizon under the contact section */
+  --vista-foot: clamp(56px, 10svh, 96px); /* the horizon under the contact section */
   --vista-surf: clamp(220px, 42svh, 420px); /* the sea's surface, between the hero and Experience */
   --vista-shore: clamp(460px, 100svh, 1000px); /* a whole screen of dusk: the camera comes up here */
   --vista-still: clamp(120px, 20svh, 200px); /* a waterline when nothing moves: just its line of text on a still grade */
@@ -230,14 +230,22 @@
      Not the award gold (--win), which stays for awards. */
   --room-gold: 255, 198, 112;
   --room-ember: 236, 98, 58;
-  --room-haze: 120, 74, 110; /* the far ridge, seen through dusk air */
+  --room-haze: 104, 72, 150; /* the far ridge, seen through dusk air */
   --holo-gain: 1; /* strength of the hologram's light */
   --holo-warm: 0.36; /* how much of a picture's own colour stays in the blue light (0 is pure hologram, 1 the photograph) */
   --holo-foot: 0.035; /* the share of the figure's height that dissolves into the cone at its foot (0: it ends as the picture ends) */
   --holo-pitch: 3; /* one scan line every this many CSS pixels, in the canvas and in the panels */
   --holo-roll: 11.8s; /* the band of brighter light takes this long to roll up a projection (the shader's 0.085 a second) */
-  --hub-w: clamp(112px, 12.5vw, 188px); /* a small projection beside him on the welcome screen */
-  --hub-dim: 0.88; /* and how lit it is at its brightest */
+  --hub-w: clamp(150px, 14.6vw, 218px); /* a card of his work in the room round him */
+  --card-metal: rgba(214, 224, 244, 0.34); /* the hairline of a card's frame and its top highlight */
+  --card-rim: rgba(10, 14, 28, 0.9); /* the dark of the frame between its two edges */
+  --card-edge: rgba(214, 224, 244, 0.14);
+  --card-sheen: rgba(255, 255, 255, 0.1); /* glass: one soft reflection from the upper left */
+  --plaque-hi: #ffe7a6; /* the gold plaque: lit edge, body (--win), shaded edge, engraving */
+  --plaque-lo: #c9973a;
+  --plaque-shine: rgba(255, 255, 255, 0.6);
+  --plaque-shade: rgba(92, 62, 8, 0.7);
+  --plaque-ink: #2a1c02;
   --welcome-beams: 0.34; /* how much of the beam field is lit behind it; the rest comes up as the hero arrives */
   --welcome-min: 500px; /* the welcome screen never gets shorter than this */
   --welcome-run: 16svh; /* empty scroll under the greeting: room for the beam to leave before the hero arrives */

@@ -26,7 +26,7 @@ export default function Hero() {
           sizes="(max-width: 960px) 96px, 300px"
           alt={hero.portrait.alt}
           width="640"
-          height="800"
+          height="810"
           decoding="async"
         />
         <div className="who-main">
