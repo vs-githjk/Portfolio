@@ -6,8 +6,10 @@ import { useEffect } from 'react';
     `span - 1` across the rows of cards, and writes them to `--tracks` (CSS reads it as
     `grid-auto-rows`). The last track, "Read more", stays auto, so an open story grows
     only its own row of cards. In one column it writes nothing. Runs after hydration
-    only, and again whenever the lane changes size. */
-export function useEqualRows(ref, span) {
+    only, and again whenever the lane changes size.
+    Options: `auto` is how many trailing tracks stay auto (the fleet has two, one per
+    dossier); `when(grid)` replaces the test for "the cards sit side by side". */
+export function useEqualRows(ref, span, { auto = 1, when } = {}) {
   useEffect(() => {
     const grid = ref.current;
     if (!grid || typeof ResizeObserver === 'undefined') return undefined;
@@ -16,13 +18,14 @@ export function useEqualRows(ref, span) {
       frame = 0;
       grid.style.removeProperty('--tracks');
       const [a, b] = grid.children;
-      if (!a || !b || a.offsetTop !== b.offsetTop) return;
+      if (!a) return;
+      if (when ? !when(grid) : !b || a.offsetTop !== b.offsetTop) return;
       const sizes = getComputedStyle(grid).gridTemplateRows.split(' ').map(parseFloat);
-      const top = Array(span - 1).fill(0);
+      const top = Array(span - auto).fill(0);
       sizes.forEach((px, i) => {
-        if (i % span < span - 1) top[i % span] = Math.max(top[i % span], px);
+        if (i % span < span - auto) top[i % span] = Math.max(top[i % span], px);
       });
-      grid.style.setProperty('--tracks', `${top.map((px) => `${Math.ceil(px)}px`).join(' ')} auto`);
+      grid.style.setProperty('--tracks', `${top.map((px) => `${Math.ceil(px)}px`).join(' ')}${' auto'.repeat(auto)}`);
     };
     const ro = new ResizeObserver(() => {
       if (!frame) frame = requestAnimationFrame(fit);
@@ -33,5 +36,5 @@ export function useEqualRows(ref, span) {
       ro.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [ref, span]);
+  }, [ref, span, auto, when]);
 }

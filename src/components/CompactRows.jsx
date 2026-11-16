@@ -1,56 +1,54 @@
-import { useRef } from 'react';
-import { useEqualRows } from '../hooks/useEqualRows';
+import LinkRow from './LinkRow';
 import Media from './Media';
 import MediaBadges from './MediaBadges';
 import Metrics from './Metrics';
-import LinkRow from './LinkRow';
 import Rich from './Rich';
 import Stack from './Stack';
+import { fill, place } from './counts';
 
-/* "More builds": compact cards with the same fields as the featured ones. The
-   one-liner, the role line and the links are always visible; the full story, any
-   metric and the stack open under "Read more" at the card foot (a native <details>,
-   so it needs no script). The role line is one sentence and stays visible: it is the
-   ownership fact a skimmer wants. All seven cards share one size and one height, see .mini-grid. */
-export default function CompactRows({ more, num }) {
-  const grid = useRef(null);
-  useEqualRows(grid, 6);
+/* "More builds" as a manifest: an index of rows, not cards. A row is its place
+   in the list, a small thumbnail, the name, the one-liner, any award and the
+   links. The whole row opens in place (a native <details>, so it needs no script
+   and the text is in the HTML): the summary's hit area is stretched over the row
+   and the links sit above it. */
+export default function CompactRows({ more }) {
   return (
-    <div className="more">
-      <div className="more-head reveal">
+    <div className="manifest">
+      <div className="manifest-head reveal">
         <h3>{more.heading}</h3>
         <p>{more.intro}</p>
       </div>
-      <div className="mini-grid" ref={grid}>
-        {more.items.map((c, n) => (
-          <article className="mini reveal" id={`build-${c.id}`} data-delay={n % 4 || undefined} key={c.id}>
-            <div className="mini-media">
-              <Media
-                image={c.media?.image}
-                alt={c.media?.alt}
-                tile={c.tile}
-                badges={c.awards.length > 0 ? <MediaBadges item={c} /> : null}
-                sizes="(min-width: 1100px) 270px, (min-width: 760px) 30vw, (min-width: 560px) 46vw, 92vw"
-              />
+      <ol className="manifest-rows">
+        {more.items.map((c) => (
+          <li className="mrow reveal" id={`build-${c.id}`} data-build={c.id} key={c.id}>
+            <span className="mrow-num num">{place(c.id)}</span>
+            <div className="mrow-thumb">
+              <Media image={c.media?.image} alt={c.media?.alt} tile={c.tile} steps={[640]} sizes="120px" />
             </div>
-            <div className="mini-body">
-              <span className="eyebrow">
-                <span>
-                  <span className="num">{num(n)}</span> {c.kind}
-                </span>
-                <span>{c.when}</span>
-              </span>
-              <h4 className="mini-title">
+            <div className="mrow-name">
+              <h4 className="mrow-title">
                 {c.title} <span>{c.descriptor}</span>
               </h4>
-              <p className="mini-one">{c.oneLiner}</p>
-              <LinkRow links={c.links} />
-              <details className="mini-more">
-                <summary>
-                  {more.readMore}
-                  <span className="sr">{more.readMoreSr.replace('{title}', c.title)}</span>
-                </summary>
-                {c.role && <p className="mini-role">{c.role}</p>}
+              <p className="eyebrow">
+                {c.kind} · {c.when}
+              </p>
+            </div>
+            <div className="mrow-one">
+              <p>{c.oneLiner}</p>
+              {c.awards.length > 0 && (
+                <p className="mrow-awards">
+                  <MediaBadges item={c} />
+                </p>
+              )}
+            </div>
+            <LinkRow links={c.links} className="links mrow-links" />
+            <details className="mrow-more fold">
+              <summary>
+                <span className="mrow-open">{more.readMore}</span>
+                <span className="sr">{fill(more.readMoreSr, { title: c.title })}</span>
+              </summary>
+              <div className="fold-body">
+                {c.role && <p className="role">{c.role}</p>}
                 {c.body.map((p) => (
                   <p className="text" key={p.slice(0, 24)}>
                     <Rich text={p} />
@@ -58,11 +56,11 @@ export default function CompactRows({ more, num }) {
                 ))}
                 <Metrics items={c.metrics} />
                 <Stack text={c.stack} />
-              </details>
-            </div>
-          </article>
+              </div>
+            </details>
+          </li>
         ))}
-      </div>
+      </ol>
     </div>
   );
 }
