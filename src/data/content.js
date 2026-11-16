@@ -376,7 +376,7 @@ export const builds = {
       id: 'prismai',
       // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
       scene: { kind: 'prism', cells: 14 },
-      figure: 2, // which metric is the one large figure on its arrival screen
+      figure: 0, // which metric is the one large figure on its arrival screen
       kind: 'Product · live · free while in beta',
       title: 'PrismAI',
       descriptor: 'know who promised what',
@@ -400,7 +400,7 @@ export const builds = {
       metrics: [
         { value: '14', label: 'beta users in\nisolated workspaces' },
         { value: '100+', label: 'meetings analyzed\nin the beta' },
-        { value: '100%', label: 'of quoted promises matched\nagainst the call before they show' },
+        // No "100% of quotes matched" figure: that is how the code is built (the story says so), not a measurement.
       ],
       stack:
         'React · Vite · FastAPI · LangGraph · Claude · OpenAI · Supabase (Postgres, pgvector, RLS on every table) · MCP · Recall.ai · Deepgram · Chrome extension',
@@ -1310,12 +1310,13 @@ export const principles = {
       body: 'In BetterBill, Vytal, FilingWatch and NextRound, deterministic code computes every score, flag, verdict and dollar, and the model reads, drafts and explains. PrismAI’s agency release prices change orders the same way: the model estimates the hours, and code computes every dollar. When a number matters, it should never come from a guess.',
       demo: {
         kind: 'decide',
-        alt: 'Illustration: the model writes “about $1,240”; it is struck out and code’s computed “$1,180.00” takes its place.',
+        /* Words, not made-up dollars: every number on this page has a source. */
+        alt: 'Illustration: the model writes “a guess”; it is struck out and code’s “exact” takes its place.',
         from: 'Model writes',
-        fromValue: 'about $1,240',
+        fromValue: 'a guess',
         to: 'Code computes',
-        toValue: '$1,180.00',
-        note: 'Illustrative figures',
+        toValue: 'exact',
+        note: 'How PrismAI prices a change order',
       },
     },
     {

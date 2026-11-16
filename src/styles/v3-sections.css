@@ -1415,10 +1415,12 @@ html[data-world='on'] .deep-head::before {
   .ch-arrival,
   .ch[data-side='right'] .ch-arrival {
     grid-template-columns: minmax(0, 1fr);
+    /* The name first, so a phone's first screen of a chapter says which build it is;
+       its world stands under it. */
     grid-template-areas:
       'index'
-      'world'
       'title'
+      'world'
       'intro';
   }
 
@@ -1429,8 +1431,9 @@ html[data-world='on'] .deep-head::before {
   }
 
   .ch-world {
-    --ch-window: clamp(220px, 32svh, 300px);
-    margin-top: 14px;
+    --ch-window: clamp(200px, 28svh, 260px);
+    margin-top: 10px;
+    margin-bottom: 14px;
   }
 
   .ch-index {
@@ -1451,7 +1454,7 @@ html[data-world='on'] .deep-head::before {
   }
 
   .ch-title {
-    margin-top: 18px;
+    margin-top: 12px;
   }
 
   .ch-story,
