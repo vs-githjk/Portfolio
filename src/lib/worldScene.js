@@ -305,11 +305,9 @@ void main(){
 }`;
 const GALAXY_FRAG = /* glsl */ `
 uniform vec3 uCore, uA, uB;
-varying float vA; varying float vMix; varying float vStreak;
+varying float vA; varying float vMix;
 void main(){
-  vec2 q = gl_PointCoord - 0.5;
-  q.x *= 1.0 + 7.0 * vStreak;
-  float a = smoothstep(0.5, 0.0, length(q)) * (1.0 - 0.45 * vStreak);
+  float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
   vec3 c = mix(uCore, mix(uA, uB, step(0.5, fract(vMix * 7.0))), smoothstep(0.1, 0.6, vMix));
   gl_FragColor = vec4(c, a * a * vA);
 }`;
