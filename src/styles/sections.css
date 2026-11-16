@@ -4362,6 +4362,13 @@ html[data-world='on'] .vista-text::before {
   -webkit-mask-composite: source-in;
 }
 
+/* From 761px up the line is large text (28px), so a lighter shade is enough. */
+@media (min-width: 761px) {
+  html[data-world='on'] .vista-text::before {
+    background: color-mix(in srgb, var(--vista-shade) 32%, transparent);
+  }
+}
+
 html[data-world='on'] .vista-line {
   isolation: isolate;
   text-shadow:

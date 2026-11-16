@@ -120,7 +120,7 @@ void main(){
 #endif
 #ifdef BUTTE
   float strata = 0.5 + 0.5 * sin(vW.y * 0.2 + vW.x * 0.02);
-  albedo = mix(uSandShade * 1.9, uSand * 0.8, strata * 0.6 + 0.2);
+  albedo = mix(uSandShade * 1.9, uSand * 0.8, strata * 0.6 + 0.2) * (0.8 + 0.4 * h1(floor(vW.x * 0.03)));
 #endif
 #ifdef CAMP
   albedo = uSandShade * 1.3;
@@ -133,16 +133,20 @@ void main(){
   float rim = pow(1.0 - max(dot(N, V), 0.0), 4.0) * smoothstep(-0.15, 0.4, ndl);
   float spec = pow(max(dot(N, normalize(uSunDir + V)), 0.0), 60.0) * 0.16;
   col += sunC * max(rim * 0.3, spec) * sh * albedo;
+#ifdef BUTTE
+  // Backlit rock: the sun wraps round the edges that face it.
+  col += sunC * albedo * pow(1.0 - abs(dot(N, V)), 2.0) * smoothstep(-0.5, 0.3, ndl) * 0.7;
+#endif
 #ifdef SAND
   vec2 cell = floor(vW.xz * 1.3);
   float gl = step(0.992, h2(cell + floor(uTime * 1.5))) * pow(max(dot(reflect(-uSunDir, N), V), 0.0), 6.0);
   col += sunC * gl * aa * sh * 0.9;
 #endif
   // Night: the moon while Value is read, and the camp's lamp on the dunes around it.
-  col += albedo * uMoonCol * clamp(dot(N, uMoonDir) * 2.2 + 0.1, 0.0, 1.0);
+  col += albedo * uMoonCol * (clamp(dot(N, uMoonDir) * 2.2 + 0.1, 0.0, 1.0) + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 3.0));
   vec3 Lp = uLampPos - vW;
   float ld = length(Lp);
-  col += albedo * uLampCol * uLampOn * (2.6 / (1.0 + ld * ld * 0.00042)) * (0.22 + 0.78 * max(dot(N, Lp / ld), 0.0));
+  col += albedo * uLampCol * uLampOn * (3.6 / (1.0 + ld * ld * 0.00042)) * (0.22 + 0.78 * max(dot(N, Lp / ld), 0.0));
   col = mix(col, uLampCol * (0.95 + 0.4 * uLampOn), vEmis * (0.5 + 0.5 * uLampOn));
 #ifdef BUTTE
   // The week under the pointer: its butte takes the accent from the foot up.
@@ -635,11 +639,11 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     camera.updateMatrixWorld();
     U.uCam.value.copy(camera.position);
     U.uSunTan.value = s.sunTan;
-    U.uAmb.value.copy(C['dusk-top']).multiplyScalar(1.9 * s.day).addScaledVector(C['night-low'], 0.5 + 0.3 * s.night).addScaledVector(C['dusk-low'], 0.16 * s.day).addScaledVector(C['gal-b'], 0.13 * s.night);
+    U.uAmb.value.copy(C['dusk-top']).multiplyScalar(1.9 * s.day).addScaledVector(C['night-low'], 0.5 - 0.2 * s.night).addScaledVector(C['dusk-low'], 0.16 * s.day).addScaledVector(C['gal-b'], 0.1 * s.night);
     U.uLampOn.value = s.lamp;
-    U.uFog.value = 0.00036 + 0.00006 * s.night;
-    U.uMist.value = 0.18 + 0.1 * s.night;
-    U.uMoonCol.value.copy(C['gal-b']).multiplyScalar(0.3 * s.night).addScaledVector(C['moon-rim'], 0.36 * s.moon);
+    U.uFog.value = 0.00036 - 0.00015 * s.night;
+    U.uMist.value = 0.18 - 0.08 * s.night;
+    U.uMoonCol.value.copy(C['gal-b']).multiplyScalar(0.52 * s.night).addScaledVector(C['moon-rim'], 0.36 * s.moon);
     lampGlow.material.uniforms.uAlpha.value = (0.16 + 0.5 * s.lamp) * (0.9 + 0.1 * Math.sin(time.value * 1.3));
     lampGlow.quaternion.copy(camera.quaternion);
     streakMat.uniforms.uAlpha.value = 0.5 * s.day * s.fine;

@@ -71,7 +71,8 @@ vec3 skyAt(vec3 rd){
   phys *= mix(belt * 1.6 * vec3(1.0, 0.7, 0.62), vec3(1.0), uDay);
   vec3 brand = mix(uDuskLow, uDuskMid, smoothstep(0.0, 0.28, e));
   brand = mix(brand, uDuskTop, smoothstep(0.14, 0.62, e));
-  vec3 night = mix(uNightLow, uNightTop, smoothstep(0.0, 0.42, e));
+  // Night: darkest overhead, with a band of airglow low down that the land stands against.
+  vec3 night = mix(uNightLow * 1.25, uNightTop, smoothstep(0.0, 0.36, e)) + (uNightLow * 0.9 + uStar * 0.035) * exp(-e * 13.0) * (1.0 - uDay);
   vec3 lit = 1.0 - exp(-phys * 1.25);
   vec3 col = mix(lit, brand * (0.35 + 1.3 * dot(lit, vec3(0.3, 0.5, 0.2))), 0.4);
   return night * (1.0 - 0.7 * uDay) + col;
@@ -113,7 +114,9 @@ float fan(float ang, float r, float t){
   float sw = sin(ang * 23.0 + sin(ang * 7.0 + t * 0.29) * 0.62 + t * 0.24) + 0.6 * sin(ang * 41.0 - t * 0.19);
   float shaft = pow(smoothstep(-0.2, 1.0, sw * 0.5 + 0.5), 1.7);
   float streak = smoothstep(0.6, 1.0, sin(ang * 59.8 + t * 0.324 + r * 4.0));
-  return shaft * (0.86 + 0.26 * streak) * exp(-r * 0.9);
+  // Each shaft breaks up along its length, so none is a clean stripe.
+  float body = 0.62 + 0.55 * n2(vec2(ang * 9.0, r * 2.6 - t * 0.12));
+  return shaft * (0.86 + 0.26 * streak) * body * exp(-r * 0.9);
 }
 
 /* The underside of a surface, seen from just below it: a bright rippled ceiling
