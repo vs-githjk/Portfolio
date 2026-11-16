@@ -169,8 +169,6 @@ export function createDragonStations({ live, phone, C }) {
     if (horizon && env.sun) {
       const contact = anchorRect('contact');
       const size = phone ? Math.min(10, (w * 0.5) / MODEL.span) : Math.max(13, Math.min(19, w / 80));
-      const sec = contact?.el.closest('section')?.getBoundingClientRect();
-      const top = sec ? sec.top + window.scrollY : contact ? contact.top : horizon.top;
       const sx = env.sun.x;
       const S = env.sun.doc; // the sun's place on the limb, document px
       const limb = (x) => S - (sx * sx - x * x) / (2 * env.sun.r);
@@ -185,21 +183,20 @@ export function createDragonStations({ live, phone, C }) {
             [sx, S - 16, -1500],
           ]
         : [
-            // down the right margin, clear of the column, then low along the limb to the sun
-            [w * 0.7, S - h * 0.5, 40],
-            [w * 0.56, S - h * 0.4, 20],
-            [w * 0.46, S - h * 0.26, -40],
-            [w * 0.38, S - h * 0.15, -160],
-            [w * 0.3, S - h * 0.075, -380],
-            [sx + w * 0.05, S - h * 0.045, -900],
+            // in from the right, low along the limb under the column's last line, and into the sun
+            [w * 0.66, S - 84, 40],
+            [w * 0.5, S - 82, 20],
+            [w * 0.36, S - 74, -60],
+            [w * 0.26, S - 62, -260],
+            [sx + w * 0.05, S - 44, -900],
             [sx, S - 14, -2000],
           ];
       const lowWay = [
-        [w * 0.5 + MODEL.length * size, limb(w * 0.5) - (phone ? 70 : 74), -60],
-        [w * 0.3, limb(w * 0.3) - (phone ? 64 : 70), -60],
-        [w * 0.1, limb(w * 0.1) - (phone ? 62 : 66), -90],
-        [-w * 0.12, limb(-w * 0.12) - (phone ? 60 : 64), -160],
-        [-w * 0.34, limb(-w * 0.34) - (phone ? 58 : 62), -300],
+        [w * 0.5 + MODEL.length * size, limb(w * 0.5) - (phone ? 46 : 50), -60],
+        [w * 0.3, limb(w * 0.3) - (phone ? 44 : 48), -60],
+        [w * 0.1, limb(w * 0.1) - (phone ? 42 : 46), -90],
+        [-w * 0.12, limb(-w * 0.12) - (phone ? 40 : 44), -160],
+        [-w * 0.34, limb(-w * 0.34) - (phone ? 38 : 42), -300],
         [-w * 0.5 - MODEL.length * size, limb(-w * 0.5) - 76, -520],
       ];
       const end = document.documentElement.scrollHeight - h;
@@ -210,10 +207,10 @@ export function createDragonStations({ live, phone, C }) {
         dawn: makePath(dawnWay),
         low: makePath(lowWay),
         clock: [from, Math.max(120, end - from)],
-        boxes: boxesOf(contact, [top - 40, horizon.bottom]),
-        band: [phone ? horizon.top - 30 : top, horizon.bottom],
-        lowBand: [horizon.top - (phone ? 120 : 230), horizon.bottom],
-        lowBoxes: boxesOf(contact, [horizon.top - 230, horizon.bottom]),
+        band: [phone ? horizon.top - 30 : horizon.top - 130, horizon.bottom],
+        boxes: boxesOf(contact, [horizon.top - 130, horizon.bottom]),
+        lowBand: [horizon.top - (phone ? 60 : 110), horizon.bottom],
+        lowBoxes: boxesOf(contact, [horizon.top - 110, horizon.bottom]),
       };
     }
   }
@@ -269,7 +266,7 @@ export function createDragonStations({ live, phone, C }) {
           heading(s.dawn, e, 0.02, (cam.z - z) / cam.z);
           light('dawn');
           guard(s, f);
-          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.2 : 1.35), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), look: [0, -0.55], clips: { fly: 1 }, lean: 1.2, beat: 0.62, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
+          live.update({ ...base, x, y, z, size: s.size * (phone ? 1.1 : 1.15), fwd: [...fwd], up: [0, 1, 0.25], bank: -0.3 * sm(e / 0.5) * (1 - sm((e - 0.6) / 0.4)), look: [0, -0.55], clips: { fly: 1 }, lean: 1.2, beat: 0.62, show: sm(u / 0.06) * (1 - sm((u - 0.84) / 0.14)), phase: 0.15 });
           shown.station = 'flight';
           shown.u = u;
           return 'flight';
@@ -285,7 +282,7 @@ export function createDragonStations({ live, phone, C }) {
           heading(s.low, e, 0.02, (cam.z - z) / cam.z);
           light('dawn');
           guard({ boxes: s.lowBoxes, band: s.lowBand }, f);
-          live.update({ ...base, x: a3[0], y: a3[1] - f.line + Math.sin(f.t * 0.7) * 5, z, size: s.size, fwd: [...fwd], up: [0, 1, -0.3], bank: -0.1, look: [0, -0.55], clips: { fly: 1 }, lean: 1.25, beat: 0.5 + 0.15 * pace, show: sm((u - 0.02) / 0.1), phase: 0.5 });
+          live.update({ ...base, x: a3[0], y: a3[1] - f.line + Math.sin(f.t * 0.7) * 5, z, size: s.size * 0.8, fwd: [...fwd], up: [0, 1, -0.3], bank: -0.1, look: [0, -0.55], clips: { fly: 1 }, lean: 1.25, beat: 0.5 + 0.15 * pace, show: sm((u - 0.02) / 0.1), phase: 0.5 });
           shown.station = 'limb';
           shown.u = u;
           return 'limb';
