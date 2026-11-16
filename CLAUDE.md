@@ -81,7 +81,7 @@ Re-measure when the build changes, or set it to null.
 | Principles (The Bench) | Four tiles, each with a small drawing that runs once |
 | Value (Moonrise) | Hairline rows; a moon fills as they are read |
 | Toolkit (The Inventory) | A label and a line of tools per group; a tool answers with the builds that use it |
-| Contact (First Light) | The headshot, the email as the hero of the section, Copy email (dawn breaks and the dragon flies into it), then the colophon |
+| Contact (First Light) | The hologram figure in a column of its own (1100px and up: a two-column grid, so no text can run under it; smaller beside the label below that), the email as the hero of the section, Copy email (dawn breaks over the limb), then the colophon |
 
 Principles and Value are different shapes on purpose (tiles vs hairline rows).
 
@@ -260,12 +260,14 @@ no Receipts line.
 - **The Fly clip hovers upright.** `lean` (about 1.2 rad) tips it toward level for the passes;
   the head is lifted with `look`. The model is measured at load and brought to the stations'
   frame (head toward +z, 8.4 units tall sitting), so another model can be swapped in.
-- **Four stations and nowhere else, and grand**: big in frame, slow wingbeats (0.4 to 0.85 a
+- **Three stations and nowhere else, and grand**: big in frame, slow wingbeats (0.4 to 0.85 a
   second). One lap across the giant's face; the breach as the reader comes up through the
   surface, then a long sweep across the low sun; the roost (it sits on the commit card on watch, turning
   its head and, every sixteen seconds, slowly opening its wings: `unfurl` turns the wing
-  bones over the Idle Sit clip; choosing a week makes it look at that column); a low pass over the limb at
-  Contact and, when the email is copied, the flight into the dawn.
+  bones over the Idle Sit clip; choosing a week makes it look at that column). It is not at
+  Contact: the low pass over the limb and the flight into the dawn on Copy email were cut
+  (Vidyut, Nov 16: "a little odd, out of place"). The limb and the sunrise on Copy email stay.
+  Do not add a station on the last screen back.
 - **It loads last.** Its code is a chunk of its own (GLTFLoader and the meshopt decoder),
   asked for by `World.jsx` only after the world has drawn its first frame and the page is
   idle (`<html data-dragon="on">`). `?plain`, no WebGL and reduced motion never ask for it.
