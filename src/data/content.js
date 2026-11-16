@@ -65,6 +65,14 @@ export const nav = {
 export const welcome = {
   label: 'Welcome',
   lines: ['Hey, I’m Vidyut.', 'I build worlds. Reliable ones.'],
+  /* The figure the hologram projects: ONE picture with a transparent background
+     (PNG or WebP with alpha; any aspect, a bust or a whole body). Its alpha is its
+     silhouette; the scene adds the light, the scan lines and the plate under it.
+     To change the figure, change `src` (and `phone`, a smaller copy for phones;
+     leave it out to use `src` everywhere). To try one without editing this file,
+     open the page with ?figure=/holo/<file> (a path on this site).
+     Today it is a stand-in: his studio photograph, cut out. The avatar goes here. */
+  figure: { src: '/holo/figure-1024.webp', phone: '/holo/figure-512.webp' },
   /* His work, as small projections at the sides of the first screen, in the same
      blue light as his own. They phase in and out in this order. `at` is the seat
      (l1 to l3 down the left, r1 to r3 down the right). A build shows its ring thumbnail
@@ -1548,6 +1556,10 @@ export const proofOfWork = {
   wins: {
     eyebrow: 'Wins',
     link: { label: 'Devpost', href: 'https://devpost.com/vs-githjk' },
+    /* The ring of wins (only when the ring's home is Proof of work: RING_HOME in
+       data/world.js). A card is one win and opens its public page, or its build
+       on this page where there is no page yet. */
+    ring: { label: 'Every win, one click each', cta: 'Open its page', ctaBuild: 'See the build' },
     provenance:
       'Devpost shows each prize as “Winner” with the prize’s name; the placings (1st, 2nd, 3rd) are as they stand on my resume. Most recent win: Oct 2026.',
     items: [

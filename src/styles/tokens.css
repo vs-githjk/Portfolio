@@ -226,6 +226,7 @@
   --holo-fringe-b: 70, 150, 255;
   --holo-gain: 1; /* strength of the hologram's light */
   --holo-warm: 0.36; /* how much of a picture's own colour stays in the blue light (0 is pure hologram, 1 the photograph) */
+  --holo-foot: 0.2; /* the share of the figure's height that dissolves into the cone at its foot (0: it ends as the picture ends) */
   --holo-pitch: 3; /* one scan line every this many CSS pixels, in the canvas and in the panels */
   --holo-roll: 11.8s; /* the band of brighter light takes this long to roll up a projection (the shader's 0.085 a second) */
   --hub-w: clamp(112px, 12.5vw, 188px); /* a small projection beside him on the welcome screen */

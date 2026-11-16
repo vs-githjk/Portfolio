@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { welcome } from '../data/content';
 import { heroOrigin } from '../lib/origin';
 import { face, measureFace } from '../lib/face';
 import { createHologram } from '../lib/holoScene';
@@ -6,29 +7,31 @@ import { createHologram } from '../lib/holoScene';
 /* The welcome hologram (plain WebGL, its own small chunk; the picture itself is
    lib/holoScene.js). This file is the lifecycle, the choreography and the budget.
 
-   - It is his studio photograph, projected: a plate under him, a cone of light,
-     and the picture standing in it in the page's blue, with scan lines and a slow
-     shimmer. He is recognisable and smiling the whole time; the light never
-     distorts the picture.
+   - It projects one figure: welcome.figure in content.js, any picture with a
+     transparent background. A plate under it, a cone of light, and the figure
+     standing in it in the page's blue, with light along its edge, scan lines and
+     a slow shimmer. Nothing rectangular is drawn round it, and the light never
+     distorts the picture. ?figure=/path tries another picture from this site.
    - It arrives after the first paint (Background mounts it when the page is
-     idle) and then fetches the photograph by script, so the greeting text is the
+     idle) and then fetches the picture by script, so the greeting text is the
      first thing painted and the picture is never an element of the page.
    - The canvas is fixed. Scroll is the timeline: the projection drifts up at
      a fifth of the page's speed while two curtains of light close over it and
      leave one vertical beam, and the beam lifts off the plate and is gone as the
      hero arrives. There is no second act between him and his name.
-   - It tells the page where it is with <html data-holo>: "in" while the picture
+   - It tells the page where it is with <html data-holo>: "in" while the figure
      is being scanned in (the greeting types in step, see sections.css), "seen"
      once it has (or at once for a visitor who has already watched it in this
-     session), "off" when there is no WebGL (the welcome screen closes up).
+     session), "off" when there is no WebGL or no picture (the welcome closes up).
    - It draws only while some of it is on screen and the tab is visible: every
      frame while the scroll is moving or it is starting, about 30 a second while
-     it only shimmers. DPR is capped (1.75, 1.5 on a phone), and only the column
-     the light can reach is shaded.
+     it only shimmers. DPR is capped (1.75, 1.5 on a phone), only the column the
+     light can reach is shaded, and a large picture is drawn down to TEX_MAX first.
    - Under prefers-reduced-motion it is one still frame that scrolls away with
      the page: no start, no shimmer, no beam. */
 
-const PICTURE_URLS = ['/holo/face-512.webp', '/holo/face-1024.webp'];
+/* The longest side of the picture as it is uploaded, in pixels: desktop, phone. */
+const TEX_MAX = [1536, 1024];
 const SEEN_KEY = 'holo-seen';
 const INTRO_MS = 1700;
 /* When the greeting has been typed, in ms after the projector starts: mirrors
@@ -174,14 +177,17 @@ export default function Hologram() {
     };
 
     const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
-    // The photograph is fetched here, by script, and drawn in the canvas: it is never an
+    // The picture is fetched here, by script, and drawn in the canvas: it is never an
     // element of the page, so it cannot become the largest contentful paint (the greeting is).
     const photograph = new Promise((resolve, reject) => {
       const image = new Image();
       image.decoding = 'async';
       image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error('hologram: photograph missing'));
-      image.src = PICTURE_URLS[phone ? 0 : 1];
+      image.onerror = () => reject(new Error('hologram: figure missing'));
+      // A path on this site only: ?figure= is for trying a figure, never for loading one from elsewhere.
+      const asked = new URLSearchParams(window.location.search).get('figure');
+      const tryOut = asked && /^\/[\w./-]+\.(png|webp|avif)$/i.test(asked) && !asked.includes('..') ? asked : null;
+      image.src = tryOut ?? (phone && welcome.figure.phone ? welcome.figure.phone : welcome.figure.src);
     });
     photograph
       .then(async (image) => {
@@ -191,11 +197,22 @@ export default function Hologram() {
         scene = createHologram(
           canvas,
           { deep: triple(style, '--holo-deep'), pale: triple(style, '--holo-pale'), hot: triple(style, '--holo-hot') },
-          { warm: num('--holo-warm', 0.3), pitch: num('--holo-pitch', 3) }
+          { warm: num('--holo-warm', 0.3), pitch: num('--holo-pitch', 3), foot: Number(style.getPropertyValue('--holo-foot')) || 0 }
         );
         await tick();
         if (dead) return;
-        scene.setPicture(image);
+        // A picture larger than the screen can use is drawn down first.
+        const cap = TEX_MAX[phone ? 1 : 0];
+        const k = Math.min(1, cap / Math.max(image.naturalWidth, image.naturalHeight));
+        let source = image;
+        if (k < 1) {
+          source = document.createElement('canvas');
+          source.width = Math.round(image.naturalWidth * k);
+          source.height = Math.round(image.naturalHeight * k);
+          source.getContext('2d').drawImage(image, 0, 0, source.width, source.height);
+        }
+        scene.setPicture(source);
+        face.aspect = image.naturalWidth / image.naturalHeight;
         await tick();
         if (dead) return;
         measure();
