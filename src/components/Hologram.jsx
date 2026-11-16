@@ -72,7 +72,8 @@ export default function Hologram() {
     let last = 0;
     let box = null; // the anchor's place in the page
     const drift = document.querySelector('.drift'); // where the light lands on a phone
-    const land = { on: false, x: 0, y: 0, rx: 1, rz: 1, sinT: 0, cosT: 1, persp: 1500, theta: 0, cardW: 1, cardH: 1, front: 0, side: 0, yaw: 0, lean: 0 };
+    const land = { on: false, x: 0, y: 0, rx: 1, rz: 1, sinT: 0, cosT: 1, persp: 1500, theta: 0, cardW: 1, cardH: 1, front: 0, side: 0, yaw: 0, lean: 0, n: 12, clearL: 0, clearR: 0, copyL: 0, copyT: 0, copyR: 0, copyB: 0 };
+    const copy = document.querySelector('#top .who-main'); // the hero copy: the light must go round it
     let faded = ''; // how far the greeting has faded (written to the welcome as --out)
     let spoke = ''; // the last state written for the ball's line
     let turned = ''; // the last head turn written (--head, -1 to 1)
@@ -153,7 +154,7 @@ export default function Hologram() {
       if (!gone && (busy || now - last >= IDLE_MS - 2)) {
         const t = now / 1000;
         const talking = !seenAtStart && since > VOICE[0] && since < VOICE[1];
-        const flow = span(0.68, 0.92, eased);
+        const flow = span(0.68, 0.86, eased);
         const at = pose(w, h, eased);
         if (flow > 0) where();
         // The ball speaks: its line types as the page moves, and it pulses with it.
@@ -216,7 +217,9 @@ export default function Hologram() {
       const size = Math.min(box.h / 0.84, box.w * 1.3, 760);
       const home = box.y - 0.1 * size; // the head's centre sits a little above the box's
       // It lifts a little before it speaks, so the hero has room to arrive under the line.
-      const mid = h * (0.4 - 0.13 * ease(span(0.3, 0.42, p)));
+      // And it lifts again as it pours: his name is rising toward it, and the light
+      // that is still leaving must be clear of the name's top corners.
+      const mid = h * (0.4 - 0.13 * ease(span(0.3, 0.42, p)) - 0.1 * ease(span(0.68, 0.8, p)));
       return {
         cx: box.x,
         cy: home + (mid - home) * ease(span(0, 0.36, p)),
@@ -230,9 +233,20 @@ export default function Hologram() {
        the layout (its centre moves with the page, so this is read per frame while
        the light is in the air), else the two rows that drift under the name. */
     function where() {
+      if (copy) {
+        // Where his name and the lines under it are in the window, now: no light may fall there.
+        const c = copy.getBoundingClientRect();
+        Object.assign(land, { copyL: c.left, copyT: c.top, copyR: c.right, copyB: c.bottom });
+      }
       if (ring.on && ring.el) {
         const r = ring.el.getBoundingClientRect();
         Object.assign(land, ring, { on: true, x: r.left + r.width / 2, y: r.top + ring.oy });
+        if (copy && box) {
+          // How far his name and the lines under it reach each side of the light's centre.
+          const c = copy.getBoundingClientRect();
+          land.clearL = Math.max(0, box.x - c.left);
+          land.clearR = Math.max(0, c.right - box.x);
+        }
       } else if (drift) {
         const r = drift.getBoundingClientRect();
         Object.assign(land, { on: false, x: r.left + r.width / 2, y: r.top + r.height / 2, rx: r.width / 2, rz: r.height });

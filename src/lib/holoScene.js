@@ -47,8 +47,11 @@ uniform float uBall;    // the planet's radius in device pixels
 uniform vec4 uRingA;    // ring centre x, y (device pixels), radius across, radius deep
 uniform vec4 uRingB;    // sin and cos of the tilt, perspective, how far the ring has turned
 uniform vec4 uRingC;    // card width and height, front lift, side shrink
-uniform vec2 uRingD;    // degrees a side card turns and leans
+uniform vec3 uRingD;    // degrees a side card turns and leans, how many cards the ring holds
 uniform float uRingOn;  // 1 the orbit ring, 0 two level rows (a phone)
+uniform vec2 uClear;    // how far the hero copy reaches left and right of the centre, device pixels
+uniform vec4 uCopy;     // the hero copy's box in the window: left, top, right, bottom, device pixels
+uniform float uCopyK;   // device pixels to a CSS pixel in this pass
 uniform float uTime, uIntro, uMorph, uFlow, uTurn, uNod, uVoice, uSpeak, uStill;
 uniform float uBallGap; // spacing of the points on the planet, in radii
 uniform float uFocus;   // depth of the eyes: the plane the lens is focused on
@@ -171,8 +174,14 @@ void main() {
   float bloom = mix(faceBloom, ballBloom, m);
 
   // ---- the hand-off: the planet pours onto the ring of builds -------------------
-  float fl = ease(clamp(uFlow * 1.75 - 0.75 * r2, 0.0, 1.0));
-  float w = aMore.y + uRingB.w;
+  float fl = ease(clamp(uFlow * 1.35 - 0.35 * r2, 0.0, 1.0));
+  // Every point lands on one of the five cards at the front of the ring. The
+  // cards at the back sit behind his name (Orbit.jsx hides them there): light
+  // sent to them flew straight over the name and landed on it. So the point's
+  // slot is folded onto the front five, wherever the ring has turned to.
+  float step12 = 6.28318 / uRingD.z;
+  float frontmost = mod(uRingB.w + 0.5 * step12, step12) - 0.5 * step12;
+  float w = uRingOn > 0.5 ? frontmost + (mod(floor(aMore.y / step12 + 0.5), 5.0) - 2.0) * step12 : aMore.y;
   float sw = sin(w), cw = cos(w);
   float across = aMore.z, down = fract(aMore.w) - 0.5;
   vec2 land;
@@ -192,7 +201,10 @@ void main() {
       : along < 2.0 * box.x + 2.0 * box.y ? vec2(box.x, along - 2.0 * box.x - box.y)
       : along < 4.0 * box.x + 2.0 * box.y ? vec2(3.0 * box.x + 2.0 * box.y - along, box.y)
       : vec2(-box.x, 4.0 * box.x + 3.0 * box.y - along);
-    edge *= 1.0 + 0.09 * (down + 0.5);
+    // The frame spreads a little way outward at the sides and below, never
+    // above: the front card's top edge sits against the buttons under his name.
+    float grow = 1.0 + 0.09 * (down + 0.5);
+    edge = vec2(edge.x * grow, edge.y > 0.0 ? edge.y * grow : edge.y);
     vec2 on = (edge + vec2(0.0, -0.5 * uRingC.y + box.y)) * shrink;
     // The card's own turn, as Orbit.jsx poses it: it leans, then turns toward
     // the centre, so its outer edge swings nearer the camera. With these two
@@ -203,7 +215,7 @@ void main() {
     float ps = uRingB.z / (uRingB.z - rp.z + on.x * sin(yaw));
     land = uRingA.xy + (rp.xy + vec2(on.x * cos(yaw), on.y)) * ps;
     // Cards at the back of the ring are dark and small: so is their light.
-    plate = 0.6 * smoothstep(-0.25, 0.8, cw);
+    plate = mix(0.42, 0.6, smoothstep(0.4, 1.0, cw));
     plateSize = uRingC.x * 0.03 * ps * shrink;
   } else {
     // A phone: two level rows, where the thumbnails drift.
@@ -217,13 +229,26 @@ void main() {
   float hidden = (1.0 - uRingOn) * smoothstep(0.0, 0.22, fl) * (1.0 - smoothstep(0.78, 1.0, fl));
   // The core does not travel: it flares and is gone.
   float goes = shell;
-  // The light never crosses his name: it swings out to the sides of the window
-  // in two curtains and comes back in under the copy, onto the cards.
+  // The light must never cross his name. It goes up and out sideways from the
+  // planet to the edge of the window, falls there, outside the copy, and comes
+  // in underneath to its card: a cubic through those two corners. The name is
+  // rising toward the planet all the while, so the pour is quick (every point
+  // is past the corner before the name's top gets there) and the planet lifts
+  // out of its way (Hologram.jsx).
   float reach = land.x - uCenter.x;
   float dirn = abs(reach) > uRes.x * 0.04 ? sign(reach) : sign(across);
-  vec2 bend = vec2(uCenter.x + dirn * max(abs(reach) * 1.25, uRes.x * (0.62 + 0.1 * r1)), mix(px.y, land.y, 0.3));
+  // How far out is far enough: the cubic's widest point is three quarters of
+  // the way to its corners, and that must clear the copy on this side (the
+  // copy reaches farther right of the centre than left) with room to spare.
+  float clear = dirn < 0.0 ? uClear.x : uClear.y;
+  float sideX = uCenter.x + dirn * max(abs(reach) * 1.2, (clear + 0.05 * uRes.x) / 0.75 + 0.04 * uRes.x * r1);
+  vec2 c1 = vec2(sideX, px.y - 0.1 * uRes.y);
+  // The second corner is well below the card: the light dips under it and wells
+  // up into it, so the last leg does not cut across the lines under his name.
+  vec2 c2 = vec2(sideX, land.y + 0.25 * uRes.y);
   float g = fl * goes;
-  px = mix(mix(px, bend, g), mix(bend, land, g), g);
+  float gi = 1.0 - g;
+  px = gi * gi * gi * px + 3.0 * gi * gi * g * c1 + 3.0 * gi * g * g * c2 + g * g * g * land;
   size = mix(size, plateSize, fl * goes);
   // In the air a point burns bright; landed, it settles into the plate.
   float air = sin(fl * 3.14159);
@@ -236,11 +261,18 @@ void main() {
   gl_Position = vec4(px.x / uRes.x * 2.0 - 1.0, 1.0 - px.y / uRes.y * 2.0, 0.0, 1.0);
 
   gl_PointSize = max(1.0, size * mix(1.0, 2.4, uPass));
+  // A guarantee, not a tuned path: while the light is pouring, a point whose
+  // splat would touch the hero copy (his name and the lines and buttons under
+  // it, where they really are in the window this frame) gives no light at all.
+  // The glow pass keeps a wider berth, because its blur spreads.
+  vec2 away = max(uCopy.xy - px, px - uCopy.zw);
+  float berth = max(away.x, away.y) - 0.5 * gl_PointSize - mix(2.0, 30.0, uPass) * uCopyK;
+  float clearOf = mix(1.0, smoothstep(0.0, 8.0 * uCopyK, berth), step(0.001, uFlow) * step(uCopy.x + 1.0, uCopy.z));
   // A small splat deposits its fair share of light on average, whatever its
   // size (checked by simulation down to one pixel). Only one that would be
   // narrower than a pixel is drawn a pixel wide, so it gives up the difference.
   float share = min(1.0, size * size);
-  vGlow = glow * mix(1.0, bloom, uPass) * share;
+  vGlow = glow * mix(1.0, bloom, uPass) * share * clearOf;
   vHot = hot;
   vTone = glow;
 }
@@ -415,7 +447,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
   const quadAt = gl.getAttribLocation(blur, 'aPos');
 
   const u = {};
-  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingD', 'uRingOn', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uFocus', 'uPass', 'uDeep', 'uPale', 'uHot', 'uGain']) {
+  for (const name of ['uRes', 'uCenter', 'uSize', 'uBall', 'uRingA', 'uRingB', 'uRingC', 'uRingD', 'uRingOn', 'uClear', 'uCopy', 'uCopyK', 'uTime', 'uIntro', 'uMorph', 'uFlow', 'uTurn', 'uNod', 'uVoice', 'uSpeak', 'uStill', 'uBallGap', 'uFocus', 'uPass', 'uDeep', 'uPale', 'uHot', 'uGain']) {
     u[name] = gl.getUniformLocation(program, name);
   }
   const ub = { uTex: gl.getUniformLocation(blur, 'uTex'), uStep: gl.getUniformLocation(blur, 'uStep'), uGain: gl.getUniformLocation(blur, 'uGain') };
@@ -475,7 +507,10 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
     gl.uniform4f(u.uRingA, r.x * k, r.y * k, r.rx * k, r.rz * k);
     gl.uniform4f(u.uRingB, r.sinT, r.cosT, r.persp * k, r.theta);
     gl.uniform4f(u.uRingC, r.cardW * k, r.cardH * k, r.front * k, r.side);
-    gl.uniform2f(u.uRingD, r.yaw || 0, r.lean || 0);
+    gl.uniform3f(u.uRingD, r.yaw || 0, r.lean || 0, r.n || 12);
+    gl.uniform2f(u.uClear, (r.clearL || 0) * k, (r.clearR || 0) * k);
+    gl.uniform4f(u.uCopy, (r.copyL || 0) * k, (r.copyT || 0) * k, (r.copyR || 0) * k, (r.copyB || 0) * k);
+    gl.uniform1f(u.uCopyK, k);
     gl.uniform1f(u.uRingOn, r.on ? 1 : 0);
     gl.uniform1f(u.uPass, pass);
     gl.uniform1f(u.uTime, s.time);
@@ -514,7 +549,7 @@ export function createHologram(canvas, cloud, colors, bloom = 1) {
 
   /* One frame. Lengths are CSS pixels; `s` is the state:
      { time, intro, morph, flow, turn, nod, voice, speak, still, gain, glow, cx, cy, size, ball,
-       ring: { on, x, y, rx, rz, sinT, cosT, persp, theta, cardW, cardH, front, side, yaw, lean } } */
+       ring: { on, x, y, rx, rz, sinT, cosT, persp, theta, cardW, cardH, front, side, yaw, lean, n, clearL, clearR, copyL, copyT, copyR, copyB } } */
   function render(s) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, canvas.width, canvas.height);

@@ -145,7 +145,7 @@ and the loop stops once the layer is invisible, when the tab is hidden, and unde
 The first screen (Nov 12 2026, Vidyut's idea: "a 3D face of me made of blue light" that greets
 the visitor, then becomes a ball of energy that gives way to the page). `Welcome.jsx` is the
 HTML: an empty box for the face, the greeting, the cue. `Hologram.jsx` draws the face into the
-fixed background stack with plain WebGL (no three.js: the chunk measured 9.95 KB gzipped on Nov 15).
+fixed background stack with plain WebGL (no three.js: the chunk measured 11 KB gzipped on Nov 15).
 
 - The points are baked offline by `scripts/bake-hologram.py` from the studio headshot
   (`~/Portfolio-notes/design/portrait-1200.jpg`) into two files (round 3, Nov 15):
@@ -157,8 +157,9 @@ fixed background stack with plain WebGL (no three.js: the chunk measured 9.95 KB
 - Scroll is the timeline, counted from the top of the page to the hero (`lib/origin.js`,
   `heroOrigin()`): the face peels into a small planet of light (0.04 to 0.37), the planet has
   the window to itself over the empty run under the greeting (`--welcome-run`) and says its
-  line (typed 0.41 to 0.57), then its light pours onto the orbit ring (0.68 to 0.92) and fades
-  (0.92 to 1), all gone when the hero sits under the nav (the cue's glide stops there). The canvas is fixed, so the light
+  line (typed 0.41 to 0.57), then its light pours onto the orbit ring (0.68 to 0.86) and fades
+  (0.92 to 1), all gone when the hero sits under the nav (the cue's glide stops there; measured
+  Nov 15 on the canvas alone: no lit pixel at the hero at 1440 or 390). The canvas is fixed, so the light
   stays in the window while the page leaves. The cue is a real link to `#top`; with scripts it
   glides there in 5.6s (`GLIDE_MS`) and any wheel, touch or key hands the scroll back.
 - The greeting is prerendered text and is the LCP element. It waits dim (`--say-idle`), and is
@@ -211,12 +212,22 @@ fixed background stack with plain WebGL (no three.js: the chunk measured 9.95 KB
 - **The hand-off: the light lands on the builds.** `Orbit.jsx` publishes the ring's geometry
   in `lib/ring.js` (centre, radii, tilt, perspective, card size, how far it has turned, and
   each side card's turn and lean); that is the only thing the hologram knows about the hero.
-  The planet's points swing out in two curtains to the sides of the window (they never cross
-  his name), come back in under the copy and land on the edge of each front card's thumbnail,
-  framing it, then fade. The cards are solid and in front of the canvas, so light that landed
-  on a card would be hidden. Measured Nov 15 at 1600, 1440 and 1199: the landing formula puts
-  the thumbnail's corners within 0.3px of the real ones; re-run that check if the ring's
-  geometry or card count changes. On a phone the copy fills the window, so the light goes out
+  The planet's points go up and out in two curtains to the sides of the window, fall there
+  outside the copy, dip under the cards and well up onto the edge of each thumbnail, framing
+  the five cards at the front of the ring, then fade. Three things keep the light off his
+  name, and all three were needed (each was measured on the canvas alone, with the page
+  hidden; a contact sheet is too small to see it, and for a long while the light did cross
+  the name unnoticed): only the front five cards are targets (the back ones sit behind the
+  name, so light sent to them flew over it); the pour is quick and the planet lifts as it
+  empties, because the name is rising toward it; and, as a guarantee rather than a tuned
+  path, the shader gives no light to any point whose splat would touch the hero copy's real
+  box that frame (`uCopy`, read from `.who-main`). Measured Nov 15 at twelve scroll steps
+  across the pour, at 1600, 1440, 1199 and 390: no lit pixel on the name or anywhere in the
+  copy block. The cards are solid and in front of the canvas, so light that landed on a
+  card would be hidden: it lands round them. The landing formula (with each side card's
+  turn and lean) puts the thumbnail's corners within 0.3px of the real ones at 1600, 1440
+  and 1199 (checked in JS against the DOM; the shader is a line-for-line port). Re-run both
+  checks if the ring's geometry or card count changes. On a phone the copy fills the window, so the light goes out
   at the planet and comes up again on the two drifting rows (`.drift`).
 - Past the hero the canvas is cleared once (a nav jump used to leave the last frame of the
   ball and a half-typed line on screen).
