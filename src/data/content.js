@@ -1339,3 +1339,10 @@ export const contact = {
   footerRight: 'Built from scratch · 2026',
   footerTop: 'Back to top',
 };
+
+/* The two waterlines of the journey (Vista.jsx): one short line each, naming the
+   world the reader is entering. Added Nov 15 2026 with the three-worlds overhaul. */
+export const worlds = {
+  surface: 'Under the surface: the work.',
+  shore: 'On solid ground: the proof.',
+};

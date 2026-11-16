@@ -5,8 +5,9 @@ export function beamFade(scrollY, viewportH) {
   return Math.max(0, Math.min(1, 1 - (scrollY - viewportH * 0.35) / (viewportH * 0.85)));
 }
 
-/* How much of the world below the hero (World.jsx) is visible: it takes over as
-   the hero beams fade and stays to the foot of the page. */
+/* How much of the world below the hero (World.jsx) is visible: it comes up in the
+   first fifth of a screen after the hero starts to leave (the canvas is clear
+   above the sea's surface, so the beams still show there) and stays to the foot. */
 export function worldFade(scrollY, viewportH) {
-  return 1 - beamFade(scrollY, viewportH);
+  return Math.max(0, Math.min(1, scrollY / (viewportH * 0.22)));
 }

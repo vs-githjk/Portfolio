@@ -3,7 +3,7 @@ import { toolkit } from '../data/content';
 /* Grouped chips: no color, no levels, nobody is 87% at Python. */
 export default function Toolkit() {
   return (
-    <section className="sec" id="toolkit">
+    <section className="sec" id="toolkit" data-realm="earth">
       <div className="wrap">
         <div className="sec-head reveal">
           <span className="eyebrow">{toolkit.eyebrow}</span>

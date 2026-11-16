@@ -6,7 +6,7 @@ import Rich from './Rich';
    it measures. */
 export default function Highlights() {
   return (
-    <section className="hl" aria-labelledby="hl-h">
+    <section className="hl" aria-labelledby="hl-h" data-realm="earth">
       <div className="wrap">
         <h2 className="sr" id="hl-h">
           {highlights.eyebrow}

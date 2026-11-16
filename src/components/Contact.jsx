@@ -5,7 +5,7 @@ import CopyEmail from './CopyEmail';
    (CSS only, no canvas). The email is the largest thing in the section. */
 export default function Contact() {
   return (
-    <section className="sec contact" id="contact">
+    <section className="sec contact" id="contact" data-realm="earth">
       <div className="rise" aria-hidden="true" />
       <div className="wrap">
         <img

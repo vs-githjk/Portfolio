@@ -8,7 +8,7 @@ export default function Principles() {
   useTilt('.p-tile');
 
   return (
-    <section className="sec principles" id="principles">
+    <section className="sec principles" id="principles" data-realm="earth">
       <div className="wrap">
         <div className="sec-head reveal">
           <span className="eyebrow">{principles.eyebrow}</span>

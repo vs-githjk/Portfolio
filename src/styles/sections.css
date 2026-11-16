@@ -111,8 +111,8 @@ html:not(.js) .bg {
   opacity: 1;
 }
 
-/* The Deep: the three.js world behind every section below the hero (World.jsx).
-   It only fades in and out here; the scene does its own depth and parallax. */
+/* The three worlds: the three.js scene behind every section below the hero
+   (World.jsx). It only fades in here; the scene does its own depth and parallax. */
 .bg-world {
   opacity: 0;
   transition: opacity 1.4s var(--ease);
@@ -134,12 +134,88 @@ html[data-world='on'] .bg-world {
    whole: the giant, the galaxy, the horizon. Without the world (reduced motion,
    no WebGL) there is nothing to frame, so it closes. */
 .vista {
+  position: relative;
+  z-index: 1;
   height: var(--vista-h);
   pointer-events: none;
 }
 
 .vista[data-set='horizon'] {
   height: var(--vista-foot);
+}
+
+/* The two waterlines. The surface is where the reader dives; the shore is a whole
+   screen of dusk where the camera comes up. Each carries one line of text, low and
+   to the left, so the scene above it is clear. */
+.vista[data-set='surface'] {
+  height: var(--vista-surf);
+}
+
+.vista[data-set='shore'] {
+  height: var(--vista-shore);
+}
+
+.vista-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(100%, var(--maxw));
+  padding-inline: var(--pad);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--fs-lead);
+  letter-spacing: var(--tr-display);
+  color: var(--vista-ink);
+  text-shadow: 0 0 18px var(--vista-shade);
+}
+
+.vista[data-set='surface'] .vista-line {
+  bottom: 12%;
+}
+
+.vista[data-set='shore'] .vista-line {
+  top: 16%;
+}
+
+/* Still grounds: before the scene has loaded, without WebGL and under reduced
+   motion, every section paints its own world as a flat grade, so the three
+   palettes never sit on the galaxy's indigo. With the scene on, these are off. */
+html:not([data-world='on']) .work {
+  background: linear-gradient(180deg, transparent 0, var(--ground-sea-top) 120px, var(--ink) 70%);
+}
+
+html:not([data-world='on']) .builds {
+  background: linear-gradient(180deg, var(--ink) 0, var(--ink-2) 40%, var(--ink-2) 86%, var(--ground-sea-warm) 100%);
+  padding-bottom: var(--sec-y);
+}
+
+html:not([data-world='on']) .crew {
+  background: linear-gradient(180deg, var(--ground-dusk) 0, var(--ink) 520px);
+}
+
+html:not([data-world='on']) :is(.hl, #verify, .principles, #value, #toolkit) {
+  background: var(--ink);
+}
+
+html:not([data-world='on']) .contact {
+  background: linear-gradient(180deg, var(--ink) 0, var(--ink) 60%, var(--ground-dawn) 100%);
+}
+
+html:not([data-world='on']) .vista[data-set='giant'] {
+  background: var(--ground-sea-deep);
+}
+
+html:not([data-world='on']) .vista[data-set='shore'] {
+  background: linear-gradient(180deg, var(--ground-sea-warm) 0, var(--ground-dusk) 100%);
+}
+
+html:not([data-world='on']) .vista[data-set='surface'] {
+  background: linear-gradient(180deg, transparent 30%, var(--ground-sea-top) 100%);
+}
+
+html:not([data-world='on']) .vista[data-set='galaxy'] {
+  background: var(--ground-earth);
 }
 
 /* Calm ground: where a section sets text straight on the page, most of the ink
@@ -185,8 +261,12 @@ html[data-world='on'] .foot {
   background: color-mix(in srgb, var(--ink-2) 72%, transparent);
 }
 
-html[data-world='off'] .vista {
+html:is([data-world='off'], [data-world='still']) .vista:not([data-set='surface'], [data-set='shore']) {
   display: none;
+}
+
+html:is([data-world='off'], [data-world='still']) .vista:is([data-set='surface'], [data-set='shore']) {
+  height: var(--vista-still);
 }
 
 .page {
@@ -4045,8 +4125,12 @@ html[data-holo='off'] .welcome-face {
     animation: none;
   }
 
-  .vista {
+  .vista:not([data-set='surface'], [data-set='shore']) {
     display: none;
+  }
+
+  .vista:is([data-set='surface'], [data-set='shore']) {
+    height: var(--vista-still);
   }
 
   .bg-glow,

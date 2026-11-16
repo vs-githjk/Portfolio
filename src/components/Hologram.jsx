@@ -212,9 +212,9 @@ export default function Hologram() {
         if (dead) return;
         const cloud = parseFace(buffer, phone ? 0.58 : 1);
         scene = createHologram(canvas, cloud, {
-          deep: triple(style, '--beam-b'),
-          pale: triple(style, '--world-rim'),
-          tint: triple(style, '--beam-b'),
+          deep: triple(style, '--holo-deep'),
+          pale: triple(style, '--holo-pale'),
+          tint: triple(style, '--holo-deep'),
         });
         measure();
         seenAtStart = seen || rm.matches || window.scrollY > 40;

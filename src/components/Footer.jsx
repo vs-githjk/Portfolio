@@ -2,7 +2,7 @@ import { contact } from '../data/content';
 
 export default function Footer() {
   return (
-    <footer className="foot">
+    <footer className="foot" data-realm="earth">
       <div className="wrap">
         <span>{contact.footerLeft}</span>
         <span>{contact.footerRight}</span>

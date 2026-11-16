@@ -5,7 +5,7 @@ import Rich from './Rich';
    Principles twice. */
 export default function Value() {
   return (
-    <section className="sec" id="value">
+    <section className="sec" id="value" data-realm="earth">
       <div className="wrap">
         <div className="sec-head reveal">
           <span className="eyebrow">{value.eyebrow}</span>

@@ -3,7 +3,7 @@ import { worldFade } from '../lib/beamFade';
 import { heroOrigin } from '../lib/origin';
 import { createWorld } from '../lib/worldScene';
 
-/* The Deep: the 3D world behind every section below the hero (three.js, its own
+/* The three worlds: the 3D scene behind every section below the hero (three.js, its own
    lazy chunk; the scene itself is lib/worldScene.js).
 
    This file is the lifecycle and the budget:
@@ -12,7 +12,8 @@ import { createWorld } from '../lib/worldScene';
      slow drift; while the camera is catching up with a scroll it draws every
      frame, so the parallax stays smooth.
    - The camera eases toward the scroll position, so the dive feels like water.
-   - Under prefers-reduced-motion it draws one still frame and never moves.
+   - Under prefers-reduced-motion it draws nothing: <html data-world="still">
+     and every section paints a still ground in its own world's colours.
    - If WebGL is missing or the context is lost it marks <html data-world="off">
      and the page falls back to its plain ground (the vistas collapse in CSS). */
 
@@ -28,7 +29,7 @@ export default function World() {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     let world;
     try {
-      world = createWorld(canvas, { still: () => rm.matches });
+      world = createWorld(canvas);
     } catch {
       root.dataset.world = 'off';
       return undefined;
@@ -47,9 +48,9 @@ export default function World() {
       const y = window.scrollY;
       const visible = worldFade(y - heroOrigin(), window.innerHeight) > 0.004;
       if (rm.matches) {
-        if (!drawn) world.render(40, 0);
-        drawn = true;
-        root.dataset.world = 'on';
+        // No moving world: the sections paint their own still grounds (sections.css).
+        drawn = false;
+        root.dataset.world = 'still';
         return;
       }
       if (!visible) {

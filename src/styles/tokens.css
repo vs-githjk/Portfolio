@@ -13,42 +13,50 @@
    ========================================================================== */
 
 /* ---- FONTS: self-hosted, latin subset, one request each ---------------------
-   Geist and Geist Mono are variable fonts (one file covers every weight used).
+   All three are SIL Open Font License 1.1 (from Google Fonts), chosen so the page
+   has a voice of its own (Nov 15 2026: Geist and Instrument Serif were retired as
+   the look of every generated page).
+   - Fraunces: the display face. A soft old-style serif from the family of the
+     1970s desert-print covers the earth world is drawn after. Shipped as two
+     static instances (roman and italic at optical size 48, weight 400, SOFT 100: sturdy strokes that hold at card-title sizes, about 20 KB each),
+     because the full variable file is 120 KB and the first screen preloads it.
+   - Schibsted Grotesk: UI and body, variable 400 to 700.
+   - Spline Sans Mono: labels, nav, buttons, badges and stack lines, variable 400 to 600.
    font-display: swap keeps text visible while they load; index.html preloads the
    two that paint the first screen. Files live in public/fonts. */
 @font-face {
-  font-family: 'Instrument Serif';
+  font-family: 'Fraunces';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/instrument-serif-latin.woff2') format('woff2');
+  src: url('/fonts/fraunces-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Instrument Serif';
+  font-family: 'Fraunces';
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/instrument-serif-italic-latin.woff2') format('woff2');
+  src: url('/fonts/fraunces-italic-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Geist';
+  font-family: 'Schibsted Grotesk';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/schibsted-grotesk-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Spline Sans Mono';
   font-style: normal;
   font-weight: 400 600;
   font-display: swap;
-  src: url('/fonts/geist-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Geist Mono';
-  font-style: normal;
-  font-weight: 400 500;
-  font-display: swap;
-  src: url('/fonts/geist-mono-latin.woff2') format('woff2');
+  src: url('/fonts/spline-sans-mono-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -80,11 +88,7 @@
   --ok: #6fe3bb; /* available, live, copied */
   --bad: #ff7a90; /* reserved: nothing uses it today */
   --win: #ffd36b; /* award badges only */
-  --win-bg: color-mix(in srgb, var(--win) 14%, var(--surface));
-  --win-line: color-mix(in srgb, var(--win) 42%, transparent);
-  --badge-bg: color-mix(in srgb, var(--acc) 20%, var(--surface));
   --badge-fg: #c4d2ff;
-  --badge-line: color-mix(in srgb, var(--acc-text) 42%, transparent);
 
   /* ---- BEAMS: the light field (r, g, b triples, read by the canvas) -------- */
   --beam-a: 99, 102, 241; /* indigo */
@@ -96,16 +100,69 @@
   --glow-core: rgba(228, 232, 255, 0.9);
   --glow-mid: rgba(150, 160, 255, 0.5);
 
-  /* ---- THE DEEP: the 3D world below the hero (r, g, b triples for the shaders) */
-  --world-night: 5, 7, 22; /* the unlit side of a world; close to --ink-2 so it meets the footer */
-  --world-day: 44, 58, 150; /* a lit band */
-  --world-band: 104, 96, 214; /* its paler neighbour */
-  --world-rim: 168, 190, 255; /* limb light, ring ice, comet heads */
+  /* ---- WORLD PAINT: the three.js scene below the hero (r, g, b triples for the shaders) */
+  /* the sea: a grade from just under the surface to the deep, and its light */
+  --sea-shallow: 15, 84, 96;
+  --sea-mid: 6, 40, 50;
+  --sea-abyss: 3, 17, 22;
+  --sea-warm: 96, 74, 58; /* water with the low sun in it, just before the shore */
+  --sea-ray: 150, 232, 232;
+  --sea-ray-warm: 255, 190, 120;
+  --sea-foam: 214, 246, 244; /* the bright line of a surface seen in section */
+  --sea-snow-a: 214, 240, 238;
+  --sea-snow-b: 130, 214, 222;
+  --giant-night: 4, 20, 26; /* its unlit side is the water's own dark */
+  --giant-day: 176, 98, 40; /* an amber world in teal water */
+  --giant-band: 238, 196, 132;
+  --giant-rim: 255, 222, 170;
+  --giant-ring: 214, 150, 84;
+  --jelly-a: 96, 220, 232;
+  --jelly-b: 236, 150, 170;
+  --jelly-c: 190, 236, 214;
+  --manta-a: 110, 206, 226;
+  --manta-rim: 226, 248, 246;
+  /* the earth: dusk, night and dawn over the land */
+  --dusk-top: 26, 24, 52;
+  --dusk-mid: 104, 52, 74;
+  --dusk-low: 226, 120, 64;
+  --night-top: 7, 6, 10;
+  --night-low: 30, 21, 24;
+  --dawn-low: 150, 78, 58;
+  --sun: 255, 226, 178;
+  --star: 255, 240, 222;
+  --ridge: 38, 22, 20;
+  --ember: 255, 150, 84;
+  --moon-night: 10, 8, 8;
+  --moon-day: 124, 108, 96;
+  --moon-band: 186, 168, 150;
+  --moon-rim: 246, 230, 210;
+  --earth-night: 5, 7, 12;
+  --earth-day: 20, 66, 96;
+  --earth-band: 156, 130, 96;
+  --earth-rim: 255, 190, 136;
+  --gal-core: 255, 236, 206;
+  --gal-a: 244, 190, 130;
+  --gal-b: 150, 190, 255;
+  --holo-deep: 76, 118, 255; /* the hologram's own blue: the one place the first light lives */
+  --holo-pale: 190, 214, 255;
+  --holo-hot: 255, 244, 228; /* the white of its brightest points and of the ball's core */
   --world-dim: 1; /* strength of the whole layer */
   --world-calm: 0.62; /* how much of the ground returns behind a text column */
   --calm-bleed: clamp(0px, 2vw, 28px); /* how far the calm ground feathers out past the column */
   --vista-h: clamp(220px, 44svh, 440px); /* a window where a set piece shows whole */
   --vista-foot: clamp(120px, 22svh, 220px); /* the horizon under the contact section */
+  --vista-surf: clamp(220px, 42svh, 420px); /* the sea's surface, between the hero and Experience */
+  --vista-shore: clamp(460px, 100svh, 1000px); /* a whole screen of dusk: the camera comes up here */
+  --vista-still: clamp(120px, 20svh, 200px); /* a waterline when nothing moves: just its line of text on a still grade */
+  --vista-ink: #f4f1ea; /* the line of text on a waterline */
+  --vista-shade: rgb(2, 10, 14);
+  /* Still grounds (sections.css): the worlds as flat grades, when the scene is not drawing. */
+  --ground-sea-top: #0b3a44;
+  --ground-sea-deep: #03141a;
+  --ground-sea-warm: #2a2a2a;
+  --ground-dusk: #3a2230;
+  --ground-earth: #0c0909;
+  --ground-dawn: #3a211c;
 
   /* ---- THE WELCOME: his face in light, on the screen above the hero ---------- */
   --holo-gain: 1; /* strength of the hologram's light */
@@ -124,7 +181,6 @@
   --say-dur-2: 1.2s;
 
   /* ---- GLASS AND DEPTH: one camera, one light, one elevation scale --------- */
-  --glass: color-mix(in srgb, var(--surface) 88%, transparent);
   --glass-line: rgba(170, 180, 255, 0.16);
   --glass-hi: rgba(190, 200, 255, 0.1);
   --shadow-ink: rgb(0, 0, 20);
@@ -133,9 +189,6 @@
   --z-1: 8px;
   --z-2: 20px;
   --z-3: 40px;
-  --elev-1: 0 1px 0 var(--glass-hi) inset, 0 10px 24px -14px color-mix(in srgb, var(--shadow-ink) 80%, transparent);
-  --elev-2: 0 1px 0 var(--glass-hi) inset, 0 24px 48px -24px color-mix(in srgb, var(--shadow-ink) 85%, transparent);
-  --elev-3: 0 1px 0 var(--glass-hi) inset, 0 48px 80px -36px color-mix(in srgb, var(--shadow-ink) 90%, transparent);
 
   /* ---- ORBIT RING (unitless where JS reads them) --------------------------- */
   --orbit-persp: 1500;
@@ -163,9 +216,9 @@
   --nav-h: 60px;
 
   /* ---- TYPE -------------------------------------------------------------- */
-  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --font-ui: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-ui: 'Schibsted Grotesk', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --fs-hero: clamp(60px, 16vw, 72px); /* row mode; ring mode overrides in sections.css */
   --fs-h2: clamp(38px, 4.6vw, 64px);
@@ -204,7 +257,6 @@
   --cut-sm: 9px;
   --nb-pad: clamp(20px, 3.2vw, 40px); /* the panel's side padding */
   --grid-line: rgba(170, 180, 255, 0.04); /* the faint board lines on that panel */
-  --rule: 1px solid var(--hair);
 
   /* ---- MOTION ------------------------------------------------------------ */
   --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
@@ -212,4 +264,82 @@
   --dur-slow: 0.75s;
 
   color-scheme: dark;
+}
+
+/* ============================================================================
+   THREE WORLDS (Nov 15 2026): one descent, three palettes
+   ----------------------------------------------------------------------------
+   The page is one camera move: space above the sea (the welcome and the hero),
+   a dive through the surface into water (Experience and Builds), then a rise
+   onto a desert shore at dusk (Master Agents and everything after it).
+   :root is the galaxy. A section marked data-realm="sea" or "earth" re-declares
+   the palette for everything inside it; <html data-at> carries the realm at the
+   top of the window so the nav can follow. Gold (--win) is awards only and mint
+   (--ok) is live in every world. Each accent is the one accent of its world.
+   Every text and surface pair below was computed for WCAG AA.
+   ========================================================================== */
+[data-realm='sea'],
+html[data-at='sea'] .nav {
+  --ink: #041418; /* deep petrol */
+  --ink-2: #020c0f;
+  --surface: #0a2228;
+  --surface-2: #103039;
+  --hair: #163a43;
+  --hair-2: #2d6470;
+  --text: #f0f8f6;
+  --text-2: #b4cfcc;
+  --text-3: #87a8a6;
+  --acc: #4cc3e6; /* sunlit shallows */
+  --acc-2: #a6e6f7;
+  --acc-fill: #0c6c8a;
+  --acc-ink: #ffffff;
+  --acc-text: #8fdcf3;
+  --acc-glow: rgba(76, 195, 230, 0.26);
+  --link: #8fdcf3;
+  --badge-fg: #c5edf8;
+  --glass-line: rgba(160, 230, 240, 0.16);
+  --glass-hi: rgba(180, 240, 245, 0.1);
+  --shadow-ink: rgb(0, 10, 14);
+  --grid-line: rgba(160, 230, 240, 0.04);
+}
+
+[data-realm='earth'],
+html[data-at='earth'] .nav {
+  --ink: #130e0c; /* warm black: basalt after sundown */
+  --ink-2: #0a0706;
+  --surface: #1f1713;
+  --surface-2: #2b201a;
+  --hair: #35271f;
+  --hair-2: #6a4f3d;
+  --text: #f9f2e8; /* bone */
+  --text-2: #d1c2b1;
+  --text-3: #a79785;
+  --acc: #f0915a; /* ember */
+  --acc-2: #ffc9a0;
+  --acc-fill: #b0501e;
+  --acc-ink: #ffffff;
+  --acc-text: #ffb98c;
+  --acc-glow: rgba(240, 145, 90, 0.26);
+  --link: #ffb98c;
+  --badge-fg: #ffd9bf;
+  --glass-line: rgba(255, 214, 180, 0.16);
+  --glass-hi: rgba(255, 224, 196, 0.1);
+  --shadow-ink: rgb(8, 3, 0);
+  --grid-line: rgba(255, 214, 180, 0.045);
+}
+
+/* Tokens built from other tokens are declared again in every realm, because a
+   custom property is resolved where it is declared, not where it is used. */
+:root,
+[data-realm],
+html[data-at] .nav {
+  --win-bg: color-mix(in srgb, var(--win) 14%, var(--surface));
+  --win-line: color-mix(in srgb, var(--win) 42%, transparent);
+  --badge-bg: color-mix(in srgb, var(--acc) 20%, var(--surface));
+  --badge-line: color-mix(in srgb, var(--acc-text) 42%, transparent);
+  --glass: color-mix(in srgb, var(--surface) 88%, transparent);
+  --elev-1: 0 1px 0 var(--glass-hi) inset, 0 10px 24px -14px color-mix(in srgb, var(--shadow-ink) 80%, transparent);
+  --elev-2: 0 1px 0 var(--glass-hi) inset, 0 24px 48px -24px color-mix(in srgb, var(--shadow-ink) 85%, transparent);
+  --elev-3: 0 1px 0 var(--glass-hi) inset, 0 48px 80px -36px color-mix(in srgb, var(--shadow-ink) 90%, transparent);
+  --rule: 1px solid var(--hair);
 }

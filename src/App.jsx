@@ -12,6 +12,7 @@ import Toolkit from './components/Toolkit';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Vista from './components/Vista';
+import { worlds } from './data/content';
 import { useReveal } from './hooks/useReveal';
 
 /* Page order. Reordering these lines reorders the site.
@@ -29,8 +30,11 @@ import { useReveal } from './hooks/useReveal';
      Contact       - the ask
 
    <Background /> is the one fixed layer behind everything: the hero's light
-   beams, then the 3D world. A <Vista /> is an empty window in the page where a
-   set piece of that world (the giant, the galaxy, the horizon) shows whole. */
+   beams, then the 3D world. The page is one descent through three worlds:
+   space (Welcome, Hero), the sea (Experience, Builds) and the earth (the crew's
+   panel and everything after it). A <Vista /> is an empty window in the page
+   where a set piece of that world shows whole: the sea's surface, the giant,
+   the shore (inside Builds), the galaxy, the horizon. */
 export default function App() {
   useReveal();
 
@@ -42,6 +46,7 @@ export default function App() {
         <main id="main" tabIndex={-1}>
           <Welcome />
           <Hero />
+          <Vista set="surface" line={worlds.surface} />
           <Experience />
           <Vista set="giant" />
           <Builds />

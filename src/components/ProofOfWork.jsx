@@ -47,7 +47,7 @@ export default function ProofOfWork() {
   const { t, current, updated } = build();
 
   return (
-    <section className="sec" id="verify">
+    <section className="sec" id="verify" data-realm="earth">
       <div className="wrap">
         <div className="sec-head reveal">
           <span className="eyebrow">{proofOfWork.eyebrow}</span>
