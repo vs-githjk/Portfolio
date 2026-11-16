@@ -99,7 +99,7 @@ export function createDragonStations({ live, phone, C }) {
     const shore = anchorRect('shore');
     st.breach = null;
     if (shore && shore.h > 300) {
-      const size = phone ? Math.min(17, (w * 0.8) / MODEL.span) : Math.max(24, Math.min(38, w / 38));
+      const size = phone ? Math.min(17, (w * 0.8) / MODEL.span) : Math.max(22, Math.min(34, w / 42));
       // x in window widths, y in window heights (both from the middle), z in px
       const way = phone
         ? [
@@ -112,11 +112,11 @@ export function createDragonStations({ live, phone, C }) {
             [0.2, -0.12, -1500],
           ]
         : [
-            [0.31, 1.05, 80],
-            [0.3, 0.68, 60],
-            [0.28, 0.34, 20],
-            [0.27, 0.08, -60],
-            [0.27, -0.1, -260],
+            [0.26, 1.05, 80],
+            [0.25, 0.68, 60],
+            [0.24, 0.34, 20],
+            [0.24, 0.08, -60],
+            [0.25, -0.1, -260],
             [0.26, -0.16, -700],
             [0.225, -0.12, -1300],
             [0.22, -0.08, -1900],
@@ -285,7 +285,7 @@ export function createDragonStations({ live, phone, C }) {
           heading(s.low, e, 0.02, (cam.z - z) / cam.z);
           light('dawn');
           guard({ boxes: s.lowBoxes, band: s.lowBand }, f);
-          live.update({ ...base, x: a3[0], y: a3[1] - f.line + Math.sin(f.t * 0.7) * 5, z, size: s.size, fwd: [...fwd], up: [0, 1, 0.45], bank: 0.12, look: [0, -0.55], clips: { fly: 1 }, lean: 1.25, beat: 0.5 + 0.15 * pace, show: sm((u - 0.02) / 0.1), phase: 0.5 });
+          live.update({ ...base, x: a3[0], y: a3[1] - f.line + Math.sin(f.t * 0.7) * 5, z, size: s.size, fwd: [...fwd], up: [0, 1, -0.3], bank: -0.1, look: [0, -0.55], clips: { fly: 1 }, lean: 1.25, beat: 0.5 + 0.15 * pace, show: sm((u - 0.02) / 0.1), phase: 0.5 });
           shown.station = 'limb';
           shown.u = u;
           return 'limb';

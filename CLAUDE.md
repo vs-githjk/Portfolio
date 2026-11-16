@@ -160,49 +160,49 @@ first waterline, the sea ends at the shore, then dusk, night and dawn over a des
   switch: no canvases and no world chunk at all. No WebGL: `data-world="off"`.
 - Do not add another WebGL canvas. The hologram is the one exception.
 
-### The dragon (`src/world/dragon.js`, `dragonStations.js`, `scripts/bake-dragon.py`)
+### The dragon (`src/world/dragon.js`, `dragonStations.js`, `scripts/prep-dragon.py`)
 
 A rigged, animated 3D model (Vidyut, Nov 16: the creature drawn from commit weeks "looks like
-a dragonfly", he wanted a real dragon, much larger). It is no longer built from data and has no
-Receipts line.
+a dragonfly"; he wanted a real dragon, grand, much larger). It is not built from data and has
+no Receipts line.
 
-- **The model.** "Low Poly Ice Dragon" by xterryx, OpenGameArt, CC0 1.0
-  (https://opengameart.org/content/low-poly-ice-dragon), credited under Credits ("Borrowed,
-  with thanks", `contact.credits.borrowed`). `scripts/bake-dragon.py` (Blender, run by hand)
-  applies the mirror, lengthens the wings, subdivides (two levels, one for the phone file),
-  bakes three masks into the vertex colours (wing skin, occlusion, points) and writes four
-  clips as functions of phase: Fly, Glide, Perch, Roar. Then `npx @gltf-transform/cli
-  resample` and `meshopt` give `public/dragon/dragon.glb` (41k triangles, 552 KB, 306 KB
-  gzip) and `dragon-lite.glb` (10k, 304 KB, 122 KB gzip; phones). No textures.
-- **Blue, yellow and red** (Vidyut, Nov 16): a deep blue hide, yellow belly plates, horns and
-  claws, red wing skin (`--dragon-hide`, `--dragon-belly`, `--dragon-wing`, `--dragon-glow`). Its
-  yellow is its own; `--win` stays the awards' gold.
-- **The look is a shader**, lit by the place it is in (`LIGHT` in `dragonStations.js`, from the
-  page's palette and the `--dragon-*` tokens): plates with seams and a finer layer inside
-  them, each plate a low dome, the wing's bones as ridges with the skin hanging between,
-  light through the wing when the sun is behind it, the fire in the seams under the throat,
-  caustics under water, distance haze. A depth-only pass is drawn first so a fade never shows
-  the far wing through the near one.
-- **Four stations and nowhere else.** One lap across the giant's face (scroll is the clock;
-  it comes from behind the giant and goes back behind it); the breach as the reader comes up
-  through the surface, then across the low sun; the roost (it flies in once, lands on the
-  commit card, roars once, then keeps watch; choosing a week makes it look at that column);
-  a low pass over the limb at Contact and, when the email is copied, the flight into the dawn.
-- **It loads last.** Its code is a chunk of its own (`dragon-*.js`, GLTFLoader and the meshopt
-  decoder), asked for by `World.jsx` only after the world has drawn its first frame and the
-  page is idle (`<html data-dragon="on">` once it is in the scene). `?plain`, no WebGL and
-  reduced motion never ask for it. Under reduced motion the roost band holds a still of it
-  (`public/dragon/perch.webp`, a screenshot of `kit-demo.html`, see `src/world/demo.js`).
+- **The model.** "European Dragon" by Nonexistent 101 on Sketchfab, CC BY 4.0
+  (https://sketchfab.com/3d-models/european-dragon-82f393a2e6c048ad80c171ce3b3a7b87). The
+  credit is a condition of the licence: it is in the footer credits ("Borrowed, with
+  thanks", `contact.credits.borrowed`) with the title, author, link, licence and what was
+  changed. Never remove it. The 29 MB download is not in the repo; `scripts/prep-dragon.py`
+  and the gltf-transform commands in its header make `public/dragon/dragon.glb` (42k
+  triangles, two 1024 px maps, 1.12 MB, 661 KB gzip) and `dragon-lite.glb` (phones: 17k,
+  512 px maps, 785 KB, 385 KB gzip). Clips kept: Fly, Perch (its "Idle Sit"), Stand.
+  An earlier CC0 low-poly model was replaced the same day.
+- **Repainted in the shader** (he did not like the model's own colours): sapphire scales with
+  a sheen, a gold belly and claws, red wing skin with the light through it, faint glowing
+  eyes, a soft rim (`--dragon-hide`, `--dragon-belly`, `--dragon-wing`, `--dragon-glow`; its
+  yellow is its own, `--win` stays the awards' gold). Only the light and dark of the model's
+  base colour and its normal map are used. Which part is which comes from the skin weights at
+  load (wing bones, toe bones). It is lit by the place it is in (`LIGHT` in
+  `dragonStations.js`). A depth-only pass is drawn first so a fade never shows the far wing
+  through the near one.
+- **The Fly clip hovers upright.** `lean` (about 1.2 rad) tips it toward level for the passes;
+  the head is lifted with `look`. The model is measured at load and brought to the stations'
+  frame (head toward +z, 8.4 units tall sitting), so another model can be swapped in.
+- **Four stations and nowhere else, and grand**: big in frame, slow wingbeats (0.4 to 0.85 a
+  second). One lap across the giant's face; the breach as the reader comes up through the
+  surface, then across the low sun; the roost (it sits on the commit card on watch, turning
+  its head; choosing a week makes it look at that column); a low pass over the limb at
+  Contact and, when the email is copied, the flight into the dawn.
+- **It loads last.** Its code is a chunk of its own (GLTFLoader and the meshopt decoder),
+  asked for by `World.jsx` only after the world has drawn its first frame and the page is
+  idle (`<html data-dragon="on">`). `?plain`, no WebGL and reduced motion never ask for it.
+  Under reduced motion the roost band holds a still (`public/dragon/perch.webp`, a
+  screenshot of `kit-demo.html`, see `src/world/demo.js`).
 - **Text.** Its light is held inside the station's band and gives nothing inside the text
-  boxes there (the same guard the pieces of light use). Measured Nov 16 with the dragon alone
-  on black at 56 scroll steps and both the timed stations: zero lit pixels in a text box at
-  1440 and at 390. The section's calm ground would lie over it at the roost, so `#verify`
-  opens that ground over the band (`--roost-top`, `--roost-bottom`, written by the scene).
-  Re-measure after moving a path.
-- `kit-demo.html` (dev only) shows it alone: `?clip=`, `?light=`, `?yaw=`, `?still`.
+  boxes there. Measure with the dragon alone on black (`?solo=dragon` in dev) through every
+  station at 1440 and 390 after moving a path: zero lit pixels in a text box is the bar. The
+  section's calm ground opens over the roost band (`--roost-top`, `--roost-bottom`).
+- `kit-demo.html` (dev only) shows it alone: `?clip=`, `?light=`, `?yaw=`, `?lean=`, `?still`.
 - Cold-read rule: crop every station at 390 and 1440 and ask non-Claude vision models "what
-  is this creature, and does it look impressive or cheap?" with no hint, with the rejected
-  line-drawn version as a control.
+  is this creature, and does it look impressive or cheap?" with no hint.
 
 ## The shell (`src/shell/`, `src/kit/`)
 
