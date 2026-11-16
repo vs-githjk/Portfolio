@@ -115,9 +115,11 @@ export default function ProofOfWork() {
           {wins.items.map((w) => {
             const body = (
               <>
-                <b className="plaque-place">{w.place}</b>
-                <span className="plaque-prize">{w.prize}</span>
+                <b className="plaque-place" data-word={/^\d/.test(w.place) ? undefined : ''}>
+                  {w.place}
+                </b>
                 <span className="plaque-project">{w.project}</span>
+                <span className="plaque-prize">{w.prize}</span>
                 <span className="plaque-event">{w.event}</span>
               </>
             );

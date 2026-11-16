@@ -1666,6 +1666,19 @@ html[data-holo='off'] .welcome-face {
   background: var(--acc-2);
 }
 
+/* and a node where the mark meets the line, so each date is fixed to a depth */
+.xp-when::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: calc(0.8em - 4px);
+  width: 9px;
+  height: 9px;
+  background: var(--ink);
+  border: 1px solid var(--acc-2);
+  transform: rotate(45deg);
+}
+
 .xp-when span {
   font-size: var(--fs-micro);
   font-weight: 400;
@@ -3209,11 +3222,11 @@ html[data-holo='off'] .welcome-face {
 
 .hl-bed p {
   font-family: var(--font-read);
-  font-size: clamp(21px, 2.3vw, 33px);
-  line-height: 1.22;
-  letter-spacing: -0.005em;
+  font-size: clamp(21px, 2.9vw, 42px);
+  line-height: 1.18;
+  letter-spacing: -0.01em;
   color: var(--text-2);
-  max-width: 34ch;
+  max-width: 31ch;
   text-wrap: balance;
 }
 
@@ -3757,56 +3770,66 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   display: grid;
 }
 
+/* An engraved plate: a gold hairline frame with a second line set inside it, the
+   placing struck large at the left behind a rule, the words to its right. */
 .plaque {
   --cut: var(--cut-md);
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 92px minmax(0, 1fr);
   grid-template-rows: auto auto 1fr;
-  align-items: baseline;
-  gap: 2px 12px;
-  padding: 18px 20px 20px;
-  min-height: 132px;
+  column-gap: 18px;
+  padding: 20px 22px 20px 0;
   border: 1px solid var(--win-line);
   border-radius: var(--r-xs);
   background:
     linear-gradient(135deg, transparent calc(50% - 1px), var(--win-line) calc(50% - 1px), var(--win-line) calc(50% + 1px), transparent calc(50% + 1px)) bottom right / var(--cut) var(--cut) no-repeat border-box,
     var(--win-bg);
+  box-shadow:
+    inset 0 0 0 4px var(--win-bg),
+    inset 0 0 0 5px color-mix(in srgb, var(--win) 16%, transparent);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%);
   transition: background-color var(--dur) var(--ease);
 }
 
 .plaque-place {
-  grid-row: 1;
+  grid-row: 1 / -1;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid var(--win-line);
   font-family: var(--font-read);
   font-weight: 400;
-  font-size: clamp(30px, 2.8vw, 40px);
+  font-size: clamp(34px, 3vw, 44px);
   line-height: 1;
   color: var(--win);
 }
 
-.plaque-prize {
-  grid-row: 1;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--text);
-  text-wrap: balance;
+/* "Winner" is a word, not an ordinal: it is set smaller so the column holds it */
+.plaque-place[data-word] {
+  font-size: 22px;
 }
 
 .plaque-project {
-  grid-column: 1 / -1;
-  margin-top: 12px;
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: clamp(22px, 2vw, 27px);
   line-height: 1.05;
   letter-spacing: var(--tr-display);
   color: var(--text);
 }
 
+.plaque-prize {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text);
+  text-wrap: balance;
+}
+
 .plaque-event {
-  grid-column: 1 / -1;
   align-self: end;
+  margin-top: 12px;
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: 0.04em;
@@ -3829,7 +3852,7 @@ a.plaque::after {
     transform var(--dur) var(--ease);
 }
 
-a.plaque .plaque-prize {
+a.plaque .plaque-project {
   padding-right: 18px;
 }
 
@@ -5099,6 +5122,10 @@ a.plaque:hover::after {
     left: -30px;
   }
 
+  .xp-when::after {
+    left: -34px;
+  }
+
   .val-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
@@ -5188,7 +5215,7 @@ a.plaque:hover::after {
   }
 
   .plaque {
-    min-height: 0;
+    grid-template-columns: 84px minmax(0, 1fr);
   }
 }
 
