@@ -260,17 +260,51 @@ labels and receipt sentences live in `data/world.js`; events and shared CSS vari
 
 ## Builds (`components/Builds.jsx`, `Flagship.jsx`, `BuildCard.jsx`, `ResearchRow.jsx`, `CompactRows.jsx`)
 
-- A flagship is a chapter (`.ch`): index line, a very large title, its own world glyph
-  (`ScenePlate`), the descriptor, the one-liner (with receipts), one hero figure, links,
-  then stills and the story. The three are told apart with the text hidden.
+- A flagship is a chapter (`.ch`): index line, a very large title, its stage, the
+  one-liner (with receipts), one hero figure, links, then stills and the story.
+- The stage (`Stage.jsx`, `SnapHouse.jsx`, `hooks/useStage.js`, `styles/v4-flagships.css`,
+  Nov 16: Vidyut wanted each flagship to carry its own product's UI) is the product itself
+  inside the page's cut-corner frame, in the product's own type and colours, read from its
+  live site: PrismAI's record page (Lato, the red thread, the three prisms: two promises get
+  an owner and a date, the client's ask is marked outside clause 2.1, a change order waits
+  for approval); DuelWise's home (Fraunces, its four portraits, a Four in a Row match that
+  Sable wins); SNAPBACK's home (Atkinson Hyperlegible, the cutaway house, the sample ad's
+  photos flying to their walls, the verdict card, the measured tally). Rules:
+  - The product palettes and faces (`--pm-*`, `--dw-*`, `--sb-*`, six subset fonts in
+    `public/fonts/products`, about 51 KB) are used inside a stage and nowhere else.
+  - Every word is in the build's `stage` object in `content.js`, with its source beside it.
+    Never a number without a source: no price on the change order, a record only for Sable.
+    The stage carries the product's headline, so the chapter no longer prints the descriptor.
+  - A stage plays as steps while it is on screen and rests on the last one, which is also
+    what the server renders, what a reader without scripts gets and what reduced motion
+    shows. It is one picture to a screen reader (`role="img"`, `stage.alt`).
+  - Counts a stage draws come from `scene` and are checked by `scripts/check-scenes.mjs`.
+    The DuelWise winner is found by code from the moves (`playOut`), never typed.
+  - Layout inside a stage follows the stage's own width (container queries, `cqw`), not
+    the page breakpoints.
+  - The three.js flagship worlds (`world/flagWorlds.js`) no longer draw: a scene kind
+    without a builder is skipped. The piece is still in the world chunk; removing it is a
+    separate change to `worldScene.js` and `data/world.js` (the prism, board and scan
+    receipts are idle).
 - The fleet: eight plates in pairs, one height by construction. A plate's dossier is the
   NEXT element, laid under the whole row, so opening one never changes a plate's height.
   Without the script every dossier is open. On a phone a plate is a row (small thumbnail,
   name, one-liner, links) and its results open with the dossier.
 - More builds are rows with Read more (`<details>`).
-- Height, measured Nov 16 with the ring as the index: 6,632px at 1440 (it was 6,299 with
-  the dot chart; baseline 9,163) and 8,862px at 390 (it was 8,755; baseline 19,488). Keep
-  it at or under these.
+- Height, measured Nov 16 with the ring as the index: 6,654px at 1440 (it was 6,299 with
+  the dot chart; baseline 9,163) and 8,951px at 390 (it was 8,755; baseline 19,488). The
+  flagship stages then took it to 7,542px at 1440 and 10,379px at 390 (a stage is 560 to
+  640px tall where the old window was 260). Vidyut, Nov 16: the laptop is fine as it is;
+  the phone had to come back down. So below 760px a flagship is its stage, the one-liner,
+  one figure and the links, and its story panel (stills, second figure, role, what is
+  being built, the story) opens from the Inside bar (`.ch-file`: three stills dealt like
+  cards, one teasing line from `tease` in `content.js`, an Open handle; a button with
+  `aria-expanded`, shown only under `html.js`, so without scripts the panel is simply
+  there). SNAPBACK's stage drops its sample ad and tally on a phone. Below 560px a
+  featured plate leads with its one-liner and one proof (its award, or its first result
+  when it has none) and its descriptor opens with the dossier; the paper's second figure
+  and author line open with its story. Builds is 8,860px at 390 now; keep it at or under
+  about 8,900, and leave the laptop alone.
 - Images are flat and straight; only the ring is 3D.
 
 ## Master Agents (`components/NowBuilding.jsx`, `CrewRun.jsx`, `builds.building`)
