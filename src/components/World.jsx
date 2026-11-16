@@ -264,6 +264,8 @@ export default function World() {
     window.addEventListener(EV.run, onRun);
     window.addEventListener(EV.travel, onTravel);
     window.addEventListener(EV.receipts, onReceipts);
+    // Receipts may already be on (?receipts, or restored for the session) before this chunk arrived.
+    onReceipts({ detail: { on: root.dataset.receipts != null } });
     kick();
 
     return () => {

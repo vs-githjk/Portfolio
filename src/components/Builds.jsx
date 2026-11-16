@@ -56,21 +56,21 @@ export default function Builds() {
               <p>{fill(builds.intro, { total, flagships })}</p>
             </div>
             <div className="deep-window" data-world-anchor="giant" aria-hidden="true" />
-            <nav className="chart reveal" aria-label={builds.chart.label}>
-              <ol className="chart-groups">
+            <nav className="depths reveal" aria-label={builds.chart.label}>
+              <ol className="depths-groups">
                 {GROUPS.map((g) => {
                   const list = allBuilds.filter((b) => b.group === g);
                   return (
-                    <li className="chart-group" data-group={g} key={g}>
-                      <span className="chart-name">
+                    <li className="depths-group" data-group={g} key={g}>
+                      <span className="depths-name">
                         {builds.chart.groups[g]} <span className="num">{list.length}</span>
                       </span>
-                      <ol className="chart-dots">
+                      <ol className="depths-dots">
                         {list.map((b) => (
                           <li key={b.id}>
-                            <a className="chart-dot" href={`#build-${b.id}`} aria-label={b.title} data-win={b.awards.length > 0 ? '' : undefined}>
+                            <a className="depths-dot" href={`#build-${b.id}`} aria-label={b.title} data-win={b.awards.length > 0 ? '' : undefined}>
                               <i aria-hidden="true" />
-                              <span className="chart-tip" aria-hidden="true">
+                              <span className="depths-tip" aria-hidden="true">
                                 {b.title}
                               </span>
                             </a>
@@ -81,7 +81,7 @@ export default function Builds() {
                   );
                 })}
               </ol>
-              <p className="chart-legend">
+              <p className="depths-legend">
                 <i aria-hidden="true" />
                 {builds.chart.legend}
               </p>

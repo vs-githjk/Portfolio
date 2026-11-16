@@ -184,6 +184,7 @@ export default function Welcome() {
         </a>
       </div>
       <svg className="seed" aria-hidden="true" focusable="false">
+        <g className="seed-at">
         <g className="seed-ball">
           <circle className="seed-globe" r="50" />
           {PARALLELS.map((lat) => {
@@ -198,6 +199,7 @@ export default function Welcome() {
           {ringTicks.map((t, k) => (
             <line className="seed-tick" key={k} x1={fix(t[0])} y1={fix(t[1])} x2={fix(t[2])} y2={fix(t[3])} />
           ))}
+        </g>
         </g>
       </svg>
     </section>

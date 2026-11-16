@@ -169,7 +169,7 @@ export function createEntry({ origin, host, knots, shortMs = 1200, spans, ring, 
   rm.addEventListener('change', stand);
 
   const onKey = (e) => {
-    if (e.key === 'Escape' && window.scrollY < origin() - 2 && !still()) skip();
+    if (e.key === 'Escape' && window.scrollY < origin() - 2 && !still() && !document.querySelector('dialog[open]')) skip();
   };
   window.addEventListener('keydown', onKey);
 

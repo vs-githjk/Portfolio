@@ -227,34 +227,34 @@ html[data-world='on'] .builds::before {
 
 /* The depth chart: every build as a dot on one line, in page order, in its
    group. A dot is a real link (44px), its name appears on hover and focus. */
-.chart {
+.depths {
   grid-area: chart;
   position: relative;
   padding-top: 18px;
   border-top: 1px solid var(--hair-2);
 }
 
-.chart-groups,
-.chart-dots,
+.depths-groups,
+.depths-dots,
 .manifest-rows {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.chart-groups {
+.depths-groups {
   display: flex;
   flex-wrap: wrap;
   gap: 14px clamp(24px, 4vw, 64px);
 }
 
-.chart-group {
+.depths-group {
   display: grid;
   gap: 2px;
   align-content: start;
 }
 
-.chart-name {
+.depths-name {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   letter-spacing: var(--tr-label);
@@ -262,18 +262,18 @@ html[data-world='on'] .builds::before {
   color: var(--text-3);
 }
 
-.chart-name .num {
+.depths-name .num {
   margin: 0 0 0 6px;
 }
 
-.chart-dots {
+.depths-dots {
   display: flex;
   flex-wrap: wrap;
   margin-left: -17px; /* the first dot's centre sits on the group label's edge */
   background: linear-gradient(transparent 21.5px, var(--hair-2) 21.5px, var(--hair-2) 22.5px, transparent 22.5px) 22px 0 / calc(100% - 44px) 44px repeat-y;
 }
 
-.chart-dot {
+.depths-dot {
   position: relative;
   display: grid;
   place-items: center;
@@ -281,7 +281,7 @@ html[data-world='on'] .builds::before {
   height: 44px;
 }
 
-.chart-dot i {
+.depths-dot i {
   width: 11px;
   height: 11px;
   border-radius: 50%;
@@ -293,7 +293,7 @@ html[data-world='on'] .builds::before {
 }
 
 /* The flagships are the lit ones. */
-.chart-group[data-group='flagships'] .chart-dot i {
+.depths-group[data-group='flagships'] .depths-dot i {
   width: 19px;
   height: 19px;
   background: var(--acc);
@@ -301,41 +301,41 @@ html[data-world='on'] .builds::before {
   box-shadow: 0 0 0 4px var(--acc-glow);
 }
 
-.chart-group[data-group='items'] .chart-dot i {
+.depths-group[data-group='items'] .depths-dot i {
   background: var(--acc-text);
 }
 
 /* One dot has no line to sit on. */
-.chart-group[data-group='research'] .chart-dots {
+.depths-group[data-group='research'] .depths-dots {
   background: none;
 }
 
 /* The paper is the one that is not a product: a diamond. */
-.chart-group[data-group='research'] .chart-dot i {
+.depths-group[data-group='research'] .depths-dot i {
   border-radius: 1px;
   transform: rotate(45deg);
 }
 
-.chart-dot[data-win] i {
+.depths-dot[data-win] i {
   border-color: var(--win);
   background: var(--win);
 }
 
-.chart-group[data-group='more'] .chart-dot[data-win] i {
+.depths-group[data-group='more'] .depths-dot[data-win] i {
   background: var(--ink);
 }
 
-.chart-dot:hover i,
-.chart-dot:focus-visible i {
+.depths-dot:hover i,
+.depths-dot:focus-visible i {
   transform: scale(1.5);
 }
 
-.chart-group[data-group='research'] .chart-dot:hover i,
-.chart-group[data-group='research'] .chart-dot:focus-visible i {
+.depths-group[data-group='research'] .depths-dot:hover i,
+.depths-group[data-group='research'] .depths-dot:focus-visible i {
   transform: rotate(45deg) scale(1.5);
 }
 
-.chart-tip {
+.depths-tip {
   position: absolute;
   z-index: 2;
   left: 50%;
@@ -358,13 +358,13 @@ html[data-world='on'] .builds::before {
     transform 0.16s var(--ease);
 }
 
-.chart-dot:hover .chart-tip,
-.chart-dot:focus-visible .chart-tip {
+.depths-dot:hover .depths-tip,
+.depths-dot:focus-visible .depths-tip {
   opacity: 1;
   transform: translate(-50%, 0);
 }
 
-.chart-legend {
+.depths-legend {
   position: absolute;
   top: 18px;
   right: 0;
@@ -378,7 +378,7 @@ html[data-world='on'] .builds::before {
   color: var(--text-3);
 }
 
-.chart-legend i {
+.depths-legend i {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -1574,17 +1574,17 @@ html[data-world='on'] .deep-head::before {
     display: none;
   }
 
-  .chart-groups {
+  .depths-groups {
     display: grid;
   }
 
-  .chart-legend {
+  .depths-legend {
     position: static;
     margin-top: 8px;
   }
 
   /* No hover on a phone, and a name wider than the gutter would widen the page. */
-  .chart-tip {
+  .depths-tip {
     display: none;
   }
 
@@ -1608,8 +1608,8 @@ html[data-world='on'] .deep-head::before {
   .plate::after,
   .fold > summary::after,
   .fold-btn::after,
-  .chart-dot i,
-  .chart-tip,
+  .depths-dot i,
+  .depths-tip,
   .stills-frame,
   .stills-tab,
   .mrow {
@@ -1625,13 +1625,13 @@ html[data-world='on'] .deep-head::before {
 /* The narrowest phones: eight dots do not fit on one line, so a group is two
    lines of four, never seven and an orphan. */
 @media (max-width: 460px) {
-  .chart-dots {
+  .depths-dots {
     display: grid;
     grid-template-columns: repeat(4, 44px);
     width: 176px;
   }
 
-  .chart-groups {
+  .depths-groups {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px 0;
   }

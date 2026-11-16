@@ -1700,7 +1700,7 @@ export const contact = {
    world the reader is entering. Added Nov 15 2026 with the three-worlds overhaul. */
 export const worlds = {
   surface: 'Under the surface: the work.',
-  shore: 'On solid ground: the proof.',
+  shore: 'On solid ground: the crew I am building, then the proof.',
   /* The place each section is, shown beside its eyebrow (PlaceName.jsx) until the
      shell's chart lists it in data/world.js. Keys are section ids. */
   places: {
