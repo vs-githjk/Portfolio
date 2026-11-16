@@ -469,6 +469,7 @@ export function createWorld(canvas) {
           uRayWarm: V3('sea-ray-warm'),
           uFoam: V3('sea-foam'),
           uStar: V3('star'),
+          uBeam: { value: col('--beam-b') },
           uSunX: { value: 0.7 },
           uSteps: { value: phone ? 3 : 4 },
         },

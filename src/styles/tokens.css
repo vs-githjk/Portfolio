@@ -5,6 +5,9 @@
    a rule. The light-beam canvas reads --beam-a/b/c and --star-a/b at mount, so
    a palette change here recolors the sky too.
 
+   Nov 15 2026: the page is three worlds (see THREE WORLDS at the foot of this
+   file). What follows in :root is the first of them, the galaxy.
+
    The idea ("Indigo"): deep indigo-black ground lit from above by vertical
    beams of blue-violet light, a white serif headline, lavender-grey body.
    Electric blue (--acc) is the one accent: the front card, the progress line,
@@ -163,7 +166,7 @@
   /* Still grounds (sections.css): the worlds as flat grades, when the scene is not drawing. */
   --ground-sea-top: #0b3a44;
   --ground-sea-deep: #03141a;
-  --ground-sea-warm: #2a2a2a;
+  --ground-sea-warm: #0d3238;
   --ground-dusk: #3a2230;
   --ground-earth: #0c0909;
   --ground-dawn: #3a211c;
@@ -306,6 +309,7 @@ html[data-at='sea'] .nav {
   --glass-hi: rgba(180, 240, 245, 0.1);
   --shadow-ink: rgb(0, 10, 14);
   --grid-line: rgba(160, 230, 240, 0.04);
+  --world-calm: 0.4; /* the shallows are bright: a heavy calm ground would read as a box */
 }
 
 [data-realm='earth'],

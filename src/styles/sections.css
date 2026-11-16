@@ -182,7 +182,7 @@ html[data-world='on'] .bg-world {
    motion, every section paints its own world as a flat grade, so the three
    palettes never sit on the galaxy's indigo. With the scene on, these are off. */
 html:not([data-world='on']) .work {
-  background: linear-gradient(180deg, transparent 0, var(--ground-sea-top) 120px, var(--ink) 70%);
+  background: linear-gradient(180deg, var(--ground-sea-top) 0, var(--ink) 70%);
 }
 
 html:not([data-world='on']) .builds {

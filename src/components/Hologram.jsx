@@ -57,7 +57,7 @@ export default function Hologram() {
     const phone = window.matchMedia('(max-width: 760px)').matches;
     const style = getComputedStyle(root);
     // A phone draws fewer, smaller points, so each one burns a little brighter.
-    const gain = (Number(style.getPropertyValue('--holo-gain')) || 1) * (phone ? 1.35 : 1);
+    const gain = (Number(style.getPropertyValue('--holo-gain')) || 1) * (phone ? 1.7 : 1);
 
     let scene;
     let raf = 0;

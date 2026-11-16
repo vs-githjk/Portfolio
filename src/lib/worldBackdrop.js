@@ -40,7 +40,7 @@ void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
 export const BACK_FRAG = /* glsl */ `
 ${COMMON}
-uniform vec3 uShallow, uMid, uAbyss, uWarmSea, uRay, uRayWarm, uFoam, uSun, uStar;
+uniform vec3 uShallow, uMid, uAbyss, uWarmSea, uRay, uRayWarm, uFoam, uSun, uStar, uBeam;
 uniform float uSunX, uSteps;
 
 /* Light through a moving surface, after Dave Hoskins' tileable water caustic. */
@@ -78,7 +78,11 @@ vec3 water(vec2 c, float H, float yTop, float yExit){
   float lit2 = (1.0 - b) * (1.0 - b) * exp(-max(c.y - yExit, 0.0) / (1.2 * H));
   float r1 = shafts((c.x + (c.y - yTop) * 0.34) / H, uTime);
   float r2 = shafts((c.x - (c.y - yExit) * 0.3) / H + 3.0, uTime);
-  w += uRay * r1 * lit1 * 0.2 + uRayWarm * r2 * lit2 * 0.26;
+  // The worlds bleed into each other: the hero's blue beams carry on down as the
+  // first shafts under the surface, and the low sun reaches the last of the water.
+  float fresh = (1.0 - a) * (1.0 - a);
+  w = mix(w, uBeam * 0.42, fresh * 0.3);
+  w += mix(uRay, uBeam, fresh * 0.8) * r1 * lit1 * (0.2 + 0.16 * fresh) + uRayWarm * r2 * lit2 * 0.26;
   float cw = max(lit1, lit2);
   if (cw > 0.03) {
     float k = caustic(vec2(c.x, (c.y + uScroll * 0.45) * 1.5) / (H * 0.6), uTime * 0.32);

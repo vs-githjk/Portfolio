@@ -140,7 +140,7 @@ void main() {
   float size = mix(mix(0.9, 1.25 + 0.95 * lum, home), ballSize, m);
   size *= 1.0 + bu * 1.4 * max(dir.z, 0.0);
   // Nearer points are a little larger: the cloud has a front and a back.
-  size *= depth * clamp(uSize / (540.0 * uDpr), 0.7, 1.25);
+  size *= depth * clamp(uSize / (540.0 * uDpr), 0.92, 1.25);
   // Without the bloom pass (a phone), one point in ten is a wide, faint one:
   // together they are the air around the light, for the price of nothing.
   float haze = uHaze * step(0.9, r1);

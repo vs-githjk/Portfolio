@@ -10,6 +10,13 @@ engineer and AI engineer roles). The page has one job: in sixty seconds, make so
 think "this person has done a lot, has won things, and is good at the job", then make it
 easy to email him.
 
+**Nov 15 2026, the three-worlds overhaul (branch `overhaul`).** Vidyut: "I don't like the
+monochromatic all-blue thing... galaxy, water, then earth... a very nature-effect thing...
+no AI slop, no AI fonts"; and later: "My projects define me as an engineer, but the UI is
+what defines me as a person." The page is now one descent through three worlds, each with
+its own palette, and every section has one signature moment. Where an older paragraph below
+says "The Deep" or "one accent", the sections marked (three worlds) are the current truth.
+
 Stack: Vite + React 19, plain CSS with custom properties. No Tailwind, no CSS-in-JS, no
 component library, no router. Single page. Runtime dependencies are react, react-dom and
 three (pinned to an exact version, used only by the world below the hero, in its own lazy
@@ -28,15 +35,22 @@ evidence of an instinct, not the headline.
 
 Three rules encode the thesis:
 
-1. **Color is scarce, so it means something.** The ground is deep indigo-black ("Indigo",
-   see `tokens.css`). One accent, electric blue (`--acc`), means the front ring card, the
-   progress line, rules, the primary action and the commit-graph ramp. Gold (`--win`) is
-   for awards and nothing else. Mint (`--ok`) means live or available. Coral (`--bad`) is
-   reserved for a defect state and nothing uses it today. The atmosphere is two things and
-   no more: the light beams on the first screen and The Deep below it (the 3D world, in the
-   same indigo, blue and violet as the beams). The one place with other colours is the
-   Master Agents crew art, which brings its own. If you are about to add another glow, a
-   gradient wash or another accent, stop and ask first.
+1. **Color is scarce, so it means something (three worlds).** There are three palettes, one
+   per world, declared in `tokens.css`: `:root` is the galaxy (indigo ground, electric blue
+   accent: the hologram's light, the hero, the ring); `[data-realm='sea']` is the sea (deep
+   petrol ground, a sunlit-shallows cyan accent; Experience and Builds); `[data-realm='earth']`
+   is the earth (warm basalt ground, bone text, an ember accent; the crew's panel and
+   everything after it). Inside a world there is still exactly one accent, and it still means
+   the active thing, the rule, the primary action and the graph ramp. Gold (`--win`) is for
+   awards and nothing else, mint (`--ok`) means live or available, coral (`--bad`) is
+   reserved, in every world. The atmosphere is the scene behind the page and nothing else:
+   the beams on the first screen, then the water, then the land and sky. The one place with
+   other colours is the Master Agents crew art. If you are about to add another glow, a
+   gradient wash, a fourth palette or a second accent inside a world, stop and ask first.
+   Tokens built from other tokens (`--win-bg`, `--badge-bg`, `--glass`, `--elev-*`, `--rule`)
+   are declared again for `[data-realm]`, because a custom property resolves where it is
+   declared. `<html data-at="sea|earth">` (written by `Background.jsx`) gives the nav the
+   palette of the world under it.
 
 2. **Claims come with receipts, and are never fabricated.** Every number traces to a
    source (the paper, the resume, a project repo or doc, Devpost, GitHub, or something
@@ -59,15 +73,20 @@ Three rules encode the thesis:
 | Section | Job |
 |---|---|
 | Welcome | His face drawn in light says hello (two lines and a cue); one scroll or a click plays it into the hero |
-| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of ten builds |
-| Experience | Where he has worked; every result is a complete statement |
-| Builds | Two flagship panels (PrismAI, then DuelWise), eight featured builds (four pairs; an odd one would sit centred), the paper, eight more (19 in all), then the Now building panel (Master Agents, a character select screen with the crew's art) |
-| Highlights | Four one-line statements, after the stories they summarize |
-| Proof of work | GitHub commit graph, the nine wins (each hackathon win with a Devpost page links to it), four verification links |
-| Principles | How he thinks about building (2x2 tiles) |
-| Value | What that is worth to you (hairline rows) |
-| Toolkit | The inventory: a label and a line of tools per group |
-| Contact | The ask: his studio headshot (the one photograph of his face; the welcome is that face in points of light, the hero a sunset silhouette), then the email as the hero of the section |
+| Hero | The name beside his portrait (about 160px), lit from above by the beam field, and the orbit ring of builds |
+| Vista: surface | The sea's surface in section; the reader dives through it. One line: "Under the surface: the work." |
+| Experience (sea) | Where he has worked; every result is a complete statement. Moment: light shafts and caustics, and a sounding line whose weight sinks as the roles are read |
+| Vista: giant | The amber ringed giant and the manta |
+| Builds (sea) | Two flagship panels (PrismAI, then DuelWise), the featured builds, the paper, the compact grid. Moment: a shaft of light finds the card under the pointer |
+| Vista: shore | A whole screen: warm light, the camera rises through a second waterline into dusk on a desert shore. One line: "On solid ground: the proof." |
+| Crew (earth) | The Now building panel (Master Agents, a character select screen with the crew's art), now its own `<section class="sec crew">`: the command post, with the mast, the lamp and one figure on the hill behind it |
+| Highlights | Four one-line statements, after the stories they summarize, cut as four strata of rock (one column of beds, palest on top) |
+| Vista: galaxy | Night: the spiral galaxy rises over the ridges |
+| Proof of work | GitHub commit graph (ember towers), the nine wins (each hackathon win with a Devpost page links to it), four verification links |
+| Principles | How he thinks about building (2x2 tiles that lean to the pointer) |
+| Value | What that is worth to you (hairline rows). Moment: a moon that fills from crescent to full as the rows are read |
+| Toolkit | The inventory: a label and a line of tools per group; the marks between tools are small stars |
+| Contact | The ask: his studio headshot (the one photograph of his face; the welcome is that face in points of light, the hero a sunset silhouette), then the email as the hero of the section, at dawn on the limb of the earth |
 
 Principles and Value are deliberately different shapes (tiles vs hairline rows) so they do
 not read as the same module twice. Keep them visually distinct.
@@ -129,7 +148,7 @@ HTML: an empty box for the face, the greeting, the cue. `Hologram.jsx` draws the
 fixed background stack with plain WebGL (no three.js: the chunk is about 5 KB gzipped).
 
 - The points are baked offline by `scripts/bake-hologram.py` from the studio headshot into
-  `public/holo/face.bin` (about 22,500 points on scan rows, 110 KB; position, depth, brightness).
+  `public/holo/face.bin` (Nov 15: about 32,200 points on 254 scan rows, 157 KB; position, depth, brightness).
   The photo itself is not shipped. Re-run the script by hand if the portrait changes.
 - Scroll is the timeline, counted from the top of the page to the hero (`lib/origin.js`,
   `heroOrigin()`): the face loosens into a ball of folded light (0.04 to 0.4), the ball has the
@@ -151,6 +170,22 @@ fixed background stack with plain WebGL (no three.js: the chunk is about 5 KB gz
   hidden tab. Mobile Lighthouse measured 99 with it (Nov 12).
 - Under `prefers-reduced-motion` it is one still frame that scrolls away with the page: no
   drawing in, no typing, no ball, no empty run.
+- **Craft pass (Nov 15, "the hologram can be 10 times better").** Light: a fixed key from the
+  upper left and a rim on the silhouette, from a normal estimated from where a point sits on
+  the head, so the light moves across the face as it turns. Glow: a bloom (the points drawn
+  again, larger, into a third-size buffer, blurred twice and added back), desktop only; a
+  phone draws half the points with one wide faint point in ten instead, which is what keeps
+  mobile Lighthouse at 98. Draw-in: ahead of the scan line a point is a star on a wide field;
+  as the line passes it comes home, so the stars gather into his face. He looks a little
+  toward the pointer on a desktop (eased, added to the slow sine). `--holo-gain`,
+  `--holo-bloom`, `--holo-deep|pale|hot`.
+- **The ball is a small ringed world, not a noise sphere**: a globe whose points sit on 44
+  parallels that turn at their own speeds (as the face sits on scan rows), a flat ring with a
+  gap, and a hot core. When it speaks a wave runs round the ring like a voice on a scope
+  (`uSpeak`); in the burst the ring leaves first as a shock wave. It is the page in
+  miniature: the ring of builds round his name, the ringed giant in the sea.
+- Past the hero the canvas is cleared once (a nav jump used to leave the last frame of the
+  ball and a half-typed line on screen).
 - Tried and dropped: the face inside the ring behind the hero copy (the shield hides it, or it
   hurts the name) and in the portrait's slot (a 190px thumbnail with no room to transform).
 - No film or show names, logos or assets anywhere near it; it is his own face, in this palette.
@@ -184,47 +219,67 @@ Run 4 (Nov 12 2026, Vidyut's notes while watching it live):
   margin was cut in run 5 ("nonsense": it crossed his name and sat on the planet). Do not add
   a wandering guide back; anything that moves needs a place and a reason.
 
-### The Deep (`components/World.jsx`, `lib/worldScene.js`, `components/Vista.jsx`)
+### The three worlds (`components/World.jsx`, `lib/worldScene.js`, `lib/worldBackdrop.js`, `components/Vista.jsx`)
 
-Below the hero the page dives into a 3D world, "a galaxy underwater" (Nov 12 2026: Vidyut
-asked for planets and things flying, and approved three.js for it). One WebGL canvas in the
-fixed stack, drawn with three.js: a ringed gas giant with a manta of light climbing past it
-(scroll moves it; it swims nearer the camera than any part of the planet and keeps left of its
-disc, so the two never intersect), a school of light fish that circles the contact block and scatters when the
-page moves, a moon, a spiral galaxy of points that wakes as the reader reaches it (it spins up,
-brightens and leans toward the pointer),
-three large medusae of light that pulse upward, one rare comet (the glass shards were cut, Vidyut Nov 12),
-marine snow that is also the stars, and the lit limb of a world that rises under the footer. Every shader is in
-`worldScene.js`; colours come from `--beam-*`, `--star-*` and the `--world-*` tokens.
+Below the hero the page is one descent (Nov 15 2026; it grew out of "The Deep", Nov 12). One
+WebGL canvas in the fixed stack, drawn with three.js 0.170.0. Research and reasoning:
+`scratchpad/overhaul/research.md` in the session that built it (igloo.inc for one continuous
+place, Cargo for a depth grade and god rays, Immersive Garden for landscape as flat painted
+planes, Bruno Simon's 2025 folio for a personal world with its own day cycle).
 
+- **Two full-window passes do the worlds** (`worldBackdrop.js`). BACK is drawn first, under
+  every object: nothing above the sea's surface (the canvas is clear there, so the hero's
+  beams and stars show), the water below it, and the sky of the earth once the camera is up.
+  LAND is drawn last, over every object, so the sun, the moon and the galaxy set behind the
+  ridges. Both work in CSS pixels from the top left of the window.
+- **Two waterlines are the only hard edges.** `uTop` is a place in the page (the `surface`
+  vista, 36% down it) and leaves through the top of the window: the dive. `uExit` comes down
+  from the top of the window over about half a screen of scroll as the `shore` vista arrives:
+  the camera rising. While it is on screen the land stands on it (`uBase`), an over and under
+  split shot. Everything else is a grade.
+- **The sea.** A grade from just under the surface (`--sea-shallow`) to the deep
+  (`--sea-abyss`) over a screen and a half; the hero's blue beams carry on down as the first
+  shafts (`uBeam`), so space bleeds into water; caustics (four steps, three on a phone) only
+  where there is light. In it: marine snow (clipped to the water), the amber ringed giant
+  (`--giant-*`: a warm world in teal water is the page's one complementary contrast), the
+  manta, medusae in the margins of Builds, a school of light fish under the shore. In the
+  last screen and a half the low sun reaches the water (`--sea-warm`, `--sea-ray-warm`).
+- **The earth.** Sky: dusk to night to dawn (`uDusk`, `uDawn`, the `dusk`/`dawn` tracks in
+  `layout()`): golden hour at the shore, the last light as the crew's panel leaves, night by
+  the galaxy vista, first light from Contact. A flat pale sun (a screen print's disc), stars
+  that come out with the dark, one meteor at night. Land: five flat planes (sharp far range,
+  mesas and buttes, hills, dunes, the ground underfoot), each paler toward its foot where the
+  mist lies, far planes in the colour of the air (`--ridge-far`), near ones umber (`--ridge`).
+  They drift sideways with the scroll, near planes faster (`uDrift`). `uLand` (the `land`
+  track) stands the land tall at the shore and the galaxy and sinks it to a low band while
+  the reader reads; it is gone at the foot, where the lit limb of the earth rises.
+- **The command post** (Vidyut: "mountains, a commander, Master Agents in that world"): on
+  the hills plane, a mast with a lamp that breathes and one figure beside it, drawn as signed
+  distance shapes in the LAND shader. About 60px tall, shown only while the land stands tall
+  at dusk. It is a place, not a mascot: it does not move or follow.
+- **The moon** stands far back (z = -2600), so it crosses the window slowly through Value, in
+  the right margin; its light turns with the scroll, a thin crescent at the heading and full
+  by the last row.
 - One unit is one CSS pixel on the plane z = 0 and the camera sits at y = -(scroll + half a
-  screen), so depth is parallax: deeper things move slower than the page. The camera eases
-  toward the scroll position.
-- A `<Vista set="giant|galaxy|horizon" />` in `App.jsx` is an empty window in the page. The
-  scene reads its place in the document and centres that set piece on it, and lays out again
-  whenever the page height changes (a ResizeObserver on the body). The moon sits beside the
-  Value heading. Snow and medusae wrap around the camera, so they never run out.
-- Less but more (Vidyut, Nov 12, after a first pass with eight medusae and fourteen shards:
-  "too much random stuff"). The moments are the set pieces. The reading sections (`QUIET` in
-  `worldScene.js`: Experience, Principles, Value, Toolkit) are near-empty: while the middle of
-  the screen is in or near one, the medusae and comet fade out (`uShow`) and only the
-  snow is left (plus the moon by the Value heading). Do not raise the counts; make one better.
-- Text stays readable three ways: the drifting things keep to the margins and the column
-  edges (`edge()`), and dim inside the column (`calm()`); every section paints most of the
-  ink back behind its column (`.sec::before`, `--world-calm`, feathered so it has no edge);
-  and text on bare ground carries a tight ink halo. Measured on Nov 12: no
-  bare text box under AA at 1440 against the 95th percentile of its backdrop, halo not
-  counted. Bright set pieces must stay inside their vistas: re-measure after moving one.
-- Budget: the chunk (about 480 KB, 125 KB gzipped) is requested on the first scroll, or after
-  a few idle seconds on a desktop, never before the first paint. It draws only while visible
-  (not on the first screen, not in a hidden tab), about 30 frames a second when idle and every
-  frame while the camera is catching up with a scroll. DPR is capped at 1.75 (1.5 on phones);
-  phones get about a third of the points, two medusae and no antialiasing.
-- Under `prefers-reduced-motion` it draws one still frame (snow, the giant and the galaxy in
-  the corners, nothing drifting) and the vistas close. Without WebGL
-  `<html data-world="off">` closes the vistas and the page is its plain ground.
-- Do not add another WebGL canvas. The welcome hologram is the one exception (a second, tiny
-  context that stops drawing before this one starts); anything new below the hero goes in this scene.
+  screen), so depth is parallax. A `<Vista set="surface|giant|shore|galaxy|horizon" />` is an
+  empty window in the page; `layout()` reads their places and builds the tracks, and runs
+  again whenever the page height changes.
+- Less but more still holds: the reading sections (`QUIET`) are near-empty, the medusae are
+  gone a screen and a half before the shore, the land is a silhouette behind text. Do not
+  raise the counts; make one better.
+- Text stays readable the same three ways (margins, the calm ground `.sec::before`, the ink
+  halo); `--world-calm` is 0.4 in the sea (a heavier ground reads as a box in bright water)
+  and 0.62 elsewhere. The crew section has no calm ground (its panel is its own).
+- Budget: the chunk (about 47 KB of scene code plus three.js) is requested on the first
+  scroll, never before the first paint. It draws only while visible, about 30 frames a second
+  idle. DPR capped at 1.75 (1.5 on phones). `worldFade` brings the canvas up in the first
+  fifth of a screen after the hero starts to leave.
+- **No moving world:** under `prefers-reduced-motion` the scene draws nothing
+  (`<html data-world="still">`), and without WebGL it is `off`. In both, and before the chunk
+  has loaded, every section paints a still ground in its own world's colours (the STILL
+  GROUNDS rules at the top of `sections.css`, `--ground-*`), the two waterline vistas shrink
+  to their line of text, and the other vistas close.
+- Do not add another WebGL canvas. The welcome hologram is the one exception.
 
 In Proof of work, `Skyline.jsx` stands the commit graph up into 3D towers as it scrolls in
 (height is count^0.4, colour ranked within the year; the tooltip keeps the exact count). It turns
@@ -320,14 +375,23 @@ shadows, never a spin.
 
 ## Type
 
-Three faces, three jobs, self-hosted (latin subset): Instrument Serif for display (the name,
-h2s, card titles, every big number, the email), Geist for UI and body, Geist Mono for labels,
-nav, buttons, badges and stack lines.
+Three faces, three jobs, self-hosted (latin subset), all SIL Open Font License, chosen on Nov
+15 2026 so the page has a voice of its own (Geist, Geist Mono and Instrument Serif were
+retired as the look of every generated page):
+
+- **Fraunces** for display (the name, h2s, card titles, every big number, the email): a soft
+  old-style serif from the family of the 1970s desert-print sleeves the earth world is drawn
+  after. Two static instances, roman and italic, at optical size 48, weight 400, SOFT 100
+  (about 20 KB each; any other axis value makes Google serve a 60 to 150 KB variable file).
+  There is no bold: never set `font-weight` above 400 on the display face.
+- **Schibsted Grotesk** for UI and body (variable 400 to 700).
+- **Spline Sans Mono** for labels, nav, buttons, badges and stack lines (variable 400 to 600).
 
 ## Conventions
 
 - Class names are plain and region-prefixed (`.build-title`, `.xp-row`, `.card-link`).
   No BEM, no utility soup.
+- `content.js` has a `worlds` export: the two lines on the waterline vistas.
 - `**double asterisks**` in `content.js` render as emphasis via `<Rich>`. That is the
   only markup supported; don't add a markdown dependency.
 - Build images ship as `/builds/<id>.webp` (1200px) plus `-640` and `-900` variants; `Media`
@@ -388,7 +452,8 @@ Don't add these back without asking:
 - GitHub stars or follower counts (zero followers, zero to two stars). Use the commit graph.
 - A proof band of bare numbers under the hero (see rule 3), and any halo or nebula.
 - Alltr (not his project) and TransitGuard's dead demo link.
-- A second WebGL layer (The Deep is the one), and any effect that reads as an effects reel.
+- A second WebGL layer (the three-worlds scene is the one), and any effect that reads as an effects reel.
+- Geist, Inter, Instrument Serif or a system font as the identity; glass cards or blur scrims behind text (Gemini suggested them twice on Nov 15; the calm ground does that job).
 
 ## Later rounds: layout rules worth keeping
 

@@ -82,8 +82,7 @@ export default function Background() {
       let at = '';
       for (const el of realms) {
         const r = el.getBoundingClientRect();
-        if (r.top <= 64 && r.bottom > 64) at = el.dataset.realm;
-        else if (r.top <= 64 && !at && el.dataset.realm === 'earth') at = 'earth';
+        if (r.height > 0 && r.top <= 64) at = el.dataset.realm; // the last one the bar has reached
       }
       if (at !== was) {
         was = at;
