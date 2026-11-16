@@ -173,15 +173,18 @@ void main(){
 
 /* Anatomy, in body units (one unit is the gap between two vertebrae). */
 const HEAD = [
-  [0, 0.62],
-  [1.4, 1.1],
-  [3.0, 1.75],
-  [4.7, 3.0],
-  [6.4, 2.6],
-  [7.9, 1.7],
-]; // distance from the snout tip, radius
-const SKULL = 3; // the widest head node: the eye and the crests sit here
-const NECK = 9.3; // where the newest vertebra sits
+  [0, 0.78],
+  [1.0, 1.02],
+  [2.4, 1.08],
+  [3.9, 1.4],
+  [5.2, 2.15],
+  [6.5, 3.25],
+  [7.8, 3.55],
+  [9.2, 2.95],
+  [10.5, 2.05],
+]; // distance from the snout tip, radius: a long muzzle, a brow, a neck
+const SKULL = 6; // the widest head node: the eye and the crests sit here
+const NECK = 11.7; // where the newest vertebra sits
 const BROW = [0, 1.75, -1.75]; // lantern ribs along the head: over the brow and down each cheek (rad from the back)
 const TAIL = 7; // nodes after the oldest vertebra
 const DAYS = 7;
@@ -369,9 +372,9 @@ export const wyrm = definePiece({
       LEAVES.push(leaf(wingAt + 0.6, 19, 1.1, 0.56, side, 0.3, 1, 0.32, 1));
       LEAVES.push(leaf(wingAt + 1.2, 14, 1.2, 0.94, side, 0.6, 1, 0.34, 1));
       LEAVES.push(leaf(backHalf, 10, 1.5, 0.72, side, 1.6, 0.6, 0.3, 1)); // the hind pair
-      LEAVES.push(leaf(5.2, 10.5, 0.5, 0.55, side, 0.3, 0.1, 0.16)); // a crest behind each eye
+      LEAVES.push(leaf(8.4, 12, 0.36, 0.72, side, 0.3, 0.1, 0.2)); // a crest behind each eye
     }
-    LEAVES.push(leaf(3.2, 5.5, 3.14159, 0.95, 1, 0.9, 0.12, 0.26)); // a leaf under the chin
+    LEAVES.push(leaf(5.6, 6, 3.14159, 0.95, 1, 0.9, 0.12, 0.26)); // a leaf under the chin
     LEAVES.push(leaf(length - 1.2, 6.5, 0.55, 1.15, 1, 2.4, 0.3, 0.34)); // the fluke: two leaves
     LEAVES.push(leaf(length - 1.2, 6.5, 2.6, 1.15, 1, 2.9, 0.3, 0.34));
     const leafVerts = (LU + 1) * (2 * LV + 1);
@@ -432,7 +435,7 @@ export const wyrm = definePiece({
     for (const L of LEAVES) {
       for (let i = 0; i <= LU; i++) {
         for (let j = -LV; j <= LV; j++) {
-          bandAttr.set([i / LU, j / LV, 3, L.len > 10 ? 1 : 0.85], (o + i * (2 * LV + 1) + j + LV) * 4);
+          bandAttr.set([i / LU, j / LV, 3, 1], (o + i * (2 * LV + 1) + j + LV) * 4);
         }
       }
       for (let i = 0; i < LU; i++) {
@@ -558,7 +561,7 @@ export const wyrm = definePiece({
             a.copy(P[k]).add(P[k + 1]).multiplyScalar(0.5);
             b.copy(Un[k]).add(Un[k + 1]).normalize();
             c.copy(Sn[k]).add(Sn[k + 1]).normalize();
-            rr = Math.min(rad[k] * sc[k], rad[k + 1] * sc[k + 1]) * (kind[k] === 1 && kind[k + 1] === 1 ? 0.97 : 0.8);
+            rr = Math.min(rad[k] * sc[k], rad[k + 1] * sc[k + 1]) * (kind[k] === 1 && kind[k + 1] === 1 ? 1 : 0.8);
             glow = 0;
           } else {
             a.copy(P[k]);
@@ -652,7 +655,7 @@ export const wyrm = definePiece({
         const side = s ? 1 : -1;
         for (let i = 0; i <= BARB; i++) {
           const u = i / BARB;
-          const f = nodeAt(0.8 + u * 15);
+          const f = nodeAt(0.6 + u * 18);
           sample(f, a, P);
           sample(f, b, Sn).normalize();
           sample(f, c, Un).normalize();

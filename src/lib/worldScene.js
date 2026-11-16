@@ -543,6 +543,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: !phone, stencil: false });
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = false;
+  renderer.info.autoReset = false; // one count for the whole frame (three passes)
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 10, 12000);
   const time = { value: 0 };
@@ -1322,6 +1323,7 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     if (hue.amt > 0) land.lampCol.lerp(hue.want, 0.08);
 
     // Draw. Nothing of the world is in the window above the first surface.
+    renderer.info.reset();
     renderer.setRenderTarget(null);
     renderer.clear();
     if (solo) {
@@ -1448,6 +1450,16 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
       put('moon', w / 2 + sizes.moonX, h * 0.3, moon.visible);
       return out;
     },
+    /** What the scene is made of, counted from the pieces themselves (Receipts, credits, tests). */
+    census: () => ({
+      vertebrae: dragon.count(),
+      ...Object.fromEntries(flags.binding.map((b) => [b.id, b.count()])),
+      giant: carried.binding.count(),
+      fires: land.fires ? land.fires.binding.count() : 0,
+      stars: winStars.binding.count(),
+    }),
+    /** Draw calls and triangles of the last frame. */
+    stats: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, points: renderer.info.render.points, programs: renderer.info.programs?.length ?? 0 }),
     pieces: () => ({ dragon, flags, winStars, carried, fires: land.fires }),
     weeks: dragon.count(),
   };

@@ -2,7 +2,7 @@ import { AdditiveBlending, BufferAttribute, BufferGeometry, Group, LineSegments,
 import { seeded } from '../lib/field';
 import { anchorRect } from './anchors';
 import { CLIP, clipUniforms, setClip } from './guard';
-import { definePiece, textBoxes } from './piece';
+import { definePiece, neighbourText } from './piece';
 
 /* A small world for each flagship build, drawn in its own window in the page
    (the anchor flag-<id>). Every countable thing in one comes from that build's
@@ -80,6 +80,7 @@ function sketch() {
 const BUILD = {
   prism({ cells }, { rnd, dense }) {
     const k = sketch();
+    const tally = { cells: 0 };
     const R = 0.44;
     const D = 0.17;
     const tri = [90, 210, 330].map((d) => [Math.cos((d * Math.PI) / 180) * R, Math.sin((d * Math.PI) / 180) * R]);
@@ -131,12 +132,14 @@ const BUILD = {
         k.seg(p, q, { tone: 0.42, delay: 0.5 + 0.3 * (i / cells) });
       }
       k.dot(c, { size: 3.6, tone: 1, delay: 0.56 + 0.3 * (i / cells) });
+      tally.cells++;
     }
-    return { ...k, tilt: [-0.12, 0.22], sway: 0.08, ext: [2.5, 1.18] };
+    return { ...k, tally, tilt: [-0.12, 0.22], sway: 0.08, ext: [2.5, 1.18] };
   },
 
   board({ moons, lights }, { rnd, dense }) {
     const k = sketch();
+    const tally = { moons: 0, lights: 0 };
     const R = 0.64;
     const seg = dense ? 40 : 24;
     const on = (lat, lon) => [R * Math.cos(lat) * Math.cos(lon), R * Math.sin(lat), R * Math.cos(lat) * Math.sin(lon)];
@@ -161,18 +164,21 @@ const BUILD = {
       const r = 0.98 + 0.17 * orbit + 0.05 * rnd();
       const a = (i / moons) * Math.PI * 2 + orbit;
       k.dot([Math.cos(a) * r, 0, Math.sin(a) * r], { from: [0, 0, 0], size: 6.4, tone: 1, delay: 0.3 + 0.4 * (i / moons), spin: [0.16 - 0.035 * orbit, [0.2, -0.3, 0.45][orbit]] });
+      tally.moons++;
     }
     // The band: every light is one point, all on one tilted ring.
     for (let i = 0; i < lights; i++) {
       const a = (i / lights) * Math.PI * 2 + rnd() * 0.02;
       const r = 1.6 + 0.16 * (rnd() - 0.5);
       k.dot([Math.cos(a) * r, 0.05 * (rnd() - 0.5), Math.sin(a) * r], { from: [Math.cos(a) * 0.7, 0, Math.sin(a) * 0.7], size: 2 + 1.3 * rnd(), tone: 0.55 + 0.45 * rnd(), delay: 0.4 + 0.42 * (i / lights), spin: [0.045, 0.34] });
+      tally.lights++;
     }
-    return { ...k, tilt: [0.3, 0], sway: 0.06, ext: [1.78, 1.0] };
+    return { ...k, tally, tilt: [0.3, 0], sway: 0.06, ext: [1.78, 1.0] };
   },
 
   scan({ photos, placed, decoys, decoysPlaced }, { rnd, dense }) {
     const k = sketch();
+    const tally = { photos: 0, placed: 0, decoys: 0, decoysPlaced: 0 };
     const [W, H, Dp] = [2.1, 0.8, 1.0];
     const [nx, ny, nz] = [4, 2, 2];
     const gx = (i) => -W / 2 + (i / nx) * W;
@@ -230,11 +236,13 @@ const BUILD = {
     const take = Math.min(placed, slots.length);
     for (let i = 0; i < photos; i++) {
       const delay = 0.34 + 0.46 * (i / photos);
+      tally.photos++;
       const from = outside(1.7, 2.1);
       if (i < take) {
         const s = slots[i];
         frame(s.c, s.u, { from, tone: 0.95, delay });
         k.dot(s.c, { from, size: 3, tone: 1, delay: delay + 0.04 });
+        tally.placed++;
       } else {
         // Not placed: it stays outside the walls, unlit.
         const a = -0.5 + 0.34 * (i - take);
@@ -248,10 +256,12 @@ const BUILD = {
       const c = [Math.cos(a) * r, (rnd() - 0.5) * 0.7, Math.sin(a) * r];
       const u = [-Math.sin(a), 0, Math.cos(a)];
       const s = i < decoysPlaced ? slots[take + i] : null;
+      tally.decoys++;
+      if (s) tally.decoysPlaced++;
       if (s) frame(s.c, s.u, { from: c, tone: 0.5, delay: 0.8 });
       else frame(c, u, { from: c, tone: 0.16, delay: 0.1 + 0.3 * (i / decoys), spin: [0.03, 0], half: [0.062, 0.044] });
     }
-    return { ...k, tilt: [0.34, -0.5], sway: 0.14, ext: [2.3, 1.08] };
+    return { ...k, tally, tilt: [0.34, -0.5], sway: 0.14, ext: [2.3, 1.08] };
   },
 };
 
@@ -309,7 +319,7 @@ export const flagWorlds = definePiece({
       for (const wd of worlds) {
         wd.rect = anchorRect(`flag-${wd.id}`);
         if (!wd.rect) continue;
-        wd.boxes = textBoxes(wd.rect.el);
+        wd.boxes = neighbourText(wd.rect.el, [wd.rect.top, wd.rect.bottom]); // the title stands in the top of the window
         wd.S = Math.min(wd.rect.w / 2 / wd.k.ext[0], wd.rect.h / 2 / wd.k.ext[1]) * 0.96;
       }
     }
@@ -360,7 +370,7 @@ export const flagWorlds = definePiece({
       },
       binding: worlds.map((wd) => ({
         id: wd.kind,
-        count: () => wd.scene,
+        count: () => wd.k.tally, // counted as the world was built, not read back from its input
         project: () => ({ x: wd.x, y: wd.y, visible: wd.on }),
       })),
     };

@@ -61,17 +61,20 @@ export default function World() {
           relayout();
         });
       }
+      // Dev: ?weeks=n&crew=n&wins=n&cells=n change the data, to prove the scene follows it.
+      const q = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
+      const cut = (list, key) => (q?.has(key) ? list.slice(0, Number(q.get(key))) : list);
+      const scenesOf = Object.fromEntries(builds.flagships.filter((f) => f.scene).map((f) => [f.id, q?.has('cells') && f.scene.cells ? { ...f.scene, cells: Number(q.get('cells')) } : f.scene]));
       world = createWorld(canvas, {
-        days: github?.days,
+        days: q?.has('weeks') ? github?.days.slice(-7 * Number(q.get('weeks'))) : github?.days,
         solo: import.meta.env.DEV ? (new URLSearchParams(window.location.search).get('solo') ?? '') : '',
         // Every count in the scene comes from the page's own data.
-        scenes: Object.fromEntries(builds.flagships.filter((f) => f.scene).map((f) => [f.id, f.scene])),
+        scenes: scenesOf,
         counts: {
           flagships: builds.flagships.map((f) => f.id),
           rest: [...builds.items, ...(builds.research ? [builds.research] : []), ...builds.more.items].map((b) => b.id),
-          crew: builds.building.crew.map((c) => c.id),
-          wins: proofOfWork.wins.items.length,
-          winIds: proofOfWork.wins.items.map((x) => x.project),
+          crew: cut(builds.building.crew, 'crew').map((c) => c.id),
+          winIds: cut(proofOfWork.wins.items, 'wins').map((x) => x.project),
         },
       });
     } catch {
@@ -80,6 +83,7 @@ export default function World() {
     }
 
     window.dispatchEvent(new CustomEvent(EV.loaded, { detail: { stage: 'chunk' } }));
+    if (import.meta.env.DEV) window.__world = world;
     let raf = 0;
     let cam = window.scrollY;
     let last = 0;
@@ -158,7 +162,9 @@ export default function World() {
       const every = moving || now < busy;
       if (every || now - last >= IDLE_MS - 2) {
         readHue(now);
+        const t0 = import.meta.env.DEV ? performance.now() : 0;
         world.render(now / 1000, cam, eye.x, eye.y);
+        if (import.meta.env.DEV) (window.__worldMs ??= []).push(performance.now() - t0);
         if (every && ran && now - last < 120) measure(now, now - last);
         ran = every;
         last = now;
