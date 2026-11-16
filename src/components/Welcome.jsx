@@ -5,6 +5,8 @@ import { heroOrigin } from '../lib/origin';
 import { createEntry } from '../shell/entry';
 import LoadLine from '../shell/LoadLine';
 import PlateArc from '../shell/PlateArc';
+import { EV } from '../kit/contract';
+import { emit } from '../kit/bus';
 
 /* The Threshold: the first screen. His face in light (Hologram.jsx draws it into
    the fixed background, on the empty box marked data-holo-anchor here), a
@@ -111,7 +113,9 @@ export default function Welcome() {
   const plainClick = (e) => e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
   const enter = (e) => {
     if (plainClick(e) || !ctl.current) return;
-    if (ctl.current.enter()) e.preventDefault();
+    if (!ctl.current.enter()) return;
+    e.preventDefault();
+    emit(EV.sound, { cue: 'tick' }); // heard only if Sound is on
   };
   const skip = (e) => {
     if (plainClick(e) || !ctl.current) return;
