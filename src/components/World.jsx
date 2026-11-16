@@ -192,7 +192,13 @@ export default function World() {
     };
     const ro = new ResizeObserver(relayout);
     ro.observe(document.body);
+    let lamp = false;
     const onPointer = (e) => {
+      // The lamp lights with the first move: before it there is no pointer to stand at.
+      if (!lamp) {
+        lamp = true;
+        world.setLamp(true);
+      }
       want.x = (e.clientX / window.innerWidth) * 2 - 1;
       want.y = (e.clientY / window.innerHeight) * 2 - 1;
     };
@@ -258,7 +264,6 @@ export default function World() {
     window.addEventListener(EV.run, onRun);
     window.addEventListener(EV.travel, onTravel);
     window.addEventListener(EV.receipts, onReceipts);
-    world.setLamp(fine);
     kick();
 
     return () => {

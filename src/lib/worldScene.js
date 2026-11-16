@@ -965,10 +965,12 @@ export function createWorld(canvas, { days, scenes = {}, counts = {}, solo = '' 
     colHalf = Math.min(600, w / 2) - pad;
     // Builds is set wider than the reading sections: inside it the column is its own.
     const deep = document.querySelector('#builds');
-    const deepWrap = deep?.querySelector('.wrap')?.getBoundingClientRect();
+    const deepWrap = deep?.querySelector('.wrap');
     const deepBox = deep?.getBoundingClientRect();
     home.deep = deepBox ? [deepBox.top + window.scrollY, deepBox.bottom + window.scrollY] : [1e9, 1e9];
-    wideHalf = Math.max(colHalf, deepWrap ? deepWrap.width / 2 - 8 : colHalf);
+    // Its text column is the wrap less its own gutters (the same measure as colHalf).
+    const gut = deepWrap ? parseFloat(getComputedStyle(deepWrap).paddingLeft) || 0 : 0;
+    wideHalf = Math.max(colHalf, deepWrap ? deepWrap.getBoundingClientRect().width / 2 - gut : colHalf);
     zone.uMid.value = (w / 2) * ratio;
     zone.uCol.value = phone ? 1e5 : colHalf * ratio;
     stage.uColHalf.value = phone ? 1e5 : colHalf;
