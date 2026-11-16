@@ -5,6 +5,7 @@ import {
   BufferGeometry,
   DoubleSide,
   Group,
+  HalfFloatType,
   InstancedBufferAttribute,
   InstancedMesh,
   LatheGeometry,
@@ -12,6 +13,7 @@ import {
   PerspectiveCamera,
   PlaneGeometry,
   Points,
+  Quaternion,
   RingGeometry,
   Scene,
   ShaderMaterial,
@@ -19,33 +21,45 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  WebGLRenderTarget,
 } from 'three';
 import { seeded, triple } from './field';
-import { BACK_FRAG, BACK_VERT, LAND_FRAG, LAND_VERT } from './worldBackdrop';
+import { BACK_FRAG, BACK_VERT, COMP_FRAG, COMP_VERT } from './worldBackdrop';
+import { createLand, LAND_FOV } from './worldLand';
 
 /* The three worlds: the three.js scene behind every section below the hero.
 
-   The page is one descent. The hero ends on the surface of a sea, seen in
-   section; scrolling is a dive through it. In the water hang a ringed gas giant
-   in amber, a manta of light, a few medusae and a school of light fish; near
-   the end of Builds warm light comes down, the camera rises through a second
-   waterline and it is dusk on a desert shore: layered ridges, buttes and dunes
-   under a low sun, with the crew's command post on a hill. Night falls over the
-   land through the reading sections (a spiral galaxy rises over the ridges, a
-   moon stands by Value, now and then a meteor crosses), and the page ends at
-   dawn on the lit limb of the earth.
+   The page is one descent, and one light follows it. The hero ends on the surface
+   of a sea, seen in section; scrolling is a dive through it. The water takes the
+   red out of everything first (Beer-Lambert), light fans down from a sun above
+   the surface, and in it hang a ringed gas giant with caustics on its lit side, a
+   manta of light and a school of fish. Near the end of Builds warm light comes
+   down, the camera rises through a second waterline, and it is golden hour on a
+   desert: real ground (lib/worldLand.js) with the crew's lamp-lit base camp on a
+   dune. The sun sets behind the crew's panel; night falls over the commit buttes
+   under the Milky Way; a moon stands by Value as a reading lamp; and the page
+   ends in orbit, at dawn on the limb of the world.
 
-   Two full-window passes do the worlds themselves (lib/worldBackdrop.js): the
-   water and the sky under every object, the land over every object.
+   One scalar, J, says where the reader is in that journey:
+     0 the surface   1 the giant   2 the breach   3 golden hour
+     3.5 sunset      4 night (the galaxy)   4.6 the contact section   5 dawn
+   The sun's height, the land camera's pitch, height and travel, the fog, the
+   stars and the lamp are all read from J, so sky, sea, land and night agree.
 
-   One unit is one CSS pixel on the plane z = 0, and the camera sits at
-   y = -(scroll + half a screen), so that plane moves exactly with the page.
-   Anything deeper moves slower (parallax = camZ / (camZ - z)), anything nearer
-   moves faster. The set pieces are placed from the DOM: each `.vista` spacer in
-   the page names the piece that is centred on it when it is centred on screen.
+   Three draws make a frame, all in one canvas:
+     1 BACK   the soft part of the water and the sky, into a small target
+     2 scene  a full-window composite of that target (lib/worldBackdrop.js) under
+              every object of the sea and the sky
+     3 land   after a depth clear, the desert with its own camera, so the sun,
+              the moon and the galaxy set behind it
+   A pass whose part of the journey is not on screen is skipped.
 
-   Fields without a home (snow, medusae) wrap around the camera, so the
-   dive never runs out however long the page gets. */
+   In the main scene one unit is one CSS pixel on the plane z = 0, and the camera
+   sits at y = -(scroll + half a screen), so that plane moves exactly with the
+   page. Anything deeper moves slower (parallax = camZ / (camZ - z)), anything
+   nearer moves faster. The set pieces are placed from the DOM: each `.vista`
+   spacer in the page names the piece that is centred on it when it is centred on
+   screen. Fields without a home (snow, medusae) wrap around the camera. */
 
 const FOV = 36;
 const TAU = Math.PI * 2;
@@ -60,6 +74,30 @@ float noise(vec3 x){
 float fbm(vec3 p){ float a = 0.5; float s = 0.0; for (int i = 0; i < 4; i++) { s += a * noise(p); p = p * 2.03 + 7.1; a *= 0.5; } return s; }
 `;
 
+/* Everything in the sea is seen through water: light dies on the way to the eye,
+   red first, and what is lost is replaced by the water's own colour. `d` is in
+   units the caller chooses; uWet is 0 above the surface and ashore. */
+const WATER = /* glsl */ `
+uniform vec3 uSigmaW, uWaterCol; uniform float uWet;
+vec3 sea(vec3 col, float d){ vec3 T = exp(-uSigmaW * d * uWet); return col * T + uWaterCol * (1.0 - T); }
+float seaA(float d){ return dot(exp(-uSigmaW * d * uWet), vec3(0.3333)); }
+`;
+const CAUSTIC = /* glsl */ `
+float caustic(vec2 uv, float t){
+  vec2 p = mod(uv * 6.28318, 6.28318) - 250.0;
+  vec2 i = p;
+  float c = 1.0;
+  for (int n = 0; n < 3; n++) {
+    float tt = t * (1.0 - 3.5 / float(n + 1));
+    i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
+    c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / 0.005), p.y / (cos(i.y + tt) / 0.005)));
+  }
+  c /= 3.0;
+  c = 1.17 - pow(c, 1.4);
+  return pow(abs(c), 8.0);
+}
+`;
+
 /* ---- A world: banded gas giant or cratered moon, lit from one side ---------- */
 const PLANET_VERT = /* glsl */ `
 varying vec3 vN; varying vec3 vP; varying vec3 vV;
@@ -71,10 +109,10 @@ void main(){
   gl_Position = projectionMatrix * mv;
 }`;
 const PLANET_FRAG = /* glsl */ `
-uniform vec3 uLight, uNight, uDay, uBand, uRim;
-uniform float uBands, uSeed, uTime, uLit, uRimPow, uRimGain;
+uniform vec3 uLight, uNight, uDay, uBand, uRim, uRay, uLightO, uRingN;
+uniform float uBands, uSeed, uTime, uLit, uRimPow, uRimGain, uNear, uSpan;
 varying vec3 vN; varying vec3 vP; varying vec3 vV;
-${NOISE}
+${NOISE}${WATER}${CAUSTIC}
 void main(){
   vec3 n = normalize(vN);
   float warp = fbm(vP * 2.2 + uSeed + vec3(uTime * 0.012, 0.0, 0.0));
@@ -90,8 +128,25 @@ void main(){
   float ndl = dot(n, uLight);
   float day = smoothstep(-0.12, 0.8, ndl);
   float fres = pow(1.0 - max(dot(n, normalize(vV)), 0.0), uRimPow);
+  if (uBands > 0.5 && uRingN.y > 0.0) {
+    // The ring's shadow on the planet: follow the light from this point to the
+    // ring's plane and see whether the ring is there.
+    float dn = dot(uLightO, uRingN);
+    float tq = -dot(vP, uRingN) / (abs(dn) < 0.001 ? 0.001 : dn);
+    if (tq > 0.0) {
+      float rq = length(vP + uLightO * tq);
+      float band = smoothstep(1.42, 1.5, rq) * smoothstep(2.36, 2.2, rq) * (1.0 - 0.7 * (1.0 - smoothstep(0.02, 0.06, abs((rq - 1.42) / 0.94 - 0.58))));
+      day *= 1.0 - 0.62 * band;
+    }
+  }
   vec3 col = uNight + albedo * (0.035 + day * uLit);
-  col += uRim * fres * uRimGain * (0.06 + 0.94 * smoothstep(-0.3, 0.5, ndl));
+  col += uRim * fres * uRimGain * (0.06 + 0.94 * smoothstep(-0.3, 0.5, ndl)) * (1.0 - 0.6 * uWet);
+  if (uWet > 0.01) {
+    // In the sea: the surface's light net plays over its lit side, and its far
+    // side sinks into the water's colour, so the limb melts instead of cutting.
+    col += uRay * caustic(vP.xz * 0.9 + vP.y * 0.4, uTime * 0.3) * day * 0.5 * uWet;
+    col = sea(col, 0.4 + 1.5 * clamp((vV.z - uNear) / uSpan, 0.0, 1.0));
+  }
   gl_FragColor = vec4(col, 1.0);
 }`;
 /* The air around it: a slightly larger shell seen from inside, brightest at the
@@ -99,19 +154,26 @@ void main(){
 const HALO_FRAG = /* glsl */ `
 uniform vec3 uLight, uRim; uniform float uEdge, uGain;
 varying vec3 vN; varying vec3 vV;
-void main(){
+${WATER}void main(){
   vec3 n = normalize(vN);
   float i = clamp(-dot(n, normalize(vV)) / uEdge, 0.0, 1.0);
   float lit = smoothstep(-0.5, 0.5, dot(normalize(n.xy + 0.0001), normalize(uLight.xy + 0.0001)));
-  gl_FragColor = vec4(uRim, i * i * i * (0.05 + 0.95 * lit) * uGain);
+  gl_FragColor = vec4(sea(uRim, 1.2), i * i * i * (0.05 + 0.95 * lit) * uGain * mix(1.0, 0.55, uWet));
 }`;
 const RING_VERT = /* glsl */ `
-varying vec2 vXY;
-void main(){ vXY = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+varying vec2 vXY; varying vec3 vVP, vC; varying float vR;
+void main(){
+  vXY = position.xy;
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vVP = mv.xyz;
+  vC = (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  vR = length((modelViewMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz);
+  gl_Position = projectionMatrix * mv;
+}`;
 const RING_FRAG = /* glsl */ `
-uniform vec3 uRim, uA; uniform float uIn, uOut;
-varying vec2 vXY;
-${NOISE}
+uniform vec3 uRim, uA, uLight; uniform float uIn, uOut;
+varying vec2 vXY; varying vec3 vVP, vC; varying float vR;
+${NOISE}${WATER}
 void main(){
   float r = length(vXY);
   float t = (r - uIn) / (uOut - uIn);
@@ -119,7 +181,12 @@ void main(){
   float gap = smoothstep(0.02, 0.06, abs(t - 0.58));
   float edge = smoothstep(0.0, 0.08, t) * smoothstep(1.0, 0.8, t);
   float side = 0.45 + 0.55 * smoothstep(-0.9, 0.9, vXY.x / r);
-  gl_FragColor = vec4(mix(uA, uRim, bands), bands * gap * edge * side * 0.62);
+  // The planet's shadow falls across the ring, away from the light.
+  vec3 oc = vVP - vC;
+  float bq = dot(oc, uLight);
+  float hq = bq * bq - dot(oc, oc) + vR * vR;
+  float lit = 1.0 - 0.9 * smoothstep(-0.03 * vR * vR, 0.08 * vR * vR, hq) * step(bq, 0.0);
+  gl_FragColor = vec4(sea(mix(uA, uRim, bands), 1.0), bands * gap * edge * side * 0.62 * seaA(0.5) * lit);
 }`;
 
 /* ---- Marine snow that is also the stars ------------------------------------- */
@@ -143,11 +210,11 @@ void main(){
   vMix = aSeed.z;
 }`;
 const SNOW_FRAG = /* glsl */ `
-uniform vec3 uA, uB;
+uniform vec3 uA, uB, uTint;
 varying float vA; varying float vMix;
 void main(){
   float a = smoothstep(0.5, 0.0, length(gl_PointCoord - 0.5));
-  gl_FragColor = vec4(mix(uA, uB, vMix), a * a * vA);
+  gl_FragColor = vec4(mix(uA, uB, vMix) * uTint, a * a * vA);
 }`;
 
 /* The text column is the calm zone: inside it (in device pixels from the middle
@@ -255,7 +322,7 @@ void main(){
 const MANTA_VERT = /* glsl */ `
 attribute vec3 aUV; // u across the wings (-1 to 1), v nose to tail (0 to 1), 1 for the tail strip
 uniform float uTime;
-varying vec3 vUV;
+varying vec3 vUV; varying vec3 vL; varying vec3 vVP;
 void main(){
   float au = abs(aUV.x);
   float beat = uTime * 0.95; // a slow wing beat
@@ -270,55 +337,80 @@ void main(){
     float trail = 0.55 - 0.3 * sin(3.14159 * au) * (1.0 - 0.3 * au);
     p.x = aUV.x * 1.75;
     p.z = mix(lead, trail, aUV.y);
-    float bulge = (1.0 - smoothstep(0.0, 0.45, au)) * sin(3.14159 * aUV.y);
-    p.y = sin(beat - au * 1.7) * 0.46 * pow(au, 1.6) + 0.13 * bulge;
+    float bulge = (1.0 - smoothstep(0.0, 0.5, au)) * sin(3.14159 * aUV.y);
+    p.y = sin(beat - au * 1.7) * 0.46 * pow(au, 1.6) + 0.24 * bulge;
   }
   vUV = aUV;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  vL = p;
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  vVP = mv.xyz;
+  gl_Position = projectionMatrix * mv;
 }`;
 const MANTA_FRAG = /* glsl */ `
-uniform vec3 uA, uRim; uniform float uGlow;
-varying vec3 vUV;
-void main(){
+uniform vec3 uA, uRim, uRay; uniform float uGlow, uTime;
+varying vec3 vUV; varying vec3 vL; varying vec3 vVP;
+${WATER}${CAUSTIC}void main(){
   float a; vec3 c;
   if (vUV.z > 0.5) {
-    a = 0.5 * (1.0 - vUV.y);
-    c = uRim;
+    a = 0.7 * (1.0 - vUV.y);
+    c = uA * 0.5;
   } else {
+    // A body, not a sheet of light: a dark back lit from the surface overhead, the
+    // surface's light net sliding over it, pale edges where the wing thins.
+    vec3 n = normalize(cross(dFdx(vVP), dFdy(vVP)));
+    if (n.z < 0.0) n = -n;
+    float top = clamp(dot(n, normalize(vec3(0.25, 0.8, 0.55))), 0.0, 1.0);
     float au = abs(vUV.x);
-    float rim = 1.0 - smoothstep(0.0, 0.2, min(vUV.y, 1.0 - vUV.y));
-    float tip = smoothstep(0.7, 1.0, au);
-    float ribs = pow(0.5 + 0.5 * sin(au * 30.0), 10.0) * 0.22 * (1.0 - tip);
-    float spine = (1.0 - smoothstep(0.0, 0.05, au)) * 0.3;
-    a = 0.2 + 0.5 * rim + ribs + spine + 0.25 * tip;
-    c = mix(uA, uRim, clamp(rim + tip * 0.6 + spine, 0.0, 1.0));
+    float rim = 1.0 - smoothstep(0.0, 0.16, min(vUV.y, 1.0 - vUV.y));
+    float tip = smoothstep(0.72, 1.0, au);
+    float spine = 1.0 - smoothstep(0.0, 0.07, au);
+    float net = caustic(vL.xz * 0.55 + 0.2, uTime * 0.35) * (1.0 - tip);
+    c = uA * (0.26 + 0.6 * top) + uRay * (net * (0.3 + 0.5 * top) + 0.45 * pow(top, 14.0));
+    c += uRim * 0.35 * pow(1.0 - abs(n.z), 2.0); // the water's light wraps its edges
+    c = mix(c, uRim * 0.8, clamp(rim * 0.7 + tip * 0.5, 0.0, 1.0) * 0.75);
+    c *= 1.0 - 0.3 * spine;
+    a = 0.94;
   }
-  gl_FragColor = vec4(c, a * uGlow);
+  gl_FragColor = vec4(sea(c, 0.4), a * uGlow);
 }`;
 
-/* ---- A school of light fish: every fish is one instance on a shared loop ----- */
+/* ---- A school of fish: every fish is one instance on a shared loop. Each is a
+   side-on body (a spindle, a narrow wrist, a forked tail, a dorsal fin), dark on
+   the back and pale on the belly, with a flank that flashes as it turns. -------- */
 const SCHOOL_VERT = /* glsl */ `
-attribute vec3 aSeed;
+attribute vec3 aSeed; attribute vec2 aBody;
 uniform float uTime, uScatter, uSize;
 uniform vec3 uHome; uniform vec2 uLoop;
-varying float vA;
+varying vec2 vB; varying float vFlash;
 void main(){
-  float ph = uTime * 0.2 - aSeed.x * 0.7;
+  float ph = uTime * 0.16 - aSeed.x * 1.3;
   vec2 c = vec2(cos(ph) * uLoop.x, sin(ph) * uLoop.y);
   vec2 tg = normalize(vec2(-sin(ph) * uLoop.x, cos(ph) * uLoop.y));
-  vec2 off = (aSeed.yz - 0.5) * uSize * 8.0;
+  vec2 off = (aSeed.yz - 0.5) * uSize * vec2(30.0, 13.0);
   // A scroll startles them: each one darts away from the middle, then they regroup.
-  off += normalize(aSeed.yz - 0.5 + 0.001) * uScatter * uSize * 30.0 * (0.4 + aSeed.x);
-  vec2 local = position.xy * uSize * (0.7 + 0.6 * aSeed.z);
-  local.y += sin(uTime * 10.0 + aSeed.x * 40.0) * 0.28 * uSize * (0.5 - position.x * 0.5);
-  vec2 q = c + off + local.x * tg + local.y * vec2(-tg.y, tg.x);
-  gl_Position = projectionMatrix * viewMatrix * vec4(uHome.xy + q, uHome.z, 1.0);
-  vA = 0.45 + 0.55 * aSeed.y;
+  off += normalize(aSeed.yz - 0.5 + 0.001) * uScatter * uSize * 14.0 * (0.4 + aSeed.x);
+  float size = uSize * (0.72 + 0.62 * aSeed.z);
+  vec2 l = position.xy;
+  float beat = sin(uTime * (6.0 + 4.0 * aSeed.y) * (1.0 + uScatter) + aSeed.x * 40.0 - aBody.x * 2.6);
+  l.y += beat * 0.2 * smoothstep(0.3, 1.0, aBody.x);
+  float up = tg.x < 0.0 ? -1.0 : 1.0; // the back stays up whichever way it heads
+  vec2 q = c + off + (l.x * tg + l.y * up * vec2(-tg.y, tg.x)) * size;
+  gl_Position = projectionMatrix * viewMatrix * vec4(uHome.xy + q, uHome.z + (aSeed.y - 0.5) * 260.0, 1.0);
+  vB = aBody;
+  vFlash = pow(0.5 + 0.5 * sin(ph * 3.0 + aSeed.z * 9.0 + uTime * 0.7), 6.0);
 }`;
 const SCHOOL_FRAG = /* glsl */ `
-uniform vec3 uA, uRim;
-varying float vA;
-void main(){ gl_FragColor = vec4(mix(uA, uRim, vA), 0.8 * vA); }`;
+uniform vec3 uBackC, uBelly, uShine; uniform float uShow;
+varying vec2 vB; varying float vFlash;
+${WATER}void main(){
+  float v = vB.y;
+  vec3 c = mix(uBelly, uBackC, smoothstep(-0.55, 0.6, v));
+  c += uShine * exp(-pow((v - 0.02) / 0.3, 2.0)) * (0.16 + 0.84 * vFlash) * (1.0 - smoothstep(0.7, 0.85, vB.x));
+  float eye = smoothstep(0.075, 0.035, length(vec2((vB.x - 0.1) * 0.9, (v - 0.25) * 0.26)));
+  c = mix(c, uBackC * 0.3, eye);
+  float fin = smoothstep(0.74, 0.86, vB.x) + step(1.05, abs(v));
+  gl_FragColor = vec4(sea(c, 0.35), mix(0.96, 0.62, clamp(fin, 0.0, 1.0)) * uShow);
+}`;
 
 const additive = { transparent: true, depthWrite: false, blending: AdditiveBlending };
 
@@ -391,10 +483,80 @@ function jellyGeometry(rnd) {
   return g;
 }
 
-/** Build the scene on a canvas. Throws if WebGL is not available. */
-export function createWorld(canvas) {
+
+function fishGeometry() {
+  // along (0 nose to 1 tail tips) and half height of the outline
+  const prof = [
+    [0, 0.0],
+    [0.07, 0.15],
+    [0.18, 0.25],
+    [0.33, 0.29],
+    [0.48, 0.25],
+    [0.62, 0.16],
+    [0.74, 0.065],
+    [0.85, 0.17],
+    [1, 0.36],
+  ];
+  const pos = [];
+  const body = [];
+  const idx = [];
+  prof.forEach(([a, hb], i) => {
+    const x = 1 - 2 * a;
+    const last = i === prof.length - 1;
+    pos.push(x, hb, 0, last ? x + 0.24 : x, 0, 0, x, -hb, 0);
+    body.push(a, 1, a, 0, a, -1);
+    if (i) {
+      const p = (i - 1) * 3;
+      const q = i * 3;
+      idx.push(p, q, p + 1, q, q + 1, p + 1, p + 1, q + 1, p + 2, q + 1, q + 2, p + 2);
+    }
+  });
+  // the dorsal fin
+  const n = pos.length / 3;
+  pos.push(0.5, 0.26, 0, 0.0, 0.27, 0, 0.08, 0.47, 0);
+  body.push(0.25, 1.1, 0.5, 1.1, 0.46, 1.6);
+  idx.push(n, n + 1, n + 2);
+  const g = new BufferGeometry();
+  g.setAttribute('position', new BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute('aBody', new BufferAttribute(new Float32Array(body), 2));
+  g.setIndex(idx);
+  return g;
+}
+
+const DEG = Math.PI / 180;
+const sm = (t) => {
+  const c = Math.max(0, Math.min(1, t));
+  return c * c * (3 - 2 * c);
+};
+/* A value along a track of [key, value] pairs, eased between neighbours. */
+function along(keys, y, linear) {
+  if (!keys.length) return 0;
+  if (y <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) {
+    if (y <= keys[i][0]) {
+      const t = (y - keys[i - 1][0]) / Math.max(1e-6, keys[i][0] - keys[i - 1][0]);
+      return keys[i - 1][1] + (keys[i][1] - keys[i - 1][1]) * (linear ? t : t * t * (3 - 2 * t));
+    }
+  }
+  return keys[keys.length - 1][1];
+}
+
+/* What the journey scalar J means for the light and the land's camera. */
+const TRACK = {
+  sunEl: [[2, 9.5], [3, 8], [3.3, 4], [3.5, -1.5], [3.8, -18]], // degrees above the horizon
+  land: [[1.92, 0], [2.3, 1], [3.06, 0.9], [3.5, 0.62], [3.86, 0.6], [4, 0.86], [4.14, 0.64], [4.26, 0.44], [4.52, 0.42], [4.7, 0]], // how much of the window the land takes
+  orbit: [[4.6, 0], [4.95, 1]],
+  camX: [[2, 0], [3, 36], [4, 300], [5, 400]], // the land camera travels as the page is read
+};
+
+/** Build the scene on a canvas. Throws if WebGL is not available. `days` is the
+    GitHub snapshot's day list (the same data the commit graph draws). */
+export function createWorld(canvas, { days } = {}) {
   const css = getComputedStyle(document.documentElement);
-  const col = (name) => new Vector3(...triple(css, name).map((v) => v / 255));
+  const col = (name, fallback) => {
+    const v = triple(css, name);
+    return new Vector3(...(v.length === 3 && v.every((n) => n >= 0) ? v : fallback).map((n) => n / 255));
+  };
   const C = {};
   for (const name of [
     'sea-shallow', 'sea-mid', 'sea-abyss', 'sea-warm', 'sea-ray', 'sea-ray-warm', 'sea-foam', 'sea-snow-a', 'sea-snow-b',
@@ -405,13 +567,19 @@ export function createWorld(canvas) {
     'earth-night', 'earth-day', 'earth-band', 'earth-rim',
     'gal-core', 'gal-a', 'gal-b',
   ]) {
-    C[name] = col(`--${name}`);
+    C[name] = col(`--${name}`, [128, 128, 128]);
   }
+  // New world tokens, with the values used until tokens.css names them.
+  C.sand = col('--sand', [206, 146, 98]); // sunlit dune
+  C['sand-shade'] = col('--sand-shade', [70, 42, 44]); // rock strata, tent cloth, shadowed ground
+  C['sea-floor'] = col('--sea-floor', [11, 33, 44]); // the darkest the water gets
+  C['sea-tint'] = col('--sea-tint', [128, 218, 232]); // what the water does to white light
   const phone = window.matchMedia('(max-width: 760px)').matches;
   const rnd = seeded(41);
 
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: !phone, stencil: false });
   renderer.setClearColor(0x000000, 0);
+  renderer.autoClear = false;
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 10, 12000);
   const time = { value: 0 };
@@ -428,22 +596,29 @@ export function createWorld(canvas) {
   let camZ = 1;
   const view = (z) => (camZ - z) / camZ; // how much more of the world a screen shows at depth z
 
-  /* ---- The worlds themselves: water and sky under everything, land over it ---- */
+  /* ---- The backdrop: water and sky, soft in a small target, sharp in the composite */
   const V3 = (name) => ({ value: C[name] });
+  const tanF = Math.tan((LAND_FOV * Math.PI) / 360);
   const stage = {
+    uView: { value: new Vector2(1, 1) },
     uRes: { value: new Vector2(1, 1) },
-    uDpr: dpr,
     uTime: time,
     uTop: { value: 1e5 },
     uExit: { value: -1e5 },
     uScroll: { value: 0 },
     uSurfDoc: { value: 0 },
     uShoreDoc: { value: 1e6 },
-    uDusk: { value: 0 },
-    uDawn: { value: 0 },
-    uLand: { value: 0 },
-    uDrift: { value: 0 },
-    uBase: { value: 0 },
+    uPitch: { value: 0 },
+    uTanF: { value: tanF },
+    uColHalf: { value: 1e5 },
+    uVista: { value: new Vector2(-1e5, -1e5) },
+    uLmax: { value: 0.042 },
+    uNight: { value: 0 },
+    uDay: { value: 1 },
+    uOrbit: { value: 0 },
+    uBreak: { value: 0 },
+    uSunDir: { value: new Vector3(0, 0.1, -1) },
+    uSunI: { value: new Vector3(1, 1, 1) },
     uDuskTop: V3('dusk-top'),
     uDuskMid: V3('dusk-mid'),
     uDuskLow: V3('dusk-low'),
@@ -451,51 +626,63 @@ export function createWorld(canvas) {
     uNightLow: V3('night-low'),
     uDawnLow: V3('dawn-low'),
     uSun: V3('sun'),
+    uStar: V3('star'),
   };
+  // The water's own colours: what is left of white light at depth, and its floor.
+  const sigma = new Vector3(1.15, 0.5, 0.36);
+  const half = renderer.capabilities.isWebGL2 && (renderer.extensions.has('EXT_color_buffer_half_float') || renderer.extensions.has('EXT_color_buffer_float'));
+  const target = keep(new WebGLRenderTarget(2, 2, { depthBuffer: false, ...(half ? { type: HalfFloatType } : {}) }));
   const full = keep(new PlaneGeometry(2, 2));
-  const back = new Mesh(
-    full,
-    keep(
-      new ShaderMaterial({
-        vertexShader: BACK_VERT,
-        fragmentShader: BACK_FRAG,
-        uniforms: {
-          ...stage,
-          uShallow: V3('sea-shallow'),
-          uMid: V3('sea-mid'),
-          uAbyss: V3('sea-abyss'),
-          uWarmSea: V3('sea-warm'),
-          uRay: V3('sea-ray'),
-          uRayWarm: V3('sea-ray-warm'),
-          uFoam: V3('sea-foam'),
-          uStar: V3('star'),
-          uBeam: { value: col('--beam-b') },
-          uSunX: { value: 0.7 },
-          uSteps: { value: phone ? 3 : 4 },
-        },
-        transparent: true,
-        depthWrite: false,
-      })
-    )
+  const backMat = keep(
+    new ShaderMaterial({
+      vertexShader: BACK_VERT,
+      fragmentShader: BACK_FRAG,
+      uniforms: {
+        ...stage,
+        uBackRes: { value: new Vector2(2, 2) },
+        uShallow: V3('sea-shallow'),
+        uMid: V3('sea-mid'),
+        uAbyss: V3('sea-abyss'),
+        uWarmSea: V3('sea-warm'),
+        uRay: V3('sea-ray'),
+        uRayWarm: V3('sea-ray-warm'),
+        uFoam: V3('sea-foam'),
+        uBeam: { value: col('--beam-b', [76, 118, 255]) },
+        uSigma: { value: sigma },
+        uFloor: V3('sea-floor'),
+        uSunX: { value: 0.72 },
+        uSteps: { value: phone ? 3 : 4 },
+        uBandTilt: { value: phone ? 1.0 : 0.62 },
+      },
+      depthTest: false,
+      depthWrite: false,
+    })
   );
-  back.renderOrder = -100;
-  back.frustumCulled = false;
-  const land = new Mesh(
-    full,
-    keep(
-      new ShaderMaterial({
-        vertexShader: LAND_VERT,
-        fragmentShader: LAND_FRAG,
-        uniforms: { ...stage, uRidge: V3('ridge'), uRidgeFar: V3('ridge-far'), uEmber: V3('ember'), uStar: V3('star'), uFig: { value: 0 }, uFigShow: { value: 0 } },
-        transparent: true,
-        depthWrite: false,
-        depthTest: false,
-      })
-    )
+  const backScene = new Scene();
+  const backMesh = new Mesh(full, backMat);
+  backMesh.frustumCulled = false;
+  backScene.add(backMesh);
+  const compMat = keep(
+    new ShaderMaterial({
+      vertexShader: COMP_VERT,
+      fragmentShader: COMP_FRAG,
+      uniforms: { ...stage, uBack: { value: target.texture }, uDpr: dpr, uTexel: { value: 2 }, uStarPx: { value: 1000 }, uFoam: V3('sea-foam') },
+      transparent: true,
+      depthWrite: false,
+    })
   );
-  land.renderOrder = 100;
-  land.frustumCulled = false;
-  scene.add(back, land);
+  const comp = new Mesh(full, compMat);
+  comp.renderOrder = -100;
+  comp.frustumCulled = false;
+  scene.add(comp);
+
+  /* ---- The land: its own scene and camera, drawn last ------------------------ */
+  const land = createLand({ C, stage, time, dpr, phone, aspect: window.innerWidth / Math.max(1, window.innerHeight), days });
+  const sunAz = land.sunAz;
+
+  /* ---- In the water: one uniform set for everything the sea is seen through --- */
+  const wet = { uSigmaW: { value: new Vector3(1.05, 0.42, 0.28) }, uWaterCol: { value: new Vector3() }, uWet: { value: 0 } };
+  const dry = { uSigmaW: wet.uSigmaW, uWaterCol: wet.uWaterCol, uWet: { value: 0 } };
 
   /* ---- Snow -------------------------------------------------------------- */
   const nSnow = phone ? 420 : 1300;
@@ -517,7 +704,7 @@ export function createWorld(canvas) {
     new ShaderMaterial({
       vertexShader: SNOW_VERT,
       fragmentShader: SNOW_FRAG,
-      uniforms: { uCamY: { value: 0 }, uCamZ: { value: 1 }, uH: { value: 1 }, uW: { value: 1 }, uTime: time, uDpr: dpr, uTop: { value: 0 }, uExit: { value: -1e5 }, uA: { value: C['sea-snow-a'] }, uB: { value: C['sea-snow-b'] } },
+      uniforms: { uCamY: { value: 0 }, uCamZ: { value: 1 }, uH: { value: 1 }, uW: { value: 1 }, uTime: time, uDpr: dpr, uTop: { value: 0 }, uExit: { value: -1e5 }, uA: { value: C['sea-snow-a'] }, uB: { value: C['sea-snow-b'] }, uTint: { value: C['sea-tint'].clone().multiplyScalar(0.8) } },
       ...additive,
     })
   );
@@ -527,7 +714,7 @@ export function createWorld(canvas) {
 
   /* ---- Worlds ------------------------------------------------------------ */
   const sphere = keep(new SphereGeometry(1, phone ? 64 : 128, phone ? 40 : 72));
-  function world({ paint, bands, seed, light, lit, halo = 1.1, rimPow = 3, rimGain = 1, air: airGain = 0.9 }) {
+  function world({ paint, bands, seed, light, lit, halo = 1.1, rimPow = 3, rimGain = 1, air: airGain = 0.9, water = dry }) {
     const P = (part) => C[`${paint}-${part}`];
     const g = new Group();
     const L = new Vector3(...light).normalize();
@@ -537,7 +724,7 @@ export function createWorld(canvas) {
         new ShaderMaterial({
           vertexShader: PLANET_VERT,
           fragmentShader: PLANET_FRAG,
-          uniforms: { uLight: { value: L }, uNight: { value: P('night') }, uDay: { value: P('day') }, uBand: { value: P('band') }, uRim: { value: P('rim') }, uBands: { value: bands }, uSeed: { value: seed }, uTime: time, uLit: { value: lit }, uRimPow: { value: rimPow }, uRimGain: { value: rimGain } },
+          uniforms: { uLight: { value: L }, uNight: { value: P('night') }, uDay: { value: P('day') }, uBand: { value: P('band') }, uRim: { value: P('rim') }, uRay: V3('sea-ray'), uBands: { value: bands }, uSeed: { value: seed }, uTime: time, uLit: { value: lit }, uRimPow: { value: rimPow }, uRimGain: { value: rimGain }, uNear: { value: 1 }, uSpan: { value: 1 }, uLightO: { value: new Vector3(0, 1, 0) }, uRingN: { value: new Vector3(0, -1, 0) }, ...water },
         })
       )
     );
@@ -547,7 +734,7 @@ export function createWorld(canvas) {
         new ShaderMaterial({
           vertexShader: PLANET_VERT,
           fragmentShader: HALO_FRAG,
-          uniforms: { uLight: { value: L }, uRim: { value: P('rim') }, uEdge: { value: Math.sqrt(1 - 1 / (halo * halo)) }, uGain: { value: airGain } },
+          uniforms: { uLight: { value: L }, uRim: { value: P('rim') }, uEdge: { value: Math.sqrt(1 - 1 / (halo * halo)) }, uGain: { value: airGain }, ...water },
           side: BackSide,
           ...additive,
         })
@@ -556,12 +743,14 @@ export function createWorld(canvas) {
     air.scale.setScalar(halo);
     g.add(body, air);
     g.userData.body = body;
+    g.userData.air = air;
     g.userData.light = L; // shared by the body and its air: move it and both follow
     scene.add(g);
     return g;
   }
 
-  const giant = world({ paint: 'giant', bands: 9, seed: 3.7, light: [0.84, 0.4, 0.26], lit: 0.9 });
+  // The giant hangs in the sea, so its light is the sea's: from the sun overhead.
+  const giant = world({ paint: 'giant', bands: 9, seed: 3.7, light: [0.5, 0.74, 0.42], lit: 0.95, water: wet });
   const ringGeo = keep(new RingGeometry(1.42, 2.36, phone ? 96 : 160, 1));
   const ring = new Mesh(
     ringGeo,
@@ -569,7 +758,7 @@ export function createWorld(canvas) {
       new ShaderMaterial({
         vertexShader: RING_VERT,
         fragmentShader: RING_FRAG,
-        uniforms: { uRim: { value: C['giant-rim'] }, uA: { value: C['giant-ring'] }, uIn: { value: 1.42 }, uOut: { value: 2.36 } },
+        uniforms: { uRim: { value: C['giant-rim'] }, uA: { value: C['giant-ring'] }, uLight: { value: giant.userData.light }, uIn: { value: 1.42 }, uOut: { value: 2.36 }, ...wet },
         side: DoubleSide,
         ...additive,
       })
@@ -622,7 +811,7 @@ export function createWorld(canvas) {
   tilt.rotation.set(1.02, 0, 0.38);
   tilt.add(stars);
   const core = new Mesh(plane, glowMat(C['gal-core'], 0.55));
-  core.scale.setScalar(0.9);
+  core.scale.setScalar(0.62);
   const haze = new Mesh(plane, glowMat(C['gal-b'], 0.22));
   haze.rotation.x = -Math.PI / 2;
   haze.scale.setScalar(2.3);
@@ -630,7 +819,13 @@ export function createWorld(canvas) {
   galaxy.add(tilt, core);
   scene.add(galaxy);
 
-  /* ---- The manta: it glides across the giant's vista as the reader scrolls --- */
+  // The moon's light on the air around it, and first light on the limb at dawn.
+  const moonGlow = new Mesh(plane, glowMat(C['moon-rim'], 0));
+  const sunrise = new Mesh(plane, glowMat(C.sun, 0));
+  const flare = new Mesh(plane, glowMat(C['earth-rim'], 0));
+  scene.add(moonGlow, sunrise, flare);
+
+  /* ---- The manta: it swims up across the giant's vista as the reader scrolls --- */
   const MU = 30;
   const MV = 8;
   const mUV = [];
@@ -652,21 +847,17 @@ export function createWorld(canvas) {
   mantaGeo.setAttribute('aUV', new BufferAttribute(new Float32Array(mUV), 3));
   mantaGeo.setAttribute('position', new BufferAttribute(new Float32Array(mUV.length), 3));
   mantaGeo.setIndex(mIdx);
-  const mantaBody = new Mesh(
-    mantaGeo,
-    keep(new ShaderMaterial({ vertexShader: MANTA_VERT, fragmentShader: MANTA_FRAG, uniforms: { uTime: time, uA: { value: C['manta-a'] }, uRim: { value: C['manta-rim'] }, uGlow: { value: 0.85 } }, side: DoubleSide, ...additive }))
-  );
+  const mantaMat = keep(new ShaderMaterial({ vertexShader: MANTA_VERT, fragmentShader: MANTA_FRAG, uniforms: { uTime: time, uA: { value: C['manta-a'] }, uRim: { value: C['manta-rim'] }, uRay: V3('sea-ray'), uGlow: { value: 0.85 }, ...wet }, side: DoubleSide, transparent: true, depthWrite: false }));
+  const mantaBody = new Mesh(mantaGeo, mantaMat);
   mantaBody.frustumCulled = false;
   const manta = new Group();
   manta.rotation.x = 1.0; // seen from above and a little behind: wings across the screen, nose up, tail down
   manta.add(mantaBody);
   scene.add(manta);
 
-  /* ---- The school: light fish that circle the last screen and scatter on a scroll */
-  const nFish = phone ? 34 : 72;
-  const fishGeo = keep(new BufferGeometry());
-  fishGeo.setAttribute('position', new BufferAttribute(new Float32Array([1, 0, 0, -0.3, 0.34, 0, -0.3, -0.34, 0, -0.3, 0, 0, -1, 0.36, 0, -1, -0.36, 0]), 3));
-  fishGeo.setIndex([0, 1, 2, 3, 4, 5]);
+  /* ---- The school: fish that circle in the warm water under the shore -------- */
+  const nFish = phone ? 14 : 26;
+  const fishGeo = keep(fishGeometry());
   const fishSeed = new Float32Array(nFish * 3);
   for (let i = 0; i < nFish * 3; i++) fishSeed[i] = rnd();
   fishGeo.setAttribute('aSeed', new InstancedBufferAttribute(fishSeed, 3));
@@ -674,9 +865,10 @@ export function createWorld(canvas) {
     new ShaderMaterial({
       vertexShader: SCHOOL_VERT,
       fragmentShader: SCHOOL_FRAG,
-      uniforms: { uTime: time, uScatter: { value: 0 }, uSize: { value: 5 }, uHome: { value: new Vector3() }, uLoop: { value: new Vector2(1, 1) }, uA: { value: C['manta-a'] }, uRim: { value: C['manta-rim'] } },
+      uniforms: { uTime: time, uScatter: { value: 0 }, uSize: { value: 5 }, uHome: { value: new Vector3() }, uLoop: { value: new Vector2(1, 1) }, uBackC: { value: C['sea-mid'].clone().multiplyScalar(0.9) }, uBelly: { value: C['manta-rim'].clone().multiplyScalar(0.82) }, uShine: V3('sea-ray'), uShow: { value: 1 }, ...wet },
       side: DoubleSide,
-      ...additive,
+      transparent: true,
+      depthWrite: false,
     })
   );
   const school = new InstancedMesh(fishGeo, schoolMat, nFish);
@@ -715,7 +907,6 @@ export function createWorld(canvas) {
     });
   }
 
-
   /* ---- Comets ------------------------------------------------------------ */
   const comets = [0].map(() => {
     const mat = keep(new ShaderMaterial({ vertexShader: GLOW_VERT, fragmentShader: COMET_FRAG, uniforms: { uColor: { value: C.star }, uAlpha: { value: 0 } }, ...additive }));
@@ -736,7 +927,9 @@ export function createWorld(canvas) {
   comets.forEach(aim);
 
   /* ---- Layout: sizes and the set pieces' homes, read from the page --------- */
-  const home = { surf: 0, giant: 0, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, moon: 0, moonEnd: 0, contact: 0, foot: 0 };
+  const home = { surf: 0, giant: 0, giantH: 400, shore: 0, shoreH: 0, crew: 0, crewEnd: 0, galaxy: 0, value: 0, valueEnd: 0, moonDoc: 0, contact: 0, foot: 0 };
+  let journey = [];
+  let vistas = [];
   /* Choreography: the reading sections are quiet. While the middle of the screen
      is in (or near) one of them, the drifting things and the meteor are gone and
      only the snow (in the water) or the stars (over the land) are left. */
@@ -763,32 +956,35 @@ export function createWorld(canvas) {
     obj.position.set(sx * k, -line - sy * k, z);
     obj.scale.setScalar(r * k);
   }
-  /* A value along the page: [document y, value] pairs, eased between neighbours. */
-  let tracks = { dusk: [], dawn: [], land: [] };
-  function along(keys, y) {
-    if (!keys.length) return 0;
-    if (y <= keys[0][0]) return keys[0][1];
-    for (let i = 1; i < keys.length; i++) {
-      if (y <= keys[i][0]) {
-        const t = (y - keys[i - 1][0]) / Math.max(1, keys[i][0] - keys[i - 1][0]);
-        return keys[i - 1][1] + (keys[i][1] - keys[i - 1][1]) * t * t * (3 - 2 * t);
-      }
-    }
-    return keys[keys.length - 1][1];
-  }
+
+  /* Quality: 0 is everything; 1 and 2 give back pixels and fine detail when the
+     frames run long (World.jsx decides, with hysteresis). */
+  let quality = 0;
+  const sizes = { gr: 100, mr: 60, moonX: 0 };
 
   function layout() {
     w = window.innerWidth;
     h = window.innerHeight;
-    const ratio = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.75);
+    const cap = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 1.75);
+    const ratio = Math.max(0.75, cap * [1, 0.82, 0.66][quality]);
     renderer.setPixelRatio(ratio);
     renderer.setSize(w, h, false);
     dpr.value = ratio;
-    stage.uRes.value.set(w * ratio, h * ratio);
+    stage.uRes.value.set(Math.floor(w * ratio), Math.floor(h * ratio));
+    stage.uView.value.set(w, h);
+    // The soft backdrop is drawn small: half the window on a phone, three quarters on a desktop.
+    const s = (phone ? 0.5 : 0.75) * (quality ? 0.8 : 1);
+    const bw = Math.max(2, Math.round(w * ratio * s));
+    const bh = Math.max(2, Math.round(h * ratio * s));
+    target.setSize(bw, bh);
+    backMat.uniforms.uBackRes.value.set(bw, bh);
+    compMat.uniforms.uTexel.value = h / bh;
+    compMat.uniforms.uStarPx.value = h / 2 / tanF;
     camZ = h / 2 / Math.tan((FOV * Math.PI) / 360);
     camera.aspect = w / h;
     camera.position.z = camZ;
     camera.updateProjectionMatrix();
+    land.resize(w / h);
     snowMat.uniforms.uCamZ.value = camZ;
     snowMat.uniforms.uH.value = h;
     snowMat.uniforms.uW.value = w;
@@ -797,6 +993,11 @@ export function createWorld(canvas) {
     colHalf = Math.min(600, w / 2) - pad;
     zone.uMid.value = (w / 2) * ratio;
     zone.uCol.value = phone ? 1e5 : colHalf * ratio;
+    stage.uColHalf.value = phone ? 1e5 : colHalf;
+    vistas = [...document.querySelectorAll('.vista')].map((el) => {
+      const r = el.getBoundingClientRect();
+      return [r.top + window.scrollY, r.top + window.scrollY + r.height];
+    });
     const H = document.documentElement.scrollHeight;
     quiet = QUIET.map((sel) => rect(sel))
       .filter(Boolean)
@@ -806,6 +1007,7 @@ export function createWorld(canvas) {
     const work = rect('#work');
     home.surf = surf ? surf.top + surf.h * 0.36 : (work ? work.top : H * 0.1) - 60;
     home.giant = mid('.vista[data-set="giant"]', H * 0.2);
+    home.giantH = rect('.vista[data-set="giant"]')?.h ?? h * 0.44;
     const shore = rect('.vista[data-set="shore"]');
     const crew = rect('.crew');
     home.shore = shore ? shore.top : crew ? crew.top - h : H * 0.55;
@@ -813,63 +1015,56 @@ export function createWorld(canvas) {
     home.crew = crew ? crew.top : home.shore + home.shoreH;
     home.crewEnd = crew ? crew.top + crew.h : home.crew + h;
     home.galaxy = mid('.vista[data-set="galaxy"]', H * 0.7);
-    home.moon = mid('#value .sec-head', H * 0.84);
     const value = rect('#value');
-    home.moonEnd = value ? value.top + value.h - h * 0.4 : home.moon + h;
+    const head = rect('#value .sec-head');
+    home.value = value ? value.top : H * 0.84;
+    home.valueEnd = value ? value.top + value.h : home.value + h;
     home.foot = mid('.vista[data-set="horizon"]', H - 120);
     home.contact = rect('#contact')?.top ?? home.foot - h * 0.8;
     stage.uSurfDoc.value = home.surf;
     stage.uShoreDoc.value = home.shore;
-
-    tracks = {
-      // Golden hour at the shore, the last light as the crew's panel leaves, night by the galaxy.
-      dusk: [
-        [home.shore + home.shoreH, 0],
-        [home.crew + h * 0.6, 0.16],
-        [home.crewEnd, 0.7],
-        [home.galaxy - h * 0.6, 1],
-      ],
-      dawn: [
-        [home.contact - h * 0.1, 0],
-        [home.foot, 1],
-      ],
-      // The land stands tall at the shore and at the galaxy, sinks to a low band
-      // while the reader reads, and is gone by the foot, where the earth's limb rises.
-      land: [
-        [home.shore - h * 0.2, 0],
-        [home.shore + h * 0.35, 1],
-        [home.crew + h * 0.5, 0.82],
-        [home.crewEnd, 0.6],
-        [home.galaxy - h * 0.7, 0.52],
-        [home.galaxy, 0.66],
-        [home.galaxy + h * 0.8, phone ? 0.34 : 0.4],
-        [home.contact, phone ? 0.34 : 0.4],
-        [home.foot - h * 0.45, 0],
-      ],
-    };
-    // The post stands a quarter of the way across when the shore is centred on screen.
-    land.material.uniforms.uFig.value = (w * (phone ? 0.3 : 0.24)) / h + ((home.shoreH / 2 + h * 0.1) / h) * 0.1;
+    // The journey: document lines and the J each one stands for, in order.
+    journey = [
+      [home.surf, 0],
+      [home.giant, 1],
+      [home.shore, 2],
+      [Math.max(home.shore + home.shoreH, home.crew), 3],
+      [home.crewEnd, 3.5],
+      [home.galaxy, 4],
+      [home.contact, 4.6],
+      [home.foot, 5],
+    ];
+    for (let i = 1; i < journey.length; i++) journey[i][0] = Math.max(journey[i][0], journey[i - 1][0] + 1);
 
     const gr = Math.max(84, Math.min(w * 0.17, 225));
-    const mr = Math.max(40, Math.min(w * 0.055, 84));
-    const gal = Math.max(170, Math.min(w * 0.32, 480));
+    const mr = phone ? 22 : Math.max(40, Math.min(w * 0.055, 84));
+    const gal = Math.max(140, Math.min(w * 0.22, 330));
+    sizes.gr = gr;
+    sizes.mr = mr;
     galScale.value = gal / 480;
     // The school turns in the warm water just under the shore, and scatters on a scroll.
-    const fz = -120;
+    const fz = -60;
     const fk = view(fz);
-    schoolMat.uniforms.uSize.value = (phone ? 4.2 : 7) * fk;
+    schoolMat.uniforms.uSize.value = (phone ? 11 : 15) * fk;
     schoolMat.uniforms.uHome.value.set(0, -(home.shore - h * 0.42), fz);
-    schoolMat.uniforms.uLoop.value.set(w * 0.4 * fk, (phone ? 40 : h * 0.14) * fk);
+    schoolMat.uniforms.uLoop.value.set(w * (phone ? 0.3 : 0.34) * fk, (phone ? 46 : h * 0.13) * fk);
     place(giant, -220, home.giant + (phone ? 20 : 70), w * (phone ? 0.2 : 0.27), 0, gr);
-    place(galaxy, -1400, home.galaxy - (phone ? 30 : 40), w * (phone ? 0 : 0.08), 0, gal);
-    // The moon is a long way back, so it crosses the window slowly while Value is
-    // read: high on the right, half in the margin, clear of the heading.
+    const gk = view(-220);
+    giant.userData.body.material.uniforms.uNear.value = camZ + 220 - gr * gk;
+    giant.userData.body.material.uniforms.uSpan.value = gr * gk;
+    // The spiral stands high and to the left, clear of the Milky Way and the buttes.
+    place(galaxy, -1400, home.galaxy - (phone ? 70 : 96), w * (phone ? -0.16 : -0.24), 0, gal);
+    // The moon is the reading lamp of Value. With a margin it is pinned there while
+    // the section is read; on a phone it stands in the gap above the heading, at
+    // the right, where there is no text.
     const margin = w / 2 - colHalf;
     const fits = margin >= mr * 2 + 28;
-    place(moon, -2600, (home.moon + home.moonEnd) / 2, phone ? w * 0.3 : fits ? colHalf + 14 + mr : w / 2 - mr * 0.3, -h * 0.2, mr);
+    sizes.moonX = phone ? w / 2 - 20 - mr : fits ? colHalf + 14 + mr : w / 2 - mr * 0.3;
+    home.moonDoc = phone ? (home.value + (head ? head.top : home.value + 56)) / 2 + 4 : home.value + h * 0.3;
     // The lit limb crosses the horizon spacer; the body runs down under the footer.
     const hr = w * 1.7 + 500;
     place(horizon, -300, home.foot, 0, hr + 4, hr);
+    sizes.hr = hr;
   }
 
   /* The drifting things keep to the margins: `edge(off)` is a screen x from the
@@ -880,14 +1075,15 @@ export function createWorld(canvas) {
   const edge = (off) => (off < 0 ? colHalf * (1 + off) : colHalf + 16 + off * Math.max(w / 2 - colHalf - 16, 0));
 
   let camY = 0;
+  const gq = new Quaternion();
+  const yAxis = new Vector3(0, 1, 0);
   const clock = { t: 0, s: 0, scatter: 0 };
+  const dawn = { want: 0, now: 0 };
+  const state = { camX: 0, camH: 60, pitch: 0, sunTan: 0.1, day: 1, night: 0, lamp: 0, moon: 0, moonDir: new Vector3(0.55, 0.62, -0.3).normalize(), fine: 1 };
+  const hue = { want: C.ember.clone(), amt: 0 };
   function wrap(y, span) {
     return camY + ((((y - camY + span / 2) % span) + span) % span) - span / 2;
   }
-  const sm = (t) => {
-    const c = Math.max(0, Math.min(1, t));
-    return c * c * (3 - 2 * c);
-  };
 
   /** Draw one frame. `t` in seconds, `scroll` in px, pointer in -1..1. */
   function render(t, scroll, px = 0, py = 0) {
@@ -903,75 +1099,181 @@ export function createWorld(canvas) {
     clock.s = scroll;
     const line = scroll + h / 2;
 
-    // Where the reader is in the journey.
+    // Where the reader is in the journey, and what the one light does there.
+    const J = along(journey, line, true);
     const rise = sm((scroll - (home.shore - h * 0.3)) / (h * 0.55)); // 0 under water, 1 ashore
     const exit = rise <= 0 ? -h * 0.08 : rise >= 1 ? h * 4 : h * (-0.08 + 1.22 * rise);
     const top = home.surf - scroll;
+    const landAmt = along(TRACK.land, J);
+    const orbit = along(TRACK.orbit, J);
+    dawn.now += (dawn.want - dawn.now) * (1 - Math.exp(-dt / 0.38));
+    const el = along(TRACK.sunEl, J) * DEG;
+    const day = sm((el / DEG + 8) / 11);
+    const night = sm((-el / DEG - 4) / 9);
+    const e = Math.max(Math.sin(el), 0);
+    const am = 1 / (e + 0.15 * Math.pow(3.885 + Math.asin(e) / DEG, -1.253));
+    const dusk = el >= 0 ? 1 : Math.exp(el * 10);
+    stage.uSunI.value.set(Math.exp(-0.0516 * am * 0.3) * dusk, Math.exp(-0.1132 * am * 0.3) * dusk, Math.exp(-0.27 * am * 0.3) * dusk);
+    stage.uSunDir.value.set(Math.sin(sunAz) * Math.cos(el), Math.sin(el), -Math.cos(sunAz) * Math.cos(el));
     stage.uTop.value = top;
     stage.uExit.value = exit;
-    stage.uBase.value = rise > 0 ? Math.max(0, Math.min(h, h - exit)) : 0;
     stage.uScroll.value = scroll;
-    stage.uDusk.value = along(tracks.dusk, line);
-    stage.uDawn.value = along(tracks.dawn, line);
-    stage.uLand.value = along(tracks.land, line);
-    stage.uDrift.value = (line - home.shore) / h;
+    stage.uDay.value = day;
+    stage.uNight.value = night;
+    stage.uOrbit.value = orbit;
+    stage.uBreak.value = dawn.now;
+    // The vista in the window, if any: the one place the world is not hushed.
+    let open = 0;
+    stage.uVista.value.set(-1e5, -1e5);
+    for (const [a, b] of vistas) {
+      const on = Math.min(b, scroll + h) - Math.max(a, scroll);
+      if (on > open) {
+        open = on;
+        stage.uVista.value.set(a - scroll, b - scroll);
+      }
+    }
+    // The land's camera: the horizon stands on the waterline while the camera comes
+    // up through it, then the camera tilts toward the sky as the land sinks to a
+    // low band for reading, and travels sideways as the page goes by.
+    const base = rise > 0 ? Math.max(0, Math.min(h, h - exit)) : 0;
+    // While it rises, sky and far land share what is above the waterline; once ashore
+    // the horizon settles where the land track puts it.
+    const yHz = rise > 0 && rise < 1 ? Math.min(exit * 0.6, h - h * 0.3 * landAmt) : h - base - h * 0.3 * landAmt;
+    state.pitch = -Math.atan((1 - (2 * yHz) / h) * tanF);
+    stage.uPitch.value = state.pitch;
+    state.camX = along(TRACK.camX, J) + px * 5;
+    state.camH = 24 + 66 * rise - py * 2;
+    state.sunTan = Math.tan(el);
+    state.day = day;
+    state.night = night;
+    state.lamp = (0.34 + 0.66 * sm((4 - el / DEG) / 7)) * (1 - orbit);
+    state.fine = quality > 1 || rise < 1 ? 0 : 1;
+    state.shore = rise > 0 && rise < 1 ? Math.min(1, landAmt * 1.4) : 0;
+    const landOn = landAmt > 0.004 && exit > -h * 0.05;
     snowMat.uniforms.uTop.value = top;
     snowMat.uniforms.uExit.value = exit;
-    land.visible = stage.uLand.value > 0.004;
-    land.material.uniforms.uFigShow.value = sm((stage.uLand.value - 0.62) / 0.2) * (1 - sm((stage.uDusk.value - 0.75) / 0.2));
     const sea = sm((line - home.surf) / (h * 0.5)) * (1 - rise);
-    const night = sm((stage.uDusk.value - 0.7) / 0.3) * (1 - stage.uDawn.value);
+    wet.uWet.value = sea;
+    // The colour of the water at the reader's depth is what distance fades things to.
+    const dep = Math.max(0, line - home.surf) / h;
+    wet.uWaterCol.value.set(
+      C['sea-floor'].x + (C['sea-shallow'].x * 1.18 - C['sea-floor'].x) * Math.exp(-sigma.x * dep),
+      C['sea-floor'].y + (C['sea-shallow'].y * 1.18 - C['sea-floor'].y) * Math.exp(-sigma.y * dep),
+      C['sea-floor'].z + (C['sea-shallow'].z * 1.18 - C['sea-floor'].z) * Math.exp(-sigma.z * dep)
+    );
     // The medusae belong to the deep: they are gone well before the warm water.
     zone.uShow.value = show(scroll) * sea * (1 - sm((line - (home.shore - h * 1.5)) / (h * 0.6)));
+    snow.visible = sea > 0.002 || (top < h && exit > 0);
 
     // The galaxy wakes as the reader comes to it: it spins up, brightens, and
     // leans toward the pointer. It belongs to the night, so it stays down until then.
+    const sky = night * (1 - orbit);
     const near = Math.max(0, 1 - Math.abs(line - home.galaxy) / (h * 1.1));
     const wake = near * near * (3 - 2 * near);
-    stars.material.uniforms.uSpin.value += dt * (0.34 * wake + Math.min(0.5, speed * 0.004) * near);
-    stars.material.uniforms.uBoost.value = (0.72 + 0.5 * wake) * night;
-    core.material.uniforms.uAlpha.value = (0.38 + 0.5 * wake) * night;
-    haze.material.uniforms.uAlpha.value = 0.22 * night;
-    tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
+    galaxy.visible = sky > 0.01 && Math.abs(line - home.galaxy) < h * 2.4;
+    if (galaxy.visible) {
+      stars.material.uniforms.uSpin.value += dt * (0.34 * wake + Math.min(0.5, speed * 0.004) * near);
+      stars.material.uniforms.uBoost.value = (0.6 + 0.5 * wake) * sky;
+      core.material.uniforms.uAlpha.value = (0.16 + 0.24 * wake) * sky;
+      haze.material.uniforms.uAlpha.value = 0.09 * sky;
+      tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
+    }
 
-    // The manta climbs through the giant's vista as the page goes by. It swims well in
-    // front of the planet (nearer the camera than any part of the sphere) and keeps
-    // to the left of its disc, over the ring, so the two never share a pixel.
-    const mu = Math.max(0, Math.min(1, (line - (home.giant - h)) / (h * 2)));
-    const mz = 160;
-    const mk = view(mz);
-    const span = (phone ? 70 : 108) * 1.75; // half a wingspan on screen
-    const clear = w * (phone ? 0.2 : 0.27) - Math.max(84, Math.min(w * 0.17, 225)) - span - 24;
-    const from = Math.min(clear, w * 0.02);
-    manta.position.set((from - (from + w * 0.5 + span) * mu) * mk, -(home.giant - 10) + Math.sin(t * 0.5) * 12 + (mu - 0.5) * 240, mz);
-    manta.scale.setScalar((phone ? 70 : 108) * mk);
-    manta.rotation.z = 0.7 + Math.sin(t * 0.4) * 0.05; // heading up and to the left
+    // The manta swims up and across the giant's vista while that vista is in the
+    // window. It stays inside the vista's band, so it never crosses a line of text
+    // and never slides under the nav; it is nearer the camera than any part of the
+    // sphere and keeps left of its disc.
+    const mu = Math.max(0, Math.min(1, (line - (home.giant - h * 0.42)) / (h * 0.74)));
+    manta.visible = mu > 0.001 && mu < 0.999 && sea > 0.01;
+    if (manta.visible) {
+      const mz = 160;
+      const mk = view(mz);
+      const size = Math.min(phone ? 58 : 108, home.giantH * 0.27);
+      const span = size * 1.75; // half a wingspan on screen
+      const clear = w * (phone ? 0.2 : 0.27) - sizes.gr - span - 24;
+      const x0 = Math.min(clear, w * 0.02);
+      const x1 = -(w / 2) + span * 0.9 + 12;
+      const ease = mu * mu * (3 - 2 * mu);
+      const sx = x0 + (x1 - x0) * ease;
+      const sy = home.giant + home.giantH * (0.2 - 0.36 * ease) - line + Math.sin(t * 0.5) * 6;
+      manta.position.set(camera.position.x + sx * mk, camY - sy * mk, mz);
+      manta.scale.setScalar(size * mk);
+      manta.rotation.z = 0.7 + Math.sin(t * 0.4) * 0.05; // heading up and to the left
+      mantaMat.uniforms.uGlow.value = 0.94 * sm(mu / 0.14) * sm((1 - mu) / 0.16);
+    }
+    giant.visible = sea > 0.002 && Math.abs(line - home.giant) < h * 1.6 + sizes.gr * 3;
 
     // The school startles on a scroll and regroups at rest.
     clock.scatter += (Math.min(1, speed / 36) - clock.scatter) * (speed > 2 ? 0.25 : 0.035);
     schoolMat.uniforms.uScatter.value = clock.scatter;
-    school.visible = rise < 0.6;
+    school.visible = rise < 0.7 && Math.abs(line - (home.shore - h * 0.42)) < h * 1.4;
+    schoolMat.uniforms.uShow.value = 1 - sm((rise - 0.3) / 0.4);
 
-    // The moon fills as Value is read: a thin crescent at its heading, full by its last row.
-    const phase = sm((line - (home.moon - h * 0.35)) / Math.max(h * 0.6, home.moonEnd - home.moon));
+    // The moon is the lamp Value is read by: it comes in with the section, stays in
+    // the margin while it is read, and fills from a crescent to full by the last row.
+    const span = Math.max(h * 0.6, home.valueEnd - home.value - h * 0.6);
+    const phase = phone ? 0.5 + 0.5 * sm((line - home.value + h * 0.4) / (h * 0.6)) : sm((line - home.value) / span);
     const sun = 2.5 - 2.2 * phase;
     moon.userData.light.set(-Math.sin(sun), 0.24, Math.cos(sun)).normalize();
+    const mk2 = view(-2600);
+    const pin = phone ? home.moonDoc : Math.max(home.value + h * 0.22, Math.min(home.valueEnd - h * 0.42, line - h * 0.2));
+    moon.visible = sky > 0.01 && Math.abs(pin - line) < h * 0.8;
+    moonGlow.visible = moon.visible;
+    state.moon = moon.visible ? sm(1 - Math.abs(pin - line) / (h * 0.7)) * (0.35 + 0.65 * phase) : 0;
+    if (moon.visible) {
+      moon.position.set(camera.position.x + sizes.moonX * mk2, camY - (pin - line) * mk2, -2600);
+      moon.scale.setScalar(sizes.mr * mk2);
+      moonGlow.position.copy(moon.position);
+      moonGlow.position.z -= 4;
+      moonGlow.scale.setScalar(sizes.mr * mk2 * 7);
+      moonGlow.material.uniforms.uAlpha.value = 0.16 * state.moon;
+      moon.userData.body.rotation.y = t * 0.02;
+    }
 
     giant.userData.body.rotation.y = t * 0.012;
-    moon.userData.body.rotation.y = t * 0.02;
-    horizon.userData.body.rotation.x = t * 0.004;
+    if (giant.visible) {
+      // The light and the ring's plane in the planet's own frame, for the ring's shadow.
+      const gu = giant.userData.body.material.uniforms;
+      giant.userData.body.getWorldQuaternion(gq).invert();
+      gu.uLightO.value.copy(giant.userData.light).applyQuaternion(gq);
+      gu.uRingN.value.set(0, 0.952, 0.306).applyAxisAngle(yAxis, -giant.userData.body.rotation.y);
+    }
+
+    // The limb of the world. Until the dawn is asked for it is first light, a thin
+    // line of air; `dawn.now` brings the sun over it.
+    horizon.visible = orbit > 0.002 || line > home.contact - h;
+    sunrise.visible = flare.visible = horizon.visible && dawn.now > 0.004;
+    if (horizon.visible) {
+      const b = dawn.now;
+      horizon.userData.body.rotation.x = t * 0.004;
+      horizon.userData.light.set(0.1 + 0.16 * b, 0.36 + 0.3 * b, -0.93 + 0.62 * b).normalize();
+      horizon.userData.air.material.uniforms.uGain.value = 0.7 + 1.5 * b;
+      horizon.userData.body.material.uniforms.uRimGain.value = 0.8 + 1.4 * b;
+      if (sunrise.visible) {
+        const k = view(-300);
+        const sx = w * (phone ? 0.2 : 0.17);
+        const sy = 4 + (sx * sx) / (2 * sizes.hr);
+        sunrise.position.set(sx * k, -home.foot - sy * k, -290);
+        sunrise.scale.setScalar((phone ? 260 : 420) * k * (0.3 + 0.7 * b));
+        sunrise.material.uniforms.uAlpha.value = 0.95 * b;
+        flare.position.set(sx * k, -home.foot - sy * k, -289);
+        flare.scale.set(w * 1.3 * k * (0.2 + 0.8 * b), 22 * k, 1);
+        flare.material.uniforms.uAlpha.value = 0.55 * b;
+      }
+    }
 
     for (const j of jellies) {
+      j.mesh.visible = zone.uShow.value > 0.002;
+      if (!j.mesh.visible) continue;
       const k = view(j.z);
-      const span = h * k * 3.2 + j.size * k * 8; // long laps: one or two in sight at a time
+      const lap = h * k * 3.2 + j.size * k * 8; // long laps: one or two in sight at a time
       const beat = t * 1.15 + j.mesh.material.uniforms.uPhase.value;
       // It rises in strokes: fastest just after the bell closes.
-      const y = wrap(j.y * span + t * j.rise + Math.sin(beat - 1.2) * 5, span);
+      const y = wrap(j.y * lap + t * j.rise + Math.sin(beat - 1.2) * 5, lap);
       const sx = j.side * edge(j.off) + Math.sin(t * 0.13 + j.sway) * 22;
       j.mesh.position.set(sx * k, y, j.z);
       j.mesh.scale.setScalar(j.size * k);
       j.mesh.rotation.set(0.18, t * 0.05 + j.sway, j.lean + Math.sin(t * 0.21 + j.sway) * 0.08);
-      j.mesh.visible = zone.uShow.value > 0.002;
     }
 
     for (const c of comets) {
@@ -981,7 +1283,7 @@ export function createWorld(canvas) {
         aim(c);
         u = -1;
       }
-      c.mesh.visible = u >= 0 && night > 0.05;
+      c.mesh.visible = u >= 0 && sky > 0.05;
       if (!c.mesh.visible) continue;
       const z = -700;
       const k = view(z);
@@ -990,17 +1292,78 @@ export function createWorld(canvas) {
       c.mesh.position.set(x, y, z);
       c.mesh.rotation.z = Math.atan2(-(c.to[1] - c.from[1]) * h, (c.to[0] - c.from[0]) * w);
       c.mesh.scale.set(380 * k, 22 * k, 1);
-      c.mat.uniforms.uAlpha.value = Math.sin(Math.PI * u) * 0.9 * show(scroll) * night;
+      c.mat.uniforms.uAlpha.value = Math.sin(Math.PI * u) * 0.9 * show(scroll) * sky;
     }
 
+    // The crew's lamp takes the chosen character's colour.
+    if (hue.amt > 0) land.lampCol.lerp(hue.want, 0.08);
+
+    // Draw. Nothing of the world is in the window above the first surface.
+    renderer.setRenderTarget(null);
+    renderer.clear();
+    if (top >= h + 20) return;
+    renderer.setRenderTarget(target);
+    renderer.render(backScene, camera);
+    renderer.setRenderTarget(null);
     renderer.render(scene, camera);
+    if (landOn) {
+      land.update(state);
+      renderer.clearDepth();
+      renderer.render(land.scene, land.camera);
+    }
+  }
+
+  /* Compile every program while the page is idle, so the breach never waits on one. */
+  async function prewarm() {
+    // compileAsync lets the driver build the programs off the main thread where it
+    // can (KHR_parallel_shader_compile), one scene at a time.
+    try {
+      await renderer.compileAsync(backScene, camera);
+      await renderer.compileAsync(scene, camera);
+      await renderer.compileAsync(land.scene, land.camera);
+    } catch {
+      // A lost context: World.jsx handles it.
+    }
+  }
+
+  function setQuality(q) {
+    const next = Math.max(0, Math.min(2, q));
+    if (next === quality) return;
+    quality = next;
+    layout();
+  }
+
+  /* The character on the crew's stage: `rgb` is 0 to 255 per channel, or null. */
+  function setHue(rgb) {
+    if (!rgb) {
+      hue.want.copy(C.ember);
+    } else {
+      // Keep it a lamp: the hue of the character, the warmth and weight of the ember.
+      hue.want.set(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255).lerp(C.ember, 0.35);
+      const m = Math.max(hue.want.x, hue.want.y, hue.want.z, 0.001);
+      hue.want.multiplyScalar(1 / m);
+    }
+    hue.amt = 1;
   }
 
   function dispose() {
     for (const d of disposables) d.dispose();
+    land.dispose();
     renderer.dispose();
   }
 
   layout();
-  return { layout, render, dispose };
+  return {
+    layout,
+    render,
+    dispose,
+    prewarm,
+    setQuality,
+    setHue,
+    setWeek: land.setWeek,
+    breakDawn: () => {
+      dawn.want = 1;
+    },
+    weeks: land.weeks,
+  };
 }
