@@ -218,16 +218,31 @@ html.js .sill .plate-arc-tick {
   color: var(--text-3);
 }
 
+/* Skip is the one-tap way past the entry: a quiet pill in the same family as
+   Enter (a hairline, the same height), in full text colour so a reader in a hurry
+   finds it at once. */
 .door-skip {
   right: max(var(--pad), env(safe-area-inset-right, 0px));
-  padding-left: 12px;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding: 0 16px;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  color: var(--text);
   pointer-events: auto;
   text-decoration: none;
-  transition: color 0.2s var(--ease);
+  transition:
+    border-color 0.2s var(--ease),
+    background-color 0.2s var(--ease);
 }
 
 .door-skip:hover {
-  color: var(--text);
+  border-color: var(--text-2);
+  background: color-mix(in srgb, var(--ink) 80%, transparent);
+}
+
+.door-skip:active {
+  transform: scale(0.98);
 }
 
 /* The load line: a small light and one sentence about what is arriving. */
