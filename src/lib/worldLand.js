@@ -80,7 +80,7 @@ void main(){
    normal by the slope of two layers of noise; sand ripples on low gentle ground only, fading
    before their period nears a pixel; rock with strata and streaks down the fall line; scrub on
    the gentler ground; snow above the line where the ground can hold it, lower in the gullies; a
-   worn path; the camp's four tints; sun, rim and glitter; the moon and the lamp; the inlet (a
+   worn path and turf; the camp's tints (cloth, rock, banner, canvas, pine, grass); sun, rim and glitter; the moon and the lamp; the inlet (a
    mirror for the sky, the bed near the shore, the sun's road, surf); wet sand; the air
    (extinction by distance, low mist, the sky's colour along the ray); the sea's surface seen at
    a glance at the beach with its foam; the bright line of the surface; tone, hush and grain. */
@@ -89,7 +89,7 @@ ${COMMON}
 ${SKY}
 uniform vec2 uRes;
 uniform float uDpr, uSunTan, uLampOn, uFog, uMist, uFine, uShore;
-uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent, uFoam, uRock, uScrub, uSnow, uPath[4];
+uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent, uFoam, uRock, uScrub, uSnow, uGreen, uPath[4];
 uniform vec2 uWind;
 varying vec3 vW, vN;
 varying float vHor, vEmis, vGlow, vUp, vDeep, vTint;
@@ -127,7 +127,7 @@ void main(){
   vec3 rock = mix(uRock * 0.72, uRock * 1.35 + uSandShade * 0.2, strata * 0.6 + streak * 0.4);
   float scrub = smoothstep(26.0, 70.0, alt) * (1.0 - smoothstep(210.0, 380.0, alt)) * smoothstep(0.66, 0.9, N.y) * smoothstep(0.38, 0.62, n2(vW.xz * 0.006 + 2.0) * 0.6 + 0.4 * n2(vW.xz * 0.03));
   albedo = mix(albedo, rock, rocky);
-  albedo = mix(albedo, uScrub * (0.8 + 0.4 * n2(vW.xz * 0.05)), scrub * 0.8);
+  albedo = mix(albedo, mix(uScrub, uGreen, 0.55 + 0.45 * n2(vW.xz * 0.012 + 4.0)) * (0.8 + 0.4 * n2(vW.xz * 0.05)), scrub * 0.85);
   snow = smoothstep(400.0, 520.0, alt + 110.0 * (n2(vW.xz * 0.0045 + 9.0) - 0.5) - 90.0 * grad.x) * smoothstep(0.42, 0.7, N.y);
   albedo = mix(albedo, uSnow, snow);
   float pd = 1e5;
@@ -137,12 +137,15 @@ void main(){
     pd = min(pd, length(vW.xz - pa - pb * pt));
   }
   float path = (1.0 - smoothstep(5.0, 13.0, pd + 5.0 * n2(vW.xz * 0.05))) * sandy;
+  float turf = smoothstep(7.0, 22.0, alt) * (1.0 - smoothstep(60.0, 120.0, alt)) * smoothstep(0.8, 0.95, N.y) * smoothstep(0.42, 0.6, n2(vW.xz * 0.008 + 11.0) * 0.7 + 0.3 * n2(vW.xz * 0.06));
+  albedo = mix(albedo, uGreen * (0.75 + 0.5 * n2(vW.xz * 0.2)), turf * 0.7 * (1.0 - path));
+  aa *= 1.0 - turf;
   albedo *= 1.0 - 0.3 * path;
   aa *= 1.0 - path;
   wet = smoothstep(0.0, 2.5, vDeep);
 #endif
 #ifdef CAMP
-  albedo = vTint < 0.5 ? uSandShade * 1.3 : vTint < 1.5 ? mix(uRock, uSand, 0.35) * (0.9 + 0.4 * h2(floor(vW.xz * 0.2))) : vTint < 2.5 ? uAccent * 0.8 : uSand * 0.9 + 0.12;
+  albedo = vTint < 0.5 ? uSandShade * 1.3 : vTint < 1.5 ? mix(uRock, uSand, 0.35) * (0.9 + 0.4 * h2(floor(vW.xz * 0.2))) : vTint < 2.5 ? uAccent * 0.8 : vTint < 3.5 ? uSand * 0.9 + 0.12 : vTint < 4.5 ? uGreen * (0.7 + 0.4 * h2(floor(vW.xz * 0.05))) : uGreen * (0.9 + 0.5 * h2(floor(vW.xz * 0.7)));
 #endif
   float ndl = dot(N, uSunDir);
   float sh = smoothstep(vHor - 0.025, vHor + 0.045, uSunTan);
@@ -487,6 +490,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     uRock: { value: C['land-rock'] },
     uScrub: { value: C['land-scrub'] },
     uSnow: { value: C['land-snow'] },
+    uGreen: { value: C['land-green'] },
     uPath: { value: [new Vector3(CAMP.x + 150, 0, -150), new Vector3(CAMP.x + 60, 0, CAMP.z + 150), new Vector3(CAMP.x + 10, 0, CAMP.z + 30), new Vector3(CAMP.x - 260, 0, CAMP.z - 240)] },
   };
   const mat = (defines) => keep(new ShaderMaterial({ vertexShader: LAND_VERT, fragmentShader: LAND_FRAG, uniforms: U, defines }));
@@ -502,7 +506,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
   const cn = [];
   const ce = [];
   const ct = [];
-  let tint = 0; // 0 dark cloth, 1 rock, 2 banner, 3 pale canvas
+  let tint = 0; // 0 dark cloth, 1 rock, 2 banner, 3 pale canvas, 4 pine, 5 grass
   const tri = (a, b, c, e) => {
     const ux = b[0] - a[0];
     const uy = b[1] - a[1];
@@ -611,6 +615,61 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     const z = CAMP.z + 150 - 620 * far * far - rnd() * 120 + (rnd() < 0.3 ? 190 : 0);
     if (Math.hypot(x - CAMP.x, z - CAMP.z) < 30 || z > -60) continue;
     rock(x, z, 2.5 + rnd() * rnd() * 11);
+  }
+  /* Greenery (Vidyut, Nov 16): stands of pine on the lower slopes and round the bay,
+     grass in tufts by the camp and along the near shore. All of it is in this one
+     mesh with the camp, so it costs no draw call of its own. */
+  tint = 4;
+  const pine = (x, z, tall) => {
+    const y = ground(x, z) - 1;
+    const r = tall * (0.2 + rnd() * 0.07);
+    const a0 = rnd() * 6.3;
+    // three skirts of needles, each a five-sided cone, wider toward the ground
+    for (let k = 0; k < 3; k++) {
+      const y0 = y + tall * (0.14 + 0.26 * k);
+      const y1 = y + tall * (0.6 + 0.2 * k);
+      const rr = r * (1 - 0.26 * k);
+      for (let i = 0; i < 5; i++) {
+        const t0 = a0 + (i / 5) * 6.283;
+        const t1 = a0 + ((i + 1) / 5) * 6.283;
+        tri([x + Math.cos(t0) * rr, y0, z + Math.sin(t0) * rr], [x, y1, z], [x + Math.cos(t1) * rr, y0, z + Math.sin(t1) * rr], 0);
+      }
+    }
+    tint = 0;
+    box([x, y, z], tall * 0.05, tall * 0.2, tall * 0.05, a0);
+    tint = 4;
+  };
+  const slopeAt = (x, z) => Math.hypot(ground(x + 12, z) - ground(x - 12, z), ground(x, z + 12) - ground(x, z - 12)) / 24;
+  let pines = 0;
+  for (let i = 0; i < 9000 && pines < (phone ? 320 : 820); i++) {
+    const back = 430 + 2400 * Math.pow(rnd(), 1.4);
+    const x = (rnd() - 0.5) * (900 + back * 1.5);
+    const z = -back;
+    const y = ground(x, z);
+    if (y < 16 || y > 330 || slopeAt(x, z) > 0.75) continue;
+    if (Math.hypot(x - CAMP.x, z - CAMP.z) < 230) continue; // the camp stands in the open
+    if (back < 780 && Math.abs(x - CAMP.x - 60) < 520 - 0.35 * back) continue; // and nothing grows between the reader and the camp
+    // stands, not a scatter: they grow where a slow noise is high
+    if (noise(x * 0.0035 + 40.0, z * 0.0035) + 0.35 * noise(x * 0.012, z * 0.012 + 7.0) < 0.78 - 0.1 * sm((y - 60) / 120)) continue;
+    pine(x, z, (26 + rnd() * 26) * (1 - 0.3 * sm((y - 200) / 130)));
+    pines++;
+  }
+  // Grass: tufts of three blades, thick near the camp and the path, thinning toward the water.
+  tint = 5;
+  for (let i = 0; i < (phone ? 500 : 1400); i++) {
+    const far = rnd();
+    const x = CAMP.x + (rnd() - 0.5) * (300 + 1100 * far);
+    const z = CAMP.z + 190 - 560 * far - rnd() * 60;
+    const y = ground(x, z);
+    if (y < 7 || z > -70 || slopeAt(x, z) > 0.6) continue;
+    for (let b = 0; b < 3; b++) {
+      const a = rnd() * 6.3;
+      const w2 = 0.9 + rnd() * 0.8;
+      const tall = 4 + rnd() * 6;
+      const cx = x + (rnd() - 0.5) * 5;
+      const cz = z + (rnd() - 0.5) * 5;
+      tri([cx - Math.cos(a) * w2, y - 0.3, cz - Math.sin(a) * w2], [cx + Math.cos(a) * w2, y - 0.3, cz + Math.sin(a) * w2], [cx + Math.sin(a) * 2.2, y + tall, cz - Math.cos(a) * 2.2], 0);
+    }
   }
   tint = 0;
   const campGeo = keep(new BufferGeometry());

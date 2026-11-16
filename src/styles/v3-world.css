@@ -14,6 +14,7 @@
   --land-rock: 92, 66, 74;
   --land-scrub: 92, 82, 58;
   --land-snow: 238, 226, 228;
+  --land-green: 74, 104, 62; /* pine, grass and the green of the near shore */
 }
 
 :root {

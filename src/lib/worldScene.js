@@ -535,6 +535,7 @@ export function createWorld(canvas, { scenes = {}, counts = {}, solo = '' } = {}
   C['land-rock'] = col('--land-rock', [92, 66, 74]); // the mountains' rock at dusk
   C['land-scrub'] = col('--land-scrub', [92, 82, 58]); // dry scrub on the foothills
   C['land-snow'] = col('--land-snow', [238, 226, 228]); // snow on the far range
+  C['land-green'] = col('--land-green', [74, 104, 62]); // pine, grass and the green of the near shore
   const phone = window.matchMedia('(max-width: 760px)').matches;
   const rnd = seeded(41);
 
