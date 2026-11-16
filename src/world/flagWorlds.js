@@ -192,12 +192,20 @@ const BUILD = {
       for (let i = 0; i <= n; i++) {
         const t = i / n;
         const p = [0, 1, 2].map((c) => a[c] + (b[c] - a[c]) * t + 0.006 * (rnd() - 0.5));
-        k.dot(p, { size: 1.7, tone: 0.34 + 0.2 * rnd(), delay: 0.02 + 0.3 * ((p[1] + H / 2) / H) });
+        k.dot(p, { size: dense ? 1.7 : 2.3, tone: (dense ? 0.34 : 0.5) + 0.2 * rnd(), delay: 0.02 + 0.3 * Math.min(1, (p[1] + H / 2) / H) });
       }
     };
     for (let j = 0; j <= ny; j++) for (let l = 0; l <= nz; l++) edge([gx(0), gy(j), gz(l)], [gx(nx), gy(j), gz(l)]);
     for (let i = 0; i <= nx; i++) for (let l = 0; l <= nz; l++) edge([gx(i), gy(0), gz(l)], [gx(i), gy(ny), gz(l)]);
     for (let i = 0; i <= nx; i++) for (let j = 0; j <= ny; j++) edge([gx(i), gy(j), gz(0)], [gx(i), gy(j), gz(nz)]);
+    // The roof: a ridge over the middle and a pair of rafters at every wall line, so
+    // the scan reads as a home at any size, not a crate.
+    const ridge = H / 2 + 0.4;
+    edge([gx(0), ridge, 0], [gx(nx), ridge, 0]);
+    for (let i = 0; i <= nx; i++) {
+      edge([gx(i), H / 2, gz(0)], [gx(i), ridge, 0]);
+      edge([gx(i), H / 2, gz(nz)], [gx(i), ridge, 0]);
+    }
     // Places on the walls: every room offers its back wall and its side wall, two each.
     const slots = [];
     for (let i = 0; i < nx; i++) {
@@ -344,7 +352,7 @@ export const flagWorlds = definePiece({
         if (wd.played < 0 && mid > f.h * 0.12 && mid < f.h * 0.82) wd.played = f.t;
         wd.play = still ? 1 : wd.played < 0 ? 0 : Math.min(1, (f.t - wd.played) / 3.2);
         wd.U.uPlay.value = wd.play;
-        wd.U.uPx.value = f.dpr * Math.max(0.55, Math.min(1.3, wd.S / 150));
+        wd.U.uPx.value = f.dpr * Math.max(0.8, Math.min(1.3, wd.S / 150));
         // It dims as its window leaves.
         const seen = Math.max(0, Math.min(r.bottom - f.scroll, f.h) - Math.max(r.top - f.scroll, 0)) / Math.min(r.h, f.h);
         wd.U.uShow.value = Math.min(1, seen * 1.6);
