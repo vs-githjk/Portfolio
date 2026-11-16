@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Bake the welcome hologram's point cloud from the studio headshot.
+"""Bake the welcome portrait's point cloud from the studio headshot.
 
-Run by hand when the portrait changes (it is not a build step, and the photo
-itself is never shipped):
+Run by hand when the portrait changes (it is not a build step):
 
     python3 scripts/bake-hologram.py <portrait-1200.jpg> [preview.png]
 
@@ -12,37 +11,42 @@ the studio headshot). It writes two files into public/holo:
     face-a.bin   the base tier, all a phone downloads (about 18,000 points)
     face-b.bin   the fill-in a desktop adds after it (about 24,000 more)
 
-What is kept of the photograph is structure, not the picture: for each point a
-position, a real depth, a surface normal, a flattened tone and a kind. The light
-is computed in the shader from the normals, so the face is relit, not printed.
+The portrait is a round window of light with him in it, in his own colours
+(Nov 15 2026: every version of his face drawn in blue light, grainy or smooth,
+hooded, engraved or painted, was judged ghostly, and so was his real photo once
+it floated on the dark ground; what read as friendly was his own colouring in a
+lit, framed picture). So each point keeps a colour from the photograph, a real
+depth (Depth Anything V2 Small, Apache-2.0) so the head can turn, and how solid
+it is (the matte, feathered into the photo's own backdrop so the hair has a
+natural edge). The photo file itself is still not shipped; the points are a
+soft, lower-detail drawing of it.
 
-  depth    Depth Anything V2 Small (Apache-2.0) run on the photo at 1036 px.
-           Its output is relative nearness; it is re-levelled so the cheeks sit
-           on the picture plane and the nose tip stands NOSE in front of them,
-           and the body is set back behind the head.
-  normals  from the smoothed depth (the slope is exaggerated by SLOPE so a
-           shallow relief still catches the light like a full head).
-  tone     luminance with the photo's own lighting divided out. Teeth and the
-           whites of the eyes are capped at skin level; only the catchlights in
-           the irises stay hot. Hair keeps its strands at a low level.
+  depth    Depth Anything V2 Small run on the photo at 1036 px, re-levelled so
+           the cheeks sit on the picture plane and the nose tip stands NOSE in
+           front of them; the body is set back behind the head.
+  colour   the photo, graded a touch brighter and smoothed a little (more on
+           plain skin, so pores and stubble do not come out as speckle).
   points   weighted Voronoi stippling (Lloyd relaxation on a density map): blue
-           noise with no rows or lattice, denser on the eyes, brows, lips and
-           every edge, thin on the body. Tier B is relaxed around tier A, so A
-           alone and A + B are both even.
+           noise, denser on the eyes, brows, mouth and hair. Tier B is relaxed
+           around tier A, so A alone and A + B are both even. Only what lies
+           inside the round window (DISC) is kept.
 
-File format "HOL2": a 16 byte header (magic, point count u32, aspect * 1000
-u16, eye line x and y as u16 across the picture, eye depth u8, one spare byte)
-then eight bytes per point (face-b.bin ends with one more byte for each point
-of face-a.bin: that point's spacing once the fill-in stands between them):
+File format "HOL3": a 28 byte header, then eight bytes per point. face-b.bin
+ends with one more byte for each point of face-a.bin: that point's spacing once
+the fill-in stands between them.
 
-    xy     3 bytes  x and y, 12 bits each, across the picture (y down)
-    z      uint8    depth toward the viewer; 128 is the plane of the cheeks,
-                    127 steps are Z_RANGE of the picture's height
-    nx,ny  int8 x2  the normal's x and y (z is what is left; it always faces us)
-    tone   uint8    the flattened tone
-    meta   uint8    low 5 bits: spacing to the neighbours in thirds of a source
-                    pixel (the splat's size); high 3 bits: kind (0 skin,
-                    1 feature, 2 hair, 3 body, 4 catchlight)
+    header  magic "HOL3", point count u32, aspect * 1000 u16,
+            eye line x and y as u16 across the picture,
+            window centre x, y and radius as u16 across the picture's height,
+            the wall's colour behind him (r, g, b), five spare bytes
+    xy      3 bytes  x and y, 12 bits each, across the picture (y down)
+    z       uint8    depth toward the viewer; 128 is the plane of the cheeks,
+                     127 steps are Z_RANGE of the picture's height
+    colour  uint16   5 bits red, 6 green, 5 blue
+    solid   uint8    high seven bits: how solid the point is (it fades only at
+                     the photo's top edge); low bit: 1 if it is him, 0 if it
+                     is the backdrop (the backdrop is painted first)
+    space   uint8    spacing to the neighbours in thirds of a source pixel
 
 Needs Pillow, numpy, scipy, torch and transformers (the depth model downloads
 once into the Hugging Face cache, about 100 MB).
@@ -67,7 +71,6 @@ N_B = 24000  # the desktop fill-in
 SEED = 7
 Z_RANGE = 0.30  # picture heights covered by 127 depth steps
 NOSE = 0.062  # how far the nose tip stands in front of the cheeks, in picture heights
-SLOPE = 1.7  # how much steeper the light sees the relief than it is
 
 # Measured on the 1200 x 1200 source (viewer's left and right).
 EYE_L = dict(cx=510.0, cy=380.0, rx=50.0, ry=19.0, rot=-0.10)
@@ -77,10 +80,13 @@ BROW_R = [(612, 306), (660, 298), (715, 303), (765, 322)]
 MOUTH = dict(cx=604.0, cy=532.0, rx=112.0, ry=40.0, rot=-0.06)
 NOSE_TIP = (604, 438)
 CHEEKS = [(492, 452), (722, 432)]
-HAIRLINE = 300.0  # above this row dark pixels are hair, not brow or lash
 CHIN = 690.0
-BUST_FADE = (730.0, 1040.0)  # the shoulders fade out between these rows, measured down the centre line
 HEAD_CX = 612.0
+# The round window: its centre and radius in source pixels. Its top stands a
+# little above the photo's own top edge, where only the wall is.
+DISC = dict(cx=616.0, cy=470.0, r=505.0)
+FEATHER = 14.0  # px of the photo's own backdrop kept round the figure, fading out
+WALL = (56, 50, 54)  # the photo's backdrop along its top edge (measured): the wall behind the window matches it
 
 
 def smooth(a, lo, hi):
@@ -108,8 +114,8 @@ def near_polyline(xx, yy, pts):
 img = np.asarray(Image.open(SRC).convert('RGB')).astype(np.float32)
 H, W = img.shape[:2]
 assert (H, W) == (1200, 1200), 'the measurements above are for the 1200 px source'
-lum = img @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32) / 255.0
-sat = (img.max(2) - img.min(2)) / 255.0
+rgb = img / 255.0
+lum = rgb @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
 yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 
 # ---- 1. depth -----------------------------------------------------------------
@@ -142,15 +148,18 @@ labels, n = ndi.label(fore)
 if n > 1:
     fore = labels == (1 + int(np.argmax(ndi.sum(fore, labels, range(1, n + 1)))))
 inside = ndi.distance_transform_edt(fore)
-alpha = smooth(inside, 0.0, 5.0)
-# The bust fades out in a round vignette below the collar, so it has no straight
-# edge; the head itself is never touched.
-bust = 1 - smooth(np.hypot(np.clip(np.abs(xx - HEAD_CX) - 250, 0, None) / 1.2, np.clip(yy - BUST_FADE[0], 0, None)), 40, BUST_FADE[1] - BUST_FADE[0])
-alpha = alpha * bust
+outside = ndi.distance_transform_edt(~fore)
+# Nothing is cut out. The whole of the photo inside the round window is drawn,
+# its own studio backdrop included, so hair and shoulders end the way they do
+# in the photograph (a cut-out figure on a flat disc was judged sloppy and
+# floating). Only at the photo's top edge, where the window reaches a little
+# past it, do the points fade into the wall, which has the backdrop's colour.
+figure_w = smooth(inside - outside, -FEATHER, 2.0)  # 1 on him, 0 on the backdrop, feathered
+solid = smooth(np.minimum(np.mgrid[0:H, 0:W][0], 60).astype(np.float32), 2.0, 44.0)
+disc_r = np.hypot(xx - DISC['cx'], yy - DISC['cy'])
+window = disc_r < DISC['r'] + 8  # a little past the rim, for the turn of the head
 
 # ---- 3. re-level the depth ------------------------------------------------------
-# Fill the backdrop with the nearest subject depth first, so smoothing does not
-# drag the silhouette back.
 idx = ndi.distance_transform_edt(~fore, return_distances=False, return_indices=True)
 filled = near[idx[0], idx[1]]
 soft_d = ndi.gaussian_filter(filled, 2.5)
@@ -162,116 +171,56 @@ z = (soft_d - cheek) / (tip - cheek) * NOSE
 body = smooth(yy, CHIN - 30, CHIN + 110)
 z = z * (1 - body) + (z * 0.3 - 0.11) * body
 z = np.clip(z, -Z_RANGE, Z_RANGE)
-z_raw = z
+# The backdrop stands on the axis the head turns about (0.13 behind the face),
+# so it stays where it is while he turns.
+z_figure = z
 
-gy, gx = np.gradient(ndi.gaussian_filter(z, 2.5) * H)  # slope in picture units per picture unit
-gx, gy = gx * SLOPE, gy * SLOPE
-steep = np.hypot(gx, gy)
-limit = 2.4 / np.maximum(steep, 2.4)  # no normal lies flatter than about 67 degrees
-gx, gy = gx * limit, gy * limit
-
-# ---- 4. kinds --------------------------------------------------------------------
+# ---- 4. where the features are ---------------------------------------------------
 soft = ndi.gaussian_filter(lum, 1.3)
-eye_l, eye_r, mouth = ellipse(xx, yy, EYE_L), ellipse(xx, yy, EYE_R), ellipse(xx, yy, MOUTH)
-eyes = np.minimum(eye_l, eye_r)
+eyes = np.minimum(ellipse(xx, yy, EYE_L), ellipse(xx, yy, EYE_R))
+mouth = ellipse(xx, yy, MOUTH)
 brows = np.minimum(near_polyline(xx, yy, BROW_L), near_polyline(xx, yy, BROW_R))
-skin_tone = fore & (sat > 0.11) & (soft > 0.2) & (yy < CHIN + 60) & (np.abs(xx - HEAD_CX) < 300)
-dark = soft < 0.2
-# Hair: dark, in front of the backdrop, above the brows or outside the face.
-hair = fore & dark & (yy < CHIN - 60) & ((yy < HAIRLINE) | (np.abs(xx - HEAD_CX + 5) > 185)) & (brows > 26) & (eyes > 1.5)
-hair = ndi.binary_closing(hair, iterations=6)
-hair = ndi.binary_fill_holes(hair)
-hair = ndi.binary_opening(hair, iterations=2)
-hair_soft = ndi.gaussian_filter(hair.astype(np.float32), 3)
-# The shirt is whatever below the chin is not warm like skin (its buttons and
-# the collar's stripes included); the neck is skin.
 warm = ndi.gaussian_filter(img[..., 0] - img[..., 2], 2.0) > 10
 shirt = (fore & (yy > CHIN - 40) & ~warm) | (fore & (yy > 900))
-shirt = ndi.binary_closing(ndi.binary_opening(shirt, iterations=2), iterations=4)
-shirt = ndi.gaussian_filter(shirt.astype(np.float32), 2.0)
-is_body = shirt > 0.5
-# The quiff stands forward in the model's depth; the skull must not push out.
-z = z_raw - 0.045 * hair_soft
-# Around the eyes and the mouth the tone already draws every fold. Lit again
-# from above, the sockets and the upper lip go black (a moustache of shadow). So
-# there the light sees only the broad form of the head (the same slope, taken
-# from a much smoother depth): the zone is lit like the cheek beside it, neither
-# darker nor flat.
-calm = 0.85 * np.maximum(1 - smooth(eyes, 0.9, 1.9), 1 - smooth(ellipse(xx, yy, MOUTH, 1.0) - 0.45 * np.clip((MOUTH['cy'] - yy) / 60, 0, 1), 0.9, 1.7))
-by, bx = np.gradient(ndi.gaussian_filter(z_raw, 45) * H)
-gx = gx * (1 - calm) + bx * SLOPE * calm
-gy = gy * (1 - calm) + by * SLOPE * calm
-nz = 1 / np.sqrt(1 + gx * gx + gy * gy)
-nx, ny = -gx * nz, gy * nz  # y up
+shirt = ndi.gaussian_filter(ndi.binary_closing(ndi.binary_opening(shirt, iterations=2), iterations=4).astype(np.float32), 2.0)
+hair = fore & (soft < 0.2) & (yy < CHIN - 60) & ((yy < 300) | (np.abs(xx - HEAD_CX + 5) > 185)) & (brows > 26) & (eyes > 1.5)
+hair_soft = ndi.gaussian_filter(ndi.binary_fill_holes(ndi.binary_closing(hair, iterations=6)).astype(np.float32), 3)
+near_feature = np.maximum.reduce([
+    1 - smooth(eyes, 1.0, 2.0),
+    1 - smooth(brows, 12, 28),
+    1 - smooth(mouth, 0.9, 1.4),
+    np.exp(-(((xx - NOSE_TIP[0]) / 70) ** 2 + ((yy - NOSE_TIP[1] - 18) / 42) ** 2)),
+])
 
-# ---- 5. tone: the photo's light divided out -------------------------------------
-wide = ndi.gaussian_filter(np.where(skin_tone, soft, 0), 55) / np.maximum(ndi.gaussian_filter(skin_tone.astype(np.float32), 55), 1e-3)
-skin_level = float(np.median(soft[skin_tone]))
-wide = np.where(ndi.gaussian_filter(skin_tone.astype(np.float32), 55) > 0.08, wide, skin_level)
-# Half the big gradient goes: the form now comes from the normals, while the
-# small shadows that draw a face (sockets, folds, the lip line) stay.
-flat = soft / (0.4 * wide + 0.6 * skin_level)
-tone = np.clip(flat * 0.6, 0, 1.4) ** 1.2
-skin_cap = float(np.percentile(tone[skin_tone], 80))
-# Teeth and the whites of the eyes: pale and unsaturated inside the mouth and
-# the eyes. They come down to skin level so the grin is not the brightest thing.
-pale = smooth(lum, 0.42, 0.6) * (1 - smooth(sat, 0.2, 0.34))
-teeth = pale * (1 - smooth(mouth, 0.85, 1.1))
-whites = (1 - smooth(sat, 0.2, 0.36)) * smooth(lum, 0.2, 0.36) * (1 - smooth(eyes, 0.8, 1.05))
-tone = tone * (1 - teeth) + skin_cap * 1.0 * teeth
-tone = tone * (1 - whites) + skin_cap * 0.82 * whites
-# The sockets sit in the photo's own shadow. Half of that goes, so the eyes are
-# set in the face, not sunk in two dark holes (the irises and lashes stay dark).
-socket = (1 - smooth(eyes, 1.0, 2.0)) * smooth(soft, 0.16, 0.3)
-tone = tone + (np.maximum(tone, skin_cap * 0.8) - tone) * 0.5 * socket
-# Stubble reads as a moustache once the colour is gone: lift the upper lip most
-# of the way to the skin around it, and the jaw a little.
-lip_top = np.clip(1.6 * np.exp(-(((xx - 604) / 95) ** 2 + ((yy - 490) / 22) ** 2)), 0, 1)
-jawline = smooth(yy, 560, 610) * (1 - shirt) * (1 - hair_soft)
-skin_mid = float(np.median(tone[skin_tone]))
-# The target is the level of the lit cheeks, not the median: the median is what
-# the stubbled lip already has, so lifting to it changes nothing.
-tone = tone + (np.maximum(tone, skin_cap * 0.97) - tone) * 0.9 * lip_top
-tone = tone + (np.maximum(tone, skin_mid * 0.8) - tone) * 0.45 * jawline
-# The catchlights: the few brightest pixels inside each eye.
-iris = np.minimum(np.hypot(xx - 515, yy - 380), np.hypot(xx - 682, yy - 357))
-# The catchlights: bright pixels that sit on the dark of the iris itself. The
-# bright rim of the white beside the iris is not one: marked hot, it draws a
-# white sliver that reads as a glitch in the eye.
-on_iris = ndi.gaussian_filter(lum, 5) < 0.34
-catch = (lum > 0.6) & (iris < 12) & on_iris
-print('catchlight pixels', int(catch.sum()))
-# Hair: a low even level carrying its strands.
-strands = np.clip((soft - ndi.gaussian_filter(soft, 6)) * 5.0, -0.12, 0.34)
-hair_tone = 0.1 + strands + 0.5 * np.clip(soft - 0.08, 0, 0.3)
-tone = tone * (1 - hair_soft) + hair_tone * hair_soft
-# The shirt: one quiet level, its folds and placket carried by the normals.
-shirt_tone = 0.24 + 0.5 * np.clip(soft - ndi.gaussian_filter(soft, 9), -0.2, 0.05)
-tone = tone * (1 - shirt) + shirt_tone * shirt
-knee = float(np.percentile(tone[skin_tone], 60))
-tone = np.where(tone > knee, knee + (tone - knee) * 0.2, tone)  # the photo's own shine is not our light
-tone = np.clip(tone, 0.03, 1.0) ** 0.9
-tone = np.where(catch, 1.0, tone)
+# ---- 5. colour: his own, a touch brighter, without the speckle -------------------
+graded = np.clip(rgb * 1.06, 0, 1) ** 0.96
+crisp = np.stack([ndi.gaussian_filter(graded[..., c], 1.0) for c in range(3)], 2)
+calm = np.stack([ndi.gaussian_filter(graded[..., c], 2.4) for c in range(3)], 2)
+# Plain skin and cloth come from the calmer picture; eyes, brows, mouth and hair
+# keep their detail.
+keep = np.clip(np.maximum(near_feature, hair_soft), 0, 1)[..., None]
+colour = crisp * keep + calm * (1 - keep)
 
 # ---- 6. where the points go ------------------------------------------------------
 edge_l = ndi.gaussian_gradient_magnitude(soft, 1.6)
 edge_l = np.clip(edge_l / np.percentile(edge_l[fore], 98), 0, 1)
-edge_d = np.clip(steep / 2.4, 0, 1)
-outline = np.exp(-inside / 5.0)  # the silhouette
 feature = (
     0.95 * (1 - smooth(eyes, 0.7, 1.5))
     + 0.5 * (1 - smooth(brows, 9, 24))
-    + 0.5 * (1 - smooth(mouth, 0.8, 1.35))
+    + 0.7 * (1 - smooth(mouth, 0.8, 1.35))
     + 0.35 * np.exp(-(((xx - NOSE_TIP[0]) / 75) ** 2 + ((yy - NOSE_TIP[1] - 18) / 45) ** 2))
 )
-face_zone = (1 - shirt) * (1 - hair_soft)
+z = z_figure * figure_w + (-0.13) * (1 - figure_w)
+figure = fore.astype(np.float32)
+face_zone = figure * (1 - shirt) * (1 - hair_soft)
 density = (
-    face_zone * (0.62 + feature + 0.9 * edge_l + 0.25 * edge_d)
-    + hair_soft * (1 - shirt) * (0.2 + 0.5 * edge_l + 0.5 * outline)
-    + shirt * (0.05 + 0.5 * edge_l + 0.3 * edge_d + 0.3 * outline)
+    face_zone * (1.0 + 1.3 * feature + 1.0 * edge_l)
+    + figure * hair_soft * (1 - shirt) * (0.55 + 0.8 * edge_l)
+    + figure * shirt * (0.3 + 1.1 * edge_l)
+    + (1 - figure) * (0.09 + 0.55 * smooth(inside - outside, -10.0, 0.0))  # the backdrop: plain, so a few wide points; denser at his edge
 )
-density = ndi.gaussian_filter(density, 1.0) * alpha
-density[alpha < 0.05] = 0
+density = ndi.gaussian_filter(density, 1.0)
+density[~window] = 0
 
 
 def stipple(n_new, fixed, rng, rounds=14):
@@ -311,8 +260,8 @@ else:
 every = np.concatenate([pts_a, pts_b])
 # The spacing to the neighbours sets the splat's size: the mean distance to the
 # nearest six, so a splat reaches across the widest gap beside it and no hole
-# is left dark. Tier A is measured twice: on its own (what a phone draws) and in
-# the full set (what a desktop draws; those values ride at the end of tier B).
+# is left. Tier A is measured twice: on its own (what a phone draws) and in the
+# full set (what a desktop draws; those values ride at the end of tier B).
 dist, _ = cKDTree(pts_a).query(pts_a, k=7)
 space_a = dist[:, 1:].mean(1)
 dist, _ = cKDTree(every).query(every, k=7)
@@ -323,30 +272,33 @@ space_b = spacing[N_A:]
 def pack(pts, space, path, tail=None):
     xi = np.clip(pts[:, 0].astype(int), 0, W - 1)
     yi = np.clip(pts[:, 1].astype(int), 0, H - 1)
-    kind = np.zeros(len(pts), dtype=np.uint8)
-    kind[(feature[yi, xi] > 0.3) & ~is_body[yi, xi]] = 1
-    kind[hair_soft[yi, xi] > 0.5] = 2
-    kind[is_body[yi, xi]] = 3
-    kind[catch[yi, xi]] = 4
     order = rng.permutation(len(pts))  # any prefix is still an even sample
     x12 = np.clip(pts[:, 0] / W * 4095, 0, 4095).astype(np.uint32)
     y12 = np.clip(pts[:, 1] / H * 4095, 0, 4095).astype(np.uint32)
     xy = (x12 << 12) | y12
+    c = colour[yi, xi]
+    c565 = (np.clip(np.round(c[:, 0] * 31), 0, 31).astype(np.uint16) << 11) | (np.clip(np.round(c[:, 1] * 63), 0, 63).astype(np.uint16) << 5) | np.clip(np.round(c[:, 2] * 31), 0, 31).astype(np.uint16)
     out = np.zeros((len(pts), 8), dtype=np.uint8)
     out[:, 0] = xy >> 16
     out[:, 1] = (xy >> 8) & 255
     out[:, 2] = xy & 255
     out[:, 3] = np.clip(128 + z[yi, xi] / Z_RANGE * 127, 0, 255)
-    out[:, 4] = np.clip(nx[yi, xi] * 127, -127, 127).astype(np.int8).view(np.uint8)
-    out[:, 5] = np.clip(ny[yi, xi] * 127, -127, 127).astype(np.int8).view(np.uint8)
-    out[:, 6] = np.clip(tone[yi, xi] * 255, 0, 255)
-    out[:, 7] = np.clip(np.round(space * 3), 1, 31).astype(np.uint8) | (kind << 5)
+    out[:, 4] = c565 & 255
+    out[:, 5] = c565 >> 8
+    # seven bits of how solid it is, and one that says it is him and not the backdrop
+    out[:, 6] = (np.clip(solid[yi, xi] * 127, 0, 127).astype(np.uint8) << 1) | (figure_w[yi, xi] > 0.5)
+    out[:, 7] = np.clip(np.round(space * 3), 1, 255)
     out = out[order]
     eye_x = (EYE_L['cx'] + EYE_R['cx']) / 2 / W
     eye_y = (EYE_L['cy'] + EYE_R['cy']) / 2 / H
-    eye_z = int(np.clip(128 + z[int(EYE_L['cy']), int(EYE_L['cx'])] / Z_RANGE * 127, 0, 255))
-    head = b'HOL2' + struct.pack('<IHHHBB', len(pts), int(W / H * 1000), int(eye_x * 65535), int(eye_y * 65535), eye_z, 0)
-    more = b'' if tail is None else np.clip(np.round(tail[order_a] * 3), 1, 31).astype(np.uint8).tobytes()
+    head = b'HOL3' + struct.pack(
+        '<IHHHHHHBBBBBBBB',
+        len(pts), int(W / H * 1000), int(eye_x * 65535), int(eye_y * 65535),
+        int(DISC['cx'] / H * 65535 / 2), int(DISC['cy'] / H * 65535 / 2), int(DISC['r'] / H * 65535 / 2),
+        WALL[0], WALL[1], WALL[2], 0, 0, 0, 0, 0,
+    )
+    assert len(head) == 28
+    more = b'' if tail is None else np.clip(np.round(tail[order_a] * 3), 1, 255).astype(np.uint8).tobytes()
     path.write_bytes(head + out.tobytes() + more)
     print(f'{len(pts)} points, {path.stat().st_size / 1024:.1f} KB -> {path}')
     return order
@@ -355,36 +307,35 @@ def pack(pts, space, path, tail=None):
 OUT.mkdir(parents=True, exist_ok=True)
 order_a = pack(pts_a, space_a, OUT / 'face-a.bin')
 pack(pts_b, space_b, OUT / 'face-b.bin', tail=spacing[:N_A])
-print('nose tip z', NOSE, 'ear z', float(z[440, 850]), 'hair top z', float(z[120, 600]), 'eye z', float(z[380, 510]))
 
 if PREVIEW:
-    # A rough picture of what the shader will draw: the tone lit by one key light.
+    # A rough picture of what the shader draws at rest: the points as soft
+    # splats, composited over the wall inside the round window.
     S = 900
-    key = np.array([-0.5, 0.36, 0.78])
-    key /= np.linalg.norm(key)
-
-    def draw(pts, space):
+    k = S / H
+    for tag, pts, space in [('', every, spacing), ('-a', pts_a, space_a)]:
+        acc = np.zeros((S, S, 3), dtype=np.float32)
+        wgt = np.zeros((S, S), dtype=np.float32)
         xi = np.clip(pts[:, 0].astype(int), 0, W - 1)
         yi = np.clip(pts[:, 1].astype(int), 0, H - 1)
-        lamb = np.clip((nx[yi, xi] * key[0] + ny[yi, xi] * key[1] + nz[yi, xi] * key[2] + 0.35) / 1.35, 0, 1)
-        lit = tone[yi, xi] * (0.25 + 0.75 * lamb) + 0.3 * (1 - nz[yi, xi]) ** 2.5
-        canvas = np.zeros((S, S), dtype=np.float32)
-        for lo, hi in [(0, 2.5), (2.5, 4), (4, 6), (6, 99)]:
+        for lo, hi in [(0, 2.5), (2.5, 4), (4, 6), (6, 9), (9, 99)]:
             sel = (space >= lo) & (space < hi)
             if not sel.any():
                 continue
-            layer = np.zeros((S, S), dtype=np.float32)
-            np.add.at(layer, ((pts[sel, 1] / H * S).astype(int).clip(0, S - 1), (pts[sel, 0] / W * S).astype(int).clip(0, S - 1)), lit[sel] * space[sel] ** 2)
-            canvas += ndi.gaussian_filter(layer, max(0.5, space[sel].mean() * 0.55 * S / H))
-        return canvas
-
-    for tag, pts, space in [('', every, spacing), ('-a', pts_a, space_a)]:
-        c = draw(pts, space) * 0.11
-        rgb = np.stack([c * 0.45, c * 0.62, c], 2)
-        Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + tag + '.png'))
-    dots = np.zeros((S, S), dtype=np.float32)
-    np.add.at(dots, ((every[:, 1] / H * S).astype(int).clip(0, S - 1), (every[:, 0] / W * S).astype(int).clip(0, S - 1)), 1)
-    Image.fromarray((np.clip(dots, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + '-dots.png'))
-    Image.fromarray((np.clip(tone, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + '-tone.png'))
-    masks = np.stack([hair_soft, np.clip(feature / 1.5, 0, 1), np.maximum(teeth, whites)], 2)
-    Image.fromarray((np.clip(masks, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + '-masks.png'))
+            layer = np.zeros((S, S, 4), dtype=np.float32)
+            a = solid[yi[sel], xi[sel]] * space[sel] ** 2
+            py, px = (pts[sel, 1] * k).astype(int).clip(0, S - 1), (pts[sel, 0] * k).astype(int).clip(0, S - 1)
+            for c in range(3):
+                np.add.at(layer[..., c], (py, px), colour[yi[sel], xi[sel], c] * a)
+            np.add.at(layer[..., 3], (py, px), a)
+            sig = max(0.6, space[sel].mean() * 0.75 * k)
+            acc += np.stack([ndi.gaussian_filter(layer[..., c], sig) for c in range(3)], 2)
+            wgt += ndi.gaussian_filter(layer[..., 3], sig)
+        cover = 1 - np.exp(-wgt * 2.2)
+        col = acc / np.maximum(wgt, 1e-6)[..., None]
+        ys_, xs_ = np.mgrid[0:S, 0:S]
+        r = np.hypot(xs_ - DISC['cx'] * k, ys_ - DISC['cy'] * k)
+        wall = np.array(WALL, dtype=np.float32) / 255.0
+        pic = wall[None, None] * (1 - cover[..., None]) + col * cover[..., None]
+        pic = np.where((r < DISC['r'] * k)[..., None], pic, np.array([7, 9, 26], dtype=np.float32)[None, None] / 255.0)
+        Image.fromarray((np.clip(pic, 0, 1) * 255).astype(np.uint8)).save(PREVIEW.with_name(PREVIEW.stem + tag + '.png'))
