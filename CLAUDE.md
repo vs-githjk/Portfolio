@@ -173,8 +173,10 @@ fixed background stack with plain WebGL (no three.js: the chunk measured 11 KB g
 - Budget: mounted when the page is idle, after first paint; DPR capped at 1.75 (1.5 on a
   phone); a phone fetches and draws the base tier only; it draws every frame only while the
   scroll moves or the face is being drawn, about 30 a second otherwise, and not at all past the
-  hero or in a hidden tab. Mobile Lighthouse on the production build measured 98, 99 and 99
-  (three runs, Nov 15, round 3), and the greeting was the only LCP entry at 390 and 1440.
+  hero or in a hidden tab. Mobile Lighthouse on the production build measured 97 and 98 on
+  the last round 3 commit (Nov 15; 98, 99, 99 two commits earlier), and the greeting was the
+  only LCP entry at 390 and 1440 (read with a PerformanceObserver: Lighthouse 12.2.1's own
+  LCP-element audit errors on this machine).
 - Under `prefers-reduced-motion` it is one still frame that scrolls away with the page: no
   drawing in, no typing, no ball, no empty run.
 - **Round 3 (Nov 15): a relit relief, not a print of the photo.** The bake runs Depth
