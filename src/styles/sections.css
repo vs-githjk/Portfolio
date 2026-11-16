@@ -3069,12 +3069,13 @@ html.js .rcpt-card:popover-open:not([data-placed]) {
   display: none;
 }
 
+/* Only with the script: without it the graph is not cropped and the year's label stays. */
 @media (max-width: 640px) {
-  .pow-wide {
+  .js .pow-wide {
     display: none;
   }
 
-  .pow-phone {
+  .js .pow-phone {
     display: inline;
   }
 }
