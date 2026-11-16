@@ -387,8 +387,37 @@ export const builds = {
   flagships: [
     {
       id: 'prismai',
-      // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
-      scene: { kind: 'prism', cells: 14 },
+      /* Its stage (components/Stage.jsx): a sample page of the record, drawn in the
+         product's own type and colours. Every line is from meetprismai.com (Nov 16
+         2026): the two promises, the client's ask, clause 2.1 and the words on the
+         labels. No price is shown: the product prices a change order from the
+         agency's own rates, and this page has none to quote. The scope check runs
+         after the call (the in-call note is built but off), so the flag arrives
+         under "After the call". The scene draws no counts, so it carries none. */
+      scene: { kind: 'record' },
+      stage: {
+        alt: 'A sample page of PrismAI’s record, in the look of its own site. Three lines from a client call: two promises get an owner and a date, and the client’s ask for a Spanish version is marked outside the agreement, beside clause 2.1. A drafted change order waits for approval.',
+        caption: 'A sample call, drawn in PrismAI’s own type and colours.',
+        site: 'meetprismai.com',
+        headline: 'Know who promised what.',
+        label: 'The record',
+        phases: ['On the call', 'After the call'],
+        matched: 'Quote matched to the transcript',
+        lines: [
+          { who: 'You', say: 'I’ll send the revised SOW ', mark: 'by Friday.', due: 'Due', day: 'Friday' },
+          { who: 'Dev lead', say: 'I can have the staging link to you ', mark: 'Tuesday.', due: 'Due', day: 'Tuesday' },
+          { who: 'Client', say: 'Could you also add a Spanish version of the site?', flag: 'Outside the agreement' },
+        ],
+        clause: { ref: 'Agreement, 2.1 Scope', text: 'One English-language site.' },
+        order: {
+          label: 'Change order',
+          state: 'Draft',
+          item: 'Spanish version of the site',
+          basis: 'Priced from your own rates',
+          action: 'Approve',
+          wait: 'Waits for your OK',
+        },
+      },
       figure: 0, // which metric is the one large figure on its arrival screen
       kind: 'Product · live · free while in beta',
       title: 'PrismAI',
@@ -454,8 +483,47 @@ export const builds = {
     },
     {
       id: 'duelwise',
-      // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
-      scene: { kind: 'board', moons: 10, lights: 151 },
+      /* Counts its stage draws; each must appear in this entry's own metrics or story
+         (scripts/check-scenes.mjs): ten games on the shelf, four opponents, and
+         Sable's record. */
+      scene: { kind: 'match', games: 10, opponents: 4, won: 96, of: 82 },
+      /* Its stage (components/Stage.jsx): the top of duelwise.app (the kicker, the
+         headline, the four opponents with their own portraits, Nov 16 2026) and one
+         Four in a Row match against Sable. The match is a legal game written for
+         this page, not a recording: columns 0 to 6, You first. You stack three in
+         one column and Sable's block is also its fourth on the diagonal. The game
+         names are the shelf on its home page; only Sable shows a record, because
+         that is the one this page has a source for. */
+      stage: {
+        alt: 'The top of DuelWise, in the look of its own site: "Can you beat my agents?" above its four opponents, Pip, Marlow, Vesper and Sable, the champion. Under them a Four in a Row match against Sable plays out, and Sable wins with four on a diagonal.',
+        caption: 'DuelWise’s own home page and portraits; the match is a sample game.',
+        site: 'duelwise.app',
+        kicker: 'Ten games. Four opponents. No account.',
+        headline: ['Can you beat ', 'my agents?'],
+        opponents: [
+          { id: 'pip', name: 'Pip', level: 'Easy' },
+          { id: 'marlow', name: 'Marlow', level: 'Medium' },
+          { id: 'vesper', name: 'Vesper', level: 'Hard' },
+          { id: 'sable', name: 'Sable', level: 'Champion', champion: true },
+        ],
+        record: { value: '{won}%', label: 'of Sable’s {of} matches against people, won in the week to Nov 12' },
+        match: {
+          game: 'Four in a Row',
+          chip: 'Learns from you',
+          you: 'You',
+          versus: 'vs',
+          yourMove: 'Your move',
+          thinking: '{name} is thinking',
+          win: '{name} wins: four in a row',
+          move: 'Move {n}',
+          moves: [3, 1, 2, 2, 4, 5, 3, 3, 4, 5, 4, 4],
+        },
+        shelf: {
+          label: '{Games} games',
+          games: ['Chess', 'Four in a Row', 'Heads-Up Hold’em', 'Word Duel', 'Tinderbox', 'Coldstore', 'Stormglass', 'Crosscurrent', 'Twelve Yards', 'Glasscut'],
+          playing: 1,
+        },
+      },
       figure: 0,
       kind: 'Product · live · solo',
       title: 'DuelWise',
@@ -523,8 +591,44 @@ export const builds = {
          one-liner: README "Why" and devpost-final.md, which cite ABC13 Houston,
          Feb 15 2025. */
       id: 'snapback',
-      // Counts for its world in the scene; each must appear in this entry's own metrics or story (scripts/check-scenes.mjs).
-      scene: { kind: 'scan', photos: 48, placed: 43, decoys: 30, decoysPlaced: 0 },
+      /* Counts its stage draws (the tally under the house); each must appear in this
+         entry's own metrics or story (scripts/check-scenes.mjs). */
+      scene: { kind: 'check', photos: 48, placed: 43, decoys: 30, decoysPlaced: 0 },
+      /* Its stage (components/Stage.jsx): the top of snapback-navy.vercel.app (Nov 16
+         2026): the headline, the cutaway house with its three pins and "On record:
+         for sale", the sample ad ("Deposit tonight by Zelle") and the sample verdict
+         card. The card's verdict and its person and price rows are the site's own
+         words. The place row is written for this page: the site's sample has no
+         scan, and here the photos are placed, which is what the product does when a
+         home has one; "Matches" is one of its three states. The house is a drawing
+         and the case is synthetic, and the stage says both. The tally is the
+         README's measured LIVE rows. */
+      stage: {
+        alt: 'The top of SNAPBACK, in the look of its own site: "Trust the home, not the ad." beside a cutaway drawing of a house. A sample ad’s photos fly into the rooms they were taken in, the home’s record says it is for sale, and the verdict card reads "Hold off: it asks for money before you’ve seen the place".',
+        caption: 'SNAPBACK’s own home page, redrawn: the house is a drawing and the case is a sample.',
+        site: 'snapback-navy.vercel.app',
+        kicker: 'SNAPBACK',
+        headline: 'Trust the home, not the ad.',
+        ad: { label: 'Sample ad', quote: '“Deposit tonight by Zelle”', action: 'Check it' },
+        pins: ['The place', 'The person', 'The price'],
+        record: 'On record: for sale',
+        sign: 'For sale',
+        card: {
+          meta: 'Sample case · synthetic',
+          checking: 'Checking the ad',
+          verdict: 'Hold off: it asks for money before you’ve seen the place',
+          rows: [
+            { k: 'The place', t: 'The ad’s photos lock onto this home’s 3D scan.', state: 'ok', chip: 'Matches' },
+            { k: 'The person', t: 'The number is not the leasing office’s number on record.', state: 'unconfirmed', chip: 'Not confirmed' },
+            { k: 'The price', t: 'Asks for a deposit by Zelle before any viewing.', state: 'warn', chip: 'Warning' },
+          ],
+        },
+        tally: {
+          label: 'Measured on real listings',
+          real: '{placed} of {photos} photos placed in the right home',
+          decoy: '{decoysPlaced} of {decoys} decoys placed',
+        },
+      },
       figure: 0,
       kind: 'Hackathon · HackPrinceton 2026 · team of 4',
       title: 'SNAPBACK',

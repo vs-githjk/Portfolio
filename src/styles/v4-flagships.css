@@ -1,0 +1,1443 @@
+/* The flagship stages (components/Stage.jsx, SnapHouse.jsx): each product in its
+   own type and colours, inside the page's cut-corner frame. Imported by Stage.jsx,
+   so it loads after every sheet in main.jsx.
+
+   The palettes below are the products' own, read from their live sites on Nov 16
+   2026 (meetprismai.com, duelwise.app, snapback-navy.vercel.app). They are used
+   inside a stage and nowhere else: the page keeps its one accent. They live here
+   and not in tokens.css so this lane's work stays in its own files. */
+
+/* The products' display faces, cut down to the letters, figures and marks a stage
+   uses (about 51 KB for all six). All SIL Open Font License: Lato, Fraunces,
+   Atkinson Hyperlegible Next, IBM Plex Mono. */
+@font-face {
+  font-family: 'Lato';
+  src: url('/fonts/products/lato-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Lato';
+  src: url('/fonts/products/lato-900.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/products/fraunces-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/products/fraunces-900i.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('/fonts/products/atkinson-800.woff2') format('woff2');
+  font-weight: 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/products/plexmono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  /* PrismAI */
+  --pm-font: 'Lato', var(--font-ui);
+  --pm-paper: #f7f6f3;
+  --pm-page: #ffffff;
+  --pm-ink: #16181b;
+  --pm-mute: #5b6068;
+  --pm-red: #c2361c;
+  --pm-line: rgba(22, 24, 27, 0.14);
+  --pm-wood: #ecd3ae;
+  --pm-wood-2: #dcb98a;
+  --pm-grain: rgba(122, 78, 28, 0.07);
+  --pm-shadow: 0 16px 40px rgba(60, 40, 14, 0.2);
+  --pm-glass-a: #f08a66; /* the coral prism */
+  --pm-glass-b: #e3d98c; /* the yellow one */
+  --pm-glass-c: #b3aca6; /* the grey one */
+
+  /* DuelWise */
+  --dw-font: 'Fraunces', var(--font-read);
+  --dw-canvas: #fff3e8;
+  --dw-glow: #ffdcc4;
+  --dw-surface: #ffffff;
+  --dw-line: #a08468;
+  --dw-line-soft: rgba(160, 132, 104, 0.4);
+  --dw-ink: #1f1a17;
+  --dw-mute: #6b5f57;
+  --dw-action: #2166f0;
+  --dw-peach-deep: #a63f0c;
+  --dw-warn: #b8720a;
+  --dw-warn-ink: #6e3f00;
+  --dw-good-soft: #d9f3e6;
+  --dw-good-ink: #0b5c3f;
+  --dw-four-frame: #1d3a8a;
+  --dw-four-hole: #55689a;
+  --dw-four-you: #f3b81c;
+  --dw-four-ai: #1a1814;
+  /* its ten games, in shelf order */
+  --dw-game-0: #2f5ff0;
+  --dw-game-1: #f0a000;
+  --dw-game-2: #0a9a6c;
+  --dw-game-3: #8a3ff5;
+  --dw-game-4: #e8500e;
+  --dw-game-5: #0a95b8;
+  --dw-game-6: #1b4d7a;
+  --dw-game-7: #2f7f78;
+  --dw-game-8: #3f7d2b;
+  --dw-game-9: #c23a5b;
+
+  /* SNAPBACK */
+  --sb-font: 'Atkinson Hyperlegible Next', var(--font-ui);
+  --sb-mono: 'IBM Plex Mono', var(--font-mono);
+  --sb-sky: #e4e1d9;
+  --sb-water: #d7e3ea;
+  --sb-surface: #fbfaf7;
+  --sb-glass: rgba(251, 250, 247, 0.9);
+  --sb-ink: #161a1b;
+  --sb-mute: #4b5253;
+  --sb-line: rgba(22, 26, 27, 0.16);
+  --sb-act: #0d6672;
+  --sb-scan: #dfa20a;
+  --sb-matte: #131516;
+  --sb-on-matte: #f0ebe1;
+  --sb-on-matte-2: rgba(240, 235, 225, 0.74);
+  --sb-hold: #f0cf74;
+  --sb-ok: #0e7a4a;
+  --sb-warn: #946400;
+  --sb-unconfirmed: #766733;
+  --sb-wait: #9aa3a6;
+  --sb-coral: #8f170d;
+  --sb-coral-soft: #fadcd7;
+  --sb-shadow: 0 1px 2px rgba(10, 12, 13, 0.08), 0 14px 34px rgba(10, 12, 13, 0.14);
+  /* the drawing */
+  --sb-shade: #5d6a73; /* what a face in shadow leans toward */
+  --sb-block: #ece9e2;
+  --sb-win: #cfd6da;
+  --sb-skyline: #c7d1d8;
+  --sb-skyline-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='26'%3E%3Cpath d='M0 26V18h14v-6h8V4h7v12h12v-5h9V0h6v14h10V7h12v6h9V4h7v9h13V9h10v8h20v-6h9V5h7v8h9V1h8v14h7V9h11v9h12V8h6v10h14v-5h9v13z'/%3E%3C/svg%3E");
+  --sb-lawn: #c5d6ba;
+  --sb-slab: #f6f1e7;
+  --sb-floor: #ecc391;
+  --sb-wall: #fbfaf7;
+  --sb-wall-2: #ebe4d6;
+  --sb-pane: #cfe3ee;
+  --sb-roof: #5f7483;
+  --sb-roof-2: #4c5f6d;
+  --sb-chimney: #c2b4a2;
+  --sb-wood: #c99664;
+  --sb-cream: #f4ecdc;
+  --sb-slate: #6a8092;
+  --sb-teal: #0d6672;
+  --sb-trunk: #7a5a3c;
+  --sb-leaf: #5f9159;
+  --sb-photo-a: #c9d8e2;
+  --sb-photo-b: #e6cba6;
+  --sb-photo-c: #bccbb3;
+}
+
+/* ---- The frame ---------------------------------------------------------------- */
+/* The window gives way to the stage: no viewfinder marks, no fixed height. */
+.ch-world {
+  display: block;
+  place-items: normal; /* Chrome centres and shrinks a block child under justify-items */
+  height: auto;
+  margin-top: 22px;
+  background: none;
+}
+
+.pstage {
+  margin: 0;
+}
+
+.pstage-in {
+  --cut: var(--cut-lg);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  container-type: inline-size;
+  border-radius: var(--r-xs);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  text-shadow: none;
+  text-align: left;
+  line-height: 1.3;
+  font-family: var(--font-ui);
+}
+
+:where(.pstage-in) :where(p, ul, ol) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: none;
+}
+
+.pstage-cap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+.pstage-cap span {
+  color: var(--acc-text);
+  text-transform: uppercase;
+  letter-spacing: var(--tr-label);
+}
+
+/* ---- PrismAI: the record ------------------------------------------------------- */
+.rec {
+  display: grid;
+  gap: clamp(10px, 2.2cqw, 16px);
+  padding: clamp(18px, 4cqw, 30px) clamp(16px, 3.6cqw, 28px) clamp(16px, 3.4cqw, 26px);
+  color: var(--pm-ink);
+  font-family: var(--pm-font);
+  background:
+    linear-gradient(98deg, var(--pm-paper) 0 30%, transparent 74%),
+    repeating-linear-gradient(93deg, transparent 0 58px, var(--pm-grain) 58px 59px),
+    linear-gradient(180deg, var(--pm-wood), var(--pm-wood-2));
+}
+
+.rec-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-left: clamp(4px, 1.4cqw, 12px);
+}
+
+.rec-h {
+  font-weight: 900;
+  font-size: clamp(25px, 6.2cqw, 44px);
+  line-height: 1;
+  letter-spacing: -0.028em;
+  max-width: 7.6em;
+  padding-bottom: 0.2em;
+}
+
+.rec-mark {
+  display: block;
+  width: 0.92em;
+  margin-bottom: 0.34em;
+  fill: var(--pm-ink);
+}
+
+.rec-mark .ctr {
+  fill: var(--pm-red);
+}
+
+.rec-prisms {
+  flex: none;
+  width: clamp(92px, 23cqw, 168px);
+  margin: 0 clamp(4px, 3cqw, 26px) -22px 0; /* they stand on the desk, behind the page */
+}
+
+.rec-glass-a-0 {
+  stop-color: color-mix(in srgb, var(--pm-glass-a) 70%, white);
+}
+.rec-glass-a-1 {
+  stop-color: var(--pm-glass-a);
+}
+.rec-glass-b-0 {
+  stop-color: color-mix(in srgb, var(--pm-glass-b) 55%, white);
+}
+.rec-glass-b-1 {
+  stop-color: var(--pm-glass-b);
+}
+.rec-glass-c-0 {
+  stop-color: color-mix(in srgb, var(--pm-glass-c) 45%, white);
+}
+.rec-glass-c-1 {
+  stop-color: var(--pm-glass-c);
+}
+
+.rec-prisms g > path:first-child {
+  opacity: 0.86;
+}
+
+.rec-prism-edge {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 3;
+}
+
+.rec-prism-shine {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.rec-prism-shade {
+  fill: rgba(88, 56, 20, 0.2);
+}
+
+.rec-page {
+  position: relative;
+  padding: clamp(10px, 2cqw, 14px) clamp(14px, 3cqw, 22px) clamp(6px, 1.4cqw, 10px);
+  border: 1px solid var(--pm-line);
+  border-radius: 14px;
+  background: var(--pm-page);
+  box-shadow: var(--pm-shadow);
+}
+
+.rec-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: clamp(8px, 1.6cqw, 11px);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--pm-mute);
+}
+
+.rec-bar b {
+  font-weight: 900;
+  color: var(--pm-ink);
+}
+
+.rec-phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.rec-phase i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pm-red);
+}
+
+.rec-phase[data-after] i {
+  background: var(--pm-ink);
+}
+
+.rec-lines li {
+  display: grid;
+  grid-template-columns: clamp(64px, 13cqw, 84px) minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: baseline;
+  padding: clamp(9px, 1.9cqw, 13px) 0;
+  border-top: 1px solid var(--pm-line);
+}
+
+.rec-who {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pm-mute);
+}
+
+.rec-say {
+  font-weight: 700;
+  font-size: clamp(14.5px, 2.7cqw, 18px);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+
+.rec-say mark {
+  color: inherit;
+  background: linear-gradient(var(--pm-red), var(--pm-red)) no-repeat 0 100% / 100% 2px;
+  padding-bottom: 1px;
+}
+
+.rec-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--pm-mute);
+}
+
+.rec-due b {
+  color: var(--pm-red);
+}
+
+.rec-due svg {
+  width: 12px;
+  fill: none;
+  stroke: var(--pm-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rec-scope {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 9px;
+}
+
+.rec-flag {
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pm-red);
+}
+
+/* The red thread: from the ask to the clause it falls outside. */
+.rec-thread {
+  flex: 1;
+  min-width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--pm-red);
+  transform-origin: 0 50%;
+}
+
+.rec-clause {
+  display: grid;
+  gap: 1px;
+  padding: 6px 12px 7px;
+  border: 1px solid var(--pm-line);
+  border-left: 2px solid var(--pm-red);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.rec-clause span {
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pm-mute);
+}
+
+/* The change order: a slip of paper on the desk, the way the site lays its drafts. */
+.rec-slip {
+  justify-self: end;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'k t go'
+    'k b go';
+  column-gap: clamp(12px, 2.6cqw, 20px);
+  align-items: center;
+  width: min(100%, 560px);
+  margin: -2px clamp(0px, 2cqw, 14px) 0 0;
+  padding: 10px 12px 10px 16px;
+  border-radius: 4px;
+  background: var(--pm-page);
+  box-shadow: var(--pm-shadow);
+  transform: rotate(-1.1deg);
+}
+
+.rec-slip-k {
+  grid-area: k;
+  display: grid;
+  gap: 3px;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rec-slip-k span {
+  justify-self: start;
+  padding: 1px 6px;
+  border: 1px solid var(--pm-line);
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--pm-mute);
+}
+
+.rec-slip-t {
+  grid-area: t;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.rec-slip-b {
+  grid-area: b;
+  font-size: 13px;
+  color: var(--pm-mute);
+}
+
+.rec-slip-go {
+  grid-area: go;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rec-wait {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--pm-mute);
+}
+
+.rec-ap {
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--pm-ink);
+  color: var(--pm-page);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+@container (max-width: 520px) {
+  .rec-lines li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 3px;
+  }
+
+  .rec-who {
+    grid-column: 1 / -1;
+  }
+
+  .rec-scope {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+  }
+
+  .rec-clause {
+    flex-basis: 100%;
+  }
+
+  .rec-slip {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'k go'
+      't t'
+      'b b';
+    row-gap: 4px;
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .rec-slip-k {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rec-wait {
+    display: none;
+  }
+}
+
+/* ---- DuelWise: the clubhouse and one match -------------------------------------- */
+.duel {
+  padding: clamp(18px, 3.8cqw, 28px) clamp(14px, 3.4cqw, 26px) clamp(14px, 3cqw, 22px);
+  color: var(--dw-ink);
+  text-align: center;
+  background:
+    radial-gradient(90% 46% at 50% 0%, var(--dw-glow), transparent 100%),
+    var(--dw-canvas);
+}
+
+.duel-kicker {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 1.9cqw, 11px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dw-peach-deep);
+}
+
+.duel-h {
+  margin-top: 0.22em;
+  font-family: var(--dw-font);
+  font-weight: 700;
+  font-size: clamp(31px, 8.6cqw, 58px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+}
+
+.duel-h em {
+  font-style: italic;
+  font-weight: 900;
+  color: var(--dw-action);
+}
+
+.duel-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(6px, 1.7cqw, 12px);
+  max-width: 580px;
+  margin: clamp(20px, 4.4cqw, 30px) auto 0;
+}
+
+.duel-cards li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: clamp(12px, 2.4cqw, 16px) 2px clamp(8px, 1.8cqw, 12px);
+  border: 1px solid var(--dw-line);
+  border-radius: 14px;
+  background: var(--dw-surface);
+  box-shadow: 0 2px 0 rgba(31, 26, 23, 0.05);
+}
+
+.duel-cards li[data-champion] {
+  border-color: var(--dw-warn);
+  box-shadow:
+    0 0 0 1px var(--dw-warn),
+    0 2px 0 rgba(31, 26, 23, 0.05);
+}
+
+.duel-cards img {
+  width: clamp(42px, 10.4cqw, 68px);
+  height: auto;
+  margin-bottom: 4px;
+}
+
+.duel-cards b {
+  font-family: var(--dw-font);
+  font-weight: 700;
+  font-size: clamp(15px, 3.1cqw, 20px);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+
+.duel-level,
+.duel-chip {
+  font-family: var(--font-mono);
+  font-size: clamp(8px, 1.7cqw, 10px);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dw-mute);
+}
+
+.duel-chip {
+  position: absolute;
+  top: 0;
+  transform: translateY(-55%);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--dw-warn-ink);
+  color: var(--dw-surface);
+}
+
+.duel-table {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px clamp(12px, 3cqw, 22px);
+  align-items: center;
+  max-width: 580px;
+  margin: clamp(10px, 2.2cqw, 14px) auto 0;
+  padding: clamp(10px, 2.2cqw, 14px) clamp(12px, 2.6cqw, 18px);
+  border: 1px solid var(--dw-line);
+  border-radius: 14px;
+  background: var(--dw-surface);
+  box-shadow: 0 2px 0 rgba(31, 26, 23, 0.05);
+  text-align: left;
+}
+
+.duel-board {
+  display: block;
+  width: clamp(128px, 31cqw, 196px);
+  overflow: visible;
+}
+
+.duel-frame {
+  fill: var(--dw-four-frame);
+}
+
+.duel-hole {
+  fill: var(--dw-four-hole);
+}
+
+.duel-disc[data-who='you'] {
+  fill: var(--dw-four-you);
+}
+
+.duel-disc[data-who='ai'] {
+  fill: var(--dw-four-ai);
+}
+
+.duel-disc[data-won] {
+  stroke: var(--dw-surface);
+  stroke-width: 1.5;
+  paint-order: stroke;
+}
+
+.duel-side {
+  display: grid;
+  gap: clamp(3px, 0.9cqw, 6px);
+  min-width: 0;
+}
+
+.duel-game {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.duel-game b {
+  font-family: var(--dw-font);
+  font-weight: 700;
+  font-size: clamp(16px, 3.3cqw, 21px);
+  letter-spacing: -0.015em;
+}
+
+.duel-game span {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--dw-good-soft);
+  color: var(--dw-good-ink);
+  font-weight: 600;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.duel-vs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.duel-vs span {
+  font-weight: 400;
+  color: var(--dw-mute);
+}
+
+.duel-vs i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dw-four-you);
+  box-shadow: inset 0 0 0 1px rgba(31, 26, 23, 0.25);
+}
+
+.duel-vs i[data-who='ai'] {
+  background: var(--dw-four-ai);
+}
+
+.duel-status {
+  min-height: 1.3em;
+  font-size: 13px;
+  color: var(--dw-mute);
+}
+
+.duel-status[data-turn='you'] {
+  color: var(--dw-action);
+  font-weight: 600;
+}
+
+.duel-status[data-turn='done'] {
+  color: var(--dw-ink);
+  font-weight: 700;
+}
+
+.duel-record {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+  padding-top: clamp(6px, 1.4cqw, 9px);
+  border-top: 1px solid var(--dw-line-soft);
+}
+
+.duel-record b {
+  font-family: var(--dw-font);
+  font-weight: 700;
+  font-size: clamp(26px, 5.4cqw, 36px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.duel-record span {
+  max-width: 30ch;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--dw-mute);
+}
+
+.duel-shelf {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1.1cqw, 7px);
+  padding-top: clamp(8px, 1.8cqw, 10px);
+  border-top: 1px solid var(--dw-line-soft);
+}
+
+.duel-shelf span {
+  margin-right: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dw-mute);
+}
+
+.duel-shelf i {
+  width: clamp(12px, 2.8cqw, 16px);
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: var(--g);
+}
+
+.duel-shelf i[data-playing] {
+  outline: 2px solid var(--dw-ink);
+  outline-offset: 2px;
+}
+
+.duel-shelf i[data-game='0'] { --g: var(--dw-game-0); }
+.duel-shelf i[data-game='1'] { --g: var(--dw-game-1); }
+.duel-shelf i[data-game='2'] { --g: var(--dw-game-2); }
+.duel-shelf i[data-game='3'] { --g: var(--dw-game-3); }
+.duel-shelf i[data-game='4'] { --g: var(--dw-game-4); }
+.duel-shelf i[data-game='5'] { --g: var(--dw-game-5); }
+.duel-shelf i[data-game='6'] { --g: var(--dw-game-6); }
+.duel-shelf i[data-game='7'] { --g: var(--dw-game-7); }
+.duel-shelf i[data-game='8'] { --g: var(--dw-game-8); }
+.duel-shelf i[data-game='9'] { --g: var(--dw-game-9); }
+
+@container (max-width: 440px) {
+  .duel-record {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* ---- SNAPBACK: the check ---------------------------------------------------------- */
+.chk {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
+  grid-template-areas:
+    'copy house'
+    'ad house'
+    'card house'
+    'tally tally';
+  grid-template-rows: auto auto 1fr auto;
+  position: relative;
+  gap: clamp(8px, 1.8cqw, 12px) 0;
+  padding: clamp(14px, 3cqw, 22px);
+  color: var(--sb-ink);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 35px, rgba(22, 26, 27, 0.045) 35px 36px) 0 0 / 100% 24% no-repeat,
+    linear-gradient(180deg, var(--sb-sky) 0 24%, var(--sb-water) 24.2% 100%);
+}
+
+/* The skyline on the horizon, as on its home page. */
+.chk::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(24% - 25px);
+  height: 26px;
+  background: var(--sb-skyline);
+  -webkit-mask: var(--sb-skyline-cut) repeat-x 0 100%;
+  mask: var(--sb-skyline-cut) repeat-x 0 100%;
+}
+
+.chk-copy,
+.chk-ad,
+.chk-card,
+.chk-tally {
+  position: relative;
+  z-index: 1;
+}
+
+/* The ad being checked: its three photos, the line that gives it away, the button. */
+.chk-ad {
+  grid-area: ad;
+  justify-self: start;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 14px;
+  align-items: center;
+  padding: 9px 12px 10px 14px;
+  border-radius: 12px;
+  background: var(--sb-surface);
+  box-shadow: var(--sb-shadow);
+}
+
+.chk-ad-photos {
+  justify-self: end;
+  display: flex;
+  gap: 4px;
+}
+
+.chk-ad-photos i {
+  width: 24px;
+  height: 17px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+.chk-ad-photos i[data-gone] {
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--sb-wait);
+}
+
+:is(.chk-ad-photos i, .sh-photo)[data-photo='0'] { --c: var(--sb-photo-a); }
+:is(.chk-ad-photos i, .sh-photo)[data-photo='1'] { --c: var(--sb-photo-b); }
+:is(.chk-ad-photos i, .sh-photo)[data-photo='2'] { --c: var(--sb-photo-c); }
+
+.chk-ad-q {
+  font-family: var(--sb-font);
+  font-weight: 800;
+  font-size: 13.5px;
+}
+
+.chk-ad-btn {
+  justify-self: end;
+  padding: 4px 13px;
+  border-radius: 999px;
+  background: var(--sb-act);
+  color: var(--sb-surface);
+  font-family: var(--sb-font);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.chk-copy {
+  grid-area: copy;
+  padding: clamp(12px, 2.4cqw, 16px) clamp(14px, 2.8cqw, 18px) clamp(13px, 2.6cqw, 17px);
+  border-radius: 12px;
+  background: var(--sb-glass);
+  box-shadow: var(--sb-shadow);
+}
+
+.chk-kicker,
+.chk-ad-k,
+.chk-meta,
+.chk-k,
+.chk-tally-k {
+  font-family: var(--sb-mono);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sb-mute);
+}
+
+.chk-h {
+  margin-top: 5px;
+  font-family: var(--sb-font);
+  font-weight: 800;
+  font-size: clamp(24px, 4.5cqw, 32px);
+  line-height: 1.04;
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+.sh {
+  position: relative; /* over the skyline */
+  grid-area: house;
+  align-self: center;
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.chk-card {
+  grid-area: card;
+  align-self: end;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--sb-surface);
+  box-shadow: var(--sb-shadow);
+}
+
+.chk-band {
+  display: grid;
+  gap: 4px;
+  padding: clamp(10px, 2cqw, 13px) clamp(12px, 2.6cqw, 16px);
+  background: var(--sb-matte);
+}
+
+.chk-meta {
+  color: var(--sb-on-matte-2);
+  letter-spacing: 0.08em;
+}
+
+.chk-verdict {
+  min-height: 2.3em;
+  font-family: var(--sb-font);
+  font-weight: 800;
+  font-size: clamp(15.5px, 3cqw, 19px);
+  line-height: 1.15;
+  color: var(--sb-on-matte);
+}
+
+.chk-verdict[data-done] {
+  color: var(--sb-hold);
+}
+
+.chk-rows {
+  padding: 2px clamp(12px, 2.6cqw, 16px);
+}
+
+.chk-rows li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'k state'
+    't t';
+  gap: 2px 10px;
+  align-items: center;
+  padding: clamp(7px, 1.5cqw, 9px) 0;
+}
+
+.chk-rows li + li {
+  border-top: 1px solid var(--sb-line);
+}
+
+.chk-k {
+  grid-area: k;
+  letter-spacing: 0.08em;
+}
+
+.chk-t {
+  grid-area: t;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.chk-state {
+  grid-area: state;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sb-font);
+  font-weight: 800;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.chk-state i {
+  width: 8px;
+  height: 8px;
+  background: var(--s);
+}
+
+.chk-state[data-state='ok'] { --s: var(--sb-ok); }
+.chk-state[data-state='warn'] { --s: var(--sb-warn); }
+.chk-state[data-state='unconfirmed'] { --s: var(--sb-unconfirmed); }
+
+.chk-tally {
+  grid-area: tally;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 14px;
+  align-items: center;
+  padding: 9px clamp(12px, 2.6cqw, 16px);
+  border-radius: 10px;
+  background: var(--sb-glass);
+  font-family: var(--sb-mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.chk-tally-k {
+  grid-row: span 2;
+  max-width: 13ch;
+  line-height: 1.4;
+}
+
+.chk-tally p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 10px;
+}
+
+.chk-ticks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.chk-ticks i {
+  width: 4px;
+  height: 11px;
+  border-radius: 1px;
+  box-shadow: inset 0 0 0 1px var(--sb-wait);
+}
+
+.chk-ticks i[data-placed] {
+  background: var(--sb-ok);
+  box-shadow: none;
+}
+
+/* The drawing. A box has three faces: the top takes its tone, the two sides lean
+   toward the shade. */
+.sh-t {
+  fill: var(--c);
+}
+.sh-l {
+  fill: color-mix(in srgb, var(--c) 86%, var(--sb-shade));
+}
+.sh-r {
+  fill: color-mix(in srgb, var(--c) 72%, var(--sb-shade));
+}
+
+.sh-win {
+  fill: var(--sb-win);
+}
+.sh-lawn {
+  fill: var(--sb-lawn);
+}
+.sh-ground {
+  fill: var(--sb-floor);
+}
+.sh-wall-a {
+  fill: var(--sb-wall);
+}
+.sh-wall-b {
+  fill: var(--sb-wall-2);
+}
+.sh-pane {
+  fill: var(--sb-pane);
+}
+.sh-post {
+  stroke: var(--sb-ink);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+.sh-scan {
+  fill: none;
+  stroke: var(--sb-scan);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+.sh-floor[data-lit] .sh-scan {
+  opacity: 1;
+}
+.sh-roof-front {
+  fill: var(--sb-roof);
+}
+.sh-roof-end {
+  fill: var(--sb-roof-2);
+}
+.sh-gable {
+  fill: var(--sb-wall-2);
+}
+
+/* Opened: each floor parts from the one under it, and the roof lifts clear. */
+.sh[data-open] .sh-floor[data-floor='1'] {
+  transform: translateY(calc(var(--lift) * -1));
+}
+.sh[data-open] .sh-floor[data-floor='2'] {
+  transform: translateY(calc(var(--lift) * -2));
+}
+.sh[data-open] .sh-roof {
+  transform: translateY(calc(var(--lift) * -2 - 78px));
+}
+
+.sh text {
+  font-family: var(--sb-font);
+  font-weight: 800;
+  font-size: 11px;
+  fill: var(--sb-ink);
+}
+
+.sh-sign-post {
+  stroke: var(--sb-ink);
+  stroke-width: 2;
+}
+.sh-sign-board {
+  fill: var(--sb-surface);
+  stroke: var(--sb-ink);
+  stroke-width: 1.2;
+}
+.sh-sign-band {
+  fill: var(--sb-act);
+}
+.sh text.sh-sign-text {
+  font-size: 8.6px;
+  letter-spacing: 0.05em;
+  text-anchor: middle;
+  text-transform: uppercase;
+  fill: var(--sb-surface);
+}
+.sh-sign-rule {
+  stroke: var(--sb-mute);
+  stroke-width: 1;
+}
+
+.sh-record rect {
+  fill: var(--sb-coral-soft);
+  stroke: var(--sb-coral);
+  stroke-width: 1;
+}
+.sh-record text {
+  text-anchor: middle;
+  fill: var(--sb-coral);
+}
+
+.sh-pin rect {
+  fill: var(--sb-surface);
+  filter: drop-shadow(0 2px 4px rgba(10, 12, 13, 0.16));
+}
+.sh-pin path {
+  stroke: var(--sb-scan);
+  stroke-width: 1.5;
+}
+.sh-pin circle {
+  fill: var(--sb-scan);
+}
+.sh-pin[data-state='ok'] circle { fill: var(--sb-ok); }
+.sh-pin[data-state='warn'] circle { fill: var(--sb-warn); }
+.sh-pin[data-state='unconfirmed'] circle { fill: var(--sb-unconfirmed); }
+
+.sh-photo {
+  transform: translate(var(--x1), var(--y1)) skewY(var(--k));
+}
+.sh-photo-img {
+  fill: var(--c);
+  stroke: var(--sb-surface);
+  stroke-width: 1.5;
+}
+.sh-photo-art {
+  fill: color-mix(in srgb, var(--c) 60%, var(--sb-shade));
+}
+.sh-photo-lock {
+  fill: none;
+  stroke: var(--sb-scan);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@container (max-width: 520px) {
+  .chk {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'copy'
+      'ad'
+      'house'
+      'card'
+      'tally';
+    grid-template-rows: none;
+  }
+
+  .sh-photo {
+    --x0: 60px;
+    --y0: -40px;
+  }
+
+  .sh {
+    width: min(100%, 286px);
+    justify-self: center;
+    margin: 2px 0 6px;
+  }
+
+  .chk-tally {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chk-tally-k {
+    grid-row: auto;
+    max-width: none;
+  }
+}
+
+/* ---- Motion: what a stage looks like before its step, and how it arrives -------- */
+/* Every rule above is the finished picture. The rules below are the picture before
+   a step has happened; they only ever apply while the script is playing the stage
+   (useStage), which it never does under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  /* PrismAI: a line is written, then what it promised is caught. */
+  .rec-say > span {
+    display: inline-block;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.9s steps(18, end);
+  }
+  .rec-lines li:not([data-on]) .rec-say > span {
+    clip-path: inset(0 100% 0 0);
+    transition: none;
+  }
+  .rec-who {
+    transition: opacity 0.3s;
+  }
+  .rec-lines li:not([data-on]) .rec-who {
+    opacity: 0;
+    transition: none;
+  }
+  .rec-say mark {
+    transition: background-size 0.5s var(--ease);
+  }
+  .rec-lines li:not([data-caught]) .rec-say mark {
+    background-size: 0% 2px;
+    transition: none;
+  }
+  .rec-due,
+  .rec-flag,
+  .rec-clause {
+    transition:
+      opacity 0.35s 0.25s,
+      transform 0.45s 0.25s var(--ease);
+  }
+  .rec-lines li:not([data-caught]) :is(.rec-due, .rec-flag, .rec-clause) {
+    opacity: 0;
+    transform: translateY(5px);
+    transition: none;
+  }
+  .rec-clause {
+    transition-delay: 0.7s;
+  }
+  .rec-thread {
+    transition: transform 0.6s 0.35s var(--ease);
+  }
+  .rec-lines li:not([data-caught]) .rec-thread {
+    transform: scaleX(0);
+    transition: none;
+  }
+  .rec-phase:not([data-after]) i {
+    animation: rec-live 1.2s ease-in-out infinite alternate;
+  }
+  .rec-slip {
+    transition:
+      opacity 0.4s,
+      transform 0.6s var(--ease);
+  }
+  .rec-slip:not([data-on]) {
+    opacity: 0;
+    transform: translateY(18px) rotate(1.5deg);
+    transition: none;
+  }
+
+  /* DuelWise: a disc falls into its column. */
+  .duel-disc {
+    transition: transform 0.42s cubic-bezier(0.55, 0, 0.9, 0.55);
+  }
+  .duel-disc:not([data-on]) {
+    opacity: 0;
+    transform: translateY(var(--fall));
+    transition: none;
+  }
+  .duel-disc[data-won] {
+    animation: duel-won 0.9s ease-in-out 2 alternate;
+  }
+  .duel-dots::after {
+    content: '';
+    display: inline-block;
+    width: 1.2em;
+    margin-left: 2px;
+    text-align: left;
+    animation: duel-dots 0.7s steps(4, end) infinite;
+  }
+
+  /* SNAPBACK: the home opens, the photos fly to their walls, the card fills in. */
+  .sh-floor,
+  .sh-roof {
+    transition: transform 0.9s var(--ease);
+  }
+  .sh-pin,
+  .sh-record {
+    transition: opacity 0.4s 0.3s;
+  }
+  .sh:not([data-open]) .sh-pin,
+  .sh-record:not([data-on]) {
+    opacity: 0;
+    transition: none;
+  }
+  .sh-pin circle {
+    transition: fill 0.3s;
+  }
+  .sh-scan {
+    transition: opacity 0.4s 0.5s;
+  }
+  .sh-photo {
+    transition:
+      transform 0.75s cubic-bezier(0.3, 0.7, 0.2, 1),
+      opacity 0.2s;
+  }
+  .sh-photo:not([data-on]) {
+    opacity: 0;
+    transform: translate(var(--x0, -70px), var(--y0, 150px)) skewY(0deg) scale(0.7);
+    transition: none;
+  }
+  .sh-photo-lock {
+    transition: opacity 0.25s 0.7s;
+  }
+  .sh-photo:not([data-on]) .sh-photo-lock {
+    opacity: 0;
+    transition: none;
+  }
+  .chk-ad-btn {
+    transition: transform 0.2s, background-color 0.2s;
+  }
+  .chk-ad:not([data-on]) .chk-ad-btn {
+    background: var(--sb-mute);
+    transform: scale(0.94);
+    transition: none;
+  }
+  .chk-t,
+  .chk-state {
+    transition: opacity 0.35s;
+  }
+  .chk-rows li:not([data-on]) .chk-state {
+    opacity: 0;
+    transition: none;
+  }
+  .chk-rows li:not([data-on]) .chk-t {
+    color: transparent;
+    border-radius: 4px;
+    background: linear-gradient(var(--sb-line), var(--sb-line)) no-repeat 0 50% / 78% 9px;
+  }
+  .chk-tally {
+    transition: opacity 0.5s 0.3s;
+  }
+  .chk-tally:not([data-on]) {
+    opacity: 0.35;
+    transition: none;
+  }
+}
+
+@keyframes rec-live {
+  to {
+    opacity: 0.3;
+  }
+}
+
+@keyframes duel-won {
+  to {
+    stroke-width: 2.6;
+  }
+}
+
+@keyframes duel-dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}

@@ -3,19 +3,19 @@ import Count from './Count';
 import LinkRow from './LinkRow';
 import Metrics from './Metrics';
 import Rich from './Rich';
-import ScenePlate from './ScenePlate';
 import Stack from './Stack';
+import Stage from './Stage';
 import Stills from './Stills';
 import { fill, place } from './counts';
 
 /* A flagship is a chapter of two parts.
 
    Arrival: its place among the flagships, the name at display size across the
-   whole column, then a window onto its own world on one side (left, right, left)
-   and, on the other, the one-liner and ONE figure with the label that says what
-   it measures. The window is empty space the scene draws into
-   (data-world-anchor="flag-<id>"); the engraved plate inside it is the same
-   counts as a hairline drawing, so the window is never bare without the scene.
+   whole column, then its stage on one side (left, right, left): the product
+   itself, in its own type and colours, playing a short sample of what it does
+   (Stage.jsx). The stage carries the product's own headline, so the page does not
+   repeat it. On the other side, the one-liner and ONE figure with the label that
+   says what it measures.
 
    Story: a calmer panel. The stills as one viewer, the other figures, the role
    line and what is being built now. The story itself and the stack open under
@@ -51,10 +51,9 @@ export default function Flagship({ item, index }) {
         </p>
         <h3 className="ch-title">{item.title}</h3>
         <div className="ch-world" data-world-anchor={`flag-${item.id}`}>
-          <ScenePlate scene={item.scene} />
+          <Stage item={item} />
         </div>
         <div className="ch-intro">
-          <p className="ch-desc">{item.descriptor}</p>
           <p className="one">
             <Rich text={item.oneLiner} receipts />
           </p>
