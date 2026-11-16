@@ -68,7 +68,7 @@ vec3 skyAt(vec3 rd){
   vec3 phys = uSunI * sc * (1.0 - exp(-beta * am * 0.3)) * 26.0;
   // After sunset the light that is left hugs the horizon on the sun's side.
   float belt = exp(-e * mix(3.0, 11.0, 1.0 - uDay)) * (0.55 + 0.45 * mu);
-  phys *= mix(belt * 1.6, 1.0, uDay);
+  phys *= mix(belt * 1.6 * vec3(1.0, 0.7, 0.62), vec3(1.0), uDay);
   vec3 brand = mix(uDuskLow, uDuskMid, smoothstep(0.0, 0.28, e));
   brand = mix(brand, uDuskTop, smoothstep(0.14, 0.62, e));
   vec3 night = mix(uNightLow, uNightTop, smoothstep(0.0, 0.42, e));
@@ -111,9 +111,9 @@ float caustic(vec2 uv, float t){
    around it, with a finer, faster caustic web inside each shaft. No march. */
 float fan(float ang, float r, float t){
   float sw = sin(ang * 23.0 + sin(ang * 7.0 + t * 0.29) * 0.62 + t * 0.24) + 0.6 * sin(ang * 41.0 - t * 0.19);
-  float shaft = pow(smoothstep(-0.05, 1.0, sw * 0.5 + 0.5), 2.0);
+  float shaft = pow(smoothstep(-0.2, 1.0, sw * 0.5 + 0.5), 1.7);
   float streak = smoothstep(0.6, 1.0, sin(ang * 59.8 + t * 0.324 + r * 4.0));
-  return shaft * (0.75 + 0.5 * streak) * exp(-r * 0.9);
+  return shaft * (0.86 + 0.26 * streak) * exp(-r * 0.9);
 }
 
 /* The underside of a surface, seen from just below it: a bright rippled ceiling

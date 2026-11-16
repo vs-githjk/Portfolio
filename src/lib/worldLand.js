@@ -87,7 +87,7 @@ ${COMMON}
 ${SKY}
 uniform vec2 uRes;
 uniform float uDpr, uSunTan, uLampOn, uFog, uMist, uFine, uShore;
-uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent;
+uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent, uFoam;
 uniform vec2 uWind;
 varying vec3 vW, vN;
 varying float vHor, vEmis, vGlow, vUp;
@@ -115,6 +115,8 @@ void main(){
   float strata = 0.5 + 0.5 * sin(vW.y * 0.085 + 2.0 * n2(vW.xz * 0.004));
   albedo = mix(albedo, mix(uSandShade * 1.9, uSand * 0.82, strata), wall * 0.5);
   albedo *= 0.86 + 0.28 * n2(vW.xz * 0.0031 + 7.0);
+  // Grain underfoot: it is sand, not paint, wherever it is near enough to see.
+  albedo *= 1.0 + (n2(vW.xz * 0.9) - 0.5) * 0.2 * (1.0 - smoothstep(180.0, 800.0, d)) * uFine;
 #endif
 #ifdef BUTTE
   float strata = 0.5 + 0.5 * sin(vW.y * 0.2 + vW.x * 0.02);
@@ -169,6 +171,8 @@ void main(){
     col = mix(col, sea, surf);
     col += uSun * 0.2 * exp(-abs(above - edge * 0.93) / 1.6) * (0.4 + 0.6 * rip);
   }
+  // The same bright line of surface the backdrop draws, so the cut has no stair.
+  col = mix(col, uFoam, exp(-above / 2.0) * 0.8);
   col = 1.12 * col / (1.0 + 0.3 * col);
   col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.012;
   gl_FragColor = vec4(col, 1.0);
@@ -439,6 +443,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     uMoonDir: { value: new Vector3(0.8, 0.36, -0.42).normalize() },
     uMoonCol: { value: new Vector3() },
     uAccent: { value: C.ember },
+    uFoam: { value: C['sea-foam'] },
     uWind: { value: new Vector2(wind.x, wind.z) },
   };
   const mat = (defines) => keep(new ShaderMaterial({ vertexShader: LAND_VERT, fragmentShader: LAND_FRAG, uniforms: U, defines }));
@@ -630,11 +635,11 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     camera.updateMatrixWorld();
     U.uCam.value.copy(camera.position);
     U.uSunTan.value = s.sunTan;
-    U.uAmb.value.copy(C['dusk-top']).multiplyScalar(1.9 * s.day).addScaledVector(C['night-low'], 0.5 + 0.3 * s.night).addScaledVector(C['dusk-low'], 0.16 * s.day).addScaledVector(C['gal-b'], 0.085 * s.night);
+    U.uAmb.value.copy(C['dusk-top']).multiplyScalar(1.9 * s.day).addScaledVector(C['night-low'], 0.5 + 0.3 * s.night).addScaledVector(C['dusk-low'], 0.16 * s.day).addScaledVector(C['gal-b'], 0.13 * s.night);
     U.uLampOn.value = s.lamp;
     U.uFog.value = 0.00036 + 0.00006 * s.night;
     U.uMist.value = 0.18 + 0.1 * s.night;
-    U.uMoonCol.value.copy(C['gal-b']).multiplyScalar(0.2 * s.night).addScaledVector(C['moon-rim'], 0.36 * s.moon);
+    U.uMoonCol.value.copy(C['gal-b']).multiplyScalar(0.3 * s.night).addScaledVector(C['moon-rim'], 0.36 * s.moon);
     lampGlow.material.uniforms.uAlpha.value = (0.16 + 0.5 * s.lamp) * (0.9 + 0.1 * Math.sin(time.value * 1.3));
     lampGlow.quaternion.copy(camera.quaternion);
     streakMat.uniforms.uAlpha.value = 0.5 * s.day * s.fine;

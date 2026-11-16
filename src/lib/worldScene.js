@@ -13,6 +13,7 @@ import {
   PerspectiveCamera,
   PlaneGeometry,
   Points,
+  Quaternion,
   RingGeometry,
   Scene,
   ShaderMaterial,
@@ -108,7 +109,7 @@ void main(){
   gl_Position = projectionMatrix * mv;
 }`;
 const PLANET_FRAG = /* glsl */ `
-uniform vec3 uLight, uNight, uDay, uBand, uRim, uRay;
+uniform vec3 uLight, uNight, uDay, uBand, uRim, uRay, uLightO, uRingN;
 uniform float uBands, uSeed, uTime, uLit, uRimPow, uRimGain, uNear, uSpan;
 varying vec3 vN; varying vec3 vP; varying vec3 vV;
 ${NOISE}${WATER}${CAUSTIC}
@@ -127,6 +128,17 @@ void main(){
   float ndl = dot(n, uLight);
   float day = smoothstep(-0.12, 0.8, ndl);
   float fres = pow(1.0 - max(dot(n, normalize(vV)), 0.0), uRimPow);
+  if (uBands > 0.5 && uRingN.y > 0.0) {
+    // The ring's shadow on the planet: follow the light from this point to the
+    // ring's plane and see whether the ring is there.
+    float dn = dot(uLightO, uRingN);
+    float tq = -dot(vP, uRingN) / (abs(dn) < 0.001 ? 0.001 : dn);
+    if (tq > 0.0) {
+      float rq = length(vP + uLightO * tq);
+      float band = smoothstep(1.42, 1.5, rq) * smoothstep(2.36, 2.2, rq) * (1.0 - 0.7 * (1.0 - smoothstep(0.02, 0.06, abs((rq - 1.42) / 0.94 - 0.58))));
+      day *= 1.0 - 0.62 * band;
+    }
+  }
   vec3 col = uNight + albedo * (0.035 + day * uLit);
   col += uRim * fres * uRimGain * (0.06 + 0.94 * smoothstep(-0.3, 0.5, ndl)) * (1.0 - 0.6 * uWet);
   if (uWet > 0.01) {
@@ -325,8 +337,8 @@ void main(){
     float trail = 0.55 - 0.3 * sin(3.14159 * au) * (1.0 - 0.3 * au);
     p.x = aUV.x * 1.75;
     p.z = mix(lead, trail, aUV.y);
-    float bulge = (1.0 - smoothstep(0.0, 0.45, au)) * sin(3.14159 * aUV.y);
-    p.y = sin(beat - au * 1.7) * 0.46 * pow(au, 1.6) + 0.13 * bulge;
+    float bulge = (1.0 - smoothstep(0.0, 0.5, au)) * sin(3.14159 * aUV.y);
+    p.y = sin(beat - au * 1.7) * 0.46 * pow(au, 1.6) + 0.24 * bulge;
   }
   vUV = aUV;
   vL = p;
@@ -353,7 +365,7 @@ ${WATER}${CAUSTIC}void main(){
     float tip = smoothstep(0.72, 1.0, au);
     float spine = 1.0 - smoothstep(0.0, 0.07, au);
     float net = caustic(vL.xz * 0.55 + 0.2, uTime * 0.35) * (1.0 - tip);
-    c = uA * (0.1 + 0.5 * top * top) + uRay * net * (0.25 + 0.5 * top);
+    c = uA * (0.06 + 0.62 * top * top) + uRay * (net * (0.25 + 0.5 * top) + 0.5 * pow(top, 14.0));
     c = mix(c, uRim * 0.8, clamp(rim * 0.7 + tip * 0.5, 0.0, 1.0) * 0.75);
     c *= 1.0 - 0.3 * spine;
     a = 0.94;
@@ -709,7 +721,7 @@ export function createWorld(canvas, { days } = {}) {
         new ShaderMaterial({
           vertexShader: PLANET_VERT,
           fragmentShader: PLANET_FRAG,
-          uniforms: { uLight: { value: L }, uNight: { value: P('night') }, uDay: { value: P('day') }, uBand: { value: P('band') }, uRim: { value: P('rim') }, uRay: V3('sea-ray'), uBands: { value: bands }, uSeed: { value: seed }, uTime: time, uLit: { value: lit }, uRimPow: { value: rimPow }, uRimGain: { value: rimGain }, uNear: { value: 1 }, uSpan: { value: 1 }, ...water },
+          uniforms: { uLight: { value: L }, uNight: { value: P('night') }, uDay: { value: P('day') }, uBand: { value: P('band') }, uRim: { value: P('rim') }, uRay: V3('sea-ray'), uBands: { value: bands }, uSeed: { value: seed }, uTime: time, uLit: { value: lit }, uRimPow: { value: rimPow }, uRimGain: { value: rimGain }, uNear: { value: 1 }, uSpan: { value: 1 }, uLightO: { value: new Vector3(0, 1, 0) }, uRingN: { value: new Vector3(0, -1, 0) }, ...water },
         })
       )
     );
@@ -1017,7 +1029,7 @@ export function createWorld(canvas, { days } = {}) {
 
     const gr = Math.max(84, Math.min(w * 0.17, 225));
     const mr = phone ? 22 : Math.max(40, Math.min(w * 0.055, 84));
-    const gal = Math.max(150, Math.min(w * 0.26, 400));
+    const gal = Math.max(140, Math.min(w * 0.22, 330));
     sizes.gr = gr;
     sizes.mr = mr;
     galScale.value = gal / 480;
@@ -1054,6 +1066,8 @@ export function createWorld(canvas, { days } = {}) {
   const edge = (off) => (off < 0 ? colHalf * (1 + off) : colHalf + 16 + off * Math.max(w / 2 - colHalf - 16, 0));
 
   let camY = 0;
+  const gq = new Quaternion();
+  const yAxis = new Vector3(0, 1, 0);
   const clock = { t: 0, s: 0, scatter: 0 };
   const dawn = { want: 0, now: 0 };
   const state = { camX: 0, camH: 60, pitch: 0, sunTan: 0.1, day: 1, night: 0, lamp: 0, moon: 0, moonDir: new Vector3(0.55, 0.62, -0.3).normalize(), fine: 1 };
@@ -1089,7 +1103,7 @@ export function createWorld(canvas, { days } = {}) {
     const night = sm((-el / DEG - 4) / 9);
     const e = Math.max(Math.sin(el), 0);
     const am = 1 / (e + 0.15 * Math.pow(3.885 + Math.asin(e) / DEG, -1.253));
-    const dusk = el >= 0 ? 1 : Math.exp(el * 7);
+    const dusk = el >= 0 ? 1 : Math.exp(el * 10);
     stage.uSunI.value.set(Math.exp(-0.0516 * am * 0.3) * dusk, Math.exp(-0.1132 * am * 0.3) * dusk, Math.exp(-0.27 * am * 0.3) * dusk);
     stage.uSunDir.value.set(Math.sin(sunAz) * Math.cos(el), Math.sin(el), -Math.cos(sunAz) * Math.cos(el));
     stage.uTop.value = top;
@@ -1113,7 +1127,7 @@ export function createWorld(canvas, { days } = {}) {
     state.sunTan = Math.tan(el);
     state.day = day;
     state.night = night;
-    state.lamp = sm((2.5 - el / DEG) / 6) * (1 - orbit);
+    state.lamp = (0.22 + 0.78 * sm((4 - el / DEG) / 7)) * (1 - orbit);
     state.fine = quality > 1 || rise < 1 ? 0 : 1;
     state.shore = rise > 0 && rise < 1 ? Math.min(1, landAmt * 1.4) : 0;
     const landOn = landAmt > 0.004 && exit > -h * 0.05;
@@ -1141,8 +1155,8 @@ export function createWorld(canvas, { days } = {}) {
     if (galaxy.visible) {
       stars.material.uniforms.uSpin.value += dt * (0.34 * wake + Math.min(0.5, speed * 0.004) * near);
       stars.material.uniforms.uBoost.value = (0.6 + 0.5 * wake) * sky;
-      core.material.uniforms.uAlpha.value = (0.3 + 0.45 * wake) * sky;
-      haze.material.uniforms.uAlpha.value = 0.18 * sky;
+      core.material.uniforms.uAlpha.value = (0.16 + 0.24 * wake) * sky;
+      haze.material.uniforms.uAlpha.value = 0.09 * sky;
       tilt.rotation.set(1.02 + py * 0.16 * wake, 0, 0.38 + px * 0.2 * wake);
     }
 
@@ -1200,6 +1214,13 @@ export function createWorld(canvas, { days } = {}) {
     }
 
     giant.userData.body.rotation.y = t * 0.012;
+    if (giant.visible) {
+      // The light and the ring's plane in the planet's own frame, for the ring's shadow.
+      const gu = giant.userData.body.material.uniforms;
+      giant.userData.body.getWorldQuaternion(gq).invert();
+      gu.uLightO.value.copy(giant.userData.light).applyQuaternion(gq);
+      gu.uRingN.value.set(0, 0.952, 0.306).applyAxisAngle(yAxis, -giant.userData.body.rotation.y);
+    }
 
     // The limb of the world. Until the dawn is asked for it is first light, a thin
     // line of air; `dawn.now` brings the sun over it.
