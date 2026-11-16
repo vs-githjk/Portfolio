@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { nav } from '../data/content';
 import { heroOrigin } from '../lib/origin';
 
@@ -10,9 +10,40 @@ import { heroOrigin } from '../lib/origin';
    The welcome is a pure first screen: until the reader is all but inside (the
    hero is about to land), the bar is out of sight (CSS hides it while <html>
    has no data-nav). It is still in the DOM and in the tab order: focus inside it,
-   the skip link included, brings it straight back. */
+   the skip link included, brings it straight back.
+
+   The waterlines cross the bar too. While one is inside it (<html data-split>,
+   from kit/signals.js) the bar wears two palettes cut exactly at the line
+   (--w-line or --w-shore): a second, inert copy of the bar's face in the other
+   realm's palette is clipped to its side of the line. The copies mount after
+   hydration, are aria-hidden and inert, and are display: none at any other time. */
+function Face({ tab }) {
+  return (
+    <div className="wrap">
+      <a className="brand" href="#top" tabIndex={tab}>
+        <i aria-hidden="true" />
+        {nav.brand}
+      </a>
+      <ul className="nav-links">
+        {nav.links.map((l) => (
+          <li key={l.href}>
+            <a href={l.href} tabIndex={tab}>
+              {l.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a className="btn btn-pri nav-cta" href={nav.cta.href} tabIndex={tab}>
+        {nav.cta.label}
+      </a>
+    </div>
+  );
+}
+
 export default function Nav() {
   const ref = useRef(null);
+  const [twin, setTwin] = useState(false);
+  useEffect(() => setTwin(true), []);
   useEffect(() => {
     const el = ref.current;
     if (!el) return undefined;
@@ -45,22 +76,17 @@ export default function Nav() {
       <a className="skip" href="#main">
         {nav.skip}
       </a>
-      <div className="wrap">
-        <a className="brand" href="#top">
-          <i aria-hidden="true" />
-          {nav.brand}
-        </a>
-        <ul className="nav-links">
-          {nav.links.map((l) => (
-            <li key={l.href}>
-              <a href={l.href}>{l.label}</a>
-            </li>
-          ))}
-        </ul>
-        <a className="btn btn-pri nav-cta" href={nav.cta.href}>
-          {nav.cta.label}
-        </a>
-      </div>
+      <Face />
+      {twin && (
+        <>
+          <div className="nav-split" data-side="line" data-realm="sea" aria-hidden="true" inert>
+            <Face tab={-1} />
+          </div>
+          <div className="nav-split" data-side="shore" data-realm="earth" aria-hidden="true" inert>
+            <Face tab={-1} />
+          </div>
+        </>
+      )}
     </nav>
   );
 }

@@ -542,3 +542,119 @@ html[data-skip] .nav {
     width: min(100%, 680px);
   }
 }
+
+/* ================================ THE BAR ================================= */
+/* Two palettes cut at the waterline. The copy of the bar's face is opaque in its
+   own realm's ink and clipped to its side of the line: below the first waterline
+   (the sea coming up), above the second (the sky coming down). A hairline of
+   that realm's light rides the cut. */
+.nav-split {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--ink);
+  border-bottom: 1px solid var(--hair);
+}
+
+.nav-split::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--acc-2);
+  opacity: 0.7;
+}
+
+html[data-split='line'] .nav-split[data-side='line'] {
+  display: block;
+  clip-path: inset(calc(var(--w-line) * 1px) 0 0 0);
+}
+
+html[data-split='line'] .nav-split[data-side='line']::before {
+  top: calc(var(--w-line) * 1px);
+}
+
+html[data-split='shore'] .nav-split[data-side='shore'] {
+  display: block;
+  clip-path: inset(0 0 calc(100% - var(--w-shore) * 1px) 0);
+}
+
+html[data-split='shore'] .nav-split[data-side='shore']::before {
+  top: calc(var(--w-shore) * 1px - 1px);
+}
+
+/* ================================= TRAVEL ================================= */
+/* A far jump is a hop (kit/travel.js): the page and the world dip, the scroll
+   lands in one step, and both come back on a fresh frame. The bar stays. */
+html[data-travel='out'] main,
+html[data-travel='out'] .foot,
+html[data-travel='out'] .bg-world {
+  opacity: 0;
+  transition: opacity 0.13s linear;
+}
+
+html[data-travel='in'] main,
+html[data-travel='in'] .foot,
+html[data-travel='in'] .bg-world {
+  transition: opacity 0.2s var(--ease);
+}
+
+/* The place that was reached: a hairline draws under its heading and goes. */
+[data-arrive='line'] {
+  background-image: linear-gradient(var(--acc), var(--acc));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  animation: arrive-line 1s var(--ease) both;
+}
+
+@keyframes arrive-line {
+  35%,
+  70% {
+    background-size: 100% 1px;
+  }
+
+  100% {
+    background-size: 100% 1px;
+    background-image: linear-gradient(transparent, transparent);
+  }
+}
+
+/* A build reached from the ring: a ring of light round its title, for a second. */
+[data-arrive='ring'] {
+  border-radius: var(--r-sm);
+  outline: 1px solid transparent;
+  animation: arrive-ring 1s var(--ease) both;
+}
+
+@keyframes arrive-ring {
+  0% {
+    outline-color: transparent;
+    outline-offset: 0;
+  }
+
+  30% {
+    outline-color: var(--acc);
+    outline-offset: 8px;
+  }
+
+  100% {
+    outline-color: transparent;
+    outline-offset: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-arrive='line'] {
+    animation: none;
+    background-size: 100% 1px;
+  }
+
+  [data-arrive='ring'] {
+    animation: none;
+    outline-color: var(--acc);
+    outline-offset: 8px;
+  }
+}

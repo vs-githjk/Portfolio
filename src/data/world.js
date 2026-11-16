@@ -20,6 +20,20 @@ export const waterlines = {
   },
 };
 
+/* The realm the bar is in, from the same two lines (so the bar changes palette at
+   the line, not at a section's edge): space above the surface, the sea under it,
+   the earth once the shore's line has come down past the bar. While a line is
+   inside the bar, the bar keeps the palette of what is above it for the surface
+   and of what is below it for the shore; Nav.jsx paints the other side. */
+export function realmAt(a, y, h, bar) {
+  if (!a.surface) return null;
+  if (a.surface.top + a.surface.h * 0.36 - y > 0) return '';
+  if (!a.shore) return 'sea';
+  const rise = smooth((y - (a.shore.top - h * 0.3)) / (h * 0.55));
+  if (rise >= 1) return 'earth';
+  return h * (-0.08 + 1.22 * rise) >= bar ? 'earth' : 'sea';
+}
+
 /* The first screen's two links and the short hint between them. */
 export const entry = {
   enter: 'Enter',
