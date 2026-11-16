@@ -1,1 +1,22 @@
-/* v3-world: v3 partial (see scratchpad v3 spec). */
+/* v3 world (lane B): tokens for the scene's new pieces. Every colour a piece
+   draws with is named here as an "r, g, b" triple, the form the scene reads
+   (lib/field.js `triple`). The realm accents they follow live in tokens.css. */
+:root {
+  /* The wyrm takes the graph ramp of the realm it is in: the sea's accent under
+     a waterline, the earth's ember above it. Low, middle and high of each ramp. */
+  --wyrm-sea-lo: 14, 92, 118;
+  --wyrm-sea: 76, 195, 230;
+  --wyrm-sea-hi: 216, 247, 253;
+  --wyrm-air-lo: 126, 48, 26;
+  --wyrm-air: 232, 119, 74;
+  --wyrm-air-hi: 255, 216, 190;
+}
+
+:root {
+  /* The flagship worlds are drawn in the sea's accent, low to high. */
+  --flag-lo: 18, 96, 124;
+  --flag: 86, 200, 232;
+  --flag-hi: 224, 249, 254;
+  /* One star per win: the award colour (--win), as the scene reads it. */
+  --win-star: 255, 211, 107;
+}

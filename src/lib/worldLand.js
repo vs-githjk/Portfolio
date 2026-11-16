@@ -16,6 +16,7 @@ import {
   Vector3,
 } from 'three';
 import { seeded } from './field';
+import { camp as campPiece } from '../world/camp';
 import { COMMON, SKY } from './worldBackdrop';
 
 /* The desert: real ground for the earth world, drawn by its own camera into the
@@ -241,7 +242,7 @@ export function weeksOf(days) {
   return out;
 }
 
-export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
+export function createLand({ C, stage, time, dpr, phone, aspect, days, crew = [], buttes: withButtes = true }) {
   const rnd = seeded(733);
   const disposables = [];
   const keep = (x) => {
@@ -363,7 +364,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     });
   }
   // What stands on the ground shades it: the buttes and the camp's tents.
-  const casters = row(aspect).map((b) => ({ x: b.x, z: b.z, r: b.r * 0.8, top: b.y + b.tall * 0.92 }));
+  const casters = withButtes ? row(aspect).map((b) => ({ x: b.x, z: b.z, r: b.r * 0.8, top: b.y + b.tall * 0.92 })) : [];
   for (const [dx, dz, r, tall] of [[-46, 10, 24, 22], [40, -22, 16, 15], [74, 8, 15, 14], [-12, 17, 9, 8]]) {
     casters.push({ x: CAMP.x + dx, z: CAMP.z + dz, r, top: ground(CAMP.x + dx, CAMP.z + dz) + tall });
   }
@@ -526,13 +527,17 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
   lampGlow.material.uniforms.uColor = U.uLampCol;
   scene.add(lampGlow);
 
+  /* ---- The crew's fires, one each (src/world/camp.js) ------------------------- */
+  const fires = crew.length ? campPiece.create({ crew, at: on, ember: C.ember, time }) : null;
+  if (fires) scene.add(fires.object);
+
   /* ---- Commit buttes: one for every week, on the playa ------------------------ */
   let buttes = null;
   let glowAttr = null;
   const beacon = new Mesh(plane, glow(1));
   beacon.visible = false;
   const tops = [];
-  if (nB) {
+  if (nB && withButtes) {
     // A table of rock: a talus skirt, a cliff, a cap. Eight uneven sides, flat shaded.
     const prof = [
       [1.55, 0],
@@ -645,7 +650,14 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
     U.uFog.value = 0.00036 - 0.00015 * s.night;
     U.uMist.value = 0.18 - 0.08 * s.night;
     U.uMoonCol.value.copy(C['gal-b']).multiplyScalar(0.52 * s.night).addScaledVector(C['moon-rim'], 0.36 * s.moon);
-    lampGlow.material.uniforms.uAlpha.value = (0.16 + 0.5 * s.lamp) * (0.9 + 0.1 * Math.sin(time.value * 1.3));
+    // The lamp follows the crew's run: a beat on every step, steady and full at a gate.
+    const flick = (0.9 + 0.1 * Math.sin(time.value * 1.3)) * (1 - (s.hold ?? 0)) + 1.25 * (s.hold ?? 0);
+    lampGlow.material.uniforms.uAlpha.value = Math.min(1, (0.16 + 0.5 * s.lamp) * flick + 0.5 * (s.pulse ?? 0) * s.lamp);
+    lampGlow.scale.setScalar(150 * (1 + 0.35 * (s.pulse ?? 0) + 0.15 * (s.hold ?? 0)));
+    if (fires) {
+      fires.object.visible = s.lamp > 0.02;
+      if (fires.object.visible) fires.update({ proj: stage.uRes.value.y / (2 * tanF), show: Math.min(1, s.lamp * 1.4) });
+    }
     lampGlow.quaternion.copy(camera.quaternion);
     streakMat.uniforms.uAlpha.value = 0.5 * s.day * s.fine;
     streaks.visible = s.day * s.fine > 0.02;
@@ -675,7 +687,8 @@ export function createLand({ C, stage, time, dpr, phone, aspect, days }) {
 
   function dispose() {
     for (const d of disposables) d.dispose();
+    fires?.dispose();
   }
 
-  return { scene, camera, update, resize, setWeek, dispose, lampCol: U.uLampCol.value, sunAz, tanF, weeks: nB, lit };
+  return { scene, camera, update, resize, setWeek, dispose, lampCol: U.uLampCol.value, sunAz, tanF, weeks: nB, lit, fires };
 }
