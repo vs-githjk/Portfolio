@@ -2698,7 +2698,7 @@ html[data-holo='off'] .welcome-face {
   margin-top: calc(-1 * var(--dip));
   padding-block: calc(clamp(26px, 3vw, 44px) + var(--dip)) clamp(26px, 3vw, 44px);
   isolation: isolate;
-  clip-path: polygon(0 var(--top-l), 100% var(--top-r), 100% 100%, 0 100%);
+  clip-path: polygon(0 var(--top-l), 100% var(--top-r), 100% calc(100% - var(--foot-r, 0px)), 0 calc(100% - var(--foot-l, 0px)));
 }
 
 .hl-bed::before {
@@ -2735,7 +2735,9 @@ html[data-holo='off'] .welcome-face {
   --bed: var(--bed-4);
   --top-l: var(--dip);
   --top-r: calc(var(--dip) * 0.3);
-  padding-bottom: clamp(40px, 5vw, 72px);
+  /* The lowest bed ends on a dipping edge like the others, not on a ruled line. */
+  --foot-r: var(--dip);
+  padding-bottom: calc(clamp(40px, 5vw, 72px) + var(--dip));
 }
 
 .hl-bed .wrap {
