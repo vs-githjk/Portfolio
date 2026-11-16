@@ -2,14 +2,19 @@
    draws with is named here as an "r, g, b" triple, the form the scene reads
    (lib/field.js `triple`). The realm accents they follow live in tokens.css. */
 :root {
-  /* The wyrm takes the graph ramp of the realm it is in: the sea's accent under
-     a waterline, the earth's ember above it. Low, middle and high of each ramp. */
-  --wyrm-sea-lo: 14, 92, 118;
-  --wyrm-sea: 76, 195, 230;
-  --wyrm-sea-hi: 216, 247, 253;
-  --wyrm-air-lo: 126, 48, 26;
-  --wyrm-air: 232, 119, 74;
-  --wyrm-air-hi: 255, 216, 190;
+  /* The dragon is blue, yellow and red (Vidyut, Nov 16), lit by the place it is in
+     (src/world/dragonStations.js): a deep blue hide, yellow belly plates, horns and
+     claws, red wing skin, and the fire inside (eyes, the seams under the throat).
+     Its yellow is its own: --win stays the awards' gold. */
+  --dragon-hide: 16, 56, 156;
+  --dragon-belly: 226, 172, 52;
+  --dragon-wing: 150, 28, 24;
+  --dragon-glow: 255, 150, 60;
+  /* The coast behind the shore: the mountains' rock, the scrub on their feet, the snow on the far range. */
+  --land-rock: 92, 66, 74;
+  --land-scrub: 92, 82, 58;
+  --land-snow: 238, 226, 228;
+  --land-green: 74, 104, 62; /* pine, grass and the green of the near shore */
 }
 
 :root {

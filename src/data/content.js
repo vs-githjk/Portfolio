@@ -1827,27 +1827,36 @@ export const contact = {
         { where: 'Contact', what: 'The hologram again, smaller' },
       ],
     },
+    /* Work by other people that the site stands on. The dragon: "European Dragon" by
+       Nonexistent 101 (the name on the model's Sketchfab licence file),
+       https://sketchfab.com/3d-models/european-dragon-82f393a2e6c048ad80c171ce3b3a7b87 ,
+       licence CC-BY 4.0: the credit below is a condition of using it. What was done to
+       it here is in scripts/prep-dragon.py and src/world/dragon.js. */
+    borrowed: {
+      label: 'Borrowed, with thanks',
+      rows: [
+        {
+          where: 'The dragon',
+          what: 'Based on "European Dragon" by Nonexistent 101, licensed CC BY 4.0. Changed here: made smaller for the web and repainted blue, gold and red in a shader.',
+          link: 'The model on Sketchfab',
+          href: 'https://sketchfab.com/3d-models/european-dragon-82f393a2e6c048ad80c171ce3b3a7b87',
+          licence: 'CC BY 4.0',
+          licenceHref: 'https://creativecommons.org/licenses/by/4.0/',
+        },
+      ],
+    },
   },
   /* The colophon: how the site was made. `lighthouse` holds numbers measured on
      the production build on the date given, on Lighthouse's phone profile; leave
      it null rather than quote a number that was not measured that day. */
   colophon: {
     label: 'Colophon',
-    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene, and the hologram on the first screen is one picture and a small shader of my own: scan lines, a cone of light and a plate under it. When you enter, it closes to a single beam and the page begins.',
+    made: 'Written by hand in React and plain CSS; the world behind the page is one three.js scene with a rigged, animated dragon in it, and the hologram on the first screen is one picture and a small shader of my own: scan lines, a cone of light and a plate under it. When you enter, it closes to a single beam and the page begins.',
     type: 'Set in Sprat, Brygada 1918, Schibsted Grotesk and Martian Mono, all open source.',
-    measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {performance} at the median, {low} or more on {held} of them and {worst} on the first, cold run; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
-    // Measured Nov 16 2026 on the production build of the round 6 fixes (npm run build, vite preview),
-    // Lighthouse 12.2.1, --form-factor=mobile, nine runs in a row, all quoted:
-    // performance 67, 97, 95, 92, 97, 97, 96, 97, 97 (LCP 2.4 to 2.5 s, CLS 0; TBT 20 to 250 ms on
-    // eight runs and 2,500 ms on the first, which started seconds after the build finished: one 2.9 s
-    // task that did not come back in the next eight runs or after a restart of the preview server).
-    // Accessibility, best practices and SEO 100 on all nine. State every run's range, never a floor
-    // that one of the quoted runs broke (round 6: "97 or more each time" was re-measured at 96), and
-    // re-measure when the build changes.
-    // Nov 16 2026, later: the opening was rebuilt (hologram, hero, the ring's move), so those nine runs
-    // describe a build that is gone. Null until it is measured again on a quiet machine. The last
-    // quoted set was: { date: 'Nov 16 2026', runs: 'nine', performance: 97, low: 92, held: 'eight',
-    // worst: 67, high: 97, accessibility: 100, bestPractices: 100, seo: 100 }.
+    measured: 'Lighthouse, phone profile, {runs} runs in a row on {date}: performance {low} to {high}, {performance} at the median; accessibility {accessibility}, best practices {bestPractices}, SEO {seo} on every run.',
+    // Nov 16 2026: the dragon branch measured 97 to 98 on nine runs, but on a build without the rebuilt
+    // opening; the merged build has not been measured yet. Null until it is measured again on a quiet
+    // machine. State every run's range, never a floor that one of the quoted runs broke.
     lighthouse: null,
     llms: { label: 'llms.txt', href: '/llms.txt' },
   },

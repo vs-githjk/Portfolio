@@ -2083,23 +2083,46 @@ html[data-world='on'] .deep-head::before {
 }
 
 /* ============================ THE RIDGE AT NIGHT ============================ */
-/* The roost: an empty band over the commit card. The scene lays its creature
-   along it, one piece over each week column of the graph below. With no scene
-   drawing there is nothing to leave room for. */
+/* The roost: an empty band over the commit card. The dragon lands on the card's
+   top edge and keeps watch from there, so the band is as tall as the dragon
+   should stand (the scene fits it to the band). With no scene drawing there is
+   nothing to leave room for; under reduced motion the band holds a still of it. */
 .pow-roost {
-  height: clamp(110px, 18svh, 170px);
+  height: clamp(300px, 54svh, 520px);
 }
 
-/* On a phone the neck curls up and the head rests on its own back, so the band is
-   taller: at the old height the creature was a thin strip nobody could read. */
 @media (max-width: 560px) {
   .pow-roost {
-    height: clamp(120px, 18svh, 160px);
+    height: clamp(230px, 36svh, 300px);
   }
 }
 
-html:not([data-world='on']) .pow-roost {
+html:not([data-world='on'], [data-world='still']) .pow-roost {
   display: none;
+}
+
+/* The calm ground behind this section's column would lie over the dragon too, so
+   it opens over the roost: the scene writes where the band is (px from the
+   section's top) and a third mask leaves that strip clear, soft at both edges. */
+html[data-world='on'] #verify[data-roost]::before {
+  --calm-top: calc(var(--pad-top) - 56px - var(--feather-y) * 0.5);
+  --hole-a: calc(var(--roost-top) - var(--calm-top));
+  --hole-b: calc(var(--roost-bottom) - var(--calm-top));
+  --calm-hole: linear-gradient(to bottom, #000 calc(var(--hole-a) - 90px), transparent calc(var(--hole-a) + 10px), transparent calc(var(--hole-b) - 24px), #000 calc(var(--hole-b) + 6px));
+  mask-image: var(--calm-x), var(--calm-y), var(--calm-hole);
+  mask-composite: intersect;
+  -webkit-mask-image: var(--calm-x), var(--calm-y), var(--calm-hole);
+  -webkit-mask-composite: source-in;
+}
+
+html[data-world='still'] .pow-roost {
+  background: url('/dragon/perch.webp') right 4% bottom / auto 100% no-repeat;
+}
+
+@media (max-width: 560px) {
+  html[data-world='still'] .pow-roost {
+    background-position: center bottom;
+  }
 }
 
 /* ================================= CREDITS ================================= */

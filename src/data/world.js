@@ -3,11 +3,7 @@ import { builds, contact, experience, hero, highlights, principles, proofOfWork,
 /* The world's own words and wiring for this site (lane A): place names, the
    labels of the shell's controls, the load lines, the receipt sentences, and how
    this world places its two waterlines. Counts are never typed here: every
-   number in a sentence is computed from content.js or the GitHub snapshot. */
-
-/* The same snapshot the commit graph draws (ProofOfWork.jsx, World.jsx). */
-const snaps = import.meta.glob('./github*.json', { eager: true, import: 'default' });
-const github = snaps['./github.local.json'] ?? snaps['./github.json'] ?? { days: [], total: 0 };
+   number in a sentence is computed from content.js. */
 
 /* The two waterlines, as the scene draws them (lib/worldScene.js): the surface is
    a place in the page, 36% down its vista; the shore's line comes down the window
@@ -103,23 +99,20 @@ export const ANCHOR = [
   'shore', 'camp', 'galaxy', 'roost', 'graph', 'wins', 'value', 'contact', 'horizon',
 ];
 
-export const BINDING = ['orrery', 'wyrm', 'giant', 'prism', 'board', 'scan', 'school', 'fires', 'stars', 'moon'];
+export const BINDING = ['orrery', 'giant', 'prism', 'board', 'scan', 'school', 'fires', 'stars', 'moon'];
 
 /* ----------------------------------------------------------- RECEIPTS ---- */
 /* What each living thing in the world is, the count it is drawn from, and the
    file the count comes from. Keys are BINDING ids. Every figure is
    computed here from the data, so a change in the data changes the sentence. */
-const days = github.days ?? [];
-const weeks = days.length ? Math.ceil((new Date(`${days[0].date}T00:00:00Z`).getUTCDay() + days.length) / 7) : 0;
 const scene = (kind) => builds.flagships.find((f) => f.scene?.kind === kind);
 const ring = hero.carousel.slides.length;
 const crew = builds.building.crew.length;
 const wins = proofOfWork.wins.items.length;
-const SOURCE = { content: 'content.js', github: 'github.json' };
+const SOURCE = { content: 'content.js' };
 
 const facts = {
   orrery: () => ({ name: 'The Orrery', fact: `${ring} builds in orbit, one tick each`, source: SOURCE.content }),
-  wyrm: () => ({ name: 'The dragon', fact: `one vertebra for each of the last ${weeks} weeks of commits`, source: SOURCE.github }),
   giant: () => ({ name: 'The giant', fact: `${buildCount} builds: ${builds.flagships.length} moons, ${buildCount - builds.flagships.length} ring lights`, source: SOURCE.content }),
   prism: () => {
     const f = scene('prism');
@@ -147,7 +140,7 @@ export function receiptParts(id) {
   return facts[id]?.() ?? null;
 }
 
-/* The same as one sentence: "The dragon · one vertebra for each of the last 53 weeks of commits · github.json". */
+/* The same as one sentence: "The camp · 14 fires, one per agent · content.js". */
 export function receipts(id) {
   const r = receiptParts(id);
   return r ? `${r.name} · ${r.fact} · ${r.source}` : '';

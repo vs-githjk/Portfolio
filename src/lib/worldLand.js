@@ -36,9 +36,9 @@ import { COMMON, SKY } from './worldBackdrop';
    distance and a mist that pools low, so far ground melts into the horizon with
    no seam.
 
-   On it stand the crew's base camp (a mast with a lamp, three tents lit from
-   inside, one figure, a fire for every member of the crew). The commit buttes that
-   stood on the playa are retired: the weeks are the wyrm's body now (src/world/wyrm.js). */
+   On it stand the crew's base camp (a mast with a lamp, nine tents, banners,
+   crates, eight figures, loose rock, a fire for every member of the crew). The commit buttes that
+   stood on the playa are retired: the page's own graph carries the weeks. */
 
 export const LAND_FOV = 38;
 const X0 = -4700;
@@ -50,40 +50,51 @@ const ZPOW = 1.5;
 const LAND_VERT = /* glsl */ `
 #ifdef SAND
 attribute float aHor;
+attribute float aDeep;
 #endif
 #ifdef CAMP
 attribute float aEmis;
+attribute float aTint;
 #endif
 varying vec3 vW, vN;
-varying float vHor, vEmis, vGlow, vUp;
+varying float vHor, vEmis, vGlow, vUp, vDeep, vTint;
 void main(){
   vec4 wp = vec4(position, 1.0);
   vec3 n = normal;
-  vHor = 0.0; vEmis = 0.0; vGlow = 0.0; vUp = position.y;
+  vHor = 0.0; vEmis = 0.0; vGlow = 0.0; vUp = position.y; vDeep = 0.0; vTint = 0.0;
 #ifdef SAND
   vHor = aHor;
+  vDeep = aDeep;
 #endif
 #ifdef CAMP
   vEmis = aEmis;
+  vTint = aTint;
 #endif
   vW = wp.xyz;
   vN = n;
   gl_Position = projectionMatrix * viewMatrix * wp;
 }`;
 
+/* The ground's shader. Its notes are kept out of the string (the string ships): from the top,
+   the land stands above the shore's waterline; detail the mesh is too coarse to carry leans the
+   normal by the slope of two layers of noise; sand ripples on low gentle ground only, fading
+   before their period nears a pixel; rock with strata and streaks down the fall line; scrub on
+   the gentler ground; snow above the line where the ground can hold it, lower in the gullies; a
+   worn path and turf; the camp's tints (cloth, rock, banner, canvas, pine, grass); sun, rim and glitter; the moon and the lamp; the inlet (a
+   mirror for the sky, the bed near the shore, the sun's road, surf); wet sand; the air
+   (extinction by distance, low mist, the sky's colour along the ray); the sea's surface seen at
+   a glance at the beach with its foam; the bright line of the surface; tone, hush and grain. */
 const LAND_FRAG = /* glsl */ `
 ${COMMON}
 ${SKY}
 uniform vec2 uRes;
 uniform float uDpr, uSunTan, uLampOn, uFog, uMist, uFine, uShore;
-uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent, uFoam;
+uniform vec3 uCam, uSand, uSandShade, uAmb, uLampPos, uLampCol, uMoonDir, uMoonCol, uAccent, uFoam, uRock, uScrub, uSnow, uGreen, uPath[4];
 uniform vec2 uWind;
 varying vec3 vW, vN;
-varying float vHor, vEmis, vGlow, vUp;
-
+varying float vHor, vEmis, vGlow, vUp, vDeep, vTint;
 void main(){
   vec2 c = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
-  // The land stands above the shore's waterline; under it there is only water.
   float above = uExit + swell(c.x + 300.0, uTime * 1.1) - c.y;
   if (above < 0.0) discard;
   vec3 N = normalize(vN);
@@ -92,29 +103,55 @@ void main(){
   vec3 V = toCam / d;
   vec3 albedo = uSand;
   float aa = 0.0;
+  float wet = 0.0;
+  float snow = 0.0;
 #ifdef SAND
-  // Ripples run across the wind on gentle slopes only, and fade out before their
-  // period nears a pixel, so there is nothing to moire on a phone.
+  float alt = vW.y;
+  float nearK = 1.0 - smoothstep(2600.0, 4200.0, d);
+  vec2 q1 = vW.xz * 0.011; vec2 q2 = vW.xz * 0.034;
+  float h0 = n2(q1) + 0.45 * n2(q2);
+  vec2 grad = vec2(n2(q1 + vec2(0.35, 0.0)) + 0.45 * n2(q2 + vec2(0.35, 0.0)) - h0, n2(q1 + vec2(0.0, 0.35)) + 0.45 * n2(q2 + vec2(0.0, 0.35)) - h0);
+  float high = smoothstep(60.0, 190.0, alt);
+  float wall = smoothstep(0.9, 0.6, vN.y);
+  float rocky = max(wall, high * 0.75);
+  N = normalize(N - vec3(grad.x, 0.0, grad.y) * (0.5 + 1.3 * rocky) * (0.35 + 0.65 * nearK) * uFine);
+  float sandy = (1.0 - high) * (1.0 - wall);
   float ph = dot(vW.xz, uWind) * 2.0 + 3.0 * n2(vW.xz * 0.011);
-  aa = (1.0 - smoothstep(0.3, 1.0, fwidth(ph))) * uFine;
+  aa = (1.0 - smoothstep(0.3, 1.0, fwidth(ph))) * uFine * sandy;
   float gentle = pow(clamp(N.y, 0.0, 1.0), 6.0);
   N = normalize(N + vec3(uWind.x, 0.0, uWind.y) * cos(ph) * 0.26 * aa * gentle);
-  // Table land shows its strata on the walls; the pans between dunes run darker.
-  float wall = smoothstep(0.86, 0.55, vN.y);
-  float strata = 0.5 + 0.5 * sin(vW.y * 0.085 + 2.0 * n2(vW.xz * 0.004));
-  albedo = mix(albedo, mix(uSandShade * 1.9, uSand * 0.82, strata), wall * 0.5);
   albedo *= 0.86 + 0.28 * n2(vW.xz * 0.0031 + 7.0);
-  // Grain underfoot: it is sand, not paint, wherever it is near enough to see.
   albedo *= 1.0 + (n2(vW.xz * 0.9) - 0.5) * 0.2 * (1.0 - smoothstep(180.0, 800.0, d)) * uFine;
+  float strata = 0.5 + 0.5 * sin(alt * 0.06 + 3.0 * n2(vW.xz * 0.004));
+  float streak = n2(vec2(vW.x * 0.03 + vW.z * 0.012, alt * 0.006));
+  vec3 rock = mix(uRock * 0.72, uRock * 1.35 + uSandShade * 0.2, strata * 0.6 + streak * 0.4);
+  float scrub = smoothstep(26.0, 70.0, alt) * (1.0 - smoothstep(210.0, 380.0, alt)) * smoothstep(0.66, 0.9, N.y) * smoothstep(0.38, 0.62, n2(vW.xz * 0.006 + 2.0) * 0.6 + 0.4 * n2(vW.xz * 0.03));
+  albedo = mix(albedo, rock, rocky);
+  albedo = mix(albedo, mix(uScrub, uGreen, 0.55 + 0.45 * n2(vW.xz * 0.012 + 4.0)) * (0.8 + 0.4 * n2(vW.xz * 0.05)), scrub * 0.85);
+  snow = smoothstep(400.0, 520.0, alt + 110.0 * (n2(vW.xz * 0.0045 + 9.0) - 0.5) - 90.0 * grad.x) * smoothstep(0.42, 0.7, N.y);
+  albedo = mix(albedo, uSnow, snow);
+  float pd = 1e5;
+  for (int i = 0; i < 3; i++) {
+    vec2 pa = uPath[i].xz; vec2 pb = uPath[i + 1].xz - pa;
+    float pt = clamp(dot(vW.xz - pa, pb) / dot(pb, pb), 0.0, 1.0);
+    pd = min(pd, length(vW.xz - pa - pb * pt));
+  }
+  float path = (1.0 - smoothstep(5.0, 13.0, pd + 5.0 * n2(vW.xz * 0.05))) * sandy;
+  float turf = smoothstep(7.0, 22.0, alt) * (1.0 - smoothstep(60.0, 120.0, alt)) * smoothstep(0.8, 0.95, N.y) * smoothstep(0.42, 0.6, n2(vW.xz * 0.008 + 11.0) * 0.7 + 0.3 * n2(vW.xz * 0.06));
+  albedo = mix(albedo, uGreen * (0.75 + 0.5 * n2(vW.xz * 0.2)), turf * 0.7 * (1.0 - path));
+  aa *= 1.0 - turf;
+  albedo *= 1.0 - 0.3 * path;
+  aa *= 1.0 - path;
+  wet = smoothstep(0.0, 2.5, vDeep);
 #endif
 #ifdef CAMP
-  albedo = uSandShade * 1.3;
+  albedo = vTint < 0.5 ? uSandShade * 1.3 : vTint < 1.5 ? mix(uRock, uSand, 0.35) * (0.9 + 0.4 * h2(floor(vW.xz * 0.2))) : vTint < 2.5 ? uAccent * 0.8 : vTint < 3.5 ? uSand * 0.9 + 0.12 : vTint < 4.5 ? uGreen * (0.7 + 0.4 * h2(floor(vW.xz * 0.05))) : uGreen * (0.9 + 0.5 * h2(floor(vW.xz * 0.7)));
 #endif
   float ndl = dot(N, uSunDir);
   float sh = smoothstep(vHor - 0.025, vHor + 0.045, uSunTan);
   float dif = clamp(ndl * 3.0 + 0.04, 0.0, 1.0) * sh;
   vec3 sunC = uSun * uSunI * 1.9;
-  vec3 col = albedo * (sunC * dif + uAmb * (0.55 + 0.45 * N.y));
+  vec3 col = albedo * (sunC * dif + uAmb * (0.55 + 0.45 * N.y)) * (1.0 + 0.5 * snow);
   float rim = pow(1.0 - max(dot(N, V), 0.0), 4.0) * smoothstep(-0.15, 0.4, ndl);
   float spec = pow(max(dot(N, normalize(uSunDir + V)), 0.0), 60.0) * 0.16;
   col += sunC * max(rim * 0.3, spec) * sh * albedo;
@@ -123,23 +160,36 @@ void main(){
   float gl = step(0.992, h2(cell + floor(uTime * 1.5))) * pow(max(dot(reflect(-uSunDir, N), V), 0.0), 6.0);
   col += sunC * gl * aa * sh * 0.9;
 #endif
-  // Night: the moon while Value is read, and the camp's lamp on the dunes around it.
   col += albedo * uMoonCol * (clamp(dot(N, uMoonDir) * 2.2 + 0.1, 0.0, 1.0) + 0.7 * pow(1.0 - max(dot(N, V), 0.0), 3.0));
   vec3 Lp = uLampPos - vW;
   float ld = length(Lp);
   col += albedo * uLampCol * uLampOn * (3.6 / (1.0 + ld * ld * 0.00042)) * (0.22 + 0.78 * max(dot(N, Lp / ld), 0.0));
   col = mix(col, uLampCol * (0.95 + 0.4 * uLampOn), vEmis * (0.5 + 0.5 * uLampOn));
-  // The air: extinction by distance (blue goes first), a mist that pools low, and
-  // the colour of the sky along this very ray, so the far ground has no edge.
   vec3 rd = -V;
+#ifdef SAND
+  if (wet > 0.0) {
+    vec2 rp = vW.xz * 0.02 + vec2(uTime * 0.05, uTime * 0.11);
+    vec3 wn = normalize(vec3((n2(rp) - 0.5) * 0.22 + (n2(rp * 3.1 + 4.0) - 0.5) * 0.1, 1.0, (n2(rp + 9.0) - 0.5) * 0.22));
+    vec3 rf = reflect(rd, wn);
+    vec3 mirror = skyAt(normalize(vec3(rf.x, max(rf.y, 0.02), rf.z)));
+    float fres = 0.25 + 0.75 * pow(1.0 - max(dot(wn, V), 0.0), 3.0);
+    vec3 bed = col * vec3(0.5, 0.78, 0.82) * exp(-vDeep * 0.09);
+    vec3 sea = mix(bed, mirror * 0.92, clamp(fres + smoothstep(2.0, 16.0, vDeep) * 0.5, 0.0, 1.0));
+    float road = pow(max(dot(normalize(rf), uSunDir), 0.0), 220.0) + 0.35 * pow(max(dot(normalize(rf), uSunDir), 0.0), 26.0);
+    sea += uSun * uSunI * road * 2.2 * uDay * sh;
+    float lap = vDeep + 1.6 * sin(uTime * 0.8 + vW.x * 0.02) + 3.0 * (n2(vW.xz * 0.05) - 0.5);
+    float foam = (1.0 - smoothstep(0.6, 3.2, lap)) + 0.6 * smoothstep(0.55, 0.9, sin(lap * 0.55 - uTime * 0.9)) * (1.0 - smoothstep(5.0, 16.0, lap)) * smoothstep(0.35, 0.6, n2(vW.xz * 0.09 + uTime * 0.05));
+    sea = mix(sea, uFoam * (0.35 + 0.5 * dif + 0.4 * length(uAmb)), clamp(foam, 0.0, 1.0) * 0.85);
+    col = mix(col, sea, wet);
+  } else {
+    col *= 1.0 - 0.3 * (1.0 - smoothstep(0.0, 9.0, vW.y)) * (1.0 - smoothstep(60.0, 140.0, vW.y + 100.0 * smoothstep(0.9, 0.6, vN.y)));
+  }
+#endif
   vec3 air = skyAt(normalize(vec3(rd.x, max(rd.y, 0.0), rd.z)));
   vec3 ext = exp(-d * uFog * vec3(0.8, 1.0, 1.3));
   float low = uMist * exp(-max(vW.y, 0.0) * 0.016) * (1.0 - exp(-d * 0.0011));
   col = mix(air, col, ext * (1.0 - clamp(low, 0.0, 0.85)));
   if (uShore > 0.01 && above < uView.y * 0.2) {
-    // Between the lens and the beach lies the sea's surface, seen at a glance: it
-    // mirrors the sky and the land, carries the sun's glitter, laps at an uneven
-    // shoreline and leaves the sand above it wet and dark.
     float edge = uView.y * (0.03 + 0.05 * n1(c.x * 0.0045 + 3.0) + 0.006 * sin(c.x * 0.05 + uTime * 0.8)) * uShore;
     float t = clamp(above / edge, 0.0, 1.0);
     float surf = 1.0 - smoothstep(0.86, 1.0, above / edge);
@@ -151,14 +201,17 @@ void main(){
     col *= 1.0 - 0.42 * (1.0 - smoothstep(edge, edge * 2.4, above)) * (1.0 - surf);
     col = mix(col, sea, surf);
     col += uSun * 0.2 * exp(-abs(above - edge * 0.93) / 1.6) * (0.4 + 0.6 * rip);
+    float fl = above / edge;
+    float foamB = exp(-abs(fl - 1.0) * 14.0) * smoothstep(0.3, 0.6, rip + 0.25 * sin(c.x * 0.09 + uTime)) + 0.5 * exp(-abs(fl - 0.72 - 0.06 * sin(uTime * 0.7)) * 22.0) * smoothstep(0.45, 0.7, rip);
+    col = mix(col, uFoam * (0.5 + 0.5 * uDay), clamp(foamB, 0.0, 1.0) * 0.8);
   }
-  // The same bright line of surface the backdrop draws, so the cut has no stair.
   col = mix(col, uFoam, exp(-above / 2.0) * 0.8);
   col = 1.12 * col / (1.0 + 0.3 * col);
   col = hush(col, c);
   col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.012;
   gl_FragColor = vec4(col, 1.0);
-}`;
+}
+`;
 
 /* Sand on the wind: thin streaks low over the dunes that only show against the
    light, brightest when the reader looks toward the sun through them. */
@@ -249,47 +302,90 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     return s < 0.76 ? Math.pow(s / 0.76, sharp) : (1 - s) / 0.24;
   }
   const campY = 46;
+  // The sun stands to the right of straight ahead, where it shows about three
+  // quarters of the way across the window at this aspect.
+  const tanF = Math.tan((LAND_FOV * Math.PI) / 360);
+  const sunAz = Math.atan(0.46 * tanF * aspect);
+  const ax = Math.sin(sunAz);
+  const az = -Math.cos(sunAz);
+  const sunSlope = Math.tan(sunAz);
+  const narrow = Math.max(0.3, Math.min(1, aspect / 1.6)); // a phone's window sees a narrow wedge: the inlet narrows with it, so its mountains are in view
+  // Sharp ridges: folded noise, squared, over a warped ground, in a few octaves.
+  const ridge = (x, z) => {
+    const r = 1 - Math.abs(2 * noise(x, z) - 1);
+    return r * r;
+  };
+  function ridged(x, z) {
+    const wx = x + 1.4 * (fbm(x * 0.5 + 3.0, z * 0.5) - 0.5);
+    const wz = z + 1.4 * (fbm(x * 0.5, z * 0.5 + 8.0) - 0.5);
+    let sum = 0;
+    let amp = 0.55;
+    let f = 1;
+    let prev = 1;
+    for (let o = 0; o < 4; o++) {
+      const r = ridge(wx * f + o * 17.0, wz * f + o * 5.0) * prev;
+      sum += r * amp;
+      prev = 0.35 + 0.65 * r;
+      amp *= 0.5;
+      f *= 2.1;
+    }
+    return sum;
+  }
+  /* The coast (Vidyut, Nov 16: the flat buttes were "bland and boring"). From the
+     reader: the beach and its low dunes with the camp on a rise; then an inlet of
+     the sea that runs away toward the setting sun; foothills on both its shores;
+     a first range behind them and a higher, snow-capped range behind that. The
+     ranges part where the inlet runs, so the sun sets down the water between
+     them. Sea level is y = 0: `height` goes below it in the inlet, and the mesh
+     stops at the surface (the depth is kept for the water's shading). */
   function height(x, z) {
     const back = -z;
-    const dunes = (1 - sm((back - 760) / 520)) * sm((back - 70) / 230); // level under the camera, so it never stands in a dune
-    const table = sm((back - 2080) / 520);
-    const range = sm((back - 3250) / 420);
-    let y = 26 * fbm(x * 0.0006 + 2.0, z * 0.0006) - 10;
+    const dunes = (1 - sm((back - 620) / 420)) * sm((back - 70) / 230); // level under the camera, so it never stands in a dune
+    let y = 22 * fbm(x * 0.0006 + 2.0, z * 0.0006) - 4;
     if (dunes > 0) {
       const warp = 1.5 * fbm(x * 0.0013, z * 0.0013 + 4.0);
-      const big = 22 + 96 * noise(x * 0.0012 + 9.0, z * 0.0012);
-      y += dunes * (big * dune(x, z, 520, warp, 1.5) + 6 * dune(x + 60, z, 170, warp * 2.3 + 0.4, 1.2));
+      const big = 14 + 62 * noise(x * 0.0012 + 9.0, z * 0.0012);
+      y += dunes * (big * dune(x, z, 520, warp, 1.5) + 5 * dune(x + 60, z, 170, warp * 2.3 + 0.4, 1.2));
       // A level pad on a crest for the camp.
       const dc = Math.hypot(x - CAMP.x, (z - CAMP.z) * 1.3);
-      y += (campY - y) * sm(1 - (dc - 26) / 110);
+      y += (campY - y) * sm(1 - (dc - 40) / 130);
     }
-    if (table > 0) {
-      const n = fbm(x * 0.00068 + 3.0, z * 0.00068 + 9.0) + 0.1 * noise(x * 0.004, z * 0.004);
-      const m = Math.max(0, n - 0.5) * 3.6;
-      const step = Math.min(m, 1.999);
-      const tier = Math.floor(step) + sm((step - Math.floor(step)) / 0.2);
-      y += table * (tier * 150 + 26 * noise(x * 0.003 + 1.0, z * 0.003));
-    }
-    if (range > 0) {
-      const r = 1 - Math.abs(2 * fbm(x * 0.00062 + 17.0, z * 0.0004) - 1);
-      y += range * (70 + 330 * Math.pow(r, 1.4));
-    }
-    return y;
+    // How far this point is from the line the inlet runs along (toward the sun), and how wide the inlet is here.
+    const side = Math.abs(x - back * sunSlope - 60 * Math.sin(back * 0.0021) - 150 * (fbm(back * 0.0011, 3.3) - 0.5));
+    const wide = (210 + 0.2 * Math.max(0, back - 900) + 90 * (noise(back * 0.004, 1.7) - 0.5)) * narrow;
+    const shoreN = 70 * (fbm(x * 0.004 + 5.0, z * 0.004) - 0.5);
+    const inlet = sm((back - 860) / 240) * (1 - sm((side + shoreN - wide) / 150));
+    // The mountains stand back from the water: their feet at the inlet's shores.
+    const rise = sm((side - wide - 40 * narrow) / ((250 + 0.07 * back) * narrow));
+    const foot = sm((back - 1150) / 500) * (1 - sm((back - 2500) / 500));
+    const near = sm((back - 1900) / 620) * (1 - 0.55 * sm((back - 3150) / 400));
+    const far = sm((back - 2950) / 520);
+    let m = 0;
+    if (foot > 0) m += foot * 150 * ridged(x * 0.0021 + 4.0, z * 0.0021);
+    if (near > 0) m += near * (60 + 470 * ridged(x * 0.00105 + 11.0, z * 0.00125 + 2.0));
+    if (far > 0) m += far * (150 + 760 * ridged(x * 0.00074 + 23.0, z * 0.0009 + 7.0));
+    y += m * rise * (0.6 + 0.4 * sm((side - wide) / (1100 * narrow)));
+    // Loose rock at the mountains' feet.
+    y += rise * foot * 14 * noise(x * 0.02, z * 0.02);
+    return y + (-46 - y) * inlet;
   }
 
-  const gx = phone ? 136 : 256;
-  const gz = phone ? 84 : 150;
+  const gx = phone ? 168 : 256;
+  const gz = phone ? 104 : 150;
   const zAt = (j) => Z0 - ZD * Math.pow(j / gz, ZPOW);
   const xAt = (i) => X0 + ((X1 - X0) * i) / gx;
   const nv = (gx + 1) * (gz + 1);
   const hs = new Float32Array(nv);
+  const deep = new Float32Array(nv); // how far under the sea's surface the ground is
   const pos = new Float32Array(nv * 3);
   for (let j = 0; j <= gz; j++) {
     const z = zAt(j);
     for (let i = 0; i <= gx; i++) {
       const x = xAt(i);
       const k = j * (gx + 1) + i;
-      hs[k] = height(x, z);
+      const hgt = height(x, z);
+      hs[k] = Math.max(hgt, 0);
+      deep[k] = Math.max(0, -hgt);
       pos[k * 3] = x;
       pos[k * 3 + 1] = hs[k];
       pos[k * 3 + 2] = z;
@@ -307,19 +403,13 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     const k = j * (gx + 1) + i;
     return (hs[k] * (1 - u) + hs[k + 1] * u) * (1 - v) + (hs[k + gx + 1] * (1 - u) + hs[k + gx + 2] * u) * v;
   }
-  const tanF = Math.tan((LAND_FOV * Math.PI) / 360);
   // What stands on the ground shades it: the camp's tents.
   const casters = [];
-  for (const [dx, dz, r, tall] of [[-46, 10, 24, 22], [40, -22, 16, 15], [74, 8, 15, 14], [-12, 17, 9, 8]]) {
+  for (const [dx, dz, r, tall] of [[-46, 10, 24, 22], [40, -22, 16, 15], [74, 8, 15, 14], [-12, 17, 9, 8], [-98, -16, 15, 13], [114, -22, 14, 12], [18, -56, 15, 13], [-134, 24, 11, 9], [152, 16, 11, 9], [-72, 46, 10, 8]]) {
     casters.push({ x: CAMP.x + dx, z: CAMP.z + dz, r, top: ground(CAMP.x + dx, CAMP.z + dz) + tall });
   }
   const nor = new Float32Array(nv * 3);
   const hor = new Float32Array(nv);
-  // The sun stands to the right of straight ahead, where it shows about three
-  // quarters of the way across the window at this aspect.
-  const sunAz = Math.atan(0.46 * tanF * aspect);
-  const ax = Math.sin(sunAz);
-  const az = -Math.cos(sunAz);
   for (let j = 0; j <= gz; j++) {
     for (let i = 0; i <= gx; i++) {
       const k = j * (gx + 1) + i;
@@ -338,7 +428,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
       const z = pos[k * 3 + 2];
       let t = 0;
       let step = 14;
-      for (let s = 0; s < 26; s++) {
+      for (let s = 0; s < 30; s++) {
         const r = step;
         t = Math.max(t, (ground(x + ax * r, z + az * r) - hs[k] - 1.5) / r);
         step *= 1.22;
@@ -372,6 +462,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
   terrGeo.setAttribute('position', new BufferAttribute(pos, 3));
   terrGeo.setAttribute('normal', new BufferAttribute(nor, 3));
   terrGeo.setAttribute('aHor', new BufferAttribute(hor, 1));
+  terrGeo.setAttribute('aDeep', new BufferAttribute(deep, 1));
   terrGeo.setIndex(new BufferAttribute(idx, 1));
 
   const lampPos = new Vector3(CAMP.x + 8.5, ground(CAMP.x, CAMP.z) + 51, CAMP.z);
@@ -396,6 +487,11 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
     uAccent: { value: C.ember },
     uFoam: { value: C['sea-foam'] },
     uWind: { value: new Vector2(wind.x, wind.z) },
+    uRock: { value: C['land-rock'] },
+    uScrub: { value: C['land-scrub'] },
+    uSnow: { value: C['land-snow'] },
+    uGreen: { value: C['land-green'] },
+    uPath: { value: [new Vector3(CAMP.x + 150, 0, -150), new Vector3(CAMP.x + 60, 0, CAMP.z + 150), new Vector3(CAMP.x + 10, 0, CAMP.z + 30), new Vector3(CAMP.x - 260, 0, CAMP.z - 240)] },
   };
   const mat = (defines) => keep(new ShaderMaterial({ vertexShader: LAND_VERT, fragmentShader: LAND_FRAG, uniforms: U, defines }));
   const scene = new Scene();
@@ -404,10 +500,13 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
   terrain.frustumCulled = false;
   scene.add(terrain);
 
-  /* ---- Base camp: flat-shaded boxes and ridge tents, under 200 triangles ----- */
+  /* ---- Base camp: flat-shaded boxes, ridge tents, banners, people and loose rock,
+     about a thousand triangles (Vidyut, Nov 16: "two tents? are you kidding me") -- */
   const cp = [];
   const cn = [];
   const ce = [];
+  const ct = [];
+  let tint = 0; // 0 dark cloth, 1 rock, 2 banner, 3 pale canvas, 4 pine, 5 grass
   const tri = (a, b, c, e) => {
     const ux = b[0] - a[0];
     const uy = b[1] - a[1];
@@ -421,6 +520,7 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
       cp.push(...p);
       cn.push(n[0] / l, n[1] / l, n[2] / l);
       ce.push(e);
+      ct.push(tint);
     }
   };
   const quad = (a, b, c, d, e) => {
@@ -453,12 +553,130 @@ export function createLand({ C, stage, time, dpr, phone, aspect, crew = [] }) {
   box(on(-8, 16), 9, 6, 7, 0.3);
   box(on(-17, 20), 6, 5, 6, -0.2);
   box(on(-10, 17, 6), 6, 4, 5, 0.8);
-  box(on(17, 12), 4.2, 10.5, 3, 0.2); // one figure, looking out
-  box(on(17, 12, 10.5), 3.3, 3.6, 3.1, 0.2);
+  // More of the camp: a street of tents either side of the mast, some pale canvas, some lit.
+  const person = (dx, dz, r, tall = 10.5) => {
+    box(on(dx, dz), 4.2, tall, 3, r);
+    box(on(dx, dz, tall), 3.3, 3.6, 3.1, r);
+  };
+  tint = 3;
+  tent(on(-98, -16), 28, 22, 14, 1.5, 0.2);
+  tent(on(114, -22), 26, 20, 13, 1.4, 0.34);
+  tint = 0;
+  tent(on(18, -56), 28, 22, 14, 1.9, 0.26);
+  tent(on(-134, 24), 20, 16, 10, 1.1, 0.18);
+  tint = 3;
+  tent(on(152, 16), 20, 16, 10, 1.6, 0.3);
+  tent(on(-72, 46), 18, 14, 9, 1.35, 0.22);
+  tint = 0;
+  // Crates and a table by the tents.
+  for (const [dx, dz, sx, sy, sz, r] of [[52, -4, 7, 5, 6, 0.4], [58, -9, 5, 4, 5, 1.1], [-92, 6, 6, 5, 6, 0.2], [100, -2, 8, 4, 5, 0.7], [104, 3, 5, 6, 5, 0.1], [-30, -10, 12, 3.4, 6, 0.5], [26, 30, 6, 4, 5, 0.9]]) box(on(dx, dz), sx, sy, sz, r);
+  // The crew: standing in twos and threes, and one looking out to sea.
+  person(17, 12, 0.2);
+  person(-28, 28, 0.9);
+  person(-22, 31, -0.4, 9.6);
+  person(56, 20, 0.5);
+  person(90, 22, -0.2, 11);
+  person(95, 25, 1.2, 9.8);
+  person(-86, 28, 0.3);
+  person(134, 34, 0.7, 10);
+  // Banners in the accent: a pole and a long pennant, one on the mast.
+  tint = 2;
+  const banner = (dx, dz, tall, r) => {
+    tint = 0;
+    box(on(dx, dz), 0.9, tall, 0.9);
+    tint = 2;
+    const o = on(dx, dz, tall - 7.5);
+    const v = (x, y) => turn([x, y, 0], o, r);
+    quad(v(0.5, 0), v(13, 1.4), v(13, 4.6), v(0.5, 6.4), 0.5);
+    quad(v(0.5, 6.4), v(13, 4.6), v(13, 1.4), v(0.5, 0), 0.5);
+  };
+  banner(0.8, 0.2, 58, 0.3);
+  banner(-60, -6, 30, 0.5);
+  banner(66, -2, 28, 0.2);
+  banner(130, -6, 26, 0.6);
+  banner(-116, 4, 24, 0.35);
+  // Loose rock: round the camp, down the path to the beach and along the water.
+  tint = 1;
+  const rock = (x, z, r) => {
+    const o = [x, ground(x, z) - r * 0.28, z];
+    const a = rnd() * 6.3;
+    const top = [o[0] + (rnd() - 0.5) * r * 0.7, o[1] + r * (0.42 + rnd() * 0.3), o[2] + (rnd() - 0.5) * r * 0.7];
+    const ring = [];
+    for (let i = 0; i < 5; i++) {
+      const t = a + (i / 5) * 6.283;
+      const rr = r * (0.8 + rnd() * 0.7);
+      ring.push([o[0] + Math.cos(t) * rr, o[1] + r * 0.25 * rnd(), o[2] + Math.sin(t) * rr]);
+    }
+    for (let i = 0; i < 5; i++) tri(ring[i], top, ring[(i + 1) % 5], 0);
+  };
+  for (let i = 0; i < (phone ? 34 : 70); i++) {
+    const far = rnd();
+    const x = CAMP.x + (rnd() - 0.5) * (360 + 1500 * far);
+    const z = CAMP.z + 150 - 620 * far * far - rnd() * 120 + (rnd() < 0.3 ? 190 : 0);
+    if (Math.hypot(x - CAMP.x, z - CAMP.z) < 30 || z > -60) continue;
+    rock(x, z, 2.5 + rnd() * rnd() * 11);
+  }
+  /* Greenery (Vidyut, Nov 16): stands of pine on the lower slopes and round the bay,
+     grass in tufts by the camp and along the near shore. All of it is in this one
+     mesh with the camp, so it costs no draw call of its own. */
+  tint = 4;
+  const pine = (x, z, tall) => {
+    const y = ground(x, z) - 1;
+    const r = tall * (0.2 + rnd() * 0.07);
+    const a0 = rnd() * 6.3;
+    // three skirts of needles, each a five-sided cone, wider toward the ground
+    for (let k = 0; k < 3; k++) {
+      const y0 = y + tall * (0.14 + 0.26 * k);
+      const y1 = y + tall * (0.6 + 0.2 * k);
+      const rr = r * (1 - 0.26 * k);
+      for (let i = 0; i < 5; i++) {
+        const t0 = a0 + (i / 5) * 6.283;
+        const t1 = a0 + ((i + 1) / 5) * 6.283;
+        tri([x + Math.cos(t0) * rr, y0, z + Math.sin(t0) * rr], [x, y1, z], [x + Math.cos(t1) * rr, y0, z + Math.sin(t1) * rr], 0);
+      }
+    }
+    tint = 0;
+    box([x, y, z], tall * 0.05, tall * 0.2, tall * 0.05, a0);
+    tint = 4;
+  };
+  const slopeAt = (x, z) => Math.hypot(ground(x + 12, z) - ground(x - 12, z), ground(x, z + 12) - ground(x, z - 12)) / 24;
+  let pines = 0;
+  for (let i = 0; i < 9000 && pines < (phone ? 320 : 820); i++) {
+    const back = 430 + 2400 * Math.pow(rnd(), 1.4);
+    const x = (rnd() - 0.5) * (900 + back * 1.5);
+    const z = -back;
+    const y = ground(x, z);
+    if (y < 16 || y > 330 || slopeAt(x, z) > 0.75) continue;
+    if (Math.hypot(x - CAMP.x, z - CAMP.z) < 230) continue; // the camp stands in the open
+    if (back < 780 && Math.abs(x - CAMP.x - 60) < 520 - 0.35 * back) continue; // and nothing grows between the reader and the camp
+    // stands, not a scatter: they grow where a slow noise is high
+    if (noise(x * 0.0035 + 40.0, z * 0.0035) + 0.35 * noise(x * 0.012, z * 0.012 + 7.0) < 0.78 - 0.1 * sm((y - 60) / 120)) continue;
+    pine(x, z, (26 + rnd() * 26) * (1 - 0.3 * sm((y - 200) / 130)));
+    pines++;
+  }
+  // Grass: tufts of three blades, thick near the camp and the path, thinning toward the water.
+  tint = 5;
+  for (let i = 0; i < (phone ? 500 : 1400); i++) {
+    const far = rnd();
+    const x = CAMP.x + (rnd() - 0.5) * (300 + 1100 * far);
+    const z = CAMP.z + 190 - 560 * far - rnd() * 60;
+    const y = ground(x, z);
+    if (y < 7 || z > -70 || slopeAt(x, z) > 0.6) continue;
+    for (let b = 0; b < 3; b++) {
+      const a = rnd() * 6.3;
+      const w2 = 0.9 + rnd() * 0.8;
+      const tall = 4 + rnd() * 6;
+      const cx = x + (rnd() - 0.5) * 5;
+      const cz = z + (rnd() - 0.5) * 5;
+      tri([cx - Math.cos(a) * w2, y - 0.3, cz - Math.sin(a) * w2], [cx + Math.cos(a) * w2, y - 0.3, cz + Math.sin(a) * w2], [cx + Math.sin(a) * 2.2, y + tall, cz - Math.cos(a) * 2.2], 0);
+    }
+  }
+  tint = 0;
   const campGeo = keep(new BufferGeometry());
   campGeo.setAttribute('position', new BufferAttribute(new Float32Array(cp), 3));
   campGeo.setAttribute('normal', new BufferAttribute(new Float32Array(cn), 3));
   campGeo.setAttribute('aEmis', new BufferAttribute(new Float32Array(ce), 1));
+  campGeo.setAttribute('aTint', new BufferAttribute(new Float32Array(ct), 1));
   const camp = new Mesh(campGeo, mat({ CAMP: 1 }));
   camp.frustumCulled = false;
   scene.add(camp);
