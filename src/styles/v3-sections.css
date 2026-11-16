@@ -1642,7 +1642,7 @@ html[data-world='on'] .deep-head::before {
    the control and what the crew is doing, and the gates by name. */
 .nb-run {
   display: grid;
-  grid-template-columns: minmax(230px, 0.62fr) minmax(0, 2fr) auto;
+  grid-template-columns: minmax(266px, 0.62fr) minmax(0, 2fr) auto;
   grid-template-areas:
     'prompt track out'
     'gates gates gates'
@@ -1827,7 +1827,7 @@ html[data-world='on'] .deep-head::before {
   border-left: 2px solid var(--acc-2);
   border-radius: var(--r-xs);
   transition:
-    opacity 0.3s var(--ease),
+    background 0.3s var(--ease),
     border-color 0.3s var(--ease);
 }
 
@@ -1835,9 +1835,17 @@ html[data-world='on'] .deep-head::before {
   color: var(--badge-fg);
 }
 
-/* While a run is under way the branch does not exist yet. */
+/* While a run is under way the branch does not exist yet: its box is only drawn in. */
 .nb-run:is([data-phase='typing'], [data-phase='step'], [data-phase='hold']) .nb-out {
-  opacity: 0.45;
+  background: none;
+  border-style: dashed;
+  border-left-style: dashed;
+  color: var(--text-2);
+}
+
+/* And there is one control at a time: while it runs or waits, Run it steps aside. */
+.nb-run:is([data-phase='typing'], [data-phase='step'], [data-phase='hold']) .nb-start {
+  display: none;
 }
 
 .nb-out[data-state='done'] {
@@ -1858,15 +1866,6 @@ html[data-world='on'] .deep-head::before {
 .nb-start {
   flex: none;
   border-radius: var(--r-xs);
-  border-color: var(--acc);
-  color: var(--text);
-}
-
-.nb-start:disabled {
-  border-color: var(--hair-2);
-  color: var(--text-3);
-  cursor: default;
-  transform: none;
 }
 
 .nb-status {
@@ -1878,6 +1877,8 @@ html[data-world='on'] .deep-head::before {
 }
 
 .nb-run[data-phase='hold'] .nb-status {
+  padding-left: 14px;
+  border-left: 2px solid var(--acc);
   color: var(--text);
 }
 

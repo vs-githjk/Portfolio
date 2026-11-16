@@ -187,7 +187,7 @@ export default function CrewRun({ prompt }) {
         {prompt.out}
       </p>
       <div className="nb-console">
-        <button type="button" className="btn nb-start" ref={start} onClick={begin} disabled={phase === 'typing' || phase === 'step' || phase === 'hold'}>
+        <button type="button" className="btn btn-pri nb-start" ref={start} onClick={begin} disabled={phase === 'typing' || phase === 'step' || phase === 'hold'}>
           {phase === 'done' ? run.again : run.start}
         </button>
         <p className="nb-status" role="status" aria-live="polite">
