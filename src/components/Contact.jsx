@@ -28,7 +28,7 @@ export default function Contact() {
     <section className="sec contact" id="contact" data-realm="earth" data-dawn={dawn ? 'on' : undefined}>
       <div className="wrap">
         <div className="c-who reveal">
-          <HoloFigure className="c-holo" figure={welcome.figure} sizes="120px" />
+          <HoloFigure className="c-holo" figure={contact.figure ?? welcome.figure} sizes="120px" />
           <div>
             <span className="eyebrow">
               {contact.eyebrow}

@@ -71,7 +71,9 @@ export const welcome = {
      alpha; any aspect). Its alpha is its silhouette; the page adds the light, the
      scan lines and the plate under it. Today: him in a robe of stars with a staff
      and a crystal, made from his own photograph and cut out by
-     scripts/matte-figure.py, which writes both files and prints their size.
+     scripts/matte-figure.py, which writes both files and prints their size (his
+     own face is laid over the figure's first, by scripts/real-head.py, from the
+     photograph the pose was made from).
      `width` and `height` are the desktop file's own pixels (the hero reserves its
      box from them): update them when the script prints new ones. To try a figure
      without editing this file, open the page with ?figure=/holo/<file>. */
@@ -83,13 +85,13 @@ export const welcome = {
   figure: {
     src: '/holo/wizard-1.webp',
     phone: '/holo/wizard-1-phone.webp',
-    width: 625,
-    height: 1200,
+    width: 777,
+    height: 1400,
     /* Where his face is in the picture (its centre across and down, and its reach,
        all as shares of the picture's height and width: x of the width, y and r of
        the height). The hologram keeps the face clearer than the rest: fewer scan
        lines, more of its own colour, a little more light. */
-    face: { x: 0.48, y: 0.105, r: 0.085 },
+    face: { x: 0.523, y: 0.099, r: 0.08 },
     alt: 'A hologram of Vidyut, smiling, in a long robe of stars, a wooden staff in one hand and a glowing crystal in the other',
   },
   /* His work, standing in the room as real things: crisp, full-colour cards in an
@@ -1775,6 +1777,16 @@ export const proofOfWork = {
 /* --------------------------------------------------------------- CONTACT --- */
 export const contact = {
   eyebrow: 'Contact',
+  /* The hologram that stands at Contact: the second take of the same figure (a
+     single crystal on the staff, the ring of glyphs upright), cut out by
+     scripts/matte-figure.py like welcome.figure, and the same shape of entry. */
+  figure: {
+    src: '/holo/wizard-2.webp',
+    phone: '/holo/wizard-2-phone.webp',
+    width: 769,
+    height: 1400,
+    alt: 'A hologram of Vidyut, smiling, in a long robe of stars, a wooden staff in one hand and a crystal in a ring of glyphs over the other',
+  },
   heading: 'Let’s build something',
   headingEm: 'reliable.',
   blurb:

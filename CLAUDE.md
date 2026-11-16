@@ -98,7 +98,7 @@ framed hologram of the photo, "it shouldn't be a box". The first screen is a pro
   light, the foot dissolving into the cone (`--holo-foot`), and a plate under it. Try another
   picture with `?figure=/holo/<file>` (a path on this site only).
   **The figure today** is him in a robe of stars with a staff and a crystal
-  (`public/holo/wizard-1.webp`, 1200 px tall, and `wizard-1-phone.webp`), made from his own
+  (`public/holo/wizard-1.webp`, 1400 px tall, and `wizard-1-phone.webp`; Contact shows a second take, `wizard-2`), made from his own
   photograph. `scripts/matte-figure.py <figure-on-black.png>` cuts it out in one command
   (rembg with birefnet-portrait for the body, brightness for the glow, so the ring of glyphs
   is clear inside) and prints the size to put in `welcome.figure`. Run

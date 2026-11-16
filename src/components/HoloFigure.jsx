@@ -8,7 +8,7 @@
    The picture is drawn twice: once for its tones in the blue light, once for a
    share of its own colour. The second copy carries the alt text. */
 export default function HoloFigure({ figure, className = '', sizes }) {
-  const srcSet = figure.phone ? `${figure.phone} ${Math.round((figure.width * 720) / figure.height)}w, ${figure.src} ${figure.width}w` : undefined;
+  const srcSet = figure.phone ? `${figure.phone} ${Math.round((figure.width * 900) / figure.height)}w, ${figure.src} ${figure.width}w` : undefined;
   const shared = { src: figure.src, srcSet, sizes, width: figure.width, height: figure.height, loading: 'lazy', decoding: 'async' };
   return (
     <div className={`holo ${className}`}>
