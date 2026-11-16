@@ -1,10 +1,12 @@
-/* The backdrop of the three worlds: two full-window passes for lib/worldScene.js.
+/* The backdrop of the three worlds: the water and the sky, for lib/worldScene.js.
 
-   BACK is drawn first, under every object: nothing above the sea's surface (the
-   hero's beams and stars show through the canvas there), the water below it, and
-   the sky of the earth world once the camera has come up through the second
-   waterline. LAND is drawn last, over every object, so the sun, the moon and the
-   galaxy set behind the ridges.
+   It is drawn in two steps. BACK holds everything that is soft (the colour of the
+   water at this depth, the fans of light from the sun above it, the underside of a
+   surface, the air and its Milky Way) and is rendered into a small half-float
+   target, half or three quarters of the window. COMP is one full-window quad under
+   every object: it reads that target and adds what has to stay sharp at full
+   resolution, the two waterlines with their meniscus, the sun's disc, the stars
+   and the grain.
 
    Both work in CSS pixels measured from the top left of the window. The two
    waterlines are the only hard edges in the journey:
@@ -12,36 +14,82 @@
             (the "surface" vista) and leaves through the top of the window
      uExit  the surface the camera rises through at the shore; it comes down
             from the top of the window while the "shore" vista scrolls in
-   Everything else is a grade driven by where the reader is in the page. */
+   Everything else follows one light. The scene (worldScene.js) turns the reader's
+   place in the journey into a sun direction, and the sky here, the fog on the land
+   (worldLand.js) and the stars all read that same sun. */
 
-const COMMON = /* glsl */ `
+export const COMMON = /* glsl */ `
 precision highp float;
-uniform vec2 uRes;
-uniform float uDpr, uTime, uTop, uExit, uScroll, uSurfDoc, uShoreDoc;
-uniform float uDusk, uDawn, uLand, uDrift, uBase;
-uniform vec3 uDuskTop, uDuskMid, uDuskLow, uNightTop, uNightLow, uDawnLow;
+uniform vec2 uView;
+uniform float uTime, uTop, uExit, uScroll, uSurfDoc, uShoreDoc;
+uniform float uPitch, uTanF, uNight, uDay, uOrbit, uBreak;
+uniform vec3 uSunDir, uSunI;
+uniform vec3 uDuskTop, uDuskMid, uDuskLow, uNightTop, uNightLow, uDawnLow, uSun, uStar;
 
 float h1(float n){ return fract(sin(n * 127.1) * 43758.5453); }
 float n1(float x){ float i = floor(x); float f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(h1(i), h1(i + 1.0), f); }
 float fbm1(float x){ return 0.5 * n1(x) + 0.25 * n1(x * 2.03 + 11.3) + 0.125 * n1(x * 4.01 + 3.7) + 0.0625 * n1(x * 8.1 + 7.9); }
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float n2(vec2 p){
+  vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(h2(i), h2(i + vec2(1.0, 0.0)), f.x), mix(h2(i + vec2(0.0, 1.0)), h2(i + vec2(1.0, 1.0)), f.x), f.y);
+}
 /* A waterline seen in section: three slow swells, a few pixels tall. */
 float swell(float x, float t){ return sin(x * 0.011 + t * 0.6) * 4.0 + sin(x * 0.027 - t * 0.9) * 2.0 + sin(x * 0.0041 + t * 0.23) * 6.0; }
-/* The line where the sky meets the land's haze. */
-float horizon(float H){ return H - uBase - H * 0.3 * uLand; }
-vec3 lowSky(){ return mix(mix(uDuskLow, uNightLow, uDusk), uDawnLow, uDawn); }
+/* The ray through a pixel of the window, for the land's camera: it looks down -z
+   and is pitched up by uPitch, so the sky turns with the ground under it. */
+vec3 viewDir(vec2 c){
+  vec2 n = vec2(c.x - 0.5 * uView.x, 0.5 * uView.y - c.y) / (0.5 * uView.y) * uTanF;
+  vec3 d = normalize(vec3(n, -1.0));
+  float cp = cos(uPitch); float sp = sin(uPitch);
+  return vec3(d.x, d.y * cp - d.z * sp, d.y * sp + d.z * cp);
+}
+`;
+
+/* One sky for the whole land: single scattering, worked out in closed form.
+   Rayleigh and Mie coefficients and scale heights after Maxime Heckel's write-up,
+   the airmass after Kasten and Young; no march and no table. The sun's own colour
+   (uSunI: what is left of it after its path through the air, and how much twilight
+   remains once it is under the horizon) is worked out once a frame on the CPU.
+   The physical result sets luminance and hue; the dusk and night tokens pull it
+   onto the page's palette. The land's fog asks this same function for the colour
+   of the air along a ray, which is why there is no seam where they meet. */
+export const SKY = /* glsl */ `
+const vec3 BETA_R = vec3(0.0464, 0.1080, 0.2648);
+const float BETA_M = 0.0052;
+vec3 skyAt(vec3 rd){
+  float e = max(rd.y, 0.0);
+  float am = 1.0 / (e + 0.15 * pow(3.885 + degrees(asin(e)), -1.253));
+  vec3 beta = BETA_R + BETA_M;
+  float mu = dot(rd, uSunDir);
+  float pR = 0.0597 * (1.0 + mu * mu);
+  float pM = 0.0336 / pow(1.5776 - 1.52 * mu, 1.5) + 0.06 / pow(1.25 - 1.0 * mu, 1.5);
+  vec3 sc = (BETA_R * pR + BETA_M * pM * 0.8) / beta;
+  vec3 phys = uSunI * sc * (1.0 - exp(-beta * am * 0.3)) * 26.0;
+  // After sunset the light that is left hugs the horizon on the sun's side.
+  float belt = exp(-e * mix(3.0, 11.0, 1.0 - uDay)) * (0.55 + 0.45 * mu);
+  phys *= mix(belt * 1.6, 1.0, uDay);
+  vec3 brand = mix(uDuskLow, uDuskMid, smoothstep(0.0, 0.28, e));
+  brand = mix(brand, uDuskTop, smoothstep(0.14, 0.62, e));
+  vec3 night = mix(uNightLow, uNightTop, smoothstep(0.0, 0.42, e));
+  vec3 lit = 1.0 - exp(-phys * 1.25);
+  vec3 col = mix(lit, brand * (0.35 + 1.3 * dot(lit, vec3(0.3, 0.5, 0.2))), 0.4);
+  return night * (1.0 - 0.7 * uDay) + col;
+}
 `;
 
 export const BACK_VERT = /* glsl */ `
-void main(){ gl_Position = vec4(position.xy, 0.9999, 1.0); }`;
-
-export const LAND_VERT = /* glsl */ `
 void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+
+export const COMP_VERT = /* glsl */ `
+void main(){ gl_Position = vec4(position.xy, 0.9999, 1.0); }`;
 
 export const BACK_FRAG = /* glsl */ `
 ${COMMON}
-uniform vec3 uShallow, uMid, uAbyss, uWarmSea, uRay, uRayWarm, uFoam, uSun, uStar, uBeam;
-uniform float uSunX, uSteps;
+${SKY}
+uniform vec2 uBackRes;
+uniform vec3 uShallow, uMid, uAbyss, uWarmSea, uRay, uRayWarm, uFoam, uBeam, uSigma, uFloor;
+uniform float uSunX, uSteps, uBandTilt;
 
 /* Light through a moving surface, after Dave Hoskins' tileable water caustic. */
 float caustic(vec2 uv, float t){
@@ -59,192 +107,165 @@ float caustic(vec2 uv, float t){
   return pow(abs(c), 8.0);
 }
 
-float shafts(float q, float t){
-  float a = 0.5 + 0.5 * sin(q * 13.0 + sin(q * 4.7 + t * 0.11) * 1.6 + t * 0.05);
-  return a * a * a * (0.55 + 0.45 * sin(q * 31.0 - t * 0.07));
+/* Shafts that fan out from a sun above the surface: a swell field across the angle
+   around it, with a finer, faster caustic web inside each shaft. No march. */
+float fan(float ang, float r, float t){
+  float sw = sin(ang * 23.0 + sin(ang * 7.0 + t * 0.29) * 0.62 + t * 0.24) + 0.6 * sin(ang * 41.0 - t * 0.19);
+  float shaft = pow(smoothstep(-0.05, 1.0, sw * 0.5 + 0.5), 2.0);
+  float streak = smoothstep(0.6, 1.0, sin(ang * 59.8 + t * 0.324 + r * 4.0));
+  return shaft * (0.75 + 0.5 * streak) * exp(-r * 0.62);
 }
 
-vec3 water(vec2 c, float H, float yTop, float yExit){
+/* The underside of a surface, seen from just below it: a bright rippled ceiling
+   that runs away from the lens, and Snell's window, the cone under the sun where
+   the sky still shows through. Outside the cone the ceiling mirrors the deep. */
+vec3 ceiling(vec3 w, vec2 c, float y0, float sx, vec3 tint, float amt){
+  float H = uView.y;
+  float d = c.y - y0;
+  if (d <= 0.0 || d > 0.46 * H || amt < 0.01) return w;
+  float v = d / (0.46 * H);
+  float z = 1.0 / (v + 0.07);
+  vec2 p = vec2((c.x - 0.5 * uView.x) / H * z * 0.5, z * 0.9);
+  float k = caustic(p * 0.3, uTime * 0.34);
+  float fade = (1.0 - v) * (1.0 - v);
+  float win = exp(-pow((c.x - sx) / (d * 1.5 + 0.1 * H), 2.0));
+  w *= 1.0 - 0.22 * fade * (1.0 - win) * amt;
+  return w + tint * fade * amt * (k * (0.2 + 0.5 * win) + 0.16 * win * (1.0 - v));
+}
+
+vec3 water(vec2 c){
+  float H = uView.y; float W = uView.x;
   float doc = uScroll + c.y;
-  float a = clamp((doc - uSurfDoc) / (1.5 * H), 0.0, 1.0);    // 0 at the surface, 1 in the deep
+  float dep = max(doc - uSurfDoc, 0.0) / H;                   // screens of water overhead
   float b = clamp((uShoreDoc - doc) / (1.7 * H), 0.0, 1.0);   // 1 in the deep, 0 at the shore
-  vec3 w = mix(uShallow, uMid, smoothstep(0.0, 0.55, a));
-  w = mix(w, uAbyss, smoothstep(0.35, 1.0, a));
-  float under = clamp((c.y - yExit) / H, 0.0, 1.0);
+  // Beer-Lambert: every channel dies at its own rate on the way down, red first,
+  // so the water goes from a clear teal to a blue-green dark that never reaches black.
+  vec3 T = exp(-uSigma * dep);
+  vec3 w = mix(uFloor, uShallow * 1.18, T);
+  w *= mix(1.24, 0.84, c.y / H);                              // the light is overhead
+  float under = clamp((c.y - uExit) / H, 0.0, 1.0);
   vec3 warm = mix(uWarmSea, uMid, smoothstep(0.0, 1.1, under));
   w = mix(warm, w, smoothstep(0.0, 1.0, b));
-
-  float lit1 = exp(-max(c.y - yTop, 0.0) / (0.95 * H)) * (1.0 - a * 0.9);
-  float lit2 = (1.0 - b) * (1.0 - b) * exp(-max(c.y - yExit, 0.0) / (1.2 * H));
-  float r1 = shafts((c.x + (c.y - yTop) * 0.34) / H, uTime);
-  float r2 = shafts((c.x - (c.y - yExit) * 0.3) / H + 3.0, uTime);
-  // The worlds bleed into each other: the hero's blue beams carry on down as the
-  // first shafts under the surface, and the low sun reaches the last of the water.
-  float fresh = (1.0 - a) * (1.0 - a);
+  // The worlds bleed into each other: the hero's beams carry on down as the first
+  // shafts under the surface, and the low sun reaches the last of the water.
+  float fresh = exp(-dep * 1.3);
+  fresh *= fresh;
   w = mix(w, uBeam * 0.42, fresh * 0.3);
-  w += mix(uRay, uBeam, fresh * 0.8) * r1 * lit1 * (0.2 + 0.16 * fresh) + uRayWarm * r2 * lit2 * 0.26;
-  float cw = max(lit1, lit2);
-  if (cw > 0.03) {
-    float k = caustic(vec2(c.x, (c.y + uScroll * 0.45) * 1.5) / (H * 0.6), uTime * 0.32);
-    w += mix(uRay, uRayWarm, lit2 / (lit1 + lit2 + 0.001)) * k * cw * 0.15;
+
+  float lit1 = (0.13 + 0.87 * exp(-dep / 1.5)) * smoothstep(0.0, 0.7, b);
+  vec2 S = vec2(W * 0.6, min(uTop, -0.2 * H) - 0.7 * H);
+  vec2 v1 = c - S;
+  w += mix(uRay, uBeam, fresh * 0.8) * fan(atan(v1.x, v1.y), length(v1) / H, uTime) * lit1 * (0.3 + 0.16 * fresh);
+  float lit2 = (1.0 - b) * (1.0 - b);
+  if (lit2 > 0.004) {
+    vec2 S2 = vec2(W * uSunX, min(uExit, 0.0) - 0.55 * H);
+    vec2 v2 = c - S2;
+    w += uRayWarm * fan(atan(v2.x, v2.y) + 2.0, length(v2) / H, uTime * 1.1) * lit2 * 0.42;
   }
-  // The underside of a surface is the brightest water there is.
-  w += uFoam * 0.3 * (exp(-max(c.y - yTop, 0.0) / 30.0) + (1.0 - b) * exp(-max(c.y - yExit, 0.0) / 30.0));
+  w = ceiling(w, c, uTop, S.x, mix(uRay, uBeam, 0.35), 1.0);
+  w = ceiling(w, c, uExit, W * uSunX, uRayWarm, step(-0.4 * H, uExit));
   return w;
 }
 
-vec3 sky(vec2 c, float H, float W){
-  float hz = horizon(H);
-  float v = clamp((hz - c.y) / H, 0.0, 1.0);
-  vec3 day = mix(uDuskLow, uDuskMid, smoothstep(0.0, 0.36, v));
-  day = mix(day, uDuskTop, smoothstep(0.2, 0.85, v));
-  vec3 night = mix(uNightLow, uNightTop, smoothstep(0.0, 0.55, v));
-  vec3 dawn = mix(uDawnLow, uNightTop, smoothstep(0.0, 0.62, v));
-  vec3 col = mix(mix(day, night, uDusk), dawn, uDawn);
-
-  // The sun: a flat pale disc, as on a screen print, and the glow it leaves.
-  float lit = 1.0 - smoothstep(0.25, 0.95, uDusk);
-  vec2 s = vec2(W * uSunX, hz - H * mix(0.15, -0.14, uDusk));
-  float ds = length(c - s);
-  float R = H * 0.052;
-  col += uSun * exp(-ds / (H * 0.26)) * 0.34 * lit;
-  col = mix(col, uSun, smoothstep(R + 0.75, R - 0.75, ds) * lit);
-
-  // Stars come out as the light goes; they sit a long way back, so they barely move.
-  float st = smoothstep(0.3, 1.0, uDusk) * (1.0 - 0.7 * uDawn) * smoothstep(0.03, 0.34, v);
-  if (st > 0.01) {
-    vec2 g = vec2(c.x, c.y + uScroll * 0.05) / 30.0;
-    vec2 id = floor(g);
-    vec2 f = fract(g) - 0.5;
-    vec2 o = (vec2(h2(id), h2(id + 7.3)) - 0.5) * 0.8;
-    float d = length(f - o) * 30.0;
-    float b = pow(h2(id + 3.1), 7.0);
-    float tw = 0.72 + 0.28 * sin(uTime * (0.6 + h2(id) * 1.6) + h2(id) * 40.0);
-    col += uStar * b * smoothstep(1.7, 0.2, d) * tw * st;
+vec3 sky(vec2 c){
+  vec3 rd = viewDir(c);
+  vec3 col = skyAt(rd);
+  if (uNight > 0.01) {
+    // The Milky Way: a tilted band of unresolved stars with a dust rift down it.
+    float az = atan(rd.x, -rd.z);
+    float el = asin(clamp(rd.y, -1.0, 1.0));
+    float ca = cos(uBandTilt); float sa = sin(uBandTilt);
+    vec2 g = mat2(ca, -sa, sa, ca) * vec2(az + 0.12, el - 0.2);
+    float wide = 0.105 + 0.03 * n1(g.x * 5.0 + 2.0);
+    float band = exp(-pow(g.y / wide, 2.0)) * (0.5 + 0.5 * fbm1(g.x * 6.0 + 1.3));
+    float cloud = n2(g * vec2(9.0, 26.0) + 4.0) * 0.6 + n2(g * vec2(21.0, 60.0)) * 0.4;
+    float rift = smoothstep(0.34, 0.62, fbm1(g.x * 9.0 + 3.0) * 0.6 + cloud * 0.5) * exp(-pow((g.y - 0.012 + 0.03 * sin(g.x * 7.0)) / (wide * 0.42), 2.0));
+    float air = smoothstep(0.0, 0.2, rd.y);
+    col += (uStar * 0.5 + uNightLow * 1.6) * band * (0.55 + 0.6 * cloud) * (1.0 - 0.86 * rift) * 0.34 * uNight * air;
   }
+  // From orbit the air is below the reader; first light gathers along the limb.
+  float low = smoothstep(0.55, 1.0, c.y / uView.y);
+  col = mix(col, col * 0.7, uOrbit * (1.0 - low));
+  col += uDawnLow * low * low * uOrbit * (0.1 + 0.5 * uBreak);
   return col;
 }
 
 void main(){
-  vec2 c = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
-  float H = uRes.y / uDpr;
-  float W = uRes.x / uDpr;
-  float yTop = uTop + swell(c.x, uTime);
-  float yExit = uExit + swell(c.x + 300.0, uTime * 1.1);
-  float dTop = c.y - yTop;
-  if (dTop < 0.0) {
-    // Above the sea there is only its glint: the beams and the stars are behind the canvas.
-    float g = exp(dTop / 2.2);
-    gl_FragColor = vec4(uFoam, g * 0.85);
-    return;
-  }
-  vec3 col;
-  float dExit = c.y - yExit;
-  if (dExit < 0.0) {
-    col = sky(c, H, W);
-    col = mix(col, uFoam, exp(dExit / 2.0) * 0.8 * step(-40.0, uExit));
-  } else {
-    col = water(c, H, yTop, yExit);
-  }
-  // A little grain, so the long grades never band.
-  col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.012;
+  vec2 c = vec2(gl_FragCoord.x / uBackRes.x * uView.x, (1.0 - gl_FragCoord.y / uBackRes.y) * uView.y);
+  vec3 col = c.y < uExit ? sky(c) : water(c);
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-/* The land: five flat layers, far range to near dune, each a profile along x.
-   They drift sideways with the scroll (near layers faster), and the whole land
-   sinks to a low band while the reader reads (uLand). */
-export const LAND_FRAG = /* glsl */ `
+export const COMP_FRAG = /* glsl */ `
 ${COMMON}
-uniform vec3 uRidge, uRidgeFar, uSun, uEmber, uStar;
-uniform float uFig, uFigShow;
+uniform sampler2D uBack;
+uniform vec2 uRes;
+uniform float uDpr, uTexel, uStarPx;
+uniform vec3 uFoam;
 
-float range(float x){ float r = 1.0 - abs(2.0 * fbm1(x) - 1.0); return pow(r, 1.3); }
-float mesas(float x){
-  float m = fbm1(x * 0.9 + 5.0);
-  return smoothstep(0.5, 0.545, m) * 0.7 + smoothstep(0.6, 0.63, m) * 0.3 + 0.16 * fbm1(x * 3.1 + 2.0);
+float starLayer(vec2 g, float cellPx, float rare, float size){
+  vec2 id = floor(g);
+  vec2 f = fract(g) - 0.5;
+  vec2 o = (vec2(h2(id), h2(id + 7.3)) - 0.5) * 0.8;
+  float d = length(f - o) * cellPx;
+  float b = pow(h2(id + 3.1), rare);
+  float tw = 0.74 + 0.26 * sin(uTime * (0.6 + h2(id) * 1.6) + h2(id) * 40.0);
+  return b * smoothstep(size, 0.15, d) * tw;
 }
-float hills(float x){ return fbm1(x * 1.3 + 31.0); }
-float dunes(float x){ return 0.62 * (1.0 - abs(sin(x * 1.9 + 0.6 * sin(x * 0.7)))) + 0.38 * n1(x * 0.8 + 9.0); }
-float fore(float x){ return n1(x * 0.6 + 77.0); }
-float sdBox(vec2 p, vec2 b){ vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
 
 void main(){
   vec2 c = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uDpr;
-  float H = uRes.y / uDpr;
+  float H = uView.y; float W = uView.x;
+  float yTop = uTop + swell(c.x, uTime);
+  float dTop = c.y - yTop;
+  if (dTop < 0.0) {
+    // Above the sea there is only its glint: the beams and the stars are behind the canvas.
+    gl_FragColor = vec4(uFoam, exp(dTop / 2.2) * 0.85);
+    return;
+  }
   float yExit = uExit + swell(c.x + 300.0, uTime * 1.1);
-  if (c.y > yExit || uLand < 0.004) { gl_FragColor = vec4(0.0); return; }
-  // The land stands on the waterline while the camera is still coming up, and
-  // settles to the foot of the window once the water has gone.
-  float up = (H - uBase - c.y) / H;
-  if (up > uLand * 0.52) { gl_FragColor = vec4(0.0); return; }
-  float x = c.x / H;
-  float px = 1.0 / H;
-  float lit = 1.0 - smoothstep(0.2, 0.9, uDusk);
-  // Far layers take the colour of the air (a dusty mauve at dusk), near ground is
-  // warm umber in the last light and almost black at night. Each layer pales
-  // toward its foot, where the mist lies, so the ranges read as separate planes.
-  vec3 near = uRidge * mix(2.1, 0.44, uDusk);
-  vec3 far = mix(uRidgeFar, uRidge * 0.5 + uNightLow * 0.9, uDusk);
-  vec3 mist = mix(lowSky(), far, 0.5);
-  vec3 rim = uSun * lit + uStar * 0.1 * uDusk * (1.0 - uDawn);
-  vec3 col = near * 0.55;
-  float a = up < 0.0 ? 1.0 : 0.0;
-  float top;
-  float body;
-
-  // far range: sharp peaks, a long way off
-  top = uLand * (0.3 + 0.2 * range(x * 2.6 + uDrift * 0.03));
-  if (up < top) {
-    body = smoothstep(top, top - 0.16 * uLand, up);
-    col = mix(far, mist, body * 0.55);
-    a = 1.0;
-    col += rim * 0.22 * smoothstep(2.5 * px, 0.0, top - up);
+  float dExit = c.y - yExit;
+  float open = step(-40.0, uExit);
+  // The target is soft, so each side of the shore's waterline samples its own side.
+  float y = dExit < 0.0 ? min(c.y, uExit - 1.5 * uTexel) : max(c.y, uExit + 1.5 * uTexel);
+  vec3 col = texture2D(uBack, vec2(c.x / W, 1.0 - y / H)).rgb;
+  if (dExit < 0.0) {
+    vec3 rd = viewDir(c);
+    // The sun: a disc with a darkened limb, the colour the air has left it.
+    float ds = length(rd - uSunDir);
+    float R = 0.024;
+    float aa = uTanF * 3.0 / H;
+    float up = smoothstep(0.02, 0.3, uDay) * (1.0 - uOrbit);
+    vec3 warm = uSun * (uSunI / max(max(uSunI.r, uSunI.g), max(uSunI.b, 0.001)));
+    // Its light spills into the air around it before the disc itself.
+    col += warm * (0.42 * exp(-ds / 0.035) + 0.2 * exp(-ds / 0.14)) * up;
+    float disc = smoothstep(R + aa, R - aa, ds);
+    if (disc > 0.0) {
+      float q = clamp(ds / R, 0.0, 1.0);
+      vec3 body = mix(warm, vec3(1.0), 0.45) * (1.0 - 0.14 * (1.0 - sqrt(1.0 - q * q)));
+      col = mix(col, body * 1.1, disc * up);
+    }
+    if (uNight > 0.01) {
+      // Stars sit in the sky, not on the glass: they turn with the camera and thin
+      // out in the thick air near the horizon.
+      float az = atan(rd.x, -rd.z);
+      float el = asin(clamp(rd.y, -1.0, 1.0));
+      float air = smoothstep(0.0, 0.22, rd.y) * mix(1.0, 0.45 + 0.55 * smoothstep(0.5, 1.0, 1.0 - c.y / H), uOrbit);
+      vec2 g = vec2(az, el);
+      float s = starLayer(g * 44.0, uStarPx / 44.0, 7.0, 1.75) + 0.5 * starLayer(g * 104.0 + 31.0, uStarPx / 104.0, 5.0, 1.1);
+      col += uStar * s * uNight * air;
+    }
+    // The waterline from above: a bright line of surface.
+    col = mix(col, uFoam, exp(dExit / 2.0) * 0.8 * open);
+  } else {
+    // The meniscus: just under each bright line the water goes dark where the
+    // surface curls up the glass, then the brightest water there is.
+    col *= 1.0 - 0.42 * exp(-max(dExit - 1.0, 0.0) / 3.2) * open;
+    col *= 1.0 - 0.42 * exp(-max(dTop - 1.0, 0.0) / 3.2);
+    col += uFoam * (0.26 * exp(-dTop / 26.0) + 0.5 * exp(-dTop / 1.3));
+    col += uFoam * (0.26 * exp(-dExit / 26.0) + 0.5 * exp(-dExit / 1.3)) * open;
   }
-  // mesas and buttes
-  top = uLand * (0.205 + 0.17 * mesas(x * 1.9 + 40.0 + uDrift * 0.06));
-  if (up < top) {
-    body = smoothstep(top, top - 0.13 * uLand, up);
-    col = mix(mix(far, near, 0.36), mist * 0.86, body * 0.5);
-    a = 1.0;
-    col += rim * 0.34 * smoothstep(2.0 * px, 0.0, top - up);
-  }
-  // hills, where the post stands
-  float xs = x * 1.0 + uDrift * 0.1;
-  top = uLand * (0.15 + 0.1 * hills(xs));
-  if (up < top) {
-    body = smoothstep(top, top - 0.1 * uLand, up);
-    col = mix(mix(far, near, 0.66), mist * 0.6, body * 0.4);
-    a = 1.0;
-    col += rim * 0.2 * smoothstep(1.5 * px, 0.0, top - up);
-  }
-  if (uFigShow > 0.01) {
-    // The command post: a mast with a lamp, and one figure beside it, looking out.
-    float k = H / 900.0;
-    vec2 p = vec2((xs - uFig) * H, (up - uLand * (0.15 + 0.1 * hills(uFig))) * H) / k;
-    float mast = sdBox(p - vec2(-15.0, 26.0), vec2(0.7, 28.0));
-    float arm = sdBox(p - vec2(-10.0, 44.0), vec2(5.0, 0.6));
-    float body2 = sdBox(p - vec2(4.0, 9.0), vec2(2.4 + (9.0 - (p.y - 9.0)) * 0.12, 9.0)) - 0.6;
-    float head = length(p - vec2(4.0, 21.6)) - 2.9;
-    float d = min(min(mast, arm), min(body2, head));
-    float fig = smoothstep(0.6, -0.4, d) * uFigShow;
-    col = mix(col, near * 0.4, fig);
-    a = max(a, fig);
-    float lamp = length(p - vec2(-15.0, 56.0));
-    float glow = (smoothstep(2.2, 0.6, lamp) + 0.5 * exp(-lamp / 9.0)) * (0.7 + 0.3 * sin(uTime * 1.3)) * uFigShow;
-    col += uEmber * glow;
-    a = max(a, clamp(glow, 0.0, 1.0));
-  }
-  // dunes: sharp crests, the lit side toward the sun
-  top = uLand * (0.075 + 0.085 * dunes(x * 1.4 + 12.0 + uDrift * 0.16));
-  if (up < top) {
-    body = smoothstep(top, top - 0.07 * uLand, up);
-    col = mix(mix(far, near, 0.86), near * 0.7, body);
-    a = 1.0;
-    col += rim * 0.26 * smoothstep(1.5 * px, 0.0, top - up);
-  }
-  // the ground underfoot
-  top = uLand * (0.02 + 0.06 * fore(x * 1.2 + uDrift * 0.24));
-  if (up < top) { col = near * 0.5; a = 1.0; }
-  gl_FragColor = vec4(col, a);
+  // A little grain, so the long grades never band.
+  col += (h2(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.014;
+  gl_FragColor = vec4(col, 1.0);
 }`;
