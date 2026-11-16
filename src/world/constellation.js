@@ -87,9 +87,10 @@ export const constellation = definePiece({
       const sky = anchorRect('galaxy');
       place.rect = null;
       let at = null;
-      if (wins && w - wins.right >= 112) {
-        // Up the margin beside the wins: the first win lowest, the latest highest.
-        const x0 = wins.right + 30;
+      if (wins && w - wins.right >= 132) {
+        // Up the margin beside the wins: the first win lowest, the latest highest. The
+        // nearest star stands 52px off the plaques, so its rays never reach a plaque's edge.
+        const x0 = wins.right + 52;
         const x1 = w - 26;
         const top = wins.top + 8;
         const bot = wins.bottom - 8;
