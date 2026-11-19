@@ -1,0 +1,40 @@
+name: Refresh GitHub snapshot
+
+# Once a day: read the public contributions page (no token, so the counts match the
+# profile), and if they changed, commit src/data/github.json. The push redeploys the site.
+on:
+  schedule:
+    - cron: '17 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Fetch contributions
+        run: node scripts/fetch-github.mjs
+      - name: Keep it only if it is a fresh, valid snapshot
+        run: |
+          node -e "
+            const fs = require('fs');
+            const d = JSON.parse(fs.readFileSync('src/data/github.local.json', 'utf8'));
+            const age = Date.now() - Date.parse(d.fetchedAt);
+            if (!(d.total > 0) || !(age < 3600e3)) { console.log('stale or empty, skipping'); process.exit(0); }
+            fs.copyFileSync('src/data/github.local.json', 'src/data/github.json');
+            console.log('snapshot', d.total, 'contributions');
+          "
+      - name: Commit if changed
+        run: |
+          git diff --quiet -- src/data/github.json && { echo 'no change'; exit 0; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/data/github.json
+          git commit -m 'Daily GitHub snapshot'
+          git push
