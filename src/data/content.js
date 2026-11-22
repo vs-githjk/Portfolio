@@ -363,7 +363,7 @@ export const experience = {
 
 /* -------------------------------------------------------------- BUILDS ---- */
 /* Order: PrismAI and DuelWise (flagships); items = BetterBill, MVR, Vytal, Match Day,
-   Yinzone, Terrametric; then the paper (research); then `more` = Quorum,
+   Yinzone, Terrametric; then the paper (research); then `more` = Patient Zero (newest first), PrismKeep, Quorum,
    FilingWatch, NextRound (same order as the end of the ring), CinemaChat,
    TransitGuard, PaperTrail, AlgoQuest.
    Shape of every card (items and more):
@@ -1123,6 +1123,38 @@ export const builds = {
     heading: 'More builds',
     intro: 'A hackathon meeting agent, an interview-prep product, public tools and side projects. Every one has a public repo you can open.',
     items: [
+      {
+        id: 'patientzero',
+        /* Repo github.com/vs-githjk/odsc-nebius-hackathon (README, eval/dev-score.md,
+           eval/heldout-readout.md), live site patient-0.vercel.app, his profile README.
+           Team Says Who, captain: Vidyut Sriram, Anoop Ibrampur, Rishit Rai, Rohan
+           Rastogi. No award or user numbers are stated anywhere, so none is claimed.
+           Submitted Nov 20 2026. TODO: which parts he wrote himself (role line is
+           only "captain"), and whether the hackathon placed. */
+        kind: 'Hackathon · team of 4',
+        title: 'Patient Zero',
+        descriptor: 'viral claims, traced to their source',
+        when: 'Nov 2026 · ODSC x Nebius Hackathon',
+        oneLiner:
+          'Paste a viral claim. Patient Zero walks it back to the earliest page it can find, with the exact sentence on every page.',
+        awards: [],
+        role: 'I captained team Says Who, a team of four.',
+        body: [
+          'Each page on the trail is quoted verbatim and dated, with how the date was proven. Copies are counted apart from independent roots, and when the trail runs out it says so instead of naming an origin. Code, not the model, picks the ending.',
+          'The README publishes the weak part. It named **no false origin on its 20-claim tuning set or on a 10-claim held-out set**, but on the tuning set it cited the target page for only 4 of 10 claims.',
+        ],
+        metrics: [],
+        stack: 'TypeScript · Nebius Token Factory · Tavily · Wayback Machine',
+        media: {
+          image: '/builds/patient-zero.webp',
+          alt: 'Patient Zero: "Anyone can find you a source. Patient Zero shows you whether to trust it." beside a recorded trace of a plastic statistic walking back from 2025 to a 2016 World Economic Forum report, ending Origin found',
+        },
+        links: [
+          { label: 'Live demo', href: 'https://patient-0.vercel.app' },
+          { label: 'Source', href: 'https://github.com/vs-githjk/odsc-nebius-hackathon' },
+          { label: 'Video', href: 'https://youtu.be/VFKoXNjVgNU' },
+        ],
+      },
       {
         id: 'prismkeep',
         /* Repo github.com/vs-githjk/sf-startup-challenge, plan/devpost.md "Results

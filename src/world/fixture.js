@@ -21,7 +21,7 @@ export function mountFixture() {
     giant.style.height = '100svh';
     const copy = document.createElement('div');
     copy.style.cssText = 'position:absolute;left:max(16px,calc(50% - 528px));bottom:14%;max-width:min(520px,calc(100% - 32px));color:var(--ink);';
-    copy.innerHTML = '<p style="font:500 clamp(64px,13vw,150px)/0.95 var(--font-display);margin:0">Builds</p><p style="margin:14px 0 0;font-size:18px">Fixture line: twenty builds, three I run today.</p><p style="margin:18px 0 0;font:12px var(--font-mono);letter-spacing:.08em">FLAGSHIPS . . .  FLEET . . . . . . . .  PAPER .  MORE . . . . . . . .</p>';
+    copy.innerHTML = '<p style="font:500 clamp(64px,13vw,150px)/0.95 var(--font-display);margin:0">Builds</p><p style="margin:14px 0 0;font-size:18px">Fixture line: twenty-one builds, three I run today.</p><p style="margin:18px 0 0;font:12px var(--font-mono);letter-spacing:.08em">FLAGSHIPS . . .  FLEET . . . . . . . .  PAPER .  MORE . . . . . . . .</p>';
     giant.appendChild(copy);
   }
   // The roost: a band over the commit graph.

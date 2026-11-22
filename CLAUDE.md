@@ -78,7 +78,7 @@ Re-measure when the build changes, or set it to null.
 | Hero (The Landing) | His name, very large, the status, the thesis, one plain line, Email me, Resume and links; at the right his real studio photograph. No builds here |
 | Vista: surface (The Waterline) | The dive. "Under the surface: the work." |
 | Experience (The Sounding) | Where he has worked; a sounding weight sinks as the roles are read |
-| Builds (The Deep) | Opener (the heading, the ringed giant, and under them the ring of twelve build cards as the index; the dot chart of all twenty on a phone or without scripts), three flagships as chapters, the fleet of eight featured plates, the paper with its repair loop, More builds as rows |
+| Builds (The Deep) | Opener (the heading, the ringed giant, and under them the ring of twelve build cards as the index; the dot chart of all twenty-one on a phone or without scripts), three flagships as chapters, the fleet of eight featured plates, the paper with its repair loop, More builds as rows |
 | Vista: shore (The Breach) | Inside Builds: the camera rises through the second waterline into dusk |
 | Crew (The Camp) | Master Agents, a character select screen, and a run that holds at each gate |
 | Highlights (The Cut) | Four sentences cut as strata of rock |
@@ -222,7 +222,7 @@ first waterline, the sea ends at the shore, then dusk, night and dawn over a des
   an element marked `data-world-anchor="<name>"` (names in `ANCHOR`, `data/world.js`) is
   where a piece lives, and layout runs again whenever the page height changes.
 - **Pieces are drawn from data** and say so in Receipts (`BINDING`, `receipts()`): the giant
-  (twenty builds: moons and ring lights), a small world per flagship (`flagWorlds.js`,
+  (twenty-one builds: moons and ring lights), a small world per flagship (`flagWorlds.js`,
   counts from each flagship's `scene` in `content.js`, checked by
   `scripts/check-scenes.mjs`), the school (Fish Market), the camp's fires (one per agent),
   the constellation (one gold star per win) and the moon (the Value rows). The dragon is
