@@ -504,7 +504,7 @@ Search the repo for `TODO`:
 - A silent screen-recording loop of the PrismAI UI for the flagship (`media.video` is empty)
 - Source links for the paper, MVR, Match Day and Vytal (private repos today)
 - Yinzone and BetterBill "Live site" links (hidden until Vidyut sends them)
-- `public/og-card-v8.jpg` is the link-preview card; bump the filename and re-render it when
+- `public/og-card-v9.jpg` is the link-preview card; bump the filename and re-render it when
   the headline facts change
 - The hologram's face will be swapped from a sharper photo: rerun `scripts/matte-figure.py`
 - `public/portrait-180.webp` and `portrait-360.webp` (the sunset silhouette) are no longer used
