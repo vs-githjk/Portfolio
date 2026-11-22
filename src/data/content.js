@@ -1141,7 +1141,7 @@ export const builds = {
         role: 'I captained team Says Who, a team of four.',
         body: [
           'Each page on the trail is quoted verbatim and dated, with how the date was proven. Copies are counted apart from independent roots, and when the trail runs out it says so instead of naming an origin. Code, not the model, picks the ending.',
-          'The README publishes the weak part. It named **no false origin on its 20-claim tuning set or on a 10-claim held-out set**, but on the tuning set it cited the target page for only 4 of 10 claims.',
+          'It named **no false origin on a 20-claim tuning set or a 10-claim held-out set**: when it cannot back an origin, it says so. Reaching the origin is the weak part, and the README says that too.',
         ],
         metrics: [],
         stack: 'TypeScript · Nebius Token Factory · Tavily · Wayback Machine',
