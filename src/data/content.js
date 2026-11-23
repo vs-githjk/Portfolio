@@ -1833,8 +1833,6 @@ export const contact = {
   headingEm: 'reliable.',
   blurb:
     'Building agents that have to hold up with real users? Write to me.',
-  /* Mint means available. He graduates in Dec 2026 and can start in Jan 2027. */
-  availability: 'Available from January 2027',
   email: 'vidyut0712@gmail.com',
   /* The email link opens a draft that already has a subject and a first line. */
   mail: {

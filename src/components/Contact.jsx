@@ -33,10 +33,6 @@ export default function Contact() {
             <span className="eyebrow">
               {contact.eyebrow}
             </span>
-            <p className="c-avail">
-              <i aria-hidden="true" />
-              {contact.availability}
-            </p>
           </div>
         </div>
         <h2 className="reveal">

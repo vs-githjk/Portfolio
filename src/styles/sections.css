@@ -3751,23 +3751,6 @@ a.plaque:active::after {
   gap: 8px;
 }
 
-.c-avail {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.c-avail i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent);
-}
-
 .contact h2 {
   font-size: clamp(44px, 6.4vw, 92px);
   line-height: 0.96;
